@@ -48,7 +48,7 @@ function fileHashes(directory) {
 async function closeLibrary(runtime) {
   if (!runtime) return;
   try { await runtime.workbench.close(); }
-  finally { await runtime.dataStore.close(); }
+  finally { await runtime.close(); }
 }
 
 async function openLibrary(factory, directory, composition = {}) {

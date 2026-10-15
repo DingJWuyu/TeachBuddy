@@ -1,70 +1,10 @@
-// Contract helpers owned by the first-flow backend modules. The workbench
-// contract fixes these error shapes, document rules and search projections;
-// keeping one copy prevents question consumers from drifting apart.
-
-const MAX_DOCUMENT_BLOCKS = 1000;
-const MAX_PARAGRAPH_RUNS = 1000;
-const MAX_TEXT_LENGTH = 20000;
-const MAX_LATEX_LENGTH = 10000;
-
-export const PROBLEM_TYPES = Object.freeze({
-  malformedJson: '/problems/workbench/malformed-json',
-  unauthenticated: '/problems/workbench/unauthenticated',
-  requestNotAllowed: '/problems/workbench/request-not-allowed',
-  notFound: '/problems/workbench/not-found',
-  versionConflict: '/problems/workbench/version-conflict',
-  referenceVersionConflict: '/problems/workbench/reference-version-conflict',
-  idempotencyKeyReused: '/problems/workbench/idempotency-key-reused',
-  objectDeleted: '/problems/workbench/object-deleted',
-  payloadTooLarge: '/problems/workbench/payload-too-large',
-  unsupportedMediaType: '/problems/workbench/unsupported-media-type',
-  invalidInput: '/problems/workbench/invalid-input',
-  temporarilyUnavailable: '/problems/workbench/temporarily-unavailable'
-});
-
-export function contractError(status, problem) {
-  const shaped = typeof problem === 'string' ? { type: problem } : problem;
-  const error = new Error(shaped.type);
-  error.status = status;
-  error.problem = shaped;
-  return error;
-}
-
-export function unauthenticated() {
-  return contractError(401, { type: PROBLEM_TYPES.unauthenticated });
-}
-
-export function requestNotAllowed() {
-  return contractError(403, { type: PROBLEM_TYPES.requestNotAllowed });
-}
-
-export function notFound() {
-  return contractError(404, { type: PROBLEM_TYPES.notFound });
-}
-
-export function versionConflict(currentVersion) {
-  return contractError(409, { type: PROBLEM_TYPES.versionConflict, currentVersion });
-}
-
-export function referenceVersionConflict(questionId, currentVersion) {
-  return contractError(409, {
-    type: PROBLEM_TYPES.referenceVersionConflict,
-    questionId,
-    currentVersion
-  });
-}
-
-export function idempotencyKeyReused() {
-  return contractError(409, { type: PROBLEM_TYPES.idempotencyKeyReused });
-}
-
-export function objectDeleted() {
-  return contractError(409, { type: PROBLEM_TYPES.objectDeleted });
-}
-
-export function invalidInput(field, reason) {
-  return contractError(422, { type: PROBLEM_TYPES.invalidInput, field, reason });
-}
+import { invalidInput } from "../../workbench/problems.js";
+// Compatibility contract for the v1 question Document and search projection.
+import { workbenchLimits } from '@refatos/shared';
+const MAX_DOCUMENT_BLOCKS = workbenchLimits.documentBlocks;
+const MAX_PARAGRAPH_RUNS = workbenchLimits.paragraphRuns;
+const MAX_TEXT_LENGTH = workbenchLimits.textRunLength;
+const MAX_LATEX_LENGTH = workbenchLimits.latexLength;
 
 export function escapePointerSegment(segment) {
   return String(segment).replace(/~/g, '~0').replace(/\//g, '~1');

@@ -75,7 +75,7 @@ export async function startQuestionsFixture({
     origin,
     async close() {
       await new Promise((r) => server.close(r));
-      await context.dataStore.close();
+      await context.close();
     },
   };
 }

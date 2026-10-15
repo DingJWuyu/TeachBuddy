@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { validateSchema } from '../content/schema.js';
 import { contractError, problems, invalidInput } from '../problems.js';
-import { materialsError } from '../jobs/index.js';
+import { materialsError } from "../problems.js";
 import { normalizeRecognition } from './document.js';
 
 const active = new Set(['queued', 'running', 'cancelling']);

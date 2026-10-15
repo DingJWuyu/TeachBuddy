@@ -1,4 +1,4 @@
-import { fold } from "./casefold.js";
+import { casefold as fold } from "../../workbench/text.js";
 
 const readable = (text) =>
   text

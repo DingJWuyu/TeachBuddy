@@ -1,6 +1,6 @@
 import { uuidPattern, validateIdPath } from '../../workbench/schema.js';
 import { invalidInput } from '../../workbench/problems.js';
-import { account } from './problems.js';
+import { account } from './records.js';
 import { validateWrite, query, fail } from './schema.js';
 const names = {
   classes: ['Classes', 'Class'],

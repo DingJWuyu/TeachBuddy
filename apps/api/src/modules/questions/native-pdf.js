@@ -4,7 +4,8 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { DOMParser } from '@xmldom/xmldom';
 import { nativeText, questionStart, answerHeading, continuationHeading } from './extraction.js';
-import { documentText, textDocument } from './materials-content.js';
+import { documentText } from "../../workbench/content/document.js";
+import { textDocument } from "./materials-content.js";
 import { extractionId } from './extraction-fragments.js';
 const execute = promisify(execFile);
 

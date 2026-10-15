@@ -1,7 +1,8 @@
 import { locateFigures } from "./extraction-figures.js";
 import { readRecognizedPage } from "./recognized-page.js";
 import { validateSchema } from "../../workbench/content/schema.js";
-import { validateQuestionContent, documentText } from "./materials-content.js";
+import { documentText } from "../../workbench/content/document.js";
+import { validateQuestionContent } from "./materials-content.js";
 import { randomUUID } from "node:crypto";
 import { textDocument, emptyDocument } from "./materials-content.js";
 import {

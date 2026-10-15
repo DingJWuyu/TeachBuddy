@@ -15,6 +15,6 @@ await new Promise(resolve=>server.listen(port,'127.0.0.1',resolve));
 console.log(JSON.stringify({origin,directory,identity:'real-api/fake-mail',models:context.workbench.agent.runtime.configured?'configured':'unconfigured'}));
 process.once('SIGTERM', () => {
   server.closeAllConnections();
-  new Promise(resolve => server.close(resolve)).then(() => context.workbench.close()).then(() => process.exit(0))
+  new Promise(resolve => server.close(resolve)).then(() => context.close()).then(() => process.exit(0))
     .catch(error => { console.error(error); process.exitCode = 1; });
 });

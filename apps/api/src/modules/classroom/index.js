@@ -6,7 +6,7 @@ import { createAssessment } from './assessment.js';
 import { createClassroomStatistics } from './statistics.js';
 import { createClassroomOperations } from './operations.js';
 import { createClassroomRouter } from './router.js';
-import { account } from './problems.js';
+import { account } from './records.js';
 export { migrations } from './migrations/index.js';
 export { validateStoredData } from './stored-data.js';
 export function createClassroomModule({

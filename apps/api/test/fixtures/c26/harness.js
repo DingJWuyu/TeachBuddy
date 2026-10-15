@@ -27,6 +27,6 @@ export async function createIntegration(options = {}) {
   return { ...context, origin, directory, mailer, clock,
     client: () => createClient(origin, { transport: https }),
     disconnect() { server.closeAllConnections(); },
-    async close() { server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); await context.workbench.close(); }
+    async close() { server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); await (context.close?.() ?? context.workbench.close()); }
   };
 }

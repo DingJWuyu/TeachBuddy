@@ -1,4 +1,5 @@
-import { documentText, images, walkBlocks } from './materials-content.js';
+import { documentText, images, walkBlocks } from "../../workbench/content/document.js";
+
 import { extractionId } from './extraction-fragments.js';
 import { hasMathRelation, isOrderedMathList, unmergedTableRows } from './table-continuation.js';
 

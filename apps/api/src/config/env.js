@@ -22,7 +22,7 @@ function listValue(value) {
  * `mode` is the identity seam: `none` means no real adapter is configured yet,
  * so every business entry resolves to 401; `test-principal` is the isolated
  * test runner mode and is refused when NODE_ENV is production. A catalog
- * override and extra module directories exist for the isolated runner and its
+ * override and extra static implementations exist for the isolated runner and its
  * fixtures only; production refuses them too.
  */
 export function createWorkbenchEnv(overrides = {}) {

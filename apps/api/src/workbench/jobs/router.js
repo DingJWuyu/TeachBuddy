@@ -2,58 +2,12 @@ import express from "express";
 import {
   createGuards,
   asyncHandler,
-  readIdempotencyKey,
-  canonicalRequestPath,
-  createWorkbenchErrorHandler,
+  materialJsonRoute,
+  materialErrors,
 } from "../http.js";
-import { validateSchema } from "../content/schema.js";
 import {
-  contractError,
-  problems,
-  sendProblem,
   invalidInput,
 } from "../problems.js";
-export function materialJsonRoute(
-  router,
-  route,
-  { guards, ready },
-  schema,
-  status,
-  action,
-) {
-  router.post(
-    route,
-    guards.originGuard,
-    guards.protectionGuard,
-    guards.identityGuard,
-    (req, res, next) =>
-      req.is("application/json")
-        ? next()
-        : next(contractError(problems.unsupportedMediaType())),
-    express.json({ limit: "2mb" }),
-    asyncHandler(async (req, res) => {
-      await ready();
-      validateSchema(schema, req.body);
-      res
-        .status(status)
-        .json(
-          await action(req, {
-            key: readIdempotencyKey(req),
-            method: "POST",
-            path: canonicalRequestPath(req),
-          }),
-        );
-    }),
-  );
-}
-export function materialErrors(router, logger) {
-  router.use((error, req, res, next) =>
-    error.problem?.type?.startsWith("/problems/materials/")
-      ? sendProblem(res, error.status, error.problem)
-      : next(error),
-  );
-  router.use(createWorkbenchErrorHandler({ logger }));
-}
 export function createJobsRouter({
   identity,
   trustedOrigins,

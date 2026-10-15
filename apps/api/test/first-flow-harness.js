@@ -148,7 +148,7 @@ export async function createFirstFlowHarness(options = {}) {
 
     /** Close the API (and its database) and open the same isolated file again. */
     async restart() {
-      await runtime.dataStore.close();
+      await runtime.close();
       await openRuntime();
     },
 
@@ -161,7 +161,7 @@ export async function createFirstFlowHarness(options = {}) {
     },
 
     async close() {
-      await runtime.dataStore.close();
+      await runtime.close();
       if (!externalDatabase) fs.rmSync(rootDir, { recursive: true, force: true });
     }
   };

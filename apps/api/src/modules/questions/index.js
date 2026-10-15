@@ -4,6 +4,7 @@ import { createWordReader } from "./native-word.js";
 import { createPdfReader } from "./native-pdf.js";
 import { createMaterialsStore } from "./materials-store.js";
 import { createMaterialsService } from "./materials-service.js";
+import { createMaterialsOperations } from "./materials-operations.js";
 import { createMaterialsRouter } from "./materials-router.js";
 import { createExtractionHandler } from "./extraction.js";
 // Questions module entry point. The workbench composition root mounts the
@@ -44,8 +45,8 @@ export function createQuestionsModule({
 
   const store = createMaterialsStore(db, repository, now);
   const materials = createMaterialsService({ store, files, content, jobs });
-  const v2 = createMaterialsRouter({ service: materials.service, mutations });
-  router.use(v2.router);
+  const materialOperations = createMaterialsOperations({ service: materials.service, mutations });
+  router.use(createMaterialsRouter({ operations: materialOperations }));
   const jobHandlers = {
     "question-asset": createAssetHandler({ store, files }),
     extraction: createExtractionHandler({
@@ -66,7 +67,7 @@ export function createQuestionsModule({
     operations,
     jobHandlers,
     port: {
-      operations: v2.operations,
+      operations: materialOperations,
       readForExport(principal) {
         return {
           questions: store.questions(principal),

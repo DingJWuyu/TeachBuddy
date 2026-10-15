@@ -1,6 +1,6 @@
-import { account, required } from './problems.js';
+import { account, required } from './records.js';
 
-const cents = value => Math.round(value * 100);
+import { cents } from './scores.js';
 const score = value => value / 100;
 const known = value => typeof value === 'number' && Number.isFinite(value);
 const active = value => !value.deletedAt;

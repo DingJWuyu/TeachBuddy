@@ -1,7 +1,7 @@
 import express from 'express';
 import sharp from 'sharp';
-import { createGuards, asyncHandler, createMutationHandler, createWorkbenchErrorHandler } from '../workbench/http.js';
-import { contractError, problems, invalidInput } from '../workbench/problems.js';
+import { createGuards, asyncHandler, createMutationHandler, createWorkbenchErrorHandler } from './http.js';
+import { contractError, problems, invalidInput } from './problems.js';
 
 export const preferenceMigrations = [{ moduleId: 'reliability-preferences', migrations: [{
   id: 'reliability_preferences_001',

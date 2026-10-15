@@ -26,7 +26,7 @@ async function harness(directory = fs.mkdtempSync(path.join(os.tmpdir(), 'math-w
   return { directory, get runtime() { return runtime; }, send(method, url, body, key = randomUUID(), account = 'workshop-a') {
     let req = request(runtime.app)[method](url).set('Cookie', runtime.workbench.identity.testPrincipalCookie(account).header.split(';')[0]).set('Origin', 'http://localhost').set('X-TeachBuddy-Request', '1').set('Idempotency-Key', key);
     return body === undefined ? req : req.send(body);
-  }, async bytes(id) { const stream = await runtime.workbench.files.open({ accountKey: 'workshop-a' }, id); const chunks = []; for await (const chunk of stream) chunks.push(chunk); return Buffer.concat(chunks); }, async restart() { await runtime.dataStore.close(); await start(); }, async close() { await runtime.dataStore.close(); } };
+  }, async bytes(id) { const stream = await runtime.workbench.files.open({ accountKey: 'workshop-a' }, id); const chunks = []; for await (const chunk of stream) chunks.push(chunk); return Buffer.concat(chunks); }, async restart() { await runtime.close(); await start(); }, async close() { await runtime.close(); } };
 }
 
 test('workshop real HTTP/SQLite: complete formula source, version history, exports and replay', { timeout: 90000 }, async () => {

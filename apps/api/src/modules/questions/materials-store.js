@@ -1,6 +1,8 @@
-import { documentText, images } from "./materials-content.js";
+import { problems, contractError } from "../../workbench/problems.js";
+import { documentText, images } from "../../workbench/content/document.js";
+
 import { randomUUID } from "node:crypto";
-import { notFound, versionConflict, objectDeleted } from "./contract.js";
+
 export const materialsMigrations = [
   {
     id: "questions_materials_001",
@@ -25,7 +27,7 @@ export function createMaterialsStore(db, repository, now = () => new Date()) {
     const row = db
       .prepare(`SELECT value FROM ${tables[kind]} WHERE id=? AND accountKey=?`)
       .get(id, p.accountKey);
-    if (!row) throw notFound();
+    if (!row) throw contractError(problems.notFound());
     return JSON.parse(row.value);
   };
   const save = (kind, p, value) => {
@@ -41,7 +43,7 @@ export function createMaterialsStore(db, repository, now = () => new Date()) {
       .map((r) => JSON.parse(r.value));
   function question(p, id) {
     const q = repository.getForAccount(p.accountKey, id);
-    if (!q) throw notFound();
+    if (!q) throw contractError(problems.notFound());
     let meta;
     try {
       meta = get("meta", p, id);
@@ -135,8 +137,8 @@ export function createMaterialsStore(db, repository, now = () => new Date()) {
     }),
     bump: (q) => ({ ...q, version: q.version + 1, updatedAt: stamp() }),
     check(q, base, active = true) {
-      if (q.version !== base) throw versionConflict(q.version);
-      if (active && q.deletedAt) throw objectDeleted();
+      if (q.version !== base) throw contractError(problems.versionConflict(q.version));
+      if (active && q.deletedAt) throw contractError(problems.objectDeleted());
     },
   };
 }

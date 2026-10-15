@@ -54,7 +54,7 @@ await import('/private/teacher/input-secret.mjs?token=synthetic-url-token');\n`)
   assert.equal(job.state, 'succeeded');
   assert.equal(temporary.length, 1, 'injection must hit the actual structure subprocess');
   assert.ok(temporary.every(dir => !fs.existsSync(dir)), 'temporary parse input is cleaned');
-  const readTask = () => JSON.parse(runtime.dataStore.db.prepare('SELECT value FROM questions_materials_tasks WHERE id=?').get(material.jobId).value);
+  const readTask = () => JSON.parse(runtime.workbench.db.prepare('SELECT value FROM questions_materials_tasks WHERE id=?').get(material.jobId).value);
   const task = readTask();
   if (process.env.PDF_DIAGNOSTIC_EVIDENCE) {
     fs.mkdirSync(process.env.PDF_DIAGNOSTIC_EVIDENCE, {recursive: true});

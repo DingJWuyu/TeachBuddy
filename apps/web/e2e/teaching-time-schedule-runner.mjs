@@ -92,7 +92,7 @@ export async function startScheduleRunner({ dataDir, port = 47113, reset = true 
     database: env.sqlitePath,
     app,
     workbench: app.workbench,
-    dataStore: app.dataStore,
+    close: app.close,
     server,
     accounts: app.workbench.identity.listTestPrincipals(),
     /** Per-test isolation: clear business rows, keep the migrated schema. */
@@ -113,7 +113,7 @@ export async function startScheduleRunner({ dataDir, port = 47113, reset = true 
         server.close(resolve);
         server.closeAllConnections();
       });
-      await app.dataStore.close();
+      await app.close();
     }
   };
 }

@@ -12,7 +12,7 @@ async function harness() {
  let runtime;
  const start = async () => {runtime=createApp({env:{nodeEnv:'test',sqlitePath:path.join(dir,'workspace.sqlite'),workbench:{mode:'test-principal',testPrincipals:['m43-a','m43-b'],sessionSecret:'m43-isolated',trustedOrigins:['http://localhost'],logDir:path.join(dir,'logs')}}});await runtime.workbench.initialize();};
  await start();
- return {dir, send(method,url,body,key=randomUUID(),account='m43-a') { let r=request(runtime.app)[method](url).set('Cookie',runtime.workbench.identity.testPrincipalCookie(account).header.split(';')[0]).set('Origin','http://localhost').set('X-TeachBuddy-Request','1').set('Idempotency-Key',key);return body===undefined?r:r.send(body);},async restart(){await runtime.dataStore.close();await start();},async close(){await runtime.dataStore.close();}};
+ return {dir, send(method,url,body,key=randomUUID(),account='m43-a') { let r=request(runtime.app)[method](url).set('Cookie',runtime.workbench.identity.testPrincipalCookie(account).header.split(';')[0]).set('Origin','http://localhost').set('X-TeachBuddy-Request','1').set('Idempotency-Key',key);return body===undefined?r:r.send(body);},async restart(){await runtime.close();await start();},async close(){await runtime.close();}};
 }
 test('real composition preserves math versions, account isolation and replay after restart',async()=>{
  const h=await harness();try {

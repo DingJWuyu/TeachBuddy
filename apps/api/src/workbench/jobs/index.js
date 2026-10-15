@@ -1,14 +1,8 @@
 import { randomUUID } from "node:crypto";
 import { validateSchema } from "../content/schema.js";
-import { contractError, problems, invalidInput } from "../problems.js";
+import { contractError, problems, invalidInput, materialsError } from "../problems.js";
 export const jobKinds = ["preview", "extraction", "question-asset", "recognition"];
 const active = new Set(["queued", "running", "cancelling"]);
-export function materialsError(type, status = 422, field = "", detail = "") {
-  return Object.assign(new Error(type), {
-    status,
-    problem: { type: `/problems/materials/${type}`, field, detail },
-  });
-}
 export function createJobs({ db, mutations, files, clock = () => new Date(), logger, isAccountActive = () => true }) {
   let handlers,
     executing = false,

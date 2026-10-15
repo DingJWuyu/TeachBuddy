@@ -4,7 +4,7 @@ import { createNavigationRouter, navigationMigrations } from './navigation.js';
 import { createReliability } from './reliability/index.js';
 import { migrations as reliabilityMigrations, acquireLock } from './reliability/storage.js';
 import fs from 'node:fs';
-import { createPreferencesRouter, preferenceMigrations } from '../reliability/preferences.js';
+import { createPreferencesRouter, preferenceMigrations } from './preferences.js';
 import { connectBusinessOperations } from '../agent/business.js';
 import { createAgent, migrations as agentMigrations } from '../agent/index.js';
 import { createJobs } from "./jobs/index.js";
@@ -20,7 +20,7 @@ import { recognitionMigrations } from './recognition/migrations.js';
  *
  * Creates one isolated database, the identity seam, the idempotent-mutation
  * and migration facilities, discovers the enabled module implementations, and
- * returns the two HTTP routers the app mounts before the legacy bearer gate.
+ * returns HTTP routers mounted by the current application.
  * `initialize()` must run before the first request: it loads module
  * implementations and applies pending migrations, and a failure there stops
  * startup instead of serving a half-prepared database.
@@ -144,9 +144,7 @@ export function createWorkbench({
     ready: () => initialize(),
   });
 
-  // The exact `GET /api/modules` catalog endpoint. B12 delivered the handler
-  // without claiming the path (the legacy shell owned it); B15 mounts it at the
-  // contract path and removes the legacy bearer route.
+  // The current `GET /api/modules` catalog endpoint.
   const catalogHandler = createModuleCatalogHandler({
     identity,
     loader,

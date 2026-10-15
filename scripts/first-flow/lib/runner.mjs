@@ -252,7 +252,7 @@ export async function startFirstFlowRunner(options = {}) {
         context.server.close(resolve);
         context.server.closeAllConnections();
       });
-      await context.dataStore.close();
+      await context.close();
     }
   };
 }

@@ -142,7 +142,7 @@ test('a confirmed request replays after the API process restarts on the same dat
   try {
     original = await postItem(first, { key: KEY_1, body: { value: 'survives restart' } }).expect(201);
   } finally {
-    await first.dataStore.close();
+    await first.close();
   }
 
   const restarted = await createWorkbenchContext({
@@ -161,7 +161,7 @@ test('a confirmed request replays after the API process restarts on the same dat
       ['materials_files_001', 'materials_jobs_001', 'materials_recognition_001', 'reliability_001_manual_data', 'reliability_preferences_001', 'workbench_navigation_001', 'questions_0001_question_items', 'questions_materials_001', 'math_001', 'resources_001', 'resources_002_file_history', 'resources_003_text_cache', 'schedule_0001_settings_entries', 'schedule_0002_calendar_details', 'schedule_0003_remove_teaching_links', 'schedule_reminders_0001_notifications', 'classroom_0001_roster_assessments', 'workbench_probe_init', 'workbench_retirement_001_lessons', 'workbench_retirement_002_classes', 'agent_001_conversations']
     );
   } finally {
-    await restarted.dataStore.close();
+    await restarted.close();
     fs.rmSync(restarted.rootDir, { recursive: true, force: true });
   }
 });

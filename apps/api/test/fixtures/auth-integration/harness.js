@@ -38,7 +38,7 @@ export async function createIntegration(options = {}) {
       server.closeAllConnections();
       for (const socket of sockets) socket.destroy();
       await serverClosed;
-      await context.workbench.close();
+      await context.close();
     }
   };
 }

@@ -6,11 +6,10 @@
  * version and business validation, atomic write. Every workbench response is
  * `Cache-Control: no-store`; failures are `application/problem+json`.
  *
- * These routers are mounted before the legacy bearer gate, so no new business
- * route can fall into the old authentication path, and no legacy route is
- * redefined here.
+ * Authentication is resolved through the shared identity adapter.
  */
 import express from 'express';
+import { validateSchema } from './content/schema.js';
 import {
   projectModuleCatalog,
   workbenchCacheControl,
@@ -266,4 +265,47 @@ export function createWorkbenchRouters({
   modulesRouter.use(errorHandler);
 
   return { contextRouter, modulesRouter };
+}
+
+// Shared material transport preserves guards, body limits and problem fields.
+export function materialJsonRoute(
+  router,
+  route,
+  { guards, ready },
+  schema,
+  status,
+  action,
+) {
+  router.post(
+    route,
+    guards.originGuard,
+    guards.protectionGuard,
+    guards.identityGuard,
+    (req, res, next) =>
+      req.is("application/json")
+        ? next()
+        : next(contractError(problems.unsupportedMediaType())),
+    express.json({ limit: "2mb" }),
+    asyncHandler(async (req, res) => {
+      await ready();
+      validateSchema(schema, req.body);
+      res
+        .status(status)
+        .json(
+          await action(req, {
+            key: readIdempotencyKey(req),
+            method: "POST",
+            path: canonicalRequestPath(req),
+          }),
+        );
+    }),
+  );
+}
+export function materialErrors(router, logger) {
+  router.use((error, req, res, next) =>
+    error.problem?.type?.startsWith("/problems/materials/")
+      ? sendProblem(res, error.status, error.problem)
+      : next(error),
+  );
+  router.use(createWorkbenchErrorHandler({ logger }));
 }

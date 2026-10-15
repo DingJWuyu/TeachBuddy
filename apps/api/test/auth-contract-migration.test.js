@@ -9,8 +9,8 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import Database from 'better-sqlite3';
-import { createDataStore } from '../src/core/dataStore.js';
-import { hashPassword as hashLegacyPassword } from '../src/core/auth.js';
+import { createDataStore } from './fixtures/legacy-source/dataStore.js';
+import { hashPassword as hashLegacyPassword } from './fixtures/legacy-source/auth.js';
 import { applyMigrations, assertOk, assertProblem, createWorld } from './fixtures/auth-contract/harness.js';
 import { migrations } from '../src/features/auth/migrations/index.js';
 

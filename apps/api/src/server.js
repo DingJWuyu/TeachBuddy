@@ -61,7 +61,7 @@ export async function startServer(options = {}) {
   } catch (error) {
     await vite?.close();
     server?.close();
-    await context.dataStore.close();
+    await context.close();
     throw error;
   }
 
@@ -78,7 +78,7 @@ export async function startServer(options = {}) {
         server.close(resolve);
         server.closeAllConnections();
       });
-      await context.dataStore.close();
+      await context.close();
     })();
     closing.catch(() => { closing = undefined; });
     return closing;

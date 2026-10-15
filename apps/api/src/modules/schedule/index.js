@@ -1,18 +1,10 @@
-/**
- * Schedule module entry point.
- *
- * The composition root mounts the returned router under
- * `/api/modules/schedule` and injects the
- * server clock and the `beforeChange` seam. `clock.now()` returns a UTC ISO Z
- * instant; `beforeChange(principal, now)` is the synchronous settlement hook T53
- * replaces with the persistent `reminders.captureDue`. There is deliberately no
- * default implementation for either: a production composition without them must
- * fail to start instead of silently skipping reminder settlement.
- */
 import { createScheduleRepository } from './repository.js';
 import { createScheduleRouter } from './router.js';
 import { createScheduleService } from './service.js';
-import { migrations } from './migrations/index.js';
+import { migrations as scheduleMigrations } from './migrations/index.js';
+import { createReminders, migrations as reminderMigrations } from './reminders/index.js';
+// Schedule owns reminder settlement and preserves their existing migration order.
+const migrations = [...scheduleMigrations, ...reminderMigrations];
 
 export function createScheduleModule({ db, mutations, beforeChange, clock } = {}) {
   if (!db || typeof db.prepare !== 'function') {
@@ -21,21 +13,25 @@ export function createScheduleModule({ db, mutations, beforeChange, clock } = {}
   if (!mutations || typeof mutations.execute !== 'function') {
     throw new TypeError('createScheduleModule requires the mutations.execute seam.');
   }
-  if (typeof beforeChange !== 'function') {
+  if (beforeChange !== undefined && typeof beforeChange !== 'function') {
     throw new TypeError('createScheduleModule requires a synchronous beforeChange seam.');
   }
   if (!clock || typeof clock.now !== 'function') {
     throw new TypeError('createScheduleModule requires a clock returning a UTC ISO Z instant.');
   }
 
+  // Explicit beforeChange is a synchronous fixture seam; production captures due reminders.
+  let reminders;
   const repository = createScheduleRepository(db);
-  const service = createScheduleService({ repository, beforeChange, clock });
+  const service = createScheduleService({ repository, beforeChange: beforeChange ?? ((principal, now) => reminders.captureDue(principal, now)), clock });
   const router = createScheduleRouter({ service, mutations });
 
+  reminders = createReminders({ db, mutations, clock, schedule: service });
+  router.use(reminders.router);
   return {
     router,
     port: {
-      readForExport: service.readForExport,
+      readForExport: principal => ({ ...service.readForExport(principal), notifications: reminders.readForExport(principal) }),
       readOccurrence: (principal, key) => service.readOccurrence(principal, key),
       listReminderCandidates: (principal, now) => service.listReminderCandidates(principal, now)
     }

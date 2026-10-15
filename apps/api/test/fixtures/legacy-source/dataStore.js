@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import Database from 'better-sqlite3';
-import { env as defaultEnv } from '../config/env.js';
+import { env as defaultEnv } from '../../../src/config/env.js';
 
 // Only account, authentication, and workspace-shell records belong to the
 // baseline. Future modules can add their own storage without making the shell

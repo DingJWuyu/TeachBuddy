@@ -1,4 +1,4 @@
-import { fold } from "./casefold.js";
+import { casefold as fold } from "../../workbench/text.js";
 import { contractError, problems } from "../../workbench/problems.js";
 export function invalidTaxonomy(field, detail) {
   return Object.assign(new Error(detail), {
