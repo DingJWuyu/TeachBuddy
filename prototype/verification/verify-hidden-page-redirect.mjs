@@ -44,10 +44,10 @@ try {
   await page.locator('[data-drop-group="teaching-group"] .tb-group-heading').click({button:'right'});
   await page.getByRole('menuitem',{name:'移到未分组',exact:true}).click();
   await expect(page.locator('[data-drop-group="teaching-group"]')).toHaveCount(0);
-  await expect(page.locator('[data-drop-group="ungrouped"] .tb-module-row')).toHaveCount(4);
+  await expect(page.locator('[data-drop-group="ungrouped"] .tb-module-row')).toHaveCount(3);
   await expect(page).toHaveURL(/\/modules\/studio/);
   await openWorkbench(page,page.url(),{dismissCoach:true});
-  await expect(page.locator('[data-drop-group="ungrouped"] .tb-module-row')).toHaveCount(4);
+  await expect(page.locator('[data-drop-group="ungrouped"] .tb-module-row')).toHaveCount(3);
   expect(errors).toEqual([]);
   writeFileSync(paths.results+'/hidden-page-redirect.txt','PASS hide current page, client navigation, reload, restore, empty group, retired layout ids and group removal\n');
 } finally {await browser.close();}

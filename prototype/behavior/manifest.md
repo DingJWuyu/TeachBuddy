@@ -2,7 +2,7 @@
 
 Status: Mixed (账户入口与既有外壳已验收；新增模块交互稿待改进与验收)
 
-当前范围包含 TeachBuddy 的账户入口、工作台外壳和新增模块交互稿。首页现为 Agent 工作区，日程与四个模块已有首轮内容和跨模块交互，见[模块原型](modules.md)。新增页面和通知变化尚未通过用户视觉验收，旧外壳截图不能作为新模块的验收证据。
+当前范围包含 TeachBuddy 的账户入口、工作台外壳和新增模块交互稿。首页现为 Agent 工作区，日程与三个模块已有首轮内容和跨模块交互，见[模块原型](modules.md)。新增页面和通知变化尚未通过用户视觉验收，旧外壳截图不能作为新模块的验收证据。
 
 ## 运行
 
@@ -15,67 +15,36 @@ npm run prototype:sidebar
 
 打开 <http://localhost:4174/>，先看到账户入口的登录卡。示例账户是 `example@example.com`，密码是 `teachbuddy`；验证码由模拟账户服务和场景脚本提供。构建命令为 `npm run prototype:build`。原型使用仓库已有的 React、Vite 依赖及共享基础样式，不需要启动 API。
 
-## 行为文档
+## 认可范围与职责
 
-| 文档 | 范围与拥有的标识 |
+`prototype/` 是可运行的设计参考，`apps/` 是当前产品实现。产品范围、现行账户/数据/交换语义与验收从[文档入口](../../docs/README.md)进入。下面的 Accepted 仅表示原型中已确认的体验范围；不能推导整个原型、当前产品或任何候选已验收。
+
+| 参考入口 | 范围与认可状态 |
 | --- | --- |
-| [模块原型](modules.md) | 新增 Agent 首页、四个模块、顶部日程、共享右栏、内部滚动与提醒；当前实现边界及首轮走查 |
-| [账户入口](auth.md) | 登录、注册、找回密码与会话边界；J11-J13、J25；S14-S21、S36-S47 |
-| [账户场景覆盖](auth-scenarios.md) | CA01-CA40；三端场景复现、截图与验证结果，不重复账户行为定义 |
-| [失败与恢复场景覆盖](auth-behavior-scenarios.md) | CA41-CA109、CA120；三端失败、验证码、恢复与交接场景；CA53 为明确暂缺 |
-| [输入边界场景索引](auth-input-scenarios.md) | CA110-CA119；G06 输入边界的三端复现、截图与结果索引 |
-| [工作台场景覆盖](workbench-scenarios.md) | 当前四模块走查、隐藏恢复、布局持久化与外壳验证入口 |
-| [头部场景覆盖](sidebar-head-scenarios.md) | CW48-CW51；头部、学期对话框与三端交互证据 |
-| [外壳与共享交互](shell.md) | 桌面窄轨、手机抽屉、跳转不重建外壳、浮层互斥与焦点、状态分层；S8、S9、S29 |
-| [导航与搜索](navigation.md) | J1-J4；S1、S2、S2b、S13、S24；导航目的地与支持菜单 |
-| [侧栏编辑](sidebar.md) | J7、J16、J17；S5、S6、S22、S23、S26-S28；布局、隐藏和拖放 |
-| [侧栏头部](sidebar-head.md) | J18-J24；S30-S35；账号行、语言切换、学期选择与学期对话框 |
-| [顶部栏入口](topbar.md) | J5、J6、J8-J10、J14、J15；S3、S3a、S4、S7、S10-S12、S25 |
+| [账户入口](auth.md)、[账户场景目录](auth-scenarios.md) | Accepted reference：J11-J13、J25；S14-S21、S36-S47；CA01-CA120，其中 CA53 明确暂缺，S42 不再产生 |
+| [侧栏头部](sidebar-head.md)、[头部场景](sidebar-head-scenarios.md) | Accepted reference：J18-J24、S30-S35、CW48-CW51；学期和语言均为模拟 |
+| [外壳](shell.md)、[导航](navigation.md)、[侧栏编辑](sidebar.md)、[顶部栏](topbar.md) | Mixed：既有外壳交互已确认；新增首页、模块入口/布局与日程通知变化待评审。各页保留 J/S 编号及参考体验 |
+| [模块原型](modules.md) | Draft：Agent 首页、原型业务页、日程、共享右栏；固定回复、内存资料和旧页面不定义当前产品或待恢复功能 |
+| [工作台场景](workbench-scenarios.md) | 当前原型工具覆盖与限制；旧 CW 场景只由固定版本承担溯源 |
+| [视觉参考](visual-reference.md) | 少量认可视觉输入的用途和范围；不作为当前验证报告 |
 
-## 产物
+已有用户确认继续有效，新增设计按实际选定范围处理。维护原型时更新对应行为的唯一拥有页和稳定场景 ID；改变认可范围须有相应用户确认。仓库整理和工具维护按本次授权执行，不启动新产品设计验收。
 
-| 入口 | 用途 |
-| --- | --- |
-| [src](../src/) | 原型组件与内嵌模拟数据，入口为 `main.jsx`；[src/auth](../src/auth/) 是账户入口的表单、模拟数据与会话接缝；故障由验证脚本注入，界面不提供开发控件 |
-| [flags](../flags/) | 语言菜单用的 20 面圆形国旗，由源码导入并进入构建产物 |
-| [index.html](../index.html)、[Vite 配置](../vite.config.mjs) | 独立运行与构建 |
-| [screenshots](../evidence/screenshots/) | 按旅程分类，文件名包含终端与场景 ID；证据索引由对应场景覆盖文档拥有 |
-| [verification results](../evidence/verification/) | 已保留的场景报告；工作台旧报告的固定版本身份见工作台场景覆盖 |
-| [verification](../verification/) | 当前几何、交互、拖拽与响应式验证脚本；账户入口另有走查与截图表脚本 |
-| [项目设计规则](../../docs/rules/design-and-verification.md) | 跨原型与产品适用的设计要求及验证经验 |
+## 产物与维护
 
-工作台当前可执行场景及覆盖边界见[工作台场景覆盖](workbench-scenarios.md)。账户脚本按账户覆盖文档使用；专用几何脚本按对应行为选择，以下是入口索引，不表示所有历史报告已经按当前原型重跑。
+- [src](../src/)、[flags](../flags/)、[入口](../index.html)与[Vite配置](../vite.config.mjs)属于原型运行输入。20面国旗由源码动态导入，保留其运行归属。
+- [verification](../verification/)保留可复用场景、采集与几何/交互断言；按场景目录选受影响检查，脚本存在不代表已经运行或适用于当前产品。
+- `evidence/screenshots/` 只保留[视觉参考](visual-reference.md)逐项列出的设计输入；新增采集输出属于本次任务。历史报告不进入当前索引。
+- [设计规则](../../docs/rules/design-and-verification.md)拥有跨原型与产品的设计要求。
 
-脚本均从仓库根目录运行：
+## 验证输出
 
-```bash
-node prototype/verification/capture-all.mjs
-node prototype/verification/capture-auth-behavior.mjs
-node prototype/verification/verify-input-boundaries.mjs
-node prototype/verification/capture-workbench.mjs
-node prototype/verification/auth-walk.mjs
-node prototype/verification/verify-regression.mjs
-node prototype/verification/verify-drag.mjs
-node prototype/verification/verify-ui-review.mjs
-node prototype/verification/verify-visual.mjs
-node prototype/verification/capture-hover-details.mjs
-node prototype/verification/verify-navigation-notifications-feedback.mjs
-node prototype/verification/verify-hidden-page-redirect.mjs
-node prototype/verification/verify-flash-chip-collapse-persistence.mjs
-node prototype/verification/verify-integration.mjs
-node prototype/verification/capture-sidebar-head.mjs
-node prototype/verification/verify-sidebar-head.mjs
-node prototype/verification/verify-sidebar-head-geometry.mjs
-node prototype/verification/verify-semester-layout.mjs
-node prototype/verification/verify-semester-actions.mjs
-```
+脚本从仓库根目录运行，先按所属场景页选择入口。`PROTOTYPE_URL` 指定隔离原型地址；工作台脚本通过 [session.mjs](../verification/session.mjs)界面登录。示例账户和内存状态只供原型，不能用来验证正式账户或真实数据。
 
-当前工作台四项场景脚本执行完整场景，不接受旧 `--only` 编号；历史 CW 编号的复现版本见[工作台场景覆盖](workbench-scenarios.md#补充检查与证据边界)。
+[evidencePaths](../verification/evidence-paths.mjs)默认新建临时任务目录。`PROTOTYPE_EVIDENCE_DIR`、`PROTOTYPE_RESULTS_DIR` 可指定本次截图与结果位置，`PROTOTYPE_TEMP_DIR` 可指定临时目录父级。账户采集使用截图根目录，工作台采集使用其 `workbench/` 子目录。不要把输出参数指向认可视觉参考目录。
 
-头部采集与回归检查使用 PC 1440×900、平板 768×1024、手机 390×844；几何与学期动作专项检查使用 PC 1440×900。`capture-sidebar-head.mjs` 的截图输出指向 `workbench/sidebar-head/`，完整操作与覆盖表见头部场景覆盖。
+一次执行记录候选版本、场景/视口、通过/失败/未验及输出入口；结果保留或清理按[验证入口](../../docs/acceptance/README.md)执行。检查可用性和视觉后，只有明确被选作持续设计输入的图片才更新视觉参考，并写明用途及用户认可范围；通过结果不会自动替换认可输入。
 
-`PROTOTYPE_URL` 指定目标地址。原型已删除故障面板和应用切换浮层，不需要 `no-dev-chrome`；旧地址保留该参数也不影响行为。`PROTOTYPE_EVIDENCE_DIR` 指定截图输出，账户场景使用截图根目录，工作台场景使用 `workbench/` 子目录，再按外壳、导航、侧栏、顶部栏分类。`PROTOTYPE_RESULTS_DIR` 指定断言结果目录，`PROTOTYPE_TEMP_DIR` 指定临时输出位置。验证默认暂存输出，不直接替换当前证据；执行前将输出指向可写位置，确认目标、完整结果与截图一致后再按场景更新。账户采集全部通过后才写入指定输出目录。
+## 历史溯源
 
-工作台检查共用 [session.mjs](../verification/session.mjs)，通过界面登录。客户端跳转保持会话；文档重载是否恢复由账户入口的“记住我”模拟决定。工作台外观与账号行继续由工作台行为拥有，原型没有退出入口。截图、行为记录与断言结果各由上表对应入口拥有。
-
-账户入口已验收：范围为 S14-S21、S36-S47，场景为 CA01-CA40、CA41-CA109 和 CA120，输入边界为 CA110-CA119；CA53 是设置页退出入口的明确暂缺。S42 保留“找回第二步待发码”的原义，当前行为不产生；S30-S35 归侧栏头部。测试参数见[失败与恢复场景覆盖](auth-behavior-scenarios.md#场景前提与复现)和[输入边界场景索引](auth-input-scenarios.md)。
+固定 [71b6abf8](https://github.com/DingJWuyu/TeacherWorkspace/tree/71b6abf8aba732591906712f33eab520d00a80c0/prototype)保存整理前的场景表、截图和结果。它们不需要下载到当前工作树，不是运行前置，也不能证明当前候选通过。维护页只描述本参考当前职责，执行和修复过程留任务证据。

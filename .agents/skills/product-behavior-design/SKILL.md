@@ -12,7 +12,7 @@ Do not undertake system design, API design, contract design, or production imple
 
 ## Write boundary
 
-A **package** is one session's working copy and decision record under `.scratch/`. Feedback rounds continue in the same package. The root `prototype/` is the current accepted version.
+A **package** is one session's working copy and decision record under `.scratch/`. Feedback rounds continue in the same package. The root `prototype/` is the integrated design reference. Read its manifest for the selected scope: it can contain Accepted, Mixed, and Draft areas. Acceptance applies only to the scope explicitly confirmed by the user. Production behavior and contracts follow the project's authoritative docs, not inferred prototype data or historical passes.
 
 **Before explicit user acceptance, the package is the only writable repository location.** Keep all of `prototype/` read-only, including its source, behavior documents, and evidence. This boundary includes writes made by development servers, builds, verification scripts, and capture tools.
 
@@ -25,24 +25,23 @@ Use this output layout at the project root. Create directories as needed; preser
 ```text
 prototype/
   behavior/
-    manifest.md             Current run entry and behavior ownership
-    <area>.md               Current behavior for one area or shared concern
+    manifest.md             Run entry, scope status, behavior ownership
+    <area>.md               Reference behavior for one area or shared concern
   evidence/
-    screenshots/<journey>/  Current scenario screenshots
-    verification/           Current verification results
+    screenshots/<journey>/  Selected enduring visual design inputs
   verification/             Reusable checks and capture scripts
-  ...                       Accepted runtime source, scenarios, and assets
+  ...                       Integrated runtime source, scenarios, and assets
 .scratch/
   <package>/
     behavior.md             Baseline, changes, decisions, and coverage
     app/                    Independently editable, runnable source copy
     reference/              External examples, captures, and measurements
-    evidence/               Same classification as the accepted version
+    evidence/               This package's screenshots and check results
     verification/           Session checks and capture scripts
     tmp/                    Probes and intermediate output
 ```
 
-`prototype/` describes only the current accepted state: no history, historical pointers, or `reference/` collection. It must remain understandable, runnable, and verifiable without any package. Repository artifacts outside `.scratch/` must neither reference nor depend on package contents.
+`prototype/` describes its current reference behavior and explicit acceptance boundaries. Preserve useful confirmed intent and stable scenario IDs; distinguish Draft additions from accepted scopes. Fixed Git links may provide necessary historical provenance without making old outputs runtime inputs. Keep reusable checks with the runtime, durable selected visual inputs with a stated purpose, and execution results in the package or task evidence. The reference must remain runnable without any package; repository artifacts outside `.scratch/` must neither reference nor depend on package contents.
 
 The package's decision record preserves the process; its evidence presents the current working version. Use `writing-for-agents` when writing behavior records. Read [references/record.md](references/record.md) when creating or updating a record or manifest.
 
@@ -50,7 +49,7 @@ The package's decision record preserves the process; its evidence presents the c
 
 ### 1. Pick up the request
 
-Read the accepted manifest, then the behavior documents relevant to the request. When resuming a package, read its record as well. If there is no accepted version, locate the supplied prototype; ask for a selection when it is missing or ambiguous.
+Read the project document entry and prototype manifest, then the behavior documents relevant to the request. Establish the selected scope and its acceptance status before treating it as settled input. When resuming a package, read its record as well. If there is no accepted version, locate the supplied prototype; ask for a selection when it is missing or ambiguous.
 
 Without a change request or acceptance, identify the current prototype, ask what the user wants to change, and wait. Do not create artifacts or start a runtime walkthrough on this entry path. For explicit acceptance of a presented package, go to step 6.
 
@@ -58,7 +57,7 @@ Without a change request or acceptance, identify the current prototype, ask what
 
 Start each feedback round by recording the repository's existing change state, including enough detail to distinguish new edits to already-modified files. Resolve runtime and output paths against the package before running tools; keep generated files within the write boundary.
 
-For new work, choose an unused package name and start from the latest accepted version, or the supplied prototype on first use. Copy only the runtime entry, required code, assets, scenarios, and configuration into `app/`. Read existing behavior documents and evidence in place; do not duplicate the whole accepted directory. Reuse installed tooling and dependencies read-only. Editable source must be an independent copy, not a link that writes through to the original.
+For new work, choose an unused package name and start from the current integrated reference for the selected scope, or the supplied prototype on first use. Record inherited Draft behavior as provisional. Copy only the runtime entry, required code, assets, scenarios, and configuration into `app/`. Read existing behavior documents and evidence in place; do not duplicate the whole accepted directory. Reuse installed tooling and dependencies read-only. Editable source must be an independent copy, not a link that writes through to the original.
 
 Record a recoverable baseline before editing. Prefer an immutable source reference; if it does not capture the starting code, retain the missing source snapshot or patch under the package's `baseline/`. A resumed package keeps its baseline and progress.
 
@@ -84,7 +83,7 @@ Use the record's coverage table as the evidence index. Capture every distinct vi
 
 Before each capture, establish its starting conditions and assert the expected state after the action. Inspect the resulting image. Verify transitions, focus, timing, and recovery through interaction; a still image does not prove them. Record any case that could not be exercised as a gap, not a pass.
 
-Keep evidence current: replace the same scenario's screenshots and results, retire obsolete cases, and retain unaffected valid evidence. Prepare replacements in `tmp/` and check them before replacing affected entries and updating their record links. Do not clear an entire evidence collection to refresh a subset.
+Keep the package evidence current: replace affected scenario outputs within the package and preserve failed runs until resolved. Generated passes do not update integrated design inputs automatically. On acceptance, select only the images needed for an enduring design purpose; leave full screenshot runs and results in task evidence.
 
 This step is complete when implemented behavior, its record, and its evidence agree, with remaining work explicitly identified.
 

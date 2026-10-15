@@ -2,6 +2,8 @@
 
 Status: Mixed (既有外壳已验收；新增模块布局待评审)
 
+本文只维护原型的体验参考和适用边界；认可范围见 [manifest](manifest.md)。现行产品从[文档入口](../../docs/README.md)读取，原型样例、存储与旧场景结果不定义产品能力。
+
 运行入口见 [manifest](manifest.md)。本文件拥有跨导航与弹层共用的规则；具体入口行为见 [导航](navigation.md)、[侧栏](sidebar.md) 和 [顶部栏](topbar.md)。
 
 ## Scope

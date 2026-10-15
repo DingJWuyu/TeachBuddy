@@ -1,150 +1,146 @@
-# 账户入口场景覆盖
+# 账户原型场景目录
 
-Status: Accepted
+Status: Accepted reference。认可的是原型账户体验；本页不声明当前产品或当前候选已通过验证。
 
-本文件拥有 CA01-CA40 的场景与证据索引。行为定义、字段规则及模拟限制由 [账户入口](auth.md) 拥有。
+本页唯一维护 CA01-CA120 的场景含义和复现入口。体验与状态 ID 见[账户入口](auth.md)，产品行为从[账户规格](../../docs/features/identity.md)、[认证契约](../../docs/contracts/auth.md)与[产品验收](../../docs/acceptance/README.md)进入。
 
-## 复现与验证
+## 复现与覆盖边界
 
-从 [manifest](manifest.md) 启动原型。每个用例使用独立浏览器上下文，回到空登录卡后执行，避免前一场景留下的邮箱或验证码影响结果。完整操作和逐步断言见 [auth-scenarios.mjs](../verification/auth-scenarios.mjs)，运行 `node prototype/verification/capture-all.mjs` 可复现全部场景，输出暂存位置见命令提示；核对后再替换当前证据。
+按 [manifest](manifest.md#运行) 启动独立原型。脚本使用独立浏览器上下文及本地模拟账户；默认示例账户见 manifest。PC 1440×900、平板 768×1024、手机 390×844 是浏览器视口，不能当作真机或真实邮件/网络/会话服务验收。
 
-登录使用 `example@example.com` / `teachbuddy`；注册新地址使用 `new@example.com`、昵称 `林`、验证码 `309614`；找回验证码 `841207`、新密码 `new-teachbuddy`。账户、密码和昵称由浏览器模拟账户服务持久；记住我会话可在刷新或重开时恢复，未记住会话只在当前页面有效，切换卡片只保留邮箱。各错误用例只改变表中指定条件，修正路径验证重试结果。
+| 范围 | 可复用场景及执行入口 | 选择方式 |
+| --- | --- | --- |
+| CA01-CA40 | [场景与逐步断言](../verification/auth-scenarios.mjs)，[capture-all](../verification/capture-all.mjs) | 完整运行 |
+| CA41-CA109、CA120 | [场景与逐步断言](../verification/auth-behavior-scenarios.mjs)，[capture-auth-behavior](../verification/capture-auth-behavior.mjs) | `SCENARIO_IDS=CA41`、`VIEWPORT_NAMES=PC`；不填时完整运行 |
+| CA110-CA119 | [输入边界断言与采集](../verification/verify-input-boundaries.mjs) | `SCENARIO_IDS=CA110`、`VIEWPORT_NAMES=PC`；不填时完整运行 |
 
-每张图在断言目标状态之后生成，同时检查横向溢出和入口卡片的纵向溢出。键盘用例覆盖焦点顺序和 Enter 提交；截图不能代替这些交互断言。视口是浏览器模拟尺寸，不代表真机测试。
+CA53 设置页退出入口是原型明确暂缺，不作为待恢复的产品功能。S42 保留旧“找回第二步待发码”编号，当前原型不产生该状态。场景服务参数由脚本设置，界面不提供故障控件。每次结果、截图与未验项放本次任务证据，不在本页积累 PASS 或修复日志。
 
-[当前自动验证结果](../evidence/verification/auth.json)：120/120 条记录在 PC、平板和手机三种视口通过，对应 222 张截图。视觉证据按旅程存放，包含各场景的输入、错误、恢复和结果状态；工作台交接仍由账户入口行为及失败与恢复场景共同拥有。真实服务等待、网络故障、错误凭据、验证码生命周期与会话边界由[失败与恢复场景覆盖](auth-behavior-scenarios.md)（CA41-CA109、CA120）承担。
+## 场景
 
-## 登录 J11
+| ID | 体验分支 |
+| --- | --- |
+| CA01 | 初始登录卡、密码隐藏、记住我默认勾选 |
+| CA02 | 邮箱为空，修正后进入工作台 |
+| CA03 | 非法邮箱拒绝，修改邮箱清除错误 |
+| CA04 | 短密码拒绝，修正重试成功 |
+| CA05 | 填写、显示密码、再次隐藏 |
+| CA06 | 取消记住我，不改变本次登录结果 |
+| CA07 | 登录、首次引导、关闭引导 |
+| CA08 | 键盘聚焦、输入、Enter 登录 |
+| CA09 | 不勾选记住我时刷新清除会话，回到空登录卡 |
+| CA10 | 注册初始态，条款未勾选且验证码字段隐藏 |
+| CA11 | 发码邮箱校验：请填写邮箱。 |
+| CA12 | 发码邮箱校验：邮箱格式不正确。 |
+| CA13 | 已占用邮箱不发码，换地址后正常发码 |
+| CA14 | 发码和重新发送 |
+| CA15 | 注册提交邮箱校验：请填写邮箱。 |
+| CA16 | 注册提交邮箱校验：邮箱格式不正确。 |
+| CA17 | 注册字段校验与修正：请填写昵称。 |
+| CA18 | 注册字段校验与修正：密码至少 8 位。 |
+| CA19 | 注册字段校验与修正：两次输入的密码不一致。 |
+| CA20 | 注册字段校验与修正：请输入 6 位数字验证码（0-9）。 |
+| CA21 | 注册字段校验与修正：请输入 6 位数字验证码（0-9）。 |
+| CA22 | 注册字段校验与修正：验证码不正确，还可以再试 4 次。 |
+| CA23 | 未发码就提交，提示可见，发码后可继续 |
+| CA24 | 未同意条款，显示错误文字，勾选后重试 |
+| CA25 | 注册成功 |
+| CA26 | 切换登录再返回，只保留邮箱 |
+| CA27 | 发码后更换邮箱，旧验证码状态失效 |
+| CA28 | 条款链接保留在当前卡片，不跳转 |
+| CA29 | 找回入口沿用登录邮箱，返回登录清空密码 |
+| CA30 | 找回第一步：请填写邮箱。 |
+| CA31 | 找回第一步：邮箱格式不正确。 |
+| CA32 | 第一步成功发码后进入第二步：邮箱只读，验证码字段出现且初始为空 |
+| CA33 | 找回校验与修正：请输入 6 位数字验证码（0-9）。 |
+| CA34 | 找回校验与修正：请输入 6 位数字验证码（0-9）。 |
+| CA35 | 找回校验与修正：验证码不正确，还可以再试 4 次。 |
+| CA36 | 找回校验与修正：新密码至少 8 位。 |
+| CA37 | 找回校验与修正：两次输入的新密码不一致。 |
+| CA38 | 重置成功回到登录并提示结果，字段上没有残留错误 |
+| CA39 | 返回登录后重新发码进入第二步，验证码和密码均清空 |
+| CA40 | 第一步成功发码后第二步邮箱锁定到该地址；显示与隐藏新密码 |
+| CA41 | 凭据错误：卡片顶部拒绝、密码清空、邮箱保留、可关闭 |
+| CA42 | 不存在的账户与错误密码得到同一条答复 |
+| CA43 | 提交等待：按钮进入等待态并阻止第二次提交 |
+| CA44 | 网络不可用：横幅提示、保留输入、恢复后重试成功 |
+| CA45 | 服务故障：可关闭的横幅，不误标到字段上 |
+| CA46 | 请求超时：横幅提示并可重试 |
+| CA47 | 请求中修改密码：迟到结果不清空新输入或进入工作台 |
+| CA48 | 请求中切换到注册：迟到结果不污染新表单 |
+| CA49 | 勾选记住我：刷新后仍在工作台 |
+| CA50 | 不勾选记住我：刷新即退出，回到空登录卡 |
+| CA51 | 换设备：另一台机器没有可恢复的会话 |
+| CA52 | 会话在另一标签页失效：回到登录卡并说明原因 |
+| CA53 | 设置页退出入口按产品决定暂不提供，保留编号并明确暂缺 |
+| CA54 | 密码重置后旧密码失效，新密码可用 |
+| CA55 | 发码失败：横幅提示，验证码字段不出现 |
+| CA56 | 冷却：重发倒计时，冷却结束才能再发 |
+| CA57 | 验证码错误次数用尽后该码作废，需要重新发送 |
+| CA58 | 验证码过期：需要重新发送 |
+| CA59 | 重发后旧码作废、新码可用；换地址后必须重新发送 |
+| CA60 | 找回第一步：未注册地址被拒，不发验证码 |
+| CA61 | 找回第二步的地址是锁定的，验证码只对它有效 |
+| CA62 | 找回可重发，冷却与注册一致 |
+| CA63 | 重置成功：回到登录卡并说明结果，再次找回需重新发码 |
+| CA64 | 找回发码遇到网络失败：横幅提示，可重试 |
+| CA65 | 注册能力关闭：已填写并发码的页面收到可见拒绝并回登录 |
+| CA66 | 注册关闭发生在提交等待中：不创建账户、不消费验证码 |
+| CA67 | 注册响应丢失：保留输入，回登录使用已创建账户恢复 |
+| CA68 | 重置响应丢失：保留新密码，回登录用新密码恢复 |
+| CA69 | 账户持久写入失败：注册失败但验证码可用，恢复后同码重试 |
+| CA70 | 密码持久写入失败：重置失败但验证码可用，恢复后同码重试 |
+| CA71 | 记住我写入失败：继续当前会话或重试保存，不重复登录业务 |
+| CA72 | 会话恢复失败：等待卡不闪现登录，重试后恢复 |
+| CA73 | 会话恢复等待：等待期间不显示登录表单或工作台，成功后交接 |
+| CA74 | 验证码形状与条款优先级：本地错误先于业务值校验 |
+| CA75 | 邮箱规范化：输入保留原样，发码与账户身份使用 trim 后小写 |
+| CA76 | 长昵称：账号行省略但可访问名称完整，头像使用完整 Unicode 字符 |
+| CA77 | 未知异常：显示统一可重试文案并保留凭据输入 |
+| CA78 | 未收邮件：显示等待、冷却、重发和更换邮箱路径 |
+| CA79 | 待处理登录状态被外部重置：存储事件回到登录并说明过期 |
+| CA80 | 继续当前会话前重新核验：已重置的待处理身份不能进入工作台 |
+| CA81 | 重试保存前重新核验：已重置的待处理身份不能写回会话 |
+| CA82 | 注册发码等待：按钮锁定，重复点击不重复发起请求 |
+| CA83 | 注册提交等待：按钮锁定，重复点击不重复创建账户 |
+| CA84 | 找回首次发码等待：按钮锁定，重复点击不重复发码 |
+| CA85 | 找回重发等待：按钮锁定，重复点击不重复发码 |
+| CA86 | 重置提交等待：按钮锁定，重复点击不重复改密 |
+| CA87 | 注册发码途中改地址：旧响应丢弃，只有新地址能继续 |
+| CA88 | 找回发码途中切换用途：旧响应不进入确认卡 |
+| CA89 | 重置提交途中切卡：迟到成功不自动跳转或污染登录卡 |
+| CA90 | 重置提交途中改密码：迟到结果不清空新输入，业务按提交快照完成 |
+| CA91 | 注册提交途中切卡：迟到创建不自动跳转，完成账户可由登录恢复 |
+| CA92 | 响应丢失后重试已消费验证码：明确提示已使用，再用新密码恢复 |
+| CA93 | 验证码挑战消费状态：同一 challengeId 的第二次验证返回已消费 |
+| CA94 | 重发失败：旧码保留且不启动新冷却，恢复后旧码仍可成功 |
+| CA95 | 真实浏览器重开：记住我会话从新浏览器上下文恢复 |
+| CA96 | 账户存储损坏：恢复失败可返回登录，不回退到种子密码 |
+| CA97 | 恢复等待中会话被移除：不迟到进入工作台，回登录提示过期 |
+| CA98 | 恢复等待中会话到期：恢复结束回登录并提示过期 |
+| CA99 | 多账户隔离：重置一个账户时另一账户工作台保持可见 |
+| CA100 | 登录缺失结果：统一失败文案，保留输入且不进入工作台 |
+| CA101 | 发码缺失结果：留在第一步，不进入验证码确认 |
+| CA102 | 注册缺失结果：保留表单并显示通用失败，不进入工作台 |
+| CA103 | 重置缺失结果：停留在确认卡，不显示成功 |
+| CA104 | 注册关闭提交副作用：账户不创建，重新开放后可以重新走注册 |
+| CA105 | 验证码用途和地址绑定：错误用途或地址的 challengeId 不可验证 |
+| CA106 | 会话存储畸形：恢复失败可返回登录，不静默进入工作台 |
+| CA107 | 账户服务读取不可用：登录显示可重试失败，不回退示例账户 |
+| CA108 | 外部账户重置：当前设备回登录，其他设备的不同账户保持工作台 |
+| CA109 | 继续当前会话是临时会话：无关持久会话变化不将其踢出 |
+| CA110 | trim 后 40 Unicode code points 可注册，计数、保存值和账号行一致 |
+| CA111 | 41 Unicode code points 拒绝，完整输入保留 |
+| CA112 | 8 code points 的首尾空格、emoji、组合字符和大小写密码按原样注册 |
+| CA113 | 7 Unicode code points 拒绝，129 Unicode code points 拒绝并完整保留 |
+| CA114 | trim+lower 后恰好 254 ASCII 邮箱可发码并完成注册 |
+| CA115 | 255 边界与代表性邮箱形状表驱动拒绝 |
+| CA116 | 前导 0 的六位验证码实际完成注册 |
+| CA117 | 全角、少位、超长验证码拒绝且不改写，修正后可用 |
+| CA118 | 验证码格式错与未勾条款同时存在时优先格式错误 |
+| CA119 | 确认密码不做 trim、大小写或 normalization，修正为原值后成功 |
+| CA120 | 离开保存失败卡后旧 pending 结束：另一页重置不清空新注册表单 |
 
-| 场景 | 条件、动作与预期 | 视口 | 当前截图 | 验证 |
-| --- | --- | --- | --- | --- |
-| CA01 | 初始登录卡、密码隐藏、记住我默认勾选 | PC 1440×900 | [初始](../evidence/screenshots/login/PC-CA01-initial.png) | 通过 |
-| CA01 | 初始登录卡、密码隐藏、记住我默认勾选 | 平板 768×1024 | [初始](../evidence/screenshots/login/平板-CA01-initial.png) | 通过 |
-| CA01 | 初始登录卡、密码隐藏、记住我默认勾选 | 手机 390×844 | [初始](../evidence/screenshots/login/手机-CA01-initial.png) | 通过 |
-| CA02 | 邮箱为空，修正后进入工作台 | PC 1440×900 | [错误](../evidence/screenshots/login/PC-CA02-error.png) · [修正结果](../evidence/screenshots/login/PC-CA02-recovered.png) | 通过 |
-| CA02 | 邮箱为空，修正后进入工作台 | 平板 768×1024 | [错误](../evidence/screenshots/login/平板-CA02-error.png) · [修正结果](../evidence/screenshots/login/平板-CA02-recovered.png) | 通过 |
-| CA02 | 邮箱为空，修正后进入工作台 | 手机 390×844 | [错误](../evidence/screenshots/login/手机-CA02-error.png) · [修正结果](../evidence/screenshots/login/手机-CA02-recovered.png) | 通过 |
-| CA03 | 非法邮箱拒绝，修改邮箱清除错误 | PC 1440×900 | [错误](../evidence/screenshots/login/PC-CA03-error.png) · [输入已修正](../evidence/screenshots/login/PC-CA03-corrected.png) | 通过 |
-| CA03 | 非法邮箱拒绝，修改邮箱清除错误 | 平板 768×1024 | [错误](../evidence/screenshots/login/平板-CA03-error.png) · [输入已修正](../evidence/screenshots/login/平板-CA03-corrected.png) | 通过 |
-| CA03 | 非法邮箱拒绝，修改邮箱清除错误 | 手机 390×844 | [错误](../evidence/screenshots/login/手机-CA03-error.png) · [输入已修正](../evidence/screenshots/login/手机-CA03-corrected.png) | 通过 |
-| CA04 | 短密码拒绝，修正重试成功 | PC 1440×900 | [错误](../evidence/screenshots/login/PC-CA04-error.png) · [修正结果](../evidence/screenshots/login/PC-CA04-recovered.png) | 通过 |
-| CA04 | 短密码拒绝，修正重试成功 | 平板 768×1024 | [错误](../evidence/screenshots/login/平板-CA04-error.png) · [修正结果](../evidence/screenshots/login/平板-CA04-recovered.png) | 通过 |
-| CA04 | 短密码拒绝，修正重试成功 | 手机 390×844 | [错误](../evidence/screenshots/login/手机-CA04-error.png) · [修正结果](../evidence/screenshots/login/手机-CA04-recovered.png) | 通过 |
-| CA05 | 填写、显示密码、再次隐藏 | PC 1440×900 | [已填写](../evidence/screenshots/login/PC-CA05-filled.png) · [密码可见](../evidence/screenshots/login/PC-CA05-revealed.png) · [密码隐藏](../evidence/screenshots/login/PC-CA05-hidden.png) | 通过 |
-| CA05 | 填写、显示密码、再次隐藏 | 平板 768×1024 | [已填写](../evidence/screenshots/login/平板-CA05-filled.png) · [密码可见](../evidence/screenshots/login/平板-CA05-revealed.png) · [密码隐藏](../evidence/screenshots/login/平板-CA05-hidden.png) | 通过 |
-| CA05 | 填写、显示密码、再次隐藏 | 手机 390×844 | [已填写](../evidence/screenshots/login/手机-CA05-filled.png) · [密码可见](../evidence/screenshots/login/手机-CA05-revealed.png) · [密码隐藏](../evidence/screenshots/login/手机-CA05-hidden.png) | 通过 |
-| CA06 | 取消记住我，不改变本次登录结果 | PC 1440×900 | [未勾选](../evidence/screenshots/login/PC-CA06-unchecked.png) · [已登录](../evidence/screenshots/login/PC-CA06-signed-in.png) | 通过 |
-| CA06 | 取消记住我，不改变本次登录结果 | 平板 768×1024 | [未勾选](../evidence/screenshots/login/平板-CA06-unchecked.png) · [已登录](../evidence/screenshots/login/平板-CA06-signed-in.png) | 通过 |
-| CA06 | 取消记住我，不改变本次登录结果 | 手机 390×844 | [未勾选](../evidence/screenshots/login/手机-CA06-unchecked.png) · [已登录](../evidence/screenshots/login/手机-CA06-signed-in.png) | 通过 |
-| CA07 | 登录、首次引导、关闭引导 | PC 1440×900 | [引导](../evidence/screenshots/login/PC-CA07-coach.png) · [工作台](../evidence/screenshots/login/PC-CA07-workbench.png) | 通过 |
-| CA07 | 登录、首次引导、关闭引导 | 平板 768×1024 | [引导](../evidence/screenshots/login/平板-CA07-coach.png) · [工作台](../evidence/screenshots/login/平板-CA07-workbench.png) | 通过 |
-| CA07 | 登录、首次引导、关闭引导 | 手机 390×844 | [引导](../evidence/screenshots/login/手机-CA07-coach.png) · [工作台](../evidence/screenshots/login/手机-CA07-workbench.png) | 通过 |
-| CA08 | 键盘聚焦、输入、Enter 登录 | PC 1440×900 | [焦点](../evidence/screenshots/login/PC-CA08-focus.png) · [已登录](../evidence/screenshots/login/PC-CA08-signed-in.png) | 通过 |
-| CA08 | 键盘聚焦、输入、Enter 登录 | 平板 768×1024 | [焦点](../evidence/screenshots/login/平板-CA08-focus.png) · [已登录](../evidence/screenshots/login/平板-CA08-signed-in.png) | 通过 |
-| CA08 | 键盘聚焦、输入、Enter 登录 | 手机 390×844 | [焦点](../evidence/screenshots/login/手机-CA08-focus.png) · [已登录](../evidence/screenshots/login/手机-CA08-signed-in.png) | 通过 |
-| CA09 | 不勾选记住我时刷新清除会话，回到空登录卡 | PC 1440×900 | [重置](../evidence/screenshots/login/PC-CA09-reset.png) | 通过 |
-| CA09 | 不勾选记住我时刷新清除会话，回到空登录卡 | 平板 768×1024 | [重置](../evidence/screenshots/login/平板-CA09-reset.png) | 通过 |
-| CA09 | 不勾选记住我时刷新清除会话，回到空登录卡 | 手机 390×844 | [重置](../evidence/screenshots/login/手机-CA09-reset.png) | 通过 |
+## 视觉参考与溯源
 
-## 注册 J12
-
-| 场景 | 条件、动作与预期 | 视口 | 当前截图 | 验证 |
-| --- | --- | --- | --- | --- |
-| CA10 | 注册初始态，条款未勾选且验证码字段隐藏 | PC 1440×900 | [初始](../evidence/screenshots/register/PC-CA10-initial.png) | 通过 |
-| CA10 | 注册初始态，条款未勾选且验证码字段隐藏 | 平板 768×1024 | [初始](../evidence/screenshots/register/平板-CA10-initial.png) | 通过 |
-| CA10 | 注册初始态，条款未勾选且验证码字段隐藏 | 手机 390×844 | [初始](../evidence/screenshots/register/手机-CA10-initial.png) | 通过 |
-| CA11 | 发码邮箱校验：请填写邮箱。 | PC 1440×900 | [错误](../evidence/screenshots/register/PC-CA11-error.png) | 通过 |
-| CA11 | 发码邮箱校验：请填写邮箱。 | 平板 768×1024 | [错误](../evidence/screenshots/register/平板-CA11-error.png) | 通过 |
-| CA11 | 发码邮箱校验：请填写邮箱。 | 手机 390×844 | [错误](../evidence/screenshots/register/手机-CA11-error.png) | 通过 |
-| CA12 | 发码邮箱校验：邮箱格式不正确。 | PC 1440×900 | [错误](../evidence/screenshots/register/PC-CA12-error.png) | 通过 |
-| CA12 | 发码邮箱校验：邮箱格式不正确。 | 平板 768×1024 | [错误](../evidence/screenshots/register/平板-CA12-error.png) | 通过 |
-| CA12 | 发码邮箱校验：邮箱格式不正确。 | 手机 390×844 | [错误](../evidence/screenshots/register/手机-CA12-error.png) | 通过 |
-| CA13 | 已占用邮箱不发码，换地址后正常发码 | PC 1440×900 | [占用](../evidence/screenshots/register/PC-CA13-taken.png) · [已发码](../evidence/screenshots/register/PC-CA13-sent.png) | 通过 |
-| CA13 | 已占用邮箱不发码，换地址后正常发码 | 平板 768×1024 | [占用](../evidence/screenshots/register/平板-CA13-taken.png) · [已发码](../evidence/screenshots/register/平板-CA13-sent.png) | 通过 |
-| CA13 | 已占用邮箱不发码，换地址后正常发码 | 手机 390×844 | [占用](../evidence/screenshots/register/手机-CA13-taken.png) · [已发码](../evidence/screenshots/register/手机-CA13-sent.png) | 通过 |
-| CA14 | 发码和重新发送 | PC 1440×900 | [已发码](../evidence/screenshots/register/PC-CA14-sent.png) · [重发](../evidence/screenshots/register/PC-CA14-resent.png) | 通过 |
-| CA14 | 发码和重新发送 | 平板 768×1024 | [已发码](../evidence/screenshots/register/平板-CA14-sent.png) · [重发](../evidence/screenshots/register/平板-CA14-resent.png) | 通过 |
-| CA14 | 发码和重新发送 | 手机 390×844 | [已发码](../evidence/screenshots/register/手机-CA14-sent.png) · [重发](../evidence/screenshots/register/手机-CA14-resent.png) | 通过 |
-| CA15 | 注册提交邮箱校验：请填写邮箱。 | PC 1440×900 | [错误](../evidence/screenshots/register/PC-CA15-error.png) | 通过 |
-| CA15 | 注册提交邮箱校验：请填写邮箱。 | 平板 768×1024 | [错误](../evidence/screenshots/register/平板-CA15-error.png) | 通过 |
-| CA15 | 注册提交邮箱校验：请填写邮箱。 | 手机 390×844 | [错误](../evidence/screenshots/register/手机-CA15-error.png) | 通过 |
-| CA16 | 注册提交邮箱校验：邮箱格式不正确。 | PC 1440×900 | [错误](../evidence/screenshots/register/PC-CA16-error.png) | 通过 |
-| CA16 | 注册提交邮箱校验：邮箱格式不正确。 | 平板 768×1024 | [错误](../evidence/screenshots/register/平板-CA16-error.png) | 通过 |
-| CA16 | 注册提交邮箱校验：邮箱格式不正确。 | 手机 390×844 | [错误](../evidence/screenshots/register/手机-CA16-error.png) | 通过 |
-| CA17 | 注册字段校验与修正：请填写昵称。 | PC 1440×900 | [错误](../evidence/screenshots/register/PC-CA17-error.png) · [修正结果](../evidence/screenshots/register/PC-CA17-recovered.png) | 通过 |
-| CA17 | 注册字段校验与修正：请填写昵称。 | 平板 768×1024 | [错误](../evidence/screenshots/register/平板-CA17-error.png) · [修正结果](../evidence/screenshots/register/平板-CA17-recovered.png) | 通过 |
-| CA17 | 注册字段校验与修正：请填写昵称。 | 手机 390×844 | [错误](../evidence/screenshots/register/手机-CA17-error.png) · [修正结果](../evidence/screenshots/register/手机-CA17-recovered.png) | 通过 |
-| CA18 | 注册字段校验与修正：密码至少 8 位。 | PC 1440×900 | [错误](../evidence/screenshots/register/PC-CA18-error.png) · [修正结果](../evidence/screenshots/register/PC-CA18-recovered.png) | 通过 |
-| CA18 | 注册字段校验与修正：密码至少 8 位。 | 平板 768×1024 | [错误](../evidence/screenshots/register/平板-CA18-error.png) · [修正结果](../evidence/screenshots/register/平板-CA18-recovered.png) | 通过 |
-| CA18 | 注册字段校验与修正：密码至少 8 位。 | 手机 390×844 | [错误](../evidence/screenshots/register/手机-CA18-error.png) · [修正结果](../evidence/screenshots/register/手机-CA18-recovered.png) | 通过 |
-| CA19 | 注册字段校验与修正：两次输入的密码不一致。 | PC 1440×900 | [错误](../evidence/screenshots/register/PC-CA19-error.png) · [修正结果](../evidence/screenshots/register/PC-CA19-recovered.png) | 通过 |
-| CA19 | 注册字段校验与修正：两次输入的密码不一致。 | 平板 768×1024 | [错误](../evidence/screenshots/register/平板-CA19-error.png) · [修正结果](../evidence/screenshots/register/平板-CA19-recovered.png) | 通过 |
-| CA19 | 注册字段校验与修正：两次输入的密码不一致。 | 手机 390×844 | [错误](../evidence/screenshots/register/手机-CA19-error.png) · [修正结果](../evidence/screenshots/register/手机-CA19-recovered.png) | 通过 |
-| CA20 | 注册字段校验与修正：请输入 6 位数字验证码（0-9）。 | PC 1440×900 | [错误](../evidence/screenshots/register/PC-CA20-error.png) · [修正结果](../evidence/screenshots/register/PC-CA20-recovered.png) | 通过 |
-| CA20 | 注册字段校验与修正：请输入 6 位数字验证码（0-9）。 | 平板 768×1024 | [错误](../evidence/screenshots/register/平板-CA20-error.png) · [修正结果](../evidence/screenshots/register/平板-CA20-recovered.png) | 通过 |
-| CA20 | 注册字段校验与修正：请输入 6 位数字验证码（0-9）。 | 手机 390×844 | [错误](../evidence/screenshots/register/手机-CA20-error.png) · [修正结果](../evidence/screenshots/register/手机-CA20-recovered.png) | 通过 |
-| CA21 | 注册字段校验与修正：请输入 6 位数字验证码（0-9）。 | PC 1440×900 | [错误](../evidence/screenshots/register/PC-CA21-error.png) · [修正结果](../evidence/screenshots/register/PC-CA21-recovered.png) | 通过 |
-| CA21 | 注册字段校验与修正：请输入 6 位数字验证码（0-9）。 | 平板 768×1024 | [错误](../evidence/screenshots/register/平板-CA21-error.png) · [修正结果](../evidence/screenshots/register/平板-CA21-recovered.png) | 通过 |
-| CA21 | 注册字段校验与修正：请输入 6 位数字验证码（0-9）。 | 手机 390×844 | [错误](../evidence/screenshots/register/手机-CA21-error.png) · [修正结果](../evidence/screenshots/register/手机-CA21-recovered.png) | 通过 |
-| CA22 | 注册字段校验与修正：验证码不正确，还可以再试 4 次。 | PC 1440×900 | [错误](../evidence/screenshots/register/PC-CA22-error.png) · [修正结果](../evidence/screenshots/register/PC-CA22-recovered.png) | 通过 |
-| CA22 | 注册字段校验与修正：验证码不正确，还可以再试 4 次。 | 平板 768×1024 | [错误](../evidence/screenshots/register/平板-CA22-error.png) · [修正结果](../evidence/screenshots/register/平板-CA22-recovered.png) | 通过 |
-| CA22 | 注册字段校验与修正：验证码不正确，还可以再试 4 次。 | 手机 390×844 | [错误](../evidence/screenshots/register/手机-CA22-error.png) · [修正结果](../evidence/screenshots/register/手机-CA22-recovered.png) | 通过 |
-| CA23 | 未发码就提交，提示可见，发码后可继续 | PC 1440×900 | [错误](../evidence/screenshots/register/PC-CA23-error.png) · [已发码](../evidence/screenshots/register/PC-CA23-sent.png) | 通过 |
-| CA23 | 未发码就提交，提示可见，发码后可继续 | 平板 768×1024 | [错误](../evidence/screenshots/register/平板-CA23-error.png) · [已发码](../evidence/screenshots/register/平板-CA23-sent.png) | 通过 |
-| CA23 | 未发码就提交，提示可见，发码后可继续 | 手机 390×844 | [错误](../evidence/screenshots/register/手机-CA23-error.png) · [已发码](../evidence/screenshots/register/手机-CA23-sent.png) | 通过 |
-| CA24 | 未同意条款，显示错误文字，勾选后重试 | PC 1440×900 | [错误](../evidence/screenshots/register/PC-CA24-error.png) · [修正结果](../evidence/screenshots/register/PC-CA24-recovered.png) | 通过 |
-| CA24 | 未同意条款，显示错误文字，勾选后重试 | 平板 768×1024 | [错误](../evidence/screenshots/register/平板-CA24-error.png) · [修正结果](../evidence/screenshots/register/平板-CA24-recovered.png) | 通过 |
-| CA24 | 未同意条款，显示错误文字，勾选后重试 | 手机 390×844 | [错误](../evidence/screenshots/register/手机-CA24-error.png) · [修正结果](../evidence/screenshots/register/手机-CA24-recovered.png) | 通过 |
-| CA25 | 注册成功 | PC 1440×900 | [已填写](../evidence/screenshots/register/PC-CA25-filled.png) · [已注册](../evidence/screenshots/register/PC-CA25-registered.png) | 通过 |
-| CA25 | 注册成功 | 平板 768×1024 | [已填写](../evidence/screenshots/register/平板-CA25-filled.png) · [已注册](../evidence/screenshots/register/平板-CA25-registered.png) | 通过 |
-| CA25 | 注册成功 | 手机 390×844 | [已填写](../evidence/screenshots/register/手机-CA25-filled.png) · [已注册](../evidence/screenshots/register/手机-CA25-registered.png) | 通过 |
-| CA26 | 切换登录再返回，只保留邮箱 | PC 1440×900 | [登录卡](../evidence/screenshots/register/PC-CA26-login.png) · [重置](../evidence/screenshots/register/PC-CA26-reset.png) | 通过 |
-| CA26 | 切换登录再返回，只保留邮箱 | 平板 768×1024 | [登录卡](../evidence/screenshots/register/平板-CA26-login.png) · [重置](../evidence/screenshots/register/平板-CA26-reset.png) | 通过 |
-| CA26 | 切换登录再返回，只保留邮箱 | 手机 390×844 | [登录卡](../evidence/screenshots/register/手机-CA26-login.png) · [重置](../evidence/screenshots/register/手机-CA26-reset.png) | 通过 |
-| CA27 | 发码后更换邮箱，旧验证码状态失效 | PC 1440×900 | [改地址](../evidence/screenshots/register/PC-CA27-changed.png) · [重发](../evidence/screenshots/register/PC-CA27-resent.png) | 通过 |
-| CA27 | 发码后更换邮箱，旧验证码状态失效 | 平板 768×1024 | [改地址](../evidence/screenshots/register/平板-CA27-changed.png) · [重发](../evidence/screenshots/register/平板-CA27-resent.png) | 通过 |
-| CA27 | 发码后更换邮箱，旧验证码状态失效 | 手机 390×844 | [改地址](../evidence/screenshots/register/手机-CA27-changed.png) · [重发](../evidence/screenshots/register/手机-CA27-resent.png) | 通过 |
-| CA28 | 条款链接保留在当前卡片，不跳转 | PC 1440×900 | [条款](../evidence/screenshots/register/PC-CA28-terms.png) | 通过 |
-| CA28 | 条款链接保留在当前卡片，不跳转 | 平板 768×1024 | [条款](../evidence/screenshots/register/平板-CA28-terms.png) | 通过 |
-| CA28 | 条款链接保留在当前卡片，不跳转 | 手机 390×844 | [条款](../evidence/screenshots/register/手机-CA28-terms.png) | 通过 |
-
-## 找回密码 J13
-
-| 场景 | 条件、动作与预期 | 视口 | 当前截图 | 验证 |
-| --- | --- | --- | --- | --- |
-| CA29 | 找回入口沿用登录邮箱，返回登录清空密码 | PC 1440×900 | [请求](../evidence/screenshots/recovery/PC-CA29-request.png) · [返回](../evidence/screenshots/recovery/PC-CA29-returned.png) | 通过 |
-| CA29 | 找回入口沿用登录邮箱，返回登录清空密码 | 平板 768×1024 | [请求](../evidence/screenshots/recovery/平板-CA29-request.png) · [返回](../evidence/screenshots/recovery/平板-CA29-returned.png) | 通过 |
-| CA29 | 找回入口沿用登录邮箱，返回登录清空密码 | 手机 390×844 | [请求](../evidence/screenshots/recovery/手机-CA29-request.png) · [返回](../evidence/screenshots/recovery/手机-CA29-returned.png) | 通过 |
-| CA30 | 找回第一步：请填写邮箱。 | PC 1440×900 | [错误](../evidence/screenshots/recovery/PC-CA30-error.png) | 通过 |
-| CA30 | 找回第一步：请填写邮箱。 | 平板 768×1024 | [错误](../evidence/screenshots/recovery/平板-CA30-error.png) | 通过 |
-| CA30 | 找回第一步：请填写邮箱。 | 手机 390×844 | [错误](../evidence/screenshots/recovery/手机-CA30-error.png) | 通过 |
-| CA31 | 找回第一步：邮箱格式不正确。 | PC 1440×900 | [错误](../evidence/screenshots/recovery/PC-CA31-error.png) | 通过 |
-| CA31 | 找回第一步：邮箱格式不正确。 | 平板 768×1024 | [错误](../evidence/screenshots/recovery/平板-CA31-error.png) | 通过 |
-| CA31 | 找回第一步：邮箱格式不正确。 | 手机 390×844 | [错误](../evidence/screenshots/recovery/手机-CA31-error.png) | 通过 |
-| CA32 | 第一步成功发码后进入第二步：邮箱只读，验证码字段出现且初始为空 | PC 1440×900 | [请求](../evidence/screenshots/recovery/PC-CA32-request.png) · [确认](../evidence/screenshots/recovery/PC-CA32-confirm.png) · [已发码](../evidence/screenshots/recovery/PC-CA32-code-sent.png) | 通过 |
-| CA32 | 第一步成功发码后进入第二步：邮箱只读，验证码字段出现且初始为空 | 平板 768×1024 | [请求](../evidence/screenshots/recovery/平板-CA32-request.png) · [确认](../evidence/screenshots/recovery/平板-CA32-confirm.png) · [已发码](../evidence/screenshots/recovery/平板-CA32-code-sent.png) | 通过 |
-| CA32 | 第一步成功发码后进入第二步：邮箱只读，验证码字段出现且初始为空 | 手机 390×844 | [请求](../evidence/screenshots/recovery/手机-CA32-request.png) · [确认](../evidence/screenshots/recovery/手机-CA32-confirm.png) · [已发码](../evidence/screenshots/recovery/手机-CA32-code-sent.png) | 通过 |
-| CA33 | 找回校验与修正：请输入 6 位数字验证码（0-9）。 | PC 1440×900 | [错误](../evidence/screenshots/recovery/PC-CA33-error.png) · [修正结果](../evidence/screenshots/recovery/PC-CA33-recovered.png) | 通过 |
-| CA33 | 找回校验与修正：请输入 6 位数字验证码（0-9）。 | 平板 768×1024 | [错误](../evidence/screenshots/recovery/平板-CA33-error.png) · [修正结果](../evidence/screenshots/recovery/平板-CA33-recovered.png) | 通过 |
-| CA33 | 找回校验与修正：请输入 6 位数字验证码（0-9）。 | 手机 390×844 | [错误](../evidence/screenshots/recovery/手机-CA33-error.png) · [修正结果](../evidence/screenshots/recovery/手机-CA33-recovered.png) | 通过 |
-| CA34 | 找回校验与修正：请输入 6 位数字验证码（0-9）。 | PC 1440×900 | [错误](../evidence/screenshots/recovery/PC-CA34-error.png) · [修正结果](../evidence/screenshots/recovery/PC-CA34-recovered.png) | 通过 |
-| CA34 | 找回校验与修正：请输入 6 位数字验证码（0-9）。 | 平板 768×1024 | [错误](../evidence/screenshots/recovery/平板-CA34-error.png) · [修正结果](../evidence/screenshots/recovery/平板-CA34-recovered.png) | 通过 |
-| CA34 | 找回校验与修正：请输入 6 位数字验证码（0-9）。 | 手机 390×844 | [错误](../evidence/screenshots/recovery/手机-CA34-error.png) · [修正结果](../evidence/screenshots/recovery/手机-CA34-recovered.png) | 通过 |
-| CA35 | 找回校验与修正：验证码不正确，还可以再试 4 次。 | PC 1440×900 | [错误](../evidence/screenshots/recovery/PC-CA35-error.png) · [修正结果](../evidence/screenshots/recovery/PC-CA35-recovered.png) | 通过 |
-| CA35 | 找回校验与修正：验证码不正确，还可以再试 4 次。 | 平板 768×1024 | [错误](../evidence/screenshots/recovery/平板-CA35-error.png) · [修正结果](../evidence/screenshots/recovery/平板-CA35-recovered.png) | 通过 |
-| CA35 | 找回校验与修正：验证码不正确，还可以再试 4 次。 | 手机 390×844 | [错误](../evidence/screenshots/recovery/手机-CA35-error.png) · [修正结果](../evidence/screenshots/recovery/手机-CA35-recovered.png) | 通过 |
-| CA36 | 找回校验与修正：新密码至少 8 位。 | PC 1440×900 | [错误](../evidence/screenshots/recovery/PC-CA36-error.png) · [修正结果](../evidence/screenshots/recovery/PC-CA36-recovered.png) | 通过 |
-| CA36 | 找回校验与修正：新密码至少 8 位。 | 平板 768×1024 | [错误](../evidence/screenshots/recovery/平板-CA36-error.png) · [修正结果](../evidence/screenshots/recovery/平板-CA36-recovered.png) | 通过 |
-| CA36 | 找回校验与修正：新密码至少 8 位。 | 手机 390×844 | [错误](../evidence/screenshots/recovery/手机-CA36-error.png) · [修正结果](../evidence/screenshots/recovery/手机-CA36-recovered.png) | 通过 |
-| CA37 | 找回校验与修正：两次输入的新密码不一致。 | PC 1440×900 | [错误](../evidence/screenshots/recovery/PC-CA37-error.png) · [修正结果](../evidence/screenshots/recovery/PC-CA37-recovered.png) | 通过 |
-| CA37 | 找回校验与修正：两次输入的新密码不一致。 | 平板 768×1024 | [错误](../evidence/screenshots/recovery/平板-CA37-error.png) · [修正结果](../evidence/screenshots/recovery/平板-CA37-recovered.png) | 通过 |
-| CA37 | 找回校验与修正：两次输入的新密码不一致。 | 手机 390×844 | [错误](../evidence/screenshots/recovery/手机-CA37-error.png) · [修正结果](../evidence/screenshots/recovery/手机-CA37-recovered.png) | 通过 |
-| CA38 | 重置成功回到登录并提示结果，字段上没有残留错误 | PC 1440×900 | [已填写](../evidence/screenshots/recovery/PC-CA38-filled.png) · [返回](../evidence/screenshots/recovery/PC-CA38-returned.png) | 通过 |
-| CA38 | 重置成功回到登录并提示结果，字段上没有残留错误 | 平板 768×1024 | [已填写](../evidence/screenshots/recovery/平板-CA38-filled.png) · [返回](../evidence/screenshots/recovery/平板-CA38-returned.png) | 通过 |
-| CA38 | 重置成功回到登录并提示结果，字段上没有残留错误 | 手机 390×844 | [已填写](../evidence/screenshots/recovery/手机-CA38-filled.png) · [返回](../evidence/screenshots/recovery/手机-CA38-returned.png) | 通过 |
-| CA39 | 返回登录后重新发码进入第二步，验证码和密码均清空 | PC 1440×900 | [取消](../evidence/screenshots/recovery/PC-CA39-cancelled.png) · [重置](../evidence/screenshots/recovery/PC-CA39-reset.png) · [已发码](../evidence/screenshots/recovery/PC-CA39-code-sent.png) | 通过 |
-| CA39 | 返回登录后重新发码进入第二步，验证码和密码均清空 | 平板 768×1024 | [取消](../evidence/screenshots/recovery/平板-CA39-cancelled.png) · [重置](../evidence/screenshots/recovery/平板-CA39-reset.png) · [已发码](../evidence/screenshots/recovery/平板-CA39-code-sent.png) | 通过 |
-| CA39 | 返回登录后重新发码进入第二步，验证码和密码均清空 | 手机 390×844 | [取消](../evidence/screenshots/recovery/手机-CA39-cancelled.png) · [重置](../evidence/screenshots/recovery/手机-CA39-reset.png) · [已发码](../evidence/screenshots/recovery/手机-CA39-code-sent.png) | 通过 |
-| CA40 | 第一步成功发码后第二步邮箱锁定到该地址；显示与隐藏新密码 | PC 1440×900 | [地址锁定](../evidence/screenshots/recovery/PC-CA40-bound.png) · [密码可见](../evidence/screenshots/recovery/PC-CA40-revealed.png) · [密码隐藏](../evidence/screenshots/recovery/PC-CA40-hidden.png) | 通过 |
-| CA40 | 第一步成功发码后第二步邮箱锁定到该地址；显示与隐藏新密码 | 平板 768×1024 | [地址锁定](../evidence/screenshots/recovery/平板-CA40-bound.png) · [密码可见](../evidence/screenshots/recovery/平板-CA40-revealed.png) · [密码隐藏](../evidence/screenshots/recovery/平板-CA40-hidden.png) | 通过 |
-| CA40 | 第一步成功发码后第二步邮箱锁定到该地址；显示与隐藏新密码 | 手机 390×844 | [地址锁定](../evidence/screenshots/recovery/手机-CA40-bound.png) · [密码可见](../evidence/screenshots/recovery/手机-CA40-revealed.png) · [密码隐藏](../evidence/screenshots/recovery/手机-CA40-hidden.png) | 通过 |
+最小认可视觉输入及其适用用途见[视觉参考](visual-reference.md)。其他旧截图、逐视口 PASS 表和报告可从固定 [71b6abf8 账户场景](https://github.com/DingJWuyu/TeacherWorkspace/tree/71b6abf8aba732591906712f33eab520d00a80c0/prototype/behavior) 与[历史输出](https://github.com/DingJWuyu/TeacherWorkspace/tree/71b6abf8aba732591906712f33eab520d00a80c0/prototype/evidence)核查；它们只证明当时的记录。

@@ -2,6 +2,8 @@
 
 Status: Accepted
 
+本文只维护原型的体验参考和适用边界；认可范围见 [manifest](manifest.md)。现行产品从[文档入口](../../docs/README.md)读取，原型样例、存储与旧场景结果不定义产品能力。
+
 本文件拥有 J18-J24、S30-S35。运行入口见 [manifest](manifest.md)，场景 CW48-CW51 的复现和证据见[头部场景覆盖](sidebar-head-scenarios.md)。共享规则由[外壳](shell.md)拥有。
 
 ## Scope

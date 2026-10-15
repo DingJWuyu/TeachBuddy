@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 
-// Checks stage their output for inspection. Only integration replaces accepted evidence.
+// Outputs belong to this run. Selected design inputs are maintained separately.
 export function evidencePaths(suite) {
   const parent = process.env.PROTOTYPE_TEMP_DIR || tmpdir();
   mkdirSync(parent, { recursive: true });
