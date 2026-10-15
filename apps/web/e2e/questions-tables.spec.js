@@ -7,7 +7,7 @@ import {randomUUID, createHash} from 'node:crypto';
 import {createIntegration} from '../../api/test/fixtures/auth-integration/harness.js';
 import {registerMath} from '../../api/test/fixtures/math-real.mjs';
 import {sourceImage} from '../../../test/fixtures/questions/recognition/replay.mjs';
-import {documentText, images, walkBlocks} from '../../api/src/modules/questions/materials-content.js';
+import {documentText, images, walkBlocks} from '../../api/src/workbench/content/document.js';
 
 const base='/api/modules/questions/v2';
 const recordedPages=fileURLToPath(new URL('../../../test/fixtures/questions/recognition-document-4/',import.meta.url));

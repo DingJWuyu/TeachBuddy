@@ -4,7 +4,7 @@
 
 ## 工作现场与授权
 
-单人 agent 开发闭环的整体改造已获用户明确开工授权，全仓调查已完成，当前并行实施，按[完整目标、执行计划与完成判据](agent-workflow.md)推进。已有任务路由、子系统运行参考、代码标准、Lessons 和 CI 改进见[核查入口](#核查入口)，这些结果不代替全仓健康核查与新 Agent 实际交付、接手演练。
+单人 agent 开发闭环的整体改造已获用户明确开工授权，全仓调查与实施包已完成，当前进入集中审查与交付，按[完整目标、执行计划与完成判据](agent-workflow.md)推进。已有任务路由、子系统运行参考、代码标准、Lessons 和 CI 改进见[核查入口](#核查入口)，这些结果不代替全仓健康核查与新 Agent 实际交付、接手演练。
 
 用户体验运行 `TeacherWorkspace-preview` 的集成源码，维护方式见[已有实例](../SETUP.md#已有本机实例)。GitHub 默认分支与日常 trunk 是 `preview/integration`，`main` 是稳定发布分支。用户已授权仓库配置、CI、任务 PR、独立审查、trunk 集成与同步；执行[GitHub 工作流](../agents/github-workflow.md)。未授权实际版本准备、合 main、产品发布、公开部署、新增费用或社区自动运营。模型与外部账户操作沿各自授权，本轮不扩展。
 
@@ -124,7 +124,7 @@
 | 账户与身份 | [PR #37](https://github.com/DingJWuyu/TeacherWorkspace/pull/37)，`de8bd99b`；入口 [PR #39](https://github.com/DingJWuyu/TeacherWorkspace/pull/39)，`2c43d63e`；[入口 CI](https://github.com/DingJWuyu/TeacherWorkspace/actions/runs/38362936254) | `auth-completeness.config.mjs`、`auth-integration.config.mjs`、`fixtures/auth-contract/playwright.config.mjs`、`account-deletion.test.js`；全浏览器进程重启的 Cookie 生命周期、掉电与真实邮件未验 |
 | 工作台昵称 | `1b107651` | `auth-profile.test.js`、`auth-integration.test.js`、`settings-implementation.config.mjs`；真实系统输入法和触屏未验 |
 | 数学统一作品与网页 AI | [PR #36](https://github.com/DingJWuyu/TeacherWorkspace/pull/36)，`1c36e798`；[CI](https://github.com/DingJWuyu/TeacherWorkspace/actions/runs/38219664891) | [数学验证](../acceptance/README.md#数学专项)；真实 DeepSeek 曾完成起稿/读图/续改，扩展回归另用受控网页。商店、目标设备未验；弹窗修复见 `math-unified-repair.spec.js` |
-| 日程 | 产品候选 `22baf397`，集成 `da025690` | `calendar-emstudio`、`calendar-dialog-keyboard`、`calendar-capabilities`、`calendar-time-zone` E2E 配置及日程 HTTP；固定旧版本的教学关联已退役，不属当前能力 |
+| 日程 | 产品候选 `22baf397`，集成 `da025690` | `schedule/playwright.config.mjs` 下的 capabilities、interaction、keyboard、consistency、time-zone 行为专项及日程 HTTP；固定旧版本的教学关联已退役，不属当前能力 |
 | 材料与 OCR | 选型候选 `472eaf6a`，独立安装/开发服务 `170634b9`，消费者回归 `1b01b7e5` | [识别](../contracts/recognition.md)、[样本](../acceptance/samples.md)、[选型验收](../acceptance/ocr-selection.md)；真实 GPU 推理与 raw 回放分开，独立 clone 仍依赖宿主 OS/GPU 驱动 |
 | 退役兼容与公共底座 | 备课 [PR #38](https://github.com/DingJWuyu/TeacherWorkspace/pull/38)，`9e9edf6c`；旧班级 [PR #41](https://github.com/DingJWuyu/TeacherWorkspace/pull/41)，`0a0a737e` | `lessons-retirement.test.js`、`classes-retirement.test.js`、`test/fixtures/retirement/`、`module-retirement.config.mjs`；保留当前恢复和升级测试，不恢复产品入口 |
 | 发布基础设施 | [PR #27](https://github.com/DingJWuyu/TeacherWorkspace/pull/27)、[PR #28](https://github.com/DingJWuyu/TeacherWorkspace/pull/28)、[PR #32](https://github.com/DingJWuyu/TeacherWorkspace/pull/32)；[打包演练](https://github.com/DingJWuyu/TeacherWorkspace/actions/runs/38127024596) | 曾在独立目录下载校验、安装生产依赖、HTTPS 启动并验证备份准备；未正式打 Tag、Release 或部署 |

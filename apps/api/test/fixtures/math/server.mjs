@@ -47,7 +47,8 @@ export async function startMathFixture({
     await context.workbench.initialize();
   } catch (error) {
     server.close();
-    await context?.workbench.close();
+    await context?.close();
+    await error.cleanup;
     throw error;
   }
   const app = express();
@@ -69,7 +70,7 @@ export async function startMathFixture({
     origin,
     close: async () => {
       await new Promise((resolve) => server.close(resolve));
-      await context.workbench.close();
+      await context.close();
     },
   };
 }
