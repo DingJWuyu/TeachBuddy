@@ -8,6 +8,7 @@ export default defineConfig({
   outputDir: "../../../test-results/manual-math",
   reporter: [["list"]],
   use: {
+    actionTimeout: 10000,
     ignoreHTTPSErrors: true,
     viewport: { width: 1440, height: 900 },
     trace: "retain-on-failure",

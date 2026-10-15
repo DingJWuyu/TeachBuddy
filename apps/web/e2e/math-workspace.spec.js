@@ -8,6 +8,7 @@ import { createIntegration } from '../../api/test/fixtures/auth-integration/harn
 import { register } from './fixtures/math-dynamic/helpers.mjs';
 import { installMathProbe, enterMath, savedMath, currentApi } from './math-unified-helpers.mjs';
 
+import { importMathSource, chooseFile } from './fixtures/math-workspace.js';
 let world;
 test.beforeEach(async ({ page }) => {
   world = await createIntegration({ webDist: path.resolve(process.env.WORKBENCH_WEB_DIST ?? 'apps/web/dist') });
@@ -40,11 +41,7 @@ async function importSource(page, source, title = '兼容作品') {
   if (emptyFormula) input.latex = 'x';
   if (emptyGraph) input.scene.elements = [newElement('point', 'Seed')];
   if (emptySpace) input.points = [{ id: 'Seed', x: 0, y: 0, z: 0, label: { text: 'Seed', dx: 10, dy: -10 }, style: defaultStyle() }];
-  const response = page.waitForResponse(r => r.request().method() === 'POST' && r.url().endsWith('/api/modules/math/v1/works'));
-  await chooseFile(page, '导入作品', { name: `${title}.json`, mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(input)) });
-  const result = await response;
-  expect(result.status(), await result.text()).toBe(201);
-  await expect(page.getByLabel('作品名称', { exact: true })).toHaveValue(title);
+  const work = await importMathSource(page, input, title);
   if (emptyFormula) {
     await page.getByLabel('LaTeX', { exact: true }).fill('');
     await page.getByRole('button', { name: '常用结构', exact: true }).click();
@@ -52,15 +49,9 @@ async function importSource(page, source, title = '兼容作品') {
     await selectTools(page, '对象');
     await page.getByRole('button', { name: '移除对象', exact: true }).click();
   }
-  return result.json();
+  return work;
 }
 
-async function chooseFile(page, action, file) {
-  await page.getByRole('button', { name: '作品操作', exact: true }).click();
-  const chooser = page.waitForEvent('filechooser');
-  await page.getByRole('menuitem', { name: action, exact: true }).click();
-  await (await chooser).setFiles(file);
-}
 async function archived(page, show = true) {
   await page.getByRole('button', { name: '作品操作', exact: true }).click();
   await page.getByRole('menuitem', { name: show ? '已归档' : '我的作品', exact: true }).click();
