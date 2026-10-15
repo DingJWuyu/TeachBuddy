@@ -18,6 +18,10 @@
 | `TeacherWorkspace-workflow-frontend` / `refactor/workflow-frontend` | Web 公共能力、通知归属与失效代码包，后续业务会话包依赖它 |
 | `TeacherWorkspace-workflow-validation` / `refactor/workflow-validation` | 夹具、脚本、依赖与 CI 包；与源码包交叉导入由总控集成 |
 | `TeacherWorkspace-workflow-calendar` / `refactor/workflow-calendar-tests` | 日程验证按行为归并，保持原 CI 集合；完成集成后清理 |
+| `TeacherWorkspace-workflow-native-text` / `refactor/workflow-native-text` | 原生文本规则实际实现/中断接手，沿[任务页](native-text-ownership.md)执行 |
+| `TeacherWorkspace-workflow-questions` / `refactor/workflow-questions-session` | 题库业务会话归属，依赖已集成的前端公共包 |
+| `TeacherWorkspace-workflow-resources` / `refactor/workflow-resources-session` | 资源收录/恢复操作归属，与既有 resources 业务现场分开 |
+| `TeacherWorkspace-workflow-math` / `refactor/workflow-math-session` | 数学作品会话归属，保持编辑器与既有体验 |
 
 账户、题库、数学、日程、班级后端及两次退役任务均已集成，其临时现场已清理。数学模块后续讨论由用户指定 session 接续，实际新现场以 Git 为准。AI 助理扩展暂停，班级前端与 AI 接入尚未开始；日程暂时保留用户已认可的体验。产品分区逐个打磨，不把旧任务授权延续成新增业务开发。
 
