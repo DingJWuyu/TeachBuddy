@@ -1,5 +1,5 @@
 {
-  "name": "@refatos/shared",
+  "name": "@teachbuddy/shared",
   "version": "0.3.0",
   "type": "module",
   "main": "src/index.js",

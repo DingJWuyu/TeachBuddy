@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { defaultNavigation, includeNewNavigationModules, validNavigation } from '@refatos/shared';
+import { defaultNavigation, includeNewNavigationModules, validNavigation } from '@teachbuddy/shared';
 import { workbenchGet, workbenchPut, WorkbenchError } from '../../platform/http/apiClient.js';
 import { unconfirmedProblem } from '../../platform/http/problems.js';
 import { readLocal } from '../../platform/device/storage.js';

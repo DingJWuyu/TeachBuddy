@@ -1,9 +1,9 @@
-import { constructionIssue } from "@refatos/shared/math/geometry";
-import { parameterOnGrid } from "@refatos/shared/math/dynamic";
+import { constructionIssue } from "@teachbuddy/shared/math/geometry";
+import { parameterOnGrid } from "@teachbuddy/shared/math/dynamic";
 import { ContractError } from "../../workbench/problems.js";
 import yauzl from "yauzl";
 import { crc32 } from "node:zlib";
-import { validateWorkshopSourceShape } from "@refatos/shared/math/workshop";
+import { validateWorkshopSourceShape } from "@teachbuddy/shared/math/workshop";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";

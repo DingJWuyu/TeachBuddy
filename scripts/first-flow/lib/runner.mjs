@@ -14,7 +14,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { moduleCatalog, workbenchHeaders } from '@refatos/shared';
+import { moduleCatalog, workbenchHeaders } from '@teachbuddy/shared';
 import { createEnv } from '../../../apps/api/src/config/env.js';
 import { createWorkbenchLogger } from '../../../apps/api/src/workbench/logger.js';
 import { startServer } from '../../../apps/api/src/server.js';
@@ -150,7 +150,7 @@ export async function startFirstFlowRunner(options = {}) {
     fixtures = ['workbench-probe'],
     web = 'auto',
     reset = false,
-    sessionSecret = 'teacher-workspace-first-flow-runner',
+    sessionSecret = 'teachbuddy-first-flow-runner',
     quiet = false
   } = options;
 

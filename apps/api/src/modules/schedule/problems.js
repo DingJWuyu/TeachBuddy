@@ -1,5 +1,5 @@
 /** T50 problem constructors use the shared frozen vocabulary. */
-import { workbenchProblemStatus, workbenchProblemTypes } from '@refatos/shared';
+import { workbenchProblemStatus, workbenchProblemTypes } from '@teachbuddy/shared';
 import { ContractError } from '../../workbench/problems.js';
 
 function problem(type, extra) {

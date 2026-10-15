@@ -133,7 +133,7 @@ jobs:
         if: inputs.release_artifact
         run: |
           version=$(node -p 'require("./package.json").version')
-          archive="teacherworkspace-$version-$GITHUB_SHA.tar.gz"
+          archive="teachbuddy-$version-$GITHUB_SHA.tar.gz"
           mkdir -p "$RUNNER_TEMP/release"
           printf '%s\n' "$GITHUB_SHA" > "$RUNNER_TEMP/REVISION"
           tar -czf "$RUNNER_TEMP/release/$archive" \

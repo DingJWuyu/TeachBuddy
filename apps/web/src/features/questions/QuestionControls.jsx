@@ -7,7 +7,7 @@ import { DocumentEditor, DocumentView } from '../../components/materials/index.j
 import { parseInlineRuns, serializeInlineRuns } from '../../components/materials/documents.js';
 import { Popover } from '../../components/interaction/ModuleOverlays.jsx';
 import { structureChanged, undoStructure } from './document-structure.js';
-import { supportedDocument } from '@refatos/shared';
+import { supportedDocument } from '@teachbuddy/shared';
 import { useModuleDialogFocus } from '../../components/interaction/ModuleMotion.jsx';
 
 const paths = {

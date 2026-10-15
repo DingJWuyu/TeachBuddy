@@ -16,7 +16,7 @@ import {
   workbenchHeaders,
   workbenchLimits,
   workbenchMediaTypes
-} from '@refatos/shared';
+} from '@teachbuddy/shared';
 import {
   contractError,
   isProblem,

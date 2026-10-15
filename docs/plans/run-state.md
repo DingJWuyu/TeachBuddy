@@ -4,17 +4,17 @@
 
 ## 工作现场与授权
 
-当前获准执行[TeachBuddy 项目身份统一](teachbuddy-identity.md)，范围包括仓库内容、GitHub 仓库名称、本机目录和运行配置迁移；保持现有功能及数据，直接使用的第三方组件和许可保留。任务现场为 `TeachBuddy-branding` / `refactor/teachbuddy-identity`，由总控组织代码与文档分工、集中验证、trunk 集成和清理。既有工作树在迁移完成前仍使用下表旧目录名。
+当前获准执行[TeachBuddy 项目身份统一](teachbuddy-identity.md)，范围包括仓库内容、GitHub 仓库名称、本机目录和运行配置迁移；保持现有功能及数据，直接使用的第三方组件和许可保留。任务现场为 `TeachBuddy-branding` / `refactor/teachbuddy-identity`，由总控组织代码与文档分工、集中验证、trunk 集成和清理。下表列迁移后的目录，实际迁移状态以任务记录和 Git 为准。
 
 当前开发沿[开发约定](../agents/module-development.md)接收明确需求、维护长程任务、分配职责并完成获准交付；子系统运行参考、代码标准、Lessons 和 buffer 各自维护所属信息。全仓职责改造、真实代码中断接手及最近集成的证据见[核查入口](#核查入口)。本轮工程改造已交付，后续按用户选定的任务接续，不自动扩大业务范围。
 
-用户体验运行 `TeacherWorkspace-preview` 的集成源码，维护方式见[已有实例](../SETUP.md#已有本机实例)。GitHub 默认分支与日常 trunk 是 `preview/integration`，`main` 是稳定发布分支。用户已授权仓库配置、CI、任务 PR、独立审查、trunk 集成与同步；执行[GitHub 工作流](../agents/github-workflow.md)。未授权实际版本准备、合 main、产品发布、公开部署、新增费用或社区自动运营。模型与外部账户操作沿各自授权，本轮不扩展。
+用户体验运行 `TeachBuddy-preview` 的集成源码，维护方式见[已有实例](../SETUP.md#已有本机实例)。GitHub 默认分支与日常 trunk 是 `preview/integration`，`main` 是稳定发布分支。用户已授权仓库配置、CI、任务 PR、独立审查、trunk 集成与同步；执行[GitHub 工作流](../agents/github-workflow.md)。未授权实际版本准备、合 main、产品发布、公开部署、新增费用或社区自动运营。模型与外部账户操作沿各自授权，本轮不扩展。
 
 | 现场 | 当前安排 |
 | --- | --- |
-| `TeacherWorkspace-preview` / `preview/integration` | 集成及用户体验入口，保护私有配置和数据；当前分支与 HEAD 以 Git 核对 |
-| `TeacherWorkspace` / `main` | 保留稳定分支工作树，不在本轮开发范围 |
-| `TeacherWorkspace-resources` / `feat/resources-core` | 保留已有资源库现场；本轮不修改或删除，接续前核对其成果和负责 session |
+| `TeachBuddy-preview` / `preview/integration` | 集成及用户体验入口，保护私有配置和数据；当前分支与 HEAD 以 Git 核对 |
+| `TeachBuddy` / `main` | 保留稳定分支工作树，不在本轮开发范围 |
+| `TeachBuddy-resources` / `feat/resources-core` | 保留已有资源库现场；本轮不修改或删除，接续前核对其成果和负责 session |
 
 账户、题库、数学、日程、班级后端及两次退役任务均已集成，其临时现场已清理。数学模块后续讨论由用户指定 session 接续，实际新现场以 Git 为准。AI 助理扩展暂停，班级前端与 AI 接入尚未开始；日程暂时保留用户已认可的体验。产品分区逐个打磨，不把旧任务授权延续成新增业务开发。
 
@@ -106,16 +106,16 @@
 
 | 范围 | 已集成证据 | 可重建入口及边界 |
 | --- | --- | --- |
-| 工程闭环与最近完整 CI | [PR #44](https://github.com/DingJWuyu/TeacherWorkspace/pull/44)，`872ab0cd`；[CI](https://github.com/DingJWuyu/TeacherWorkspace/actions/runs/38690968669) 对应候选 `870ee1d0`，squash 后文件树一致 | 干净 Runner 构建、274 项 HTTP/SQLite、50 项真实输出、317 项浏览器检查通过；2 项因缺私人 E 原稿明确跳过。Standards/Spec 独立审查无未关闭发现。两位 fresh 作者完成真实代码中断接手及 8 项 HTTP 验证；独立安装与 GeoGebra 源码冷构建已验。preview 已备份、安装并重启，登录页面与迁移后的公共导入正常；真实模型、GPU OCR、邮件和目标设备沿专项另验 |
-| 班级后端 | [PR #42](https://github.com/DingJWuyu/TeacherWorkspace/pull/42)，`614b7ee3`；[CI](https://github.com/DingJWuyu/TeacherWorkspace/actions/runs/38422366903) | [班级验收](../acceptance/classroom.md)；HTTP/SQLite、真实 Excel/原卷、恢复与浏览器已验，班级页面和实际 AI 未验 |
-| 题库核心体验 | [PR #40](https://github.com/DingJWuyu/TeacherWorkspace/pull/40)，`a53f2285`；[CI](https://github.com/DingJWuyu/TeacherWorkspace/actions/runs/38387387677) | `apps/web/e2e/questions-ux.config.mjs`、`materials-question-notes*.test.js`、`materials-questions-output.test.js`；实际模型及外部原件按专项另验 |
-| 账户与身份 | [PR #37](https://github.com/DingJWuyu/TeacherWorkspace/pull/37)，`de8bd99b`；入口 [PR #39](https://github.com/DingJWuyu/TeacherWorkspace/pull/39)，`2c43d63e`；[入口 CI](https://github.com/DingJWuyu/TeacherWorkspace/actions/runs/38362936254) | `auth-completeness.config.mjs`、`auth-integration.config.mjs`、`fixtures/auth-contract/playwright.config.mjs`、`account-deletion.test.js`；全浏览器进程重启的 Cookie 生命周期、掉电与真实邮件未验 |
+| 工程闭环与最近完整 CI | [PR #44](https://github.com/DingJWuyu/TeachBuddy/pull/44)，`872ab0cd`；[CI](https://github.com/DingJWuyu/TeachBuddy/actions/runs/38690968669) 对应候选 `870ee1d0`，squash 后文件树一致 | 干净 Runner 构建、274 项 HTTP/SQLite、50 项真实输出、317 项浏览器检查通过；2 项因缺私人 E 原稿明确跳过。Standards/Spec 独立审查无未关闭发现。两位 fresh 作者完成真实代码中断接手及 8 项 HTTP 验证；独立安装与 GeoGebra 源码冷构建已验。preview 已备份、安装并重启，登录页面与迁移后的公共导入正常；真实模型、GPU OCR、邮件和目标设备沿专项另验 |
+| 班级后端 | [PR #42](https://github.com/DingJWuyu/TeachBuddy/pull/42)，`614b7ee3`；[CI](https://github.com/DingJWuyu/TeachBuddy/actions/runs/38422366903) | [班级验收](../acceptance/classroom.md)；HTTP/SQLite、真实 Excel/原卷、恢复与浏览器已验，班级页面和实际 AI 未验 |
+| 题库核心体验 | [PR #40](https://github.com/DingJWuyu/TeachBuddy/pull/40)，`a53f2285`；[CI](https://github.com/DingJWuyu/TeachBuddy/actions/runs/38387387677) | `apps/web/e2e/questions-ux.config.mjs`、`materials-question-notes*.test.js`、`materials-questions-output.test.js`；实际模型及外部原件按专项另验 |
+| 账户与身份 | [PR #37](https://github.com/DingJWuyu/TeachBuddy/pull/37)，`de8bd99b`；入口 [PR #39](https://github.com/DingJWuyu/TeachBuddy/pull/39)，`2c43d63e`；[入口 CI](https://github.com/DingJWuyu/TeachBuddy/actions/runs/38362936254) | `auth-completeness.config.mjs`、`auth-integration.config.mjs`、`fixtures/auth-contract/playwright.config.mjs`、`account-deletion.test.js`；全浏览器进程重启的 Cookie 生命周期、掉电与真实邮件未验 |
 | 工作台昵称 | `1b107651` | `auth-profile.test.js`、`auth-integration.test.js`、`settings-implementation.config.mjs`；真实系统输入法和触屏未验 |
-| 数学统一作品与网页 AI | [PR #36](https://github.com/DingJWuyu/TeacherWorkspace/pull/36)，`1c36e798`；[CI](https://github.com/DingJWuyu/TeacherWorkspace/actions/runs/38219664891) | [数学验证](../acceptance/README.md#数学专项)；真实 DeepSeek 曾完成起稿/读图/续改，扩展回归另用受控网页。商店、目标设备未验；弹窗修复见 `math-unified-repair.spec.js` |
+| 数学统一作品与网页 AI | [PR #36](https://github.com/DingJWuyu/TeachBuddy/pull/36)，`1c36e798`；[CI](https://github.com/DingJWuyu/TeachBuddy/actions/runs/38219664891) | [数学验证](../acceptance/README.md#数学专项)；真实 DeepSeek 曾完成起稿/读图/续改，扩展回归另用受控网页。商店、目标设备未验；弹窗修复见 `math-unified-repair.spec.js` |
 | 日程 | 产品候选 `22baf397`，集成 `da025690` | `schedule/playwright.config.mjs` 下的 capabilities、interaction、keyboard、consistency、time-zone 行为专项及日程 HTTP；固定旧版本的教学关联已退役，不属当前能力 |
 | 材料与 OCR | 选型候选 `472eaf6a`，独立安装/开发服务 `170634b9`，消费者回归 `1b01b7e5` | [识别](../contracts/recognition.md)、[样本](../acceptance/samples.md)、[选型验收](../acceptance/ocr-selection.md)；真实 GPU 推理与 raw 回放分开，独立 clone 仍依赖宿主 OS/GPU 驱动 |
-| 退役兼容与公共底座 | 备课 [PR #38](https://github.com/DingJWuyu/TeacherWorkspace/pull/38)，`9e9edf6c`；旧班级 [PR #41](https://github.com/DingJWuyu/TeacherWorkspace/pull/41)，`0a0a737e` | `lessons-retirement.test.js`、`classes-retirement.test.js`、`test/fixtures/retirement/`、`module-retirement.config.mjs`；保留当前恢复和升级测试，不恢复产品入口 |
-| 发布基础设施 | [PR #27](https://github.com/DingJWuyu/TeacherWorkspace/pull/27)、[PR #28](https://github.com/DingJWuyu/TeacherWorkspace/pull/28)、[PR #32](https://github.com/DingJWuyu/TeacherWorkspace/pull/32)；[打包演练](https://github.com/DingJWuyu/TeacherWorkspace/actions/runs/38127024596) | 曾在独立目录下载校验、安装生产依赖、HTTPS 启动并验证备份准备；未正式打 Tag、Release 或部署 |
+| 退役兼容与公共底座 | 备课 [PR #38](https://github.com/DingJWuyu/TeachBuddy/pull/38)，`9e9edf6c`；旧班级 [PR #41](https://github.com/DingJWuyu/TeachBuddy/pull/41)，`0a0a737e` | `lessons-retirement.test.js`、`classes-retirement.test.js`、`test/fixtures/retirement/`、`module-retirement.config.mjs`；保留当前恢复和升级测试，不恢复产品入口 |
+| 发布基础设施 | [PR #27](https://github.com/DingJWuyu/TeachBuddy/pull/27)、[PR #28](https://github.com/DingJWuyu/TeachBuddy/pull/28)、[PR #32](https://github.com/DingJWuyu/TeachBuddy/pull/32)；[打包演练](https://github.com/DingJWuyu/TeachBuddy/actions/runs/38127024596) | 曾在独立目录下载校验、安装生产依赖、HTTPS 启动并验证备份准备；未正式打 Tag、Release 或部署 |
 | 全部验证入口 | [验证指南](../acceptance/README.md)、根 `package.json`、`.github/workflows/ci.yml` | CI 仅覆盖其中明确选择的集合；文件实际打开、真实模型与目标环境按影响补验 |
 
 上述测试文件名相对 `apps/api/test/` 或 `apps/web/e2e/`。模块技术页链接准确源码与验证入口；完整产品交付再展开[验收矩阵](../acceptance/mvp-matrix.md)。

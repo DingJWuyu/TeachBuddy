@@ -21,7 +21,8 @@ import http from 'node:http';
 import https from 'node:https';
 import { spawn, spawnSync } from 'node:child_process';
 import { chromium } from '@playwright/test';
-import { workbenchHeaders, workbenchPaths } from '@refatos/shared';
+import { createEnv } from '../../apps/api/src/config/env.js';
+import { workbenchHeaders, workbenchPaths } from '@teachbuddy/shared';
 import {
   DEFAULT_PORT,
   FIRST_FLOW_ACCOUNTS,
@@ -386,7 +387,7 @@ async function main() {
   };
 
   // 1. Isolated build: npm run build must not touch the user database.
-  const userDb = path.join(repoRoot, 'apps', 'api', 'src', 'data', 'refatos.sqlite');
+  const userDb = createEnv().sqlitePath;
   const userDbBefore = fs.existsSync(userDb) ? fs.statSync(userDb).mtimeMs : null;
   const build = spawnSync('npm', ['run', 'build'], {
     cwd: repoRoot,

@@ -1,6 +1,6 @@
 import { invalidInput } from "../../workbench/problems.js";
 // Compatibility contract for the v1 question Document and search projection.
-import { workbenchLimits } from '@refatos/shared';
+import { workbenchLimits } from '@teachbuddy/shared';
 const MAX_DOCUMENT_BLOCKS = workbenchLimits.documentBlocks;
 const MAX_PARAGRAPH_RUNS = workbenchLimits.paragraphRuns;
 const MAX_TEXT_LENGTH = workbenchLimits.textRunLength;

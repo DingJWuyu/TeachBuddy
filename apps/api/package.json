@@ -1,5 +1,5 @@
 {
-  "name": "@refatos/api",
+  "name": "@teachbuddy/api",
   "version": "0.3.0",
   "type": "module",
   "main": "src/server.js",
@@ -14,7 +14,7 @@
     "@earendil-works/pi-ai": "0.85.1",
     "@earendil-works/pi-coding-agent": "0.85.1",
     "@fontsource/noto-sans-sc": "5.2.9",
-    "@refatos/shared": "0.3.0",
+    "@teachbuddy/shared": "0.3.0",
     "@xmldom/xmldom": "0.9.12",
     "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1",

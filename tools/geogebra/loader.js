@@ -1,4 +1,4 @@
-/* TeacherWorkspace adapter for the source-built GeoGebra canvas API. */
+/* TeachBuddy adapter for the source-built GeoGebra canvas API. */
 (() => {
   const base = new URL('.', document.currentScript.src);
   const stylesheet = document.createElement('link');

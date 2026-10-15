@@ -16,7 +16,7 @@
  *   this mode.
  */
 import crypto from 'node:crypto';
-import { workbenchHeaders } from '@refatos/shared';
+import { workbenchHeaders } from '@teachbuddy/shared';
 
 export const TEST_PRINCIPAL_MODE = 'test-principal';
 export const NO_IDENTITY_MODE = 'none';
@@ -66,7 +66,7 @@ export function createIdentity(options = {}) {
   const {
     mode = NO_IDENTITY_MODE,
     testPrincipals = [],
-    sessionSecret = 'teacher-workspace-test-session-secret',
+    sessionSecret = 'teachbuddy-test-session-secret',
     cookieName = workbenchHeaders.sessionCookie,
     resolvePrincipal: adapter
   } = options;

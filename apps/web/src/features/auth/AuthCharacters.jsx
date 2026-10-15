@@ -4,7 +4,7 @@ import './auth-characters.css';
 const clamp = (value) => Math.max(-1, Math.min(1, value));
 
 /*
- * Reconstructed from the user-supplied WeStud reference, not a video overlay.
+ * Interactive login illustration with pointer and input-state tracking.
  * Only coarse presentation states cross this boundary. Never pass field values,
  * credentials, account data or authentication callbacks to the illustration.
  */

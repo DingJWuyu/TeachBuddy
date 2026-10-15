@@ -9,7 +9,7 @@ import i18n from '../../i18n/index.js';
  * catalog is the only source of descriptors (ADR 0001).
  */
 
-import { assertModuleCatalog, moduleCatalog, modulePorts } from '@refatos/shared';
+import { assertModuleCatalog, moduleCatalog, modulePorts } from '@teachbuddy/shared';
 import QuestionsPage from '../questions/index.jsx';
 import ResourceRoute from '../resources/ResourceRoute.jsx';
 import { MathWorkbench } from '../math/index.jsx';

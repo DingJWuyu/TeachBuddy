@@ -30,4 +30,4 @@ node prototype/verification/verify-navigation-notifications-feedback.mjs
 
 浏览器截图需要实际打开检查；截图存在不等于视觉通过。合成 HTML 拖放只验证目标、插入线与拖拽图清理，不证明原生指针轨迹、触屏长按或真机兼容。原型本地反馈只显示确认，不向外部服务发消息。
 
-旧 CW01-CW46、CW52 的场景表与旧运行版本从固定 [71b6abf8 场景快照](https://github.com/DingJWuyu/TeacherWorkspace/blob/71b6abf8aba732591906712f33eab520d00a80c0/prototype/behavior/workbench-scenarios.md)追溯；其中保留当时所指的旧运行版本。历史截图与结果由该固定提交的 `prototype/evidence/` 保全。当前脚本不解释旧 CW 编号，检出整理前快照也不等于恢复更早的场景运行版本。
+旧 CW01-CW46、CW52 的场景表与旧运行版本从固定 [71b6abf8 场景快照](https://github.com/DingJWuyu/TeachBuddy/blob/71b6abf8aba732591906712f33eab520d00a80c0/prototype/behavior/workbench-scenarios.md)追溯；其中保留当时所指的旧运行版本。历史截图与结果由该固定提交的 `prototype/evidence/` 保全。当前脚本不解释旧 CW 编号，检出整理前快照也不等于恢复更早的场景运行版本。

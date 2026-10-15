@@ -6,8 +6,8 @@ import {
   acceptsConstructionInput,
   constructionIssue,
   resolveElements,
-} from "@refatos/shared/math/geometry";
-import { dynamicState } from "@refatos/shared/math/dynamic";
+} from "@teachbuddy/shared/math/geometry";
+import { dynamicState } from "@teachbuddy/shared/math/dynamic";
 import { newElement } from "./model.js";
 import { updateObjects } from "./editing.js";
 

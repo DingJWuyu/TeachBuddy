@@ -1,7 +1,7 @@
 import {
   snapParameter,
   parameterOnGrid,
-} from "@refatos/shared/math/dynamic";
+} from "@teachbuddy/shared/math/dynamic";
 
 // Return a message key; the UI translates it without coupling editing to the browser.
 export function parameterError(source, parameter, index) {

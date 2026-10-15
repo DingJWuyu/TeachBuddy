@@ -234,7 +234,6 @@ node --env-file=.env apps/api/src/server.js
 
 ## 标准依据
 
-语义说明、追真实运行路径和绑定已审查 head 的规则参考 [Magpie 子系统审查](https://github.com/yetone/magpie/blob/91b9065a5fdf5b7aa0adeeeb17266c121bf5691c/docs/subsystems/README.md#review-a-change)及[代码标准](https://github.com/yetone/magpie/blob/91b9065a5fdf5b7aa0adeeeb17266c121bf5691c/docs/code-standards.md#acceptance-criteria)，署名与许可见[代码标准](../code-standards.md#来源与许可)。本仓的阶段集中审查和 CI 分工优先，不套用上游逐改全量本地运行要求。
 
 - [Trunk Based Development](https://trunkbaseddevelopment.com/)：单一日常集成主线与短期任务分支。
 - [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) 与 [SemVer](https://semver.org/)：提交语义与版本递增。

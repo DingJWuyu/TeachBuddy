@@ -22,7 +22,7 @@ import {
   workbenchLimits,
   workbenchPaths,
   workbenchProblemTypes
-} from '@refatos/shared';
+} from '@teachbuddy/shared';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 import { createModuleLoader, factoryNameFor } from '../src/workbench/moduleLoader.js';

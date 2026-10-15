@@ -5,8 +5,8 @@ import { SVG } from 'mathjax-full/js/output/svg.js';
 import { liteAdaptor } from 'mathjax-full/js/adaptors/liteAdaptor.js';
 import { RegisterHTMLHandler } from 'mathjax-full/js/handlers/html.js';
 import 'mathjax-full/js/input/tex/ams/AmsConfiguration.js';
-import { checkFormula, formulaPackages, formulaSvg } from '@refatos/shared/math/formula';
-import { MathSourceError } from '@refatos/shared/math/expression';
+import { checkFormula, formulaPackages, formulaSvg } from '@teachbuddy/shared/math/formula';
+import { MathSourceError } from '@teachbuddy/shared/math/expression';
 
 export async function renderFormula(source, options) {
   checkFormula(source.latex);

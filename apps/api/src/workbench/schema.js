@@ -20,7 +20,7 @@
  * another question, unsupported document versions) are thrown by the owning
  * module through `invalidInput(field, reason)`.
  */
-import { workbenchLimits } from '@refatos/shared';
+import { workbenchLimits } from '@teachbuddy/shared';
 import { invalidInput } from './problems.js';
 
 function isPlainObject(value) {

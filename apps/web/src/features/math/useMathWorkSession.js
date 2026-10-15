@@ -9,7 +9,7 @@ import { createMathClient } from './api.js';
 import { uploadDraft } from './uploadDraft.js';
 import { useDraftHistory } from './useDraftHistory.js';
 import { emptyDynamicSource, emptySource } from './model.js';
-import { createWorkshopSource } from '@refatos/shared/math/workshop';
+import { createWorkshopSource } from '@teachbuddy/shared/math/workshop';
 
 const base = '/api/modules/math/v1/works';
 function hasWorkshopInput(draft) { return draft?.source.kind === 'workshop' && Object.values(draft.workshopInput ?? {}).some(value => typeof value === 'string' && value.trim()); }

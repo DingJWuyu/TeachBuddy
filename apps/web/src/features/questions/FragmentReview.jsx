@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { supportedDocument } from '@refatos/shared';
+import { supportedDocument } from '@teachbuddy/shared';
 import { parseInlineRuns } from '../../components/materials/documents.js';
 import { DocumentView } from '../../components/materials/index.js';
 

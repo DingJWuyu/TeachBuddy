@@ -4,8 +4,8 @@ import { fileURLToPath } from 'node:url';
 import { build } from 'esbuild';
 import JSZip from 'jszip';
 import { geogebraDirectory, readSavedWorkshopPlaneViewport } from './workshop-render.js';
-import { workshopPresentationCss } from '@refatos/shared/math/workshop-presentation';
-import { mathFontStyle } from '@refatos/shared/math/formula';
+import { workshopPresentationCss } from '@teachbuddy/shared/math/workshop-presentation';
+import { mathFontStyle } from '@teachbuddy/shared/math/formula';
 import { registerAndReadFont } from './font.js';
 import { mathDependencyLicenses } from './licenses.js';
 import { mathError } from './contract.js';
@@ -13,7 +13,7 @@ import { mathError } from './contract.js';
 const safe = value => JSON.stringify(value).replaceAll('<', '\\u003c');
 const runtimes = new Map();
 async function presentationRuntime(hasGraph) {
-  if (!runtimes.has(hasGraph)) runtimes.set(hasGraph, build({ stdin: { contents: `export {mountWorkshopPresentation} from '@refatos/shared/math/workshop-presentation'; ${hasGraph ? "export {applyWorkshopView} from '@refatos/shared/math/workshop-runtime';" : 'export const applyWorkshopView = () => {};'} `, resolveDir: fileURLToPath(new URL('.', import.meta.url)) },
+  if (!runtimes.has(hasGraph)) runtimes.set(hasGraph, build({ stdin: { contents: `export {mountWorkshopPresentation} from '@teachbuddy/shared/math/workshop-presentation'; ${hasGraph ? "export {applyWorkshopView} from '@teachbuddy/shared/math/workshop-runtime';" : 'export const applyWorkshopView = () => {};'} `, resolveDir: fileURLToPath(new URL('.', import.meta.url)) },
     bundle: true, write: false, format: 'iife', globalName: 'WorkshopClassroom', platform: 'browser', target: 'es2022', minify: true, legalComments: 'inline' })
     .then(result => result.outputFiles[0].text).catch(error => { runtimes.delete(hasGraph); throw error; }));
   return runtimes.get(hasGraph);

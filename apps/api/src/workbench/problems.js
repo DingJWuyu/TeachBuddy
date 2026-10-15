@@ -12,7 +12,7 @@ import {
   workbenchMediaTypes,
   workbenchProblemStatus,
   workbenchProblemTypes
-} from '@refatos/shared';
+} from '@teachbuddy/shared';
 
 export class ContractError extends Error {
   constructor(status, problem, message) {

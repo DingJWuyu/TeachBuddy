@@ -54,7 +54,7 @@ p = root / 'source/build-logic/convention/src/main/kotlin/gwt-conventions.gradle
 p.write_text(p.read_text().replace('maxHeapSize = "4096m"', 'maxHeapSize = "3072m"'))
 p = root / 'source/web/web/build.gradle.kts'
 p.write_text(p.read_text().replace('listOf("-Xmx4g")', 'listOf("-Xmx1536m")'))
-(root / 'teacherworkspace-resource-replacements.json').write_text(json.dumps(replaced, indent=2) + '\n')
+(root / 'teachbuddy-resource-replacements.json').write_text(json.dumps(replaced, indent=2) + '\n')
 print(f'Replaced {len(replaced)} restricted resource inputs and loading seams.')
 # Native collaboration and native rich/script editors are outside this canvas API
 # profile. Their bundled JS has no corresponding license/source in the Maven
@@ -70,10 +70,10 @@ for file, expression in [
         raise RuntimeError(f'Expected native UI resource injection in {file}')
     p.write_text(text.replace(expression, '// Native editor/collaboration bundle excluded from the canvas profile.'))
     replaced.append(file)
-(root / 'teacherworkspace-resource-replacements.json').write_text(json.dumps(replaced, indent=2) + '\n')
+(root / 'teachbuddy-resource-replacements.json').write_text(json.dumps(replaced, indent=2) + '\n')
 # Works are edited through host-owned UI/API; embedded JavaScript is unsupported.
 method('source/web/web-common/src/main/java/org/geogebra/web/html5/main/scripting/Sandbox.java',
        'public void run(String script)', '\t\tthrow new UnsupportedOperationException("Embedded JavaScript is disabled in this canvas runtime.");')
 method('source/web/web-common/src/main/java/org/geogebra/web/html5/main/scripting/Sandbox.java',
        'static Promise<Object> loadContext(', '\t\treturn Promise.reject("Embedded JavaScript is disabled in this canvas runtime.");')
-(root / 'teacherworkspace-resource-replacements.json').write_text(json.dumps(replaced, indent=2) + '\n')
+(root / 'teachbuddy-resource-replacements.json').write_text(json.dumps(replaced, indent=2) + '\n')

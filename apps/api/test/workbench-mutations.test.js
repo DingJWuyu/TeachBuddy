@@ -167,7 +167,7 @@ test('a confirmed request replays after the API process restarts on the same dat
 });
 
 test('mutations.execute rejects an asynchronous write callback inside the transaction', () => {
-  const rootDir = fs.mkdtempSync(path.join(os.tmpdir(), 'teacher-workspace-mutations-'));
+  const rootDir = fs.mkdtempSync(path.join(os.tmpdir(), 'teachbuddy-mutations-'));
   const db = openWorkbenchDatabase({ sqlitePath: path.join(rootDir, 'mutations.sqlite') });
   const mutations = createMutations({ db });
   try {

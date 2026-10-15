@@ -6,7 +6,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { moduleCatalog, workbenchHeaders } from '@refatos/shared';
+import { moduleCatalog, workbenchHeaders } from '@teachbuddy/shared';
 import { createApp } from '../src/app.js';
 import { resolveFixtureSets } from './fixtures/first-flow/catalog.js';
 import { TEST_ACCOUNT_KEYS } from './fixtures/first-flow/accounts.js';
@@ -16,7 +16,7 @@ export const ACCOUNT_A = TEST_ACCOUNT_KEYS[0];
 export const ACCOUNT_B = TEST_ACCOUNT_KEYS[1];
 export const FIXTURE_ACCOUNT = ACCOUNT_A;
 
-export function createTempRoot(prefix = 'teacher-workspace-workbench-') {
+export function createTempRoot(prefix = 'teachbuddy-workbench-') {
   return fs.mkdtempSync(path.join(os.tmpdir(), prefix));
 }
 

@@ -1,5 +1,5 @@
 /*
- * WeStud-inspired entry layout. Opt-in scope is deliberate: auth.css is also
+ * Login entry layout. Opt-in scope is deliberate: auth.css is also
  * consumed by account deletion and other existing surfaces; leave it intact.
  */
 .ae-page.ae-entry {

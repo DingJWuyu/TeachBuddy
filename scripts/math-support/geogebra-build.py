@@ -73,7 +73,7 @@ compile_jdk = extract(compile_archive)
 # Reset only the owned source directory when a patch changes.
 patch = repository / 'scripts/math-support/geogebra-patch.py'
 patch_hash = hashlib.file_digest(patch.open('rb'), 'sha256').hexdigest()
-stamp = source / '.teacherworkspace-patch'
+stamp = source / '.teachbuddy-patch'
 if not stamp.exists() or stamp.read_text() != patch_hash:
     shutil.rmtree(source)
     source = extract(archive)
@@ -134,7 +134,7 @@ rebuild = destination / 'source/rebuild'
 shutil.copy2(patch, rebuild / 'scripts/math-support/geogebra-patch.py')
 shutil.copy2(Path(__file__).resolve(), rebuild / 'scripts/math-support/geogebra-build.py')
 shutil.copytree(tools, rebuild / 'tools/geogebra', ignore=shutil.ignore_patterns('.cache', '__pycache__'))
-shutil.copy2(source / 'teacherworkspace-resource-replacements.json', destination / 'resource-replacements.json')
+shutil.copy2(source / 'teachbuddy-resource-replacements.json', destination / 'resource-replacements.json')
 files = {str(p.relative_to(destination)): hashlib.file_digest(p.open('rb'), 'sha256').hexdigest()
          for p in sorted(destination.rglob('*')) if p.is_file() and p.name != 'build-info.json'}
 (destination / 'build-info.json').write_text(json.dumps({'inputHash': input_hash, 'patchHash': patch_hash, 'source': manifest['source']['revision'], 'files': files}, indent=2) + '\n')

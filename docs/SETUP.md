@@ -4,11 +4,11 @@
 
 ## 已有本机实例
 
-用户体验使用 `TeacherWorkspace-preview` 的当前源码，地址为 `https://localhost:50880`。维护使用用户级持久服务 `teacherworkspace-preview.service`，实际工作目录与入口用 `systemctl --user cat teacherworkspace-preview.service` 核对；服务执行仓库内的 `npm run dev`。
+用户体验使用 `TeachBuddy-preview` 的当前源码，地址为 `https://localhost:50880`。维护使用用户级持久服务 `teachbuddy-preview.service`，实际工作目录与入口用 `systemctl --user cat teachbuddy-preview.service` 核对；服务执行仓库内的 `npm run dev`。
 
-配置由开发树根目录私有 `.env` 提供；当前数据库、附件、日志和临时转换目录位于 `~/.local/share/teacherworkspace/preview/`，与源码分开。准确位置以 `.env` 的 `SQLITE_PATH`、`WORKBENCH_FILES_DIR`、`WORKBENCH_LOG_DIR` 和 `TMPDIR` 为准，诊断只读取所需键名和路径，不打印秘密。证书、工具和模型也使用配置指定的持久目录。
+配置由开发树根目录私有 `.env` 提供；当前数据库、附件、日志和临时转换目录位于 `~/.local/share/teachbuddy/preview/`，与源码分开。准确位置以 `.env` 的 `SQLITE_PATH`、`WORKBENCH_FILES_DIR`、`WORKBENCH_LOG_DIR` 和 `TMPDIR` 为准，诊断只读取所需键名和路径，不打印秘密。证书、工具和模型也使用配置指定的持久目录。
 
-前端源码保存后热更新，API 加载的 JS 模块保存后自动重启；提交不是生效条件。环境变量、证书、依赖和通过文件系统读取的契约改变后，执行 `systemctl --user restart teacherworkspace-preview.service`。文档修改无需重启。
+前端源码保存后热更新，API 加载的 JS 模块保存后自动重启；提交不是生效条件。环境变量、证书、依赖和通过文件系统读取的契约改变后，执行 `systemctl --user restart teachbuddy-preview.service`。文档修改无需重启。
 
 preview 由总控协调集成；模块 session 在独立端口、数据库和文件目录自测。维护后核对实际页面和受影响功能，进程存活不等于业务验证通过。
 
@@ -22,10 +22,10 @@ preview 由总控协调集成；模块 session 在独立端口、数据库和文
 
    ```bash
    umask 077
-   mkdir -p "$HOME/.local/share/teacherworkspace/preview" "$HOME/.config/teacherworkspace/tls"
+   mkdir -p "$HOME/.local/share/teachbuddy/preview" "$HOME/.config/teachbuddy/tls"
    openssl req -x509 -newkey rsa:2048 -sha256 -nodes -days 365 \
-     -keyout "$HOME/.config/teacherworkspace/tls/key.pem" \
-     -out "$HOME/.config/teacherworkspace/tls/cert.pem" \
+     -keyout "$HOME/.config/teachbuddy/tls/key.pem" \
+     -out "$HOME/.config/teachbuddy/tls/cert.pem" \
      -subj '/CN=localhost' -addext 'subjectAltName=DNS:localhost,IP:127.0.0.1'
    openssl rand -hex 32
    ```
@@ -44,14 +44,14 @@ preview 由总控协调集成；模块 session 在独立端口、数据库和文
 
 ### 持久用户服务
 
-Linux 本机需登录后自动启动时，在 `~/.config/systemd/user/teacherworkspace-preview.service` 写入以下内容，将仓库位置和 `node` / `npm` 所在目录替换为本机绝对路径，可用 `command -v node`、`command -v npm` 查找：
+Linux 本机需登录后自动启动时，在 `~/.config/systemd/user/teachbuddy-preview.service` 写入以下内容，将仓库位置和 `node` / `npm` 所在目录替换为本机绝对路径，可用 `command -v node`、`command -v npm` 查找：
 
 ```ini
 [Unit]
-Description=TeacherWorkspace preview development server
+Description=TeachBuddy preview development server
 
 [Service]
-WorkingDirectory=/absolute/path/to/TeacherWorkspace-preview
+WorkingDirectory=/absolute/path/to/TeachBuddy-preview
 Environment="PATH=/absolute/node-bin:/usr/local/bin:/usr/bin:/bin"
 ExecStart=/absolute/node-bin/npm run dev
 Restart=on-failure
@@ -61,17 +61,17 @@ RestartSec=3
 WantedBy=default.target
 ```
 
-执行 `systemctl --user daemon-reload` 和 `systemctl --user enable --now teacherworkspace-preview.service`。日常用 `status`、`restart`、`stop` 管理，日志用 `journalctl --user -u teacherworkspace-preview.service`。这里的私有 `.env` 与手动启动使用同一份，不需要额外本机启动脚本。
+执行 `systemctl --user daemon-reload` 和 `systemctl --user enable --now teachbuddy-preview.service`。日常用 `status`、`restart`、`stop` 管理，日志用 `journalctl --user -u teachbuddy-preview.service`。这里的私有 `.env` 与手动启动使用同一份，不需要额外本机启动脚本。
 
 ### 固定构建
 
 运行 `npm run build`，配置 `NODE_ENV=production` 和 `WORKBENCH_WEB_DIST` 指向 `apps/web/dist`，再执行 `node --env-file=.env apps/api/src/server.js`。Web 与 `/api` 由同一个 HTTPS origin 提供，固定构建不热更新。
 
-隔离 Web 构建使用 `npm --workspace @refatos/web run build -- --outDir /absolute/test/web-dist` 并设置对应 `WORKBENCH_WEB_DIST`；不要覆盖在线实例的构建产物。API 构建使用系统临时目录检查装配与迁移。
+隔离 Web 构建使用 `npm --workspace @teachbuddy/web run build -- --outDir /absolute/test/web-dist` 并设置对应 `WORKBENCH_WEB_DIST`；不要覆盖在线实例的构建产物。API 构建使用系统临时目录检查装配与迁移。
 
 ## 必需配置的来源
 
-环境配置只从根 [.env.example](../.env.example) 准备，变量、默认值与校验以 `apps/api/src/config/env.js` 为准；Agent 可选 key/base URL 也在同一模板，不另读子应用或 Agent 专属模板。每个隔离实例配置自己的 SQLite、文件目录、同源 HTTPS 和 Web 构建路径；测试收件器与真实邮件分开。已有实例保持其认证密钥，生产不使用 test-principal。
+环境配置只从根 [.env.example](../.env.example) 准备，变量、默认值与校验以 `apps/api/src/config/env.js` 为准；Agent 可选 key/base URL 也在同一模板，不另读子应用或 Agent 专属模板。每个隔离实例配置自己的 SQLite、文件目录、同源 HTTPS 和 Web 构建路径；测试收件器与真实邮件分开。已有实例保持其认证密钥，生产不使用 test-principal。 未显式配置数据库路径时，新实例使用 `apps/api/src/data/teachbuddy.sqlite`；已存在旧默认数据库的实例继续读取原文件，避免改名后出现空工作区。
 
 <a id="文件转换工具"></a>
 ## 文件转换工具
@@ -95,7 +95,7 @@ WantedBy=default.target
 Linux x86-64 的官方包为 [xpdf-tools-linux-4.06.tar.gz](https://dl.xpdfreader.com/xpdf-tools-linux-4.06.tar.gz)，SHA-256 为 `940c137cbd1856e45813da1a25c12e8dd3dc8997b8ea735feb858684603031e3`。解压并保留完整包后，将运行环境的 `QUESTIONS_XPDF_PDFTOHTML` 指向 `bin64/pdftohtml` 的绝对路径；未配置时查找 `/usr/local/bin/xpdf-pdftohtml`，不要指向 Poppler 的同名命令。安装在用户持久工具目录，按实际路径配置到 `.env`。Linux x86-64 示例：
 
 ```bash
-xpdfHome="$HOME/.local/share/teacherworkspace-tools"
+xpdfHome="$HOME/.local/share/teachbuddy-tools"
 mkdir -p "$xpdfHome"
 curl --fail --location https://dl.xpdfreader.com/xpdf-tools-linux-4.06.tar.gz -o "$xpdfHome/xpdf-tools-linux-4.06.tar.gz"
 printf '%s  %s\n' '940c137cbd1856e45813da1a25c12e8dd3dc8997b8ea735feb858684603031e3' "$xpdfHome/xpdf-tools-linux-4.06.tar.gz" | sha256sum -c -
@@ -135,7 +135,7 @@ GeoGebra 源码按 EUPL-1.2 使用，Giac、GMP、MPFR、字体及其他依赖�
 在仓库根目录执行：
 
 ```bash
-ocrHome="${XDG_DATA_HOME:-$HOME/.local/share}/teacherworkspace-tools/mineru-pro-2605"
+ocrHome="${XDG_DATA_HOME:-$HOME/.local/share}/teachbuddy-tools/mineru-pro-2605"
 python3 scripts/recognition/install.py "$ocrHome"
 ```
 

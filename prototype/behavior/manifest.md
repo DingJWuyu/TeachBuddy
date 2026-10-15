@@ -47,4 +47,4 @@ npm run prototype:sidebar
 
 ## 历史溯源
 
-固定 [71b6abf8](https://github.com/DingJWuyu/TeacherWorkspace/tree/71b6abf8aba732591906712f33eab520d00a80c0/prototype)保存整理前的场景表、截图和结果。它们不需要下载到当前工作树，不是运行前置，也不能证明当前候选通过。维护页只描述本参考当前职责，执行和修复过程留任务证据。
+固定 [71b6abf8](https://github.com/DingJWuyu/TeachBuddy/tree/71b6abf8aba732591906712f33eab520d00a80c0/prototype)保存整理前的场景表、截图和结果。它们不需要下载到当前工作树，不是运行前置，也不能证明当前候选通过。维护页只描述本参考当前职责，执行和修复过程留任务证据。

@@ -11,7 +11,7 @@ import traceback
 from html.parser import HTMLParser
 from pathlib import Path
 
-TRACE = "_teacherworkspace_layout_source"
+TRACE = "_teachbuddy_layout_source"
 
 
 def plain(value):

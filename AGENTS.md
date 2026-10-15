@@ -52,7 +52,7 @@
 
 ### Issue tracker
 
-问题和规格使用 GitHub `DingJWuyu/TeacherWorkspace`，按 [Issue 规则](docs/agents/issue-tracker.md)执行。
+问题和规格使用 GitHub `DingJWuyu/TeachBuddy`，按 [Issue 规则](docs/agents/issue-tracker.md)执行。
 
 ### Triage labels
 

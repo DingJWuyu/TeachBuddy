@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import fs from 'node:fs';
 import { randomUUID } from 'node:crypto';
-import { moduleCatalog } from '@refatos/shared';
+import { moduleCatalog } from '@teachbuddy/shared';
 import { moduleImplementations } from '../src/workbench/moduleImplementations.js';
 import { createIntegration } from './fixtures/auth-integration/harness.js';
 import { emptySource, newElement } from '../../web/src/features/math/model.js';

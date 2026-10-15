@@ -6,7 +6,7 @@ import Database from 'better-sqlite3';
 import { backup, restore } from '../src/workbench/reliability/backup.js';
 import { randomUUID } from 'node:crypto';
 import { test } from 'node:test';
-import { defaultNavigation } from '@refatos/shared';
+import { defaultNavigation } from '@teachbuddy/shared';
 import { createIntegration } from './fixtures/auth-integration/harness.js';
 import { registerMath } from './fixtures/math-real.mjs';
 import { takeSnapshot } from '../src/workbench/reliability/portable.js';

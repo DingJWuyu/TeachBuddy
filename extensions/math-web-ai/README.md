@@ -119,5 +119,3 @@ window.postMessage({ source: 'teachbuddy-workbench', type: 'STATUS', requestId: 
 ```
 
 此操作不创建远端会话，不发送模型消息。真实验证由用户登录后的专用 tab 执行 CONNECT 和两轮 SEND；普通网页夹具只验证事件和 DOM 行为，不能代替真实 DeepSeek 成功。扩展不需要单元测试。
-
-DOM 适配参考 MIT 项目 [Better DeepSeek](https://github.com/EdgeTypE/better-deepseek/tree/1c5453f18241a118257293700f640cb0ee5e7e1e/src/content) 的输入事件、消息角色和生成状态做法；本实现为专用消息桥，没有引入该项目源码或运行依赖。

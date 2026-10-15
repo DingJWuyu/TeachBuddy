@@ -8,7 +8,7 @@ import { SVG } from "mathjax-full/js/output/svg.js";
 import { liteAdaptor } from "mathjax-full/js/adaptors/liteAdaptor.js";
 import { RegisterHTMLHandler } from "mathjax-full/js/handlers/html.js";
 import "mathjax-full/js/input/tex/ams/AmsConfiguration.js";
-import { checkFormula, formulaPackages } from "@refatos/shared/math/formula";
+import { checkFormula, formulaPackages } from "@teachbuddy/shared/math/formula";
 
 const require = createRequire(import.meta.url);
 const fontfile = require.resolve("@fontsource/noto-sans-sc/files/noto-sans-sc-chinese-simplified-400-normal.woff");

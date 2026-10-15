@@ -7,7 +7,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { moduleCatalog } from '@refatos/shared';
+import { moduleCatalog } from '@teachbuddy/shared';
 
 const NAVIGATION_EVENT = 'tb:navigate';
 

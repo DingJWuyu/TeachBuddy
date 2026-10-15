@@ -2,7 +2,7 @@ import i18n from "../../i18n/index.js";
 import { useTranslation } from 'react-i18next';
 const t = (key, options) => i18n.t(key, { ns: "workbench", ...options });
 import { useState } from 'react';
-import { supportedDocument } from '@refatos/shared';
+import { supportedDocument } from '@teachbuddy/shared';
 import { parseInlineRuns, serializeInlineRuns } from './documents.js';
 import { DocumentView, Formula, ControlledImage } from './DocumentView.jsx';
 import { Icon } from '../icons.jsx';

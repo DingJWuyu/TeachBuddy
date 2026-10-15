@@ -172,7 +172,7 @@ test('WB-T010/016: moved weekly instances, cancellation recovery, deletion and o
 
 test('TT-C7: production catalog matches the four-module contract and rejects malformed static inputs', async () => {
   const { readFileSync } = await import('node:fs');
-  const { assertModuleCatalog, projectModuleCatalog } = await import('@refatos/shared');
+  const { assertModuleCatalog, projectModuleCatalog } = await import('@teachbuddy/shared');
   const samples = JSON.parse(readFileSync(new URL('./fixtures/contracts/schedule-v1-samples.json', import.meta.url))).samples;
   const expected = JSON.parse(readFileSync(new URL('./fixtures/contracts/math-samples.json', import.meta.url))).find(s=>s.id==='catalog-combined-target').value;
   await fixture(async f => {

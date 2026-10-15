@@ -2,14 +2,14 @@ import { useTranslation } from 'react-i18next';
 
 import { readLocal, writeLocal } from '../../platform/device/storage.js';
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { renderGraphic } from "@refatos/shared/math/graphics";
+import { renderGraphic } from "@teachbuddy/shared/math/graphics";
 import {
   dynamicState,
   dynamicPlane,
   snapParameter,
-} from "@refatos/shared/math/dynamic";
-import { mountDynamic } from "@refatos/shared/math/presentation";
-import { mathFontStyle } from "@refatos/shared/math/formula";
+} from "@teachbuddy/shared/math/dynamic";
+import { mountDynamic } from "@teachbuddy/shared/math/presentation";
+import { mathFontStyle } from "@teachbuddy/shared/math/formula";
 export default function DynamicPreview({ source, font, onChange, accountKey, workId, onSelect, selectedId }) {
   const { t, i18n } = useTranslation('math');
   const root = useRef(null),

@@ -143,4 +143,4 @@ CA53 设置页退出入口是原型明确暂缺，不作为待恢复的产品功
 
 ## 视觉参考与溯源
 
-最小认可视觉输入及其适用用途见[视觉参考](visual-reference.md)。其他旧截图、逐视口 PASS 表和报告可从固定 [71b6abf8 账户场景](https://github.com/DingJWuyu/TeacherWorkspace/tree/71b6abf8aba732591906712f33eab520d00a80c0/prototype/behavior) 与[历史输出](https://github.com/DingJWuyu/TeacherWorkspace/tree/71b6abf8aba732591906712f33eab520d00a80c0/prototype/evidence)核查；它们只证明当时的记录。
+最小认可视觉输入及其适用用途见[视觉参考](visual-reference.md)。其他旧截图、逐视口 PASS 表和报告可从固定 [71b6abf8 账户场景](https://github.com/DingJWuyu/TeachBuddy/tree/71b6abf8aba732591906712f33eab520d00a80c0/prototype/behavior) 与[历史输出](https://github.com/DingJWuyu/TeachBuddy/tree/71b6abf8aba732591906712f33eab520d00a80c0/prototype/evidence)核查；它们只证明当时的记录。

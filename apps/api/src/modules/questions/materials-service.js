@@ -1,6 +1,6 @@
 import { problems, contractError, invalidInput, materialsError } from "../../workbench/problems.js";
 import { casefold } from "../../workbench/text.js";
-import { questionDocuments, supportedDocument } from "@refatos/shared";
+import { questionDocuments, supportedDocument } from "@teachbuddy/shared";
 import { randomUUID } from "node:crypto";
 import { isDeepStrictEqual } from "node:util";
 import { compareByUpdatedDescThenId } from "./legacy-contract.js";

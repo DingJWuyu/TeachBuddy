@@ -44,7 +44,7 @@ React 页面
 | [apps/api/src/workbench/preferences.js](../../apps/api/src/workbench/preferences.js) | 工作台与设置的账户偏好与输入校验 |
 | [apps/api/src/modules/](../../apps/api/src/modules) | 题库、资源、数学、日程和班级业务；`classroom/` 拥有名单、考试及统计，消费公共文件端口 |
 | [apps/api/src/workbench/reliability/](../../apps/api/src/workbench/reliability) | 个人资料包、备份、恢复与维护锁 |
-| [packages/shared/](../../packages/shared) | 两侧消费的静态模块目录、协议及数学计算、源校验与浏览器/离线呈现；调用方使用 `@refatos/shared` 或显式 `@refatos/shared/math/*` 子路径，实际公开项以 package exports 为准 |
+| [packages/shared/](../../packages/shared) | 两侧消费的静态模块目录、协议及数学计算、源校验与浏览器/离线呈现；调用方使用 `@teachbuddy/shared` 或显式 `@teachbuddy/shared/math/*` 子路径，实际公开项以 package exports 为准 |
 | `prototype/` | 按范围和确认状态读取的 UI/UX 参考；未确认模块稿不定义生产范围，产品运行不依赖原型源码 |
 
 模块事实在 [packages/shared/src/moduleCatalog.js](../../packages/shared/src/moduleCatalog.js)，实际 API 工厂映射在 [apps/api/src/workbench/moduleImplementations.js](../../apps/api/src/workbench/moduleImplementations.js)，`moduleLoader.js` 校验并装配它们。Web 的 `features/modules/moduleRegistry.js` 将共享目录投影为页面与图标，外壳、导航、教程和全局搜索消费同一投影，顶层路由从共享目录匹配。目录 v4 的 `webEnabled` 明确页面开放资格，API 装配全部注册模块，Web 只投影已开放模块；班级不需要占位页面。资源深链接适配归属资源模块；日程由 `modules/schedule/index.js` 内部组合业务与提醒并合并迁移。新增能力先找所属模块，不增加另一套全局注册表。
@@ -52,5 +52,3 @@ React 页面
 ## 公共持久化与失败边界
 
 业务模块拥有服务、仓储和迁移，跨模块只调用公开端口。应用装配注入公共依赖；共享 mutations 使账户范围的业务变更与成功回执同事务，迁移 runner 按模块定义升级。当前源码路径和公共文件/识别/可靠性调用见[公共底座](foundation.md)，身份交接见[身份技术页](identity.md)。保存、版本与未知结果归[共享契约](../contracts/workbench.md)，恢复完整性归[数据契约](../contracts/data.md)。
-
-组织方式参考 [yetone/magpie 的 subsystem references](https://github.com/yetone/magpie/blob/91b9065a5fdf5b7aa0adeeeb17266c121bf5691c/docs/subsystems/README.md)（MIT，固定版本 `91b9065a5fdf5b7aa0adeeeb17266c121bf5691c`）；本仓按实际职责独立整理。

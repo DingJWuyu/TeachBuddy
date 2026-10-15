@@ -2,7 +2,7 @@ import i18n from '../../i18n/index.js';
 import { useTranslation } from 'react-i18next';
 const t = (key, options) => i18n.t(key, { ns: 'math', ...options });
 import React, { useEffect, useMemo, useState } from 'react';
-import { checkFormula, formulaPackages, formulaSvg } from '@refatos/shared/math/formula';
+import { checkFormula, formulaPackages, formulaSvg } from '@teachbuddy/shared/math/formula';
 
 import { loadMathFont } from './localFont.js';
 

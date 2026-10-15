@@ -43,7 +43,7 @@
 E 是已有真实教学材料，不依赖用户再找样本：[原件 URL](https://statics.scnu.edu.cn/pics/maths/2021/0218/1613615129109322.pdf)。固定输入校验：1,115,735 bytes，13页 A4，SHA-256 `b8d34a6aa76a59adfee125c8efb0a12620dffbb797666cbcc6c41b07390d082a`。完整原件不提交仓库。新机器可直接下载到自己的外部样本目录，无需向旧 session 索取：
 
 ```bash
-materialInputs="$HOME/.local/share/teacherworkspace-test-inputs"
+materialInputs="$HOME/.local/share/teachbuddy-test-inputs"
 mkdir -p "$materialInputs"
 curl --fail --location --user-agent 'Mozilla/5.0' --referer https://maths.scnu.edu.cn/ \
   https://statics.scnu.edu.cn/pics/maths/2021/0218/1613615129109322.pdf -o "$materialInputs/E.pdf"
