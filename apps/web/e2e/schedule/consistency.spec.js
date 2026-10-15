@@ -637,3 +637,100 @@ test.describe('异步标签与任务保存', () => {
      if(task)await expect.poll(async()=>(await call('GET',`${E}/${task.id}`)).calendar.notes).toBe('通知前尚未离开的输入');else if(state==='新建有标题'){await expect.poll(async()=>(await call('GET',E)).items.filter(x=>x.title==='通知前新任务').map(x=>x.calendar.notes)).toEqual(['通知前尚未离开的输入']);}else expect(entries).toHaveLength(3);
     });
 });
+
+
+test.describe('保存回执与任务切换', () => {
+  test.use({ timezoneId: 'Asia/Shanghai', viewport: { width: 1440, height: 900 }, actionTimeout: 10000 });
+  const E = '/api/modules/schedule/entries';
+  let world, client, errors;
+  const input = title => ({ title, items: [], time: { date: '2026-09-23', startTime: '15:00', durationMinutes: 90, timeZone: 'Asia/Shanghai' }, repeat: null, reminder: null });
+  async function call(method, url, body) {
+    const response = await client.request(method, url, { body, headers: method === 'GET' ? {} : { 'Idempotency-Key': randomUUID() } });
+    expect(response.status, JSON.stringify(response.json)).toBeLessThan(300);
+    return response.json;
+  }
+  async function open(page, value) {
+    await page.goto(`${world.origin}/calendar?entry=${value.id}`);
+    await expect(page.getByLabel('标题', { exact: true })).toHaveValue(value.title);
+  }
+  async function listed(page, title) {
+    await page.locator('.fc-timegrid-event').filter({ hasText: title }).click();
+  }
+  test.beforeEach(async ({ page }) => {
+    errors = [];
+    page.on('pageerror', error => errors.push(error.message));
+    const clock = () => new Date('2026-09-23T06:00:00Z');
+    await page.clock.setFixedTime(clock());
+    ({ world, client } = await createScheduleWorld(clock, 'manual-teaching@example.test'));
+    await loginSchedule(page, world, 'manual-teaching@example.test');
+  });
+  test.afterEach(async ({ context }, info) => closeScheduleWorld(context, world, errors, info));
+
+  test('日程保存慢响应不会串写后来打开的安排', async ({ page }) => {
+    const first = await call('POST', E, input('先保存的安排'));
+    const second = await call('POST', E, { ...input('后打开的安排'), time: { ...input('').time, startTime: '18:00' } });
+    await open(page, first);
+    let release, committed;
+    const gate = new Promise(resolve => { release = resolve; });
+    const done = new Promise(resolve => { committed = resolve; });
+    let held = false;
+    await page.route(`**${E}/${first.id}`, async route => {
+      if (route.request().method() !== 'PUT' || held) return route.continue();
+      held = true;
+      const response = await route.fetch();
+      expect(response.status()).toBe(200);
+      committed(); await gate; await route.fulfill({ response });
+    });
+    await page.getByLabel('标题', { exact: true }).fill('先保存的安排已修改');
+    await done;
+    try {
+      await listed(page, second.title);
+      const delivered = page.waitForResponse(response => response.url().endsWith(`${E}/${first.id}`) && response.request().method() === 'PUT');
+      release(); await delivered;
+      await expect(page.getByLabel('标题', { exact: true })).toHaveValue(second.title);
+      await page.getByLabel('标题', { exact: true }).fill('后打开的安排已修改');
+      await expect.poll(async () => (await call('GET', `${E}/${second.id}`)).title).toBe('后打开的安排已修改');
+      expect((await call('GET', `${E}/${first.id}`)).title).toBe('先保存的安排已修改');
+      await page.reload();
+      await expect(page.getByLabel('标题', { exact: true })).toHaveValue('后打开的安排已修改');
+    } finally { release(); }
+  });
+
+  test('新建保存慢响应后切换安排，后写草稿跟随真实ID恢复', async ({ page }) => {
+    const other = await call('POST', E, { ...input('另一安排'), time: { ...input('').time, startTime: '18:00' } });
+    await open(page, other);
+    await page.getByRole('button', { name: '关闭任务', exact: true }).click();
+    await page.getByRole('button', { name: '新建待安排任务', exact: true }).click();
+    let release, committed, created;
+    const gate = new Promise(resolve => { release = resolve; });
+    const done = new Promise(resolve => { committed = resolve; });
+    let held = false;
+    await page.route(`**${E}`, async route => {
+      if (route.request().method() !== 'POST' || held) return route.continue();
+      held = true;
+      const response = await route.fetch();
+      expect(response.status()).toBe(201);
+      created = await response.json();
+      committed(); await gate; await route.fulfill({ response });
+    });
+    await page.getByLabel('标题', { exact: true }).fill('临时安排已提交');
+    await done;
+    try {
+      await page.getByLabel('标题', { exact: true }).fill('提交期间后写标题');
+      await listed(page, other.title);
+      const delivered = page.waitForResponse(response => response.url().endsWith(E) && response.request().method() === 'POST');
+      release(); await delivered;
+      await expect(page.getByLabel('标题', { exact: true })).toHaveValue(other.title);
+      await expect.poll(async () => (await call('GET', `${E}/${created.id}`)).title).toBe('提交期间后写标题');
+      await page.getByRole('button', { name: '关闭任务', exact: true }).click();
+      await page.getByRole('region', { name: '待安排', exact: true }).getByRole('button', { name: '提交期间后写标题', exact: true }).click();
+      await expect(page.getByLabel('标题', { exact: true })).toHaveValue('提交期间后写标题');
+      await page.reload();
+      await expect(page.getByLabel('标题', { exact: true })).toHaveValue('提交期间后写标题');
+      const pending = (await call('GET', E + '?placement=unscheduled')).items;
+      expect(pending).toHaveLength(1);
+      expect(pending[0].id).toBe(created.id);
+      expect((await call('GET', `${E}/${other.id}`)).title).toBe(other.title);
+    } finally { release(); }
+  });
+});

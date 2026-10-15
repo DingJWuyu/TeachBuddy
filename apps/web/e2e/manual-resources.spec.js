@@ -16,6 +16,7 @@ const evidence = path.resolve(
   "test-results/evidence/MANUAL-RESOURCES/v1/browser",
 );
 test.beforeEach(async ({ page }) => {
+  fs.mkdirSync(evidence, { recursive: true });
   world = await createIntegration({
     directory: fs.mkdtempSync(path.join(os.tmpdir(), "resources-")),
   });
@@ -32,14 +33,17 @@ test.beforeEach(async ({ page }) => {
     await page.getByRole("button", { name: "登录", exact: true }).click();
   }
   await expect(page.locator(".wb-shell")).toBeVisible();
+  await page.getByRole("button", { name: "知道了", exact: true }).click();
   await page
-    .locator(".wb-sidebar")
-    .getByRole("link", { name: "资源库", exact: true })
+    .getByRole("navigation", { name: "功能模块" })
+    .getByRole("link", { name: /^资源库/ })
     .click();
 });
-test.afterEach(async ({ context }) => {
+test.afterEach(async ({ context }, info) => {
   await context.close();
   await world?.close();
+  if (info.status === info.expectedStatus) fs.rmSync(world.directory, { recursive: true });
+  else fs.writeFileSync(info.outputPath("fixture-directory.txt"), world.directory);
 });
 
 test("带网页超链接的 Word 可预览、下载并重开", async ({ page }) => {
@@ -106,24 +110,24 @@ test("全部常用格式内容预览，分类搜索及更新后保库重开", as
 }) => {
   const nav = (name) =>
     page
-      .locator(".wb-sidebar")
-      .getByRole("link", { name, exact: true })
+      .getByRole("navigation", { name: "功能模块" })
+      .getByRole("link", { name: new RegExp(`^${name}`) })
       .click();
   await nav("资源库");
   const files = [
-    "materials/samples/c22.pptx",
-    "materials/samples/c22.ppt",
-    "materials/samples/w.doc",
-    "materials-resources/samples/w.docx",
-    "materials/samples/c22.pdf",
-    "materials-resources/samples/page.png",
-    "materials-resources/samples/page.jpg",
-    "materials-resources/samples/page.webp",
+    "test/fixtures/materials/c22.pptx",
+    "test/fixtures/materials/c22.ppt",
+    "test/fixtures/materials/w.doc",
+    "apps/web/e2e/fixtures/materials-resources/samples/w.docx",
+    "test/fixtures/materials/c22.pdf",
+    "apps/web/e2e/fixtures/materials-resources/samples/page.png",
+    "apps/web/e2e/fixtures/materials-resources/samples/page.jpg",
+    "apps/web/e2e/fixtures/materials-resources/samples/page.webp",
   ];
   for (const source of files) {
     await page
       .getByLabel(/^上传(第一份)?资料$/)
-      .setInputFiles(path.resolve("apps/web/e2e/fixtures", source));
+      .setInputFiles(path.resolve(source));
     await openInfo(page);
     await expect(page.getByLabel("资源名称")).toHaveValue(
       path.basename(source),
@@ -177,13 +181,14 @@ test("全部常用格式内容预览，分类搜索及更新后保库重开", as
   await page
     .locator(".res-metadata")
     .getByLabel("复习", { exact: true })
-    .check();
+    .click();
+  await expect(page.locator(".res-metadata").getByLabel("复习", { exact: true })).toBeChecked();
   await page.getByRole("button", { name: "保存修改", exact: true }).click();
   await expect(page.locator(".res-status")).toContainText("已保存");
   await page
     .getByLabel("更新文件", { exact: true })
     .setInputFiles("test/fixtures/materials/c22.pdf");
-  await page.getByRole("button", { name: "确认更新", exact: true }).click();
+  await page.getByRole("button", { name: /^确认\s*更新$/ }).click();
   await expect(page.locator(".res-info-file strong")).toHaveText("c22.pdf");
   await openInfo(page);
   await expect(page.getByLabel("资源名称")).toHaveValue("函数课堂课件");
@@ -214,6 +219,7 @@ test("全部常用格式内容预览，分类搜索及更新后保库重开", as
     await page.getByRole("button", { name: "登录", exact: true }).click();
   }
   await expect(page.locator(".wb-shell")).toBeVisible();
+  await page.getByRole("button", { name: "知道了", exact: true }).click();
   await nav("资源库");
   if (
     await page
