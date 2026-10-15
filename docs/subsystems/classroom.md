@@ -32,6 +32,8 @@ const result = await classroom.operations.confirmImport({
 
 [模块迁移](../../apps/api/src/modules/classroom/migrations/index.js) 归班级，账户删除由外层生命周期事务调用模块清理。新班级不复用退役 classes 模块 ID 或数据。
 
+班级记录与相应业务拒绝归 [records](../../apps/api/src/modules/classroom/records.js)，记录服务复用同一组归属、版本和业务拒绝逻辑。
+
 ## 验证入口
 
-现有 [classroom-core](../../apps/api/test/classroom-core.test.js)、[import](../../apps/api/test/classroom-import.test.js)、[statistics](../../apps/api/test/classroom-statistics.test.js)、[workbook](../../apps/api/test/classroom-workbook.test.js)、[paper](../../apps/api/test/classroom-paper.test.js)、[assessment](../../apps/api/test/classroom-assessment.test.js)、[lifecycle](../../apps/api/test/classroom-lifecycle.test.js) 测试分别覆盖真实 HTTP/SQLite、Excel 字节、固定原卷及恢复/清理。验收条件见 [班级验收](../acceptance/classroom.md)，受管文件转换工具仍按 [SETUP](../SETUP.md#文件转换工具) 准备。没有页面的后端能力按 HTTP 与实际 Excel/文件读回验证，不以不存在的 UI 测试代签。执行范围按 [CI 分工](../agents/github-workflow.md#ci-与本地验证)。
+入口和受影响场景统一从[班级验证](../acceptance/classroom.md)选择，执行分工沿[CI 与本地验证](../agents/github-workflow.md#ci-与本地验证)。后端 HTTP/Excel/原卷、统计与生命周期不代签教师页面或实际 AI 接入。技术入口只描述调用路径，不声明本候选通过。

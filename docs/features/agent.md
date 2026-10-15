@@ -56,49 +56,14 @@
 
 模型选择只列两个精确 ID 对应的名称，默认 DeepSeek；GLM 显示其当前配置就绪状态。选择对下一次发送生效，不改已有 turn 的模型。用量详情放在每个 turn 的状态旁：仅列已报告 token，并把缺失部分标为“用量不完整”。当前账单、余额和单价未知时费用显示“实际费用未知”，不能显示 ¥0、免费或虚构余额，不照搬套餐/订阅 UI。
 
-## 视觉验收入口
-
-C26/C27 用真实题目检查 1440×900、820×1180 和 390×844：首页、AI/工具切换、长对话与公式、历史弹层、草稿失败、冲突、停止/重连、操作结果打开后返回。截图与实际指针/键盘操作一起留证；测主要区域滚动独立、外壳无横向溢出、按钮可点击、焦点返回和新消息提示。既有原型只提供入口关系，未继承其固定回答或验收结论。
-
-## 实现与接续边界
-
-首批字段和 journal/SSE/停止语义见[Agent 契约](../contracts/agent.md)，持久化及 pi 接缝见[助理实现](#助理实现)。Web `apps/web/src/features/agent/`，API `apps/api/src/agent/`。完整四模块工具行为见[扩展契约](../contracts/agent.md#四模块扩展契约)，固定输入供存续能力设计参考，当前精确 schema 尚待按现行操作形成。
-
-该扩展保留原始冻结设计输入，旧班级片段不再适用，不把工具清单当作实现完成。恢复时核对旧/新路径、工具卡 read/write 分类、恢复隔离和真实端口；当前模型白名单、预算和 Provider 条件见[模型接入](#模型接入)。现有 live 验证入口会产生真实请求，须有新授权窗口。
-
-## 助理实现
-
-AI 助理由应用装配，外壳承载其首页和侧栏入口；对话、生成与工具执行归本分区，使用同一 SQLite，业务由各模块公开 operations 承担。手工 router 和工具 adapter 共用校验、版本、幂等及业务服务；Agent 不另写业务 SQL，也不通过内部 HTTP 复制 Cookie。
-
-pi SDK 负责模型与工具循环、原生 entries 和上下文重建；应用负责持久化对话、公开投影及写操作 journal。entries 保留原生结构，不能向浏览器暴露 thinking。重启用已持久 entries 和同 ID toolResult 重建，不以模型重新生成旧请求体修复历史。
-
-调用的 prepared、executing、结果与事件的原子顺序，停止竞态和未知结果只在[工具投影契约](../contracts/agent.md#工具调用的公开投影)维护。每次 provider 请求/工具调用重新核验原会话与可信账户；授权只在内存，重启后由新请求重新取得。网络调用留在业务事务之外。
-
-升级 SDK/entries 格式前用隔离旧库验证重开。未知或损坏记录原样保留，历史公开投影可读，生成显示不可用；不得创建空会话覆盖。备份复用[数据管理](data.md)，不新增 Agent 专用备份服务。
-
 ## 外部 AI 衔接
 
 本节描述通用文本交接的产品要求，实现缺口与接续授权见[项目状态](../plans/run-state.md#核心实现与已知质量缺口)。数学工坊的网页协作按[数学规格](math.md#geogebra-数学画布与网页-ai)。
 
 从当前账户可见对象/草稿在客户端生成提问文本，老师预览后复制，使用白名单普通 HTTPS 外链并加 `noopener,noreferrer`；不把正文塞进 query、不内嵌或自动登录第三方网页、不共享 API 会话。成果由老师粘贴/上传，仍走原业务校验。外部 AI 默认目标的旧偏好设计不扩大当前设置 UI。
 
-## 模型接入
+## 接口、能力边界与验收
 
-产品使用 pi SDK 的 Command Code `openai-completions` adapter，官方 base URL 为 `https://api.commandcode.ai/provider/v1`，Chat Completions 路径 `/chat/completions`。后端使用私有 `COMMANDCODE_API_KEY`，前端不接收密钥；配置模板 [.env.agent.example](../../.env.agent.example)，实际加载见 `apps/api/src/agent/` 与启动配置。
+首批工具和 journal/SSE/停止的语义见[助理契约](../contracts/agent.md)，持久化、pi/provider 和模型白名单见[助理技术入口](../subsystems/agent.md)。四模块扩展保留确认设计，旧班级片段不再适用；恢复开发时须按当前模块端口形成 schema 与绑定，不据设计存在推定已装配。
 
-<a id="allowed-models"></a>
-### 模型白名单
-
-仅允许 `deepseek/deepseek-v4.1-flash` 和 `z-ai/glm-5.3-flash`。精确 ID 在创建、恢复和发请求前校验，不用相似名字或其他目录项 fallback。开发 Codex 模型路由另见[开发约定](../agents/module-development.md#模型与固定派发)。
-
-首批业务工具的具名结果与当前开发授权见[项目状态](../plans/run-state.md)；局部通过不证明完整四模块、任意数学质量、当前余额或未来可用性。材料的本地 OCR 使用独立的[页识别链路](../contracts/recognition.md)，不以 AI 助理的开发状态判断其是否可用。
-
-### 费用与未决
-
-GOAT API 消耗账户 credits，不等于无限免费；Provider 返回 cost=0 不证明账单为零。余额、额外 credits、自动充值和实际费用未知。真实调用需当前任务的明确请求/轮次/token 上限；旧未用额度不结转，新 session 不重置消耗。`responses`、思考开关、视觉能力及流式参数必须有精确 Provider/模型实证，不能从原厂文档或目录名字推导。
-
-旧模型实验与费用记录从 Git 查询，已关闭窗口不提供新的调用额度。当前授权只看[台账](../plans/run-state.md)。
-
-### 外部资料
-
-已有调查日期为 2026-09-21，动态套餐和端点能力在恢复调用前重新核验：[Provider 文档](https://commandcode.ai/docs/provider)、[模型目录](https://commandcode.ai/docs/reference/cli/models)、[GOAT](https://commandcode.ai/docs/plans/goat)、[价格与限制](https://commandcode.ai/docs/resources/pricing-limits)、[Usage](https://commandcode.ai/docs/resources/usage-limits)。不因文档链接存在而查询账户、发请求或购买服务。
+布局/工具结果/失败恢复与真实模型专项见[助理验收](../acceptance/agent.feature)和[呈现专项](../acceptance/README.md#ai-助理呈现专项)。当前调用授权、暂停和未实现范围只看[运行台账](../plans/run-state.md)；live 入口会产生真实请求，须有本次授权。

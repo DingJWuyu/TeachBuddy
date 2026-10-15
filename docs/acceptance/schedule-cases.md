@@ -1,6 +1,6 @@
 # 日程契约用例
 
-本页是可重放的交换预期，实际测试结果见[项目状态](../plans/run-state.md)。字段由[机器契约](../../apps/api/src/contracts/schedule-v1.openapi.yaml)拥有，业务语义见[日程契约](schedule.md)。
+本页保留 v1 兼容接口的可重放交换预期；当前日历 v2 行为由[日程场景](schedule.feature)与[日程规格](../features/schedule.md)拥有，优先级、例外恢复等兼容字段不扩大当前 UI。实际测试结果见[项目状态](../plans/run-state.md)。字段由[机器契约](../../apps/api/src/contracts/schedule-v1.openapi.yaml)拥有，业务语义见[日程契约](../contracts/schedule.md)。
 
 ## 固定数据与执行方法
 

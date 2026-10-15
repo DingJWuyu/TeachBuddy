@@ -1,6 +1,6 @@
 # 文档入口
 
-供 agent 接手和执行任务使用。先选产品分区，读取唯一行为入口；仅在改动涉及接口、公共能力或验收时展开对应参考。范围见[产品分区](PRODUCT_SCOPE.md#产品分区)，当前授权与进度见[项目状态](plans/run-state.md)。
+供人和 agent 按任务进入。正式产品文档分为规格、契约、验收：规格拥有用户行为，契约拥有跨调用方语义，验收拥有通过判据和交换用例。技术/运行及工程规则按需作为参考，当前任务状态留运行台账。先读本次分区规格，再按改动边界展开；本页只维护入口，归属或路径变化时同步。范围见[产品分区](PRODUCT_SCOPE.md#产品分区)，当前授权与进度见[项目状态](plans/run-state.md)。
 
 | 要做什么 | 先读什么 | 何时继续展开 |
 | --- | --- | --- |
@@ -8,7 +8,7 @@
 | 查看进度、选下一项工作 | [项目状态](plans/run-state.md) | 核查某项结论才读其证据；实施时进入对应功能页 |
 | 接手分区、派发或执行任务 | [开发约定](agents/module-development.md) | 先确认本次目标、工作树和权限，再读下表对应分区 |
 | 创建 PR、配置 GitHub/CI 或发布 | [GitHub 协作与发布](agents/github-workflow.md) | 当前授权和未完成条件读项目状态；部署运行条件读 SETUP |
-| 执行仓库维护、阶段整理或集成后的整体核查 | [仓库维护流程](agents/repository-maintenance.md) | 按检查面展开现行规则，处理实际发现并完成验证与收尾 |
+| 执行仓库维护、阶段整理或集成后的整体核查 | [仓库维护流程](agents/module-development.md#仓库维护) | 按检查面展开现行规则，处理实际发现并完成验证与收尾 |
 | 判断是否属于既定目标 | [产品范围](PRODUCT_SCOPE.md) | 页面和跨模块往返读[共同交互](features/workbench.md) |
 | 修改界面 | 对应功能页和[设计与验证规则](rules/design-and-verification.md) | 调整外观时核对当前运行页面及用户指定参考 |
 | 修改模块实现、存储或跨模块调用 | [子系统入口](subsystems/README.md) | 沿实际公开操作找到源码；交换语义读其文字契约，精确字段读机器 schema |
@@ -17,7 +17,7 @@
 
 ## 功能规格
 
-以下八个产品分区统一用于任务归属、规格和进度汇报。题库、资源库、数学工坊、日程和班级是五个代码注册业务模块，班级只开放后端；其余分区及共享技术底座不加入模块目录。实际装配和当前代码归属见[代码结构](SETUP.md#代码结构)。
+以下八个产品分区统一用于任务归属、规格和进度汇报。题库、资源库、数学工坊、日程和班级是五个代码注册业务模块，班级只开放后端；其余分区及共享技术底座不加入模块目录。实际装配和当前代码归属见[代码结构](subsystems/README.md#代码结构)。
 
 | 产品分区 | 本分区负责什么 | 唯一行为入口 |
 | --- | --- | --- |
@@ -38,7 +38,7 @@
 
 - 个人资料包、误删恢复、账户数据清理或备份还原：读[数据管理与恢复](features/data.md)；备份恢复后的旧请求从其[恢复隔离](features/data.md#从较旧部署备份恢复后的设备)进入。
 - 公共保存、文稿、文件、预览、转换或页识别：按下方[契约说明](#契约说明)选边界；各分区的采用/编辑行为仍查其功能页。
-- 模块装配、数据归属或公共端口：读[代码结构](SETUP.md#代码结构)与[模块边界决议](adr/0001-use-a-single-static-module-catalog.md)；运行命令和环境准备读[SETUP](SETUP.md)。
+- 模块装配、数据归属或公共端口：读[代码结构](subsystems/README.md#代码结构)与[模块边界决议](adr/0001-use-a-single-static-module-catalog.md)；运行命令和环境准备读[SETUP](SETUP.md)。
 
 ## 契约说明
 
@@ -46,16 +46,23 @@
 
 | 涉及的边界 | 先读什么 | 验证时展开 |
 | --- | --- | --- |
-| 身份、会话与页面绑定 | [认证](contracts/auth.md) | [认证案例](contracts/auth-cases.md) |
-| 保存、版本、幂等与引用 | [共享保存与基础业务契约](contracts/workbench.md) | 页内基础交换用例 |
-| 文稿、文件、资源与输出 | [材料](contracts/materials.md) | 页内验证入口 |
+| 身份、会话与页面绑定 | [认证](contracts/auth.md) | [认证案例](acceptance/auth-cases.md) |
+| 保存、版本、幂等、引用与账户偏好兼容 | [共享保存与基础业务契约](contracts/workbench.md) | [基础案例](acceptance/workbench-cases.md) |
+| 文稿、文件、资源与输出 | [材料](contracts/materials.md) | [材料案例](acceptance/materials-cases.md) |
 | 共用页识别、机器结果与人工采用 | [识别](contracts/recognition.md) | 页内样本与验证入口 |
-| 数学作品与跨模块投影 | [数学](contracts/math.md) | 页内交换样本与兼容用例 |
-| 日程安排、事项与提醒 | [日程契约](contracts/schedule.md) | [日程案例](contracts/schedule-cases.md) |
+| 数学作品与跨模块投影 | [数学](contracts/math.md) | [数学案例](acceptance/math-cases.md) |
+| 日程安排、事项与提醒 | [日程契约](contracts/schedule.md) | [日程案例](acceptance/schedule-cases.md) |
 | 班级、学生、正式考试、导入校对和统计 | [班级契约](contracts/classroom.md) | [班级验收](acceptance/classroom.md) |
-| 对话、工具和确认执行 | [AI 助理](contracts/agent.md) | 页内交换样本 |
+| 对话、工具和确认执行 | [AI 助理](contracts/agent.md) | [助理场景](acceptance/agent.feature)及链接的机器样本 |
+| 设备请求、资料包、账户清理与部署恢复 | [数据恢复](contracts/data.md) | [数据验收](acceptance/data.md) |
 
-## 维护文档
+## 参考、计划与维护
+
+代码职责和当前调用路径从[技术入口](subsystems/README.md)进入，环境与维护运行从[SETUP](SETUP.md)进入。原型按其 manifest 的确认范围和版本提供交互参考，未确认模块稿、固定回答和历史 PASS 不替代正式规格或本候选验收。固定输入留测试/源码目录，原始生成报告留证据，不成为新的正式规范类型。
+
+[运行台账](plans/run-state.md)是现场、授权、暂停、当前阶段和下一动作的唯一入口；活跃计划拥有该任务目标、依赖和完成证据映射，完成后稳定事实回归所属规范，不保留第二份全局进度。
+
+### 维护入口
 
 维护文档时使用 `writing-for-agents`，按[文档维护](code-standards.md#文档维护)更新权威事实；保护边界见根 [AGENTS](../AGENTS.md#保护与完成标准)。本页只维护任务导航。
 

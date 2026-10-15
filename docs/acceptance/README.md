@@ -1,6 +1,6 @@
 # 验证入口
 
-执行者只读当前任务相关场景和测试入口。功能页提供局部验证；[完整矩阵](mvp-matrix.md)用于全范围交付；[质量样本](samples.md)用于材料、数学和目标 Office 核对。
+执行者只读当前任务相关判据和测试入口。本页维护验证选择、环境和运行入口；保护行为、测试选择或准备条件改变时同步，不积累执行日志。功能页只链接相关验收；[完整矩阵](mvp-matrix.md)用于全范围交付；[质量样本](samples.md)用于材料、数学和目标 Office 核对。
 
 ## 选择验证
 
@@ -18,7 +18,7 @@
 | 跨模块组合 | 受影响的真实跨模块路径及必要回归 |
 | 开发服务、组件挂载与清理 | [开发服务回归](#开发服务回归)，保留 React StrictMode，验证重复初始化后仍可读取、上传和保存 |
 
-测试文件/config 从[功能规格](../README.md#功能规格)进入；命令以根和各 workspace 的 `package.json` 为准。根 `npm run test:e2e` 与 `test:ci:browser` 使用同一组确定性产品回归，局部认证使用 `npm run test:auth:e2e`；准确范围由 `apps/web/e2e/ci.config.mjs` 的 project 与 `testMatch` 决定，不代表全部专项。模块验证使用相应配置，运行前核对其 `testMatch` 和候选。真实资源 OCR 运行链及题库外部 E 原稿仍使用显式专项入口，不纳入日常 CI。`.feature` 是带稳定编号的行为场景，目前不由 Cucumber 执行；实际反馈来自 HTTP/Playwright。各场景使用自己的 Background。旧场景中的“软删除”对应可恢复的归档/删除；永久删除另按模块规格验收，不用归档场景证明不可恢复操作。
+测试文件/config 从[模块与底座入口](#模块与底座入口)进入；命令以根和各 workspace 的 `package.json` 为准。根 `npm run test:e2e` 与 `test:ci:browser` 使用同一组确定性产品回归，局部认证使用 `npm run test:auth:e2e`；准确范围由 `apps/web/e2e/ci.config.mjs` 的 project 与 `testMatch` 决定，不代表全部专项。模块验证使用相应配置，运行前核对其 `testMatch` 和候选。真实资源 OCR 运行链及题库外部 E 原稿仍使用显式专项入口，不纳入日常 CI。`.feature` 是带稳定编号的行为场景，目前不由 Cucumber 执行；实际反馈来自 HTTP/Playwright。各场景使用自己的 Background。旧场景中的“软删除”对应可恢复的归档/删除；永久删除另按模块规格验收，不用归档场景证明不可恢复操作。
 
 引入 lint、hooks 或新验证工具前，先指出已有检查漏掉的具体问题，确认该工具确实能检出，并评估误报、重复覆盖及持续维护负担。现有构建、集成测试或人工浏览足以提供反馈时沿用；不因缺少某类工具而补齐工具清单。
 
@@ -49,13 +49,99 @@
 
 | 需要验证什么 | 入口与使用方法 |
 | --- | --- |
-| 公共文稿实际转换 | `apps/api/test/materials-pandoc.test.js` 使用公共转换器生成固定文稿的 DOCX/PDF，检查可编辑公式、正文与真实文件；不经过业务课稿编排入口。 |
-| Word/WPS 人工编辑与打印 | [Office fixtures](../../apps/web/e2e/fixtures/office/) 的六份 DOCX、源文本/公式/图片；按[人工操作](samples.md#人工-office-样本)核对。输入样本不是产品转换成功证明。 |
+| 公共文稿实际转换 | `apps/api/test/materials-pandoc.test.js` 使用公共转换器生成固定文稿的 DOCX/PDF，检查可编辑公式、正文与真实文件；不经过业务课稿编排入口；隔离公共材料服务由 `apps/api/test/fixtures/materials/server.mjs` 提供。 |
+| Word/WPS 人工编辑与打印 | [Office fixtures](../../apps/web/e2e/fixtures/office) 的六份 DOCX、源文本/公式/图片；按[人工操作](samples.md#人工-office-样本)核对。输入样本不是产品转换成功证明。 |
 | 设置/帮助外观 | 按[界面规则](../rules/design-and-verification.md)核对当前运行页面及用户指定参考；截图留本次验证产物 |
-| 题干/答案原稿独立定位 | 先运行 `node apps/web/e2e/fixtures/materials-questions/build.mjs` 构建隔离题库页面，再执行 `npx playwright test -c apps/web/e2e/fixtures/materials-questions/playwright.config.mjs materials-questions-fragments.spec.js`。该 test-principal fixture 使用自己的页面入口，不能用真实认证主应用构建替代。 |
+| 题干/答案原稿独立定位 | 先运行 `node apps/web/e2e/fixtures/materials-questions/build.mjs` 构建隔离题库页面，再执行 `npx playwright test -c apps/web/e2e/fixtures/materials-questions/playwright.config.mjs materials-questions-fragments.spec.js`。该 test-principal fixture 使用自己的页面入口与 API 建场 `apps/api/test/fixtures/questions/server.mjs`，不能用真实认证主应用构建替代。 |
 | Agent 真实模型保留库 | `apps/api/test/fixtures/c26/live.mjs` 生成模型报告和隔离数据；`apps/web/e2e/c26/agent.spec.js` 读取。二者共用 `AGENT_EVIDENCE_DIR`，默认 `test-results/evidence/C26/v1`。执行前核对报告与数据目录来自同一候选；新环境缺少它们时标记未验证，真实模型请求须有本次授权。Agent 扩展开发仍按[项目状态](../plans/run-state.md)暂停。 |
 | API 字段与兼容 | 从[文字契约](../README.md#契约说明)进入；机器契约在 `apps/api/src/contracts/`，交换样本在 `apps/api/test/fixtures/contracts/`。测试以固定样本和预期行为验证实现，不能只用实现自身生成预期结果。 |
 | 固定旧版升级 | `npm run test:api` 包含 A11/T53、R31 题库旧库升级及退役迁移；数学和材料旧版分别执行 `node scripts/math-support/verify-upgrade.mjs`、`node scripts/materials/verify-migration.mjs`。入口从 `apps/api/test/fixtures/legacy-source/` 的不可变源码包创建旧库，来源、路径和摘要见同目录 `provenance.json`；不需要旧 checkout、Git 归档引用或环境变量。归档内部保留当时的路径。 |
 | 数学旧库升级 | `apps/api/test/math-integration-migrations.test.js` 从固定旧版题库/数学源码包重建库、附件与请求回执，再验证保留模块的数据、文件、回执和重启，并确认退役模块表及迁移记录已清理。原版源码包保持字节固定；退役模块不成为当前功能兼容承诺。缺失或不支持的升级须如实报告，不把旧候选通过结果移用于新版本。 |
 | 外部 E 选页与跨页 | 按[质量样本](samples.md#固定输入与回放)下载并校验公开原件，设置 `M33_PRIVATE_PDF` 后运行 `npm run test:api`；`materials-questions.test.js` 与 `materials-questions-fragments.test.js` 分别核对选页及原件保留、受控提取结果的跨页关联。缺原件时两项明确跳过；这些检查不证明新的 GPU OCR 推理准确率。 |
 | 当前能力核查 | [项目状态的核查入口](../plans/run-state.md#核查入口)指向当前源码、固定样本和可重现测试；既往本机结果只证明当时的候选。新候选按影响范围补验，缺少输入或目标设备时记未验证。 |
+
+## 模块与底座入口
+
+下表只选择已有入口，不声明当前候选已经运行。具体 `testMatch`、CI 收集和前置条件以配置及 package scripts 为准；未纳入 CI 的专项按受影响范围定点运行，不能因入口旧或未进 CI 删除独有保护。
+
+| 范围 | 代码入口与判据 | 额外边界 |
+| --- | --- | --- |
+| 身份/交接/删除 | `auth-integration.config.mjs`、`auth-completeness.config.mjs`、`fixtures/auth-contract/playwright.config.mjs`；`auth-integration.test.js`、`account-deletion.test.js`；[认证案例](auth-cases.md) | 替身、real-auth/fake-mail、真实邮件与浏览器重开分开记录；fixture 单独构建不证明当前主应用已接入 |
+| 工作台/设置/帮助/导航 | `navigation-sync.config.mjs`、`settings-shell.config.mjs`、`settings-implementation.config.mjs`、`help-shell.config.mjs`；`navigation.test.js`、`reliability.test.js` | 核对当前已移除的设置入口，主题/语言/昵称/头像/退出/删号用真实页面 |
+| 共享保存/资料包/恢复 | `savable-document-recovery.config.mjs`、`manual-support/playwright.config.mjs`、`manual-data/manual-data.config.mjs`；`reliability.test.js`；[保存案例](workbench-cases.md)、[数据验收](data.md) | 历史专用 fixture 与当前主入口分开；恢复 UI 未接入时如实记录，不恢复已删除设置 |
+| 题库/收录 | `questions-ux.config.mjs`、`questions-recognition.config.mjs`、`questions-tables.spec.js`；`first-flow-questions.test.js`、`materials-questions*.test.js`、`materials-question-notes*.test.js` | 固定录制证明消费；实际 OCR、外部原件和新提取质量另验；详见[题库专项](#题库专项) |
+| 资源/预览/识别 | `resources-ui.config.mjs`、`manual-resources.config.mjs`；`materials-resources.test.js`；[材料案例](materials-cases.md) | 真实 Office/PDF 工具与真实 GPU 分开，预览需实际解码每页；[资源专项](#资源专项) |
+| 数学/网页桥/离线 | `math-unified.config.mjs`、`math-unified-repair.config.mjs`、`math-geogebra.config.mjs`；`math-workshop*.test.js`、`math-dynamic.test.js`、`math-isolation.test.js`；[数学案例](math-cases.md) | 浏览器替身不代签真实网页模型，离线必须下载冷启动；[数学专项](#数学专项) |
+| 日程 | `schedule/playwright.config.mjs` 按 capabilities/interaction/keyboard/consistency/time-zone spec 选择；`teaching-time-*.test.js`；[日程案例](schedule-cases.md) | 日常 CI 仅选择 39 条 capabilities，专项全目录共 371 条；具体范围以配置为准，不以 CI 通过替代全部专项；[日程专项](#日程专项) |
+| 班级后端 | [班级验收](classroom.md)内真实 HTTP/Excel/原卷与生命周期入口 | 无教师页面/实际 AI，不以目录注册冒充前端完成 |
+| AI 助理 | `agent.test.js`、[agent.feature](agent.feature)、`fixtures/c26/live.mjs` 与 `c26/agent.spec.js` | 后两者需要同候选保留库与明确真实调用授权，扩展暂停仍有效 |
+
+API 文件名相对 `apps/api/test/`，浏览器入口相对 `apps/web/e2e/`。表中的通配名用于检索，不能当作配置已经全量收集；命令仍从 package scripts 与对应 Playwright 配置取。
+
+## 题库专项
+
+- 普通题目保存先读[共享契约](../contracts/workbench.md)的身份、内容、引用及写入节；丰富题目、分类和校对再读[材料契约](../contracts/materials.md#内容)。字段只读对应 OpenAPI 操作，不需要通读其他模块或完整项目计划。
+- 当前交互浏览器验证 `apps/web/e2e/questions-ux.config.mjs`，用 `WORKBENCH_WEB_DIST` 指定隔离生产构建，覆盖录题、草稿、改编、分类、文字校对、结构编辑、搜索范围、拆分答案归属、未知保存恢复、归档与彻底删除、来源缺失/读取失败、详情返回及深浅色布局。文件上传另验 DOCX 段内换行、PDF 明示续题与缺页/倒序、双栏题干/选项/答案及入库来源页码、未分配片段处理后的保存重开；历史保存场景见 `manual-questions.config.mjs`。HTTP `apps/api/test/first-flow-questions.test.js`、`materials-questions*.test.js`；笔记兼容、出处与附件恢复另见 `materials-question-notes*.test.js`；保存基例 [WB-003/004/011-018](materials.feature)与[基础交换](workbench-cases.md)，材料基例 [WB-M001-012/025-028](materials.feature)。
+
+保存行为变更至少走自建、直接修改、复制改编、刷新重开；再覆盖本次影响的断线未确认、版本冲突、保存中继续输入、分类变更、身份切换和保存后取用。确认原 ID/来源快照/独立笔记正确，不能仅凭 toast 判断。当前能力边界见[项目状态](../plans/run-state.md)，回归从[核查入口](../plans/run-state.md#核查入口)进入。
+
+识别消费者使用 `apps/web/e2e/questions-recognition.config.mjs`；结构边界在 `questions-tables.spec.js` 和 API `materials-questions*.test.js`。固定输入及真实产物位置见[样本索引](samples.md#固定输入与回放)。回归核对原题、原有答案、公式、题图、来源页码、未分配范围、跨页阻断与人工状态；重试、取消和迟到结果不得覆盖已校对内容。表格列角色、同格多题配图、隐式续题等详细用例由相应测试维护。
+
+从界面上传、校对入库并刷新读回，实际阅读公式与配图并查看深浅主题和窄屏截图。固定产物回放只证明消费与保存；修改识别配置后须按[共用路线与验证](../contracts/recognition.md#路线与验证)重新验证真实原稿，不能复用旧缓存冒充新结果。外部 PDF 回放只需按样本索引下载原件并设置 `M33_PRIVATE_PDF`；固定 E7/E8/E9 机器结果随仓库根 `test/fixtures/questions/recognition-document-4/` 入库，测试核对完整原件与实际渲染页摘要。`QUESTIONS_OCR_EVIDENCE_DIR`、`QUESTIONS_OCR_EXPANDED_DIR` 仅用于替换同布局的回放目录；默认自编材料消费回归不需要这些变量。缺外部原件只跳过对应专项，不用受控转录代替真实输入通过。
+
+开发模式的列表读取、手动保存和刷新还须通过[开发服务回归](#开发服务回归)。组件重新初始化后恢复读取，过期请求的成功或失败都不能覆盖当前列表状态。
+
+## 资源专项
+
+文件身份、上传未知结果、补充预览、授权下载见[材料契约的文件与定位](../contracts/materials.md#文件与定位)；分类、文件更新及删除见相应契约节。原件和历史文件持续保留；上传后安全保存原件与预览成功是不同结果。
+
+实现与公共文件/任务路径见[资源技术入口](../subsystems/resources.md#运行路径与持久化)。真实认证浏览器流程入口 `apps/web/e2e/resources-ui.config.mjs`，用 `WORKBENCH_WEB_DIST` 指向[隔离构建](../SETUP.md#新的隔离环境)，截图和 trace 可用 `RESOURCE_UI_RESULTS` 指定目录。Office 格式专项入口 `apps/web/e2e/manual-resources.config.mjs`，HTTP `apps/api/test/materials-resources.test.js`，验收 [WB-M013-017](materials.feature)。
+
+按本次改动选择下列回归，执行范围与剩余验证见[项目状态](../plans/run-state.md)：
+
+- 收录与整理：真实上传、保存刷新、重复选择与队列接续；批量取消/过期版本整批拒绝；归档后返回、彻底删除确认/取消及刷新；请求未知结果按原键确认，账户隔离不变。
+- 预览与版本：真实 DOC/DOCX/PPT/PPTX/PDF/图片逐页解码、缩放和下载，Office 路径失效不影响独立格式。检查替换/历史恢复、分类备注和文件身份。图片 DOM 可见与页图实际载入分别检查，封面不替代内容。
+- 正文与页内查找：真实拖选、系统剪贴板、中英文及跨文字项命中、字面符号、当前页计数与键盘导航。检查当前文件替换/历史恢复、归档与筛选、快速翻页/账户变化的迟到结果；无文字和失败可区分且可重试。缩放 75%-200%、深浅主题和 390px 下实际检查高亮、选择复制与焦点。
+- OCR：沿同一真实认证、HTTP、Job、SQLite 和 Files 入口验证指定页、复制、搜索定位、停止/重试、响应丢失、断网接续、文件更新及来源一致。固定产物[回放](../../apps/web/e2e/fixtures/resources-recognition/README.md)只证明消费机制；获准的真实模型验证设置 `RESOURCE_OCR_REAL_HOME` 为[工具目录](../SETUP.md#本地页识别工具)，检查实际文字/公式/题图并保存页结果和截图，普通回归不启用模型。
+
+浏览器回归使用隔离构建；`RESOURCE_UI_DEV=1` 另验 Vite/StrictMode 的[开发服务路径](#开发服务回归)。上传、往返、刷新、中文文字层以及当前请求范围需有效，卸载或身份变化后旧响应不能覆盖现场。桌面辅助栏、窄屏、主题、提示消退和关闭焦点须实际查看。
+
+## 日程专项
+
+[日程场景](schedule.feature)中的日程、重复、提醒及通知返回是本分区判据，交换预期见[契约案例](schedule-cases.md)。两视口分别记录空态、长文本/重叠段、编辑、保存失败、冲突、删除、通知定位与返回，检查外壳不滚动、无页面级水平溢出、焦点和实际指针/触控。时间选择使用真实指针轨迹，不借合成事件证明；HTML 拖放排序与指针选段按设计规则分别记录。真实平板触控与完整日程链另验，当前候选从[核查入口](../plans/run-state.md#核查入口)选择回归。
+
+日程专项统一使用 `apps/web/e2e/schedule/playwright.config.mjs`，按实际行为选择 spec：
+
+| 要核对什么 | spec |
+| --- | --- |
+| 常规已纳入 CI 的日历能力 | `capabilities.spec.js` |
+| 真实指针、拖选/拖动和跨午夜/跨年交互 | `interaction.spec.js` |
+| Enter/Escape、字段/菜单、焦点、标签与输入法组合属性 | `keyboard.spec.js` |
+| 保存中继续输入、取消、冲突、迟到响应和未确认结果 | `consistency.spec.js` |
+| 系统时区同步、切换竞态、DST 与时间反馈 | `time-zone.spec.js` |
+
+例如仅验键盘时运行 `npx playwright test -c apps/web/e2e/schedule/playwright.config.mjs keyboard.spec.js`。`WORKBENCH_WEB_DIST` 指向隔离生产构建；各用例使用真实认证、API 和 SQLite 建独立场景，邮件为测试替身。输入法事件属性自动检查不代替真实系统输入法，指针/模拟触控不代替目标平板。
+
+当前常规 CI 只选择 capabilities 的 39 条；专项配置全目录为 371 条。这些数量描述已选集合，不表示本轮已运行或全部日程保证完成；变更后以实际 config/testMatch 和所选 spec 为准。开发者按影响定点运行，CI 外的键盘、保存竞态、时区或真实手势被改动时仍须补验，不默认全目录重跑。
+
+## 数学专项
+
+统一制作浏览器回归使用 `apps/web/e2e/math-unified.config.mjs`，连续输入、弹窗与播放使用 `math-unified-repair.config.mjs`；保存保护和取消分别使用 `math-geogebra.config.mjs` 中的具名场景。API 核验入口为 `apps/api/test/math-workshop.test.js`、`math-workshop-view.test.js` 和既有 `math-*.test.js`，固定输入在 `apps/api/test/fixtures/math-workshop/`。网页桥回归按[扩展说明](../../extensions/math-web-ai/README.md)执行。
+
+验收须操作真实界面、刷新读回并打开实际文件，区分作者自验、独立核验和用户目标环境。运行与必要回归只依赖仓库内源码、固定输入及按运行指南准备的工具；preview 的 `test-results/math-handoff/math-unified/` 只提供既有执行证据，不是安装或接手前置。整体完成条件与剩余验证在[项目状态](../plans/run-state.md)维护。
+
+## 账户与工作台专项
+
+交互动效、焦点、参考尺寸见[界面规则](../rules/design-and-verification.md)。修改设置时用 `apps/web/e2e/settings-shell.config.mjs` 的隔离真实认证/可靠性服务；帮助用 `help-shell.config.mjs`。资料包及备份恢复用 `manual-data/manual-data.config.mjs`，跨模块草稿、冲突和未确认请求用 `manual-support/playwright.config.mjs`；这些入口均相对于 `apps/web/e2e/`。
+
+完成相关 UI 修改应实际检查桌面及 390px 窄屏、各页面主题/背景组合、头像上传/删除同步侧栏及重新登录读回、键盘菜单、弹层退出中间态、快速反向和焦点恢复；同时确认偏好保存失败可重试、真实导出和退出可用。语言和删号使用 `apps/web/e2e/settings-implementation.config.mjs` 与 `apps/api/test/account-deletion.test.js` 验证真实认证、跨账户和未知结果。后端用 `apps/api/test/reliability.test.js` 核对账户隔离、版本冲突、旧字段兼容及头像输入校验。帮助另检查搜索空结果、无效文章、刷新返回和目录现场。当前验证入口见[核查入口](../plans/run-state.md#核查入口)。
+
+## AI 助理呈现专项
+
+C26/C27 用真实题目检查 1440×900、820×1180 和 390×844：首页、AI/工具切换、长对话与公式、历史弹层、草稿失败、冲突、停止/重连、操作结果打开后返回。截图与实际指针/键盘操作一起留证；测主要区域滚动独立、外壳无横向溢出、按钮可点击、焦点返回和新消息提示。既有原型只提供入口关系，未继承其固定回答或验收结论。
+
+## 共用测试输入与建场
+
+跨 API/浏览器消费的题库原稿、配图和录制识别结果归仓库根 `test/fixtures/questions/`；Web 独立页面的 build/config 留在 `apps/web/e2e/fixtures/materials-questions/`，API 建场归 `apps/api/test/fixtures/questions/server.mjs`。不要按路径名相近复制另一套材料，固定内容、摘要与来源说明随实际输入维护。
+
+共用真实认证数学建场为 `apps/api/test/fixtures/math-real.mjs`，公共材料服务为 `apps/api/test/fixtures/materials/server.mjs`。旧 core/dataStore、core/auth 只作为 `apps/api/test/fixtures/legacy-source/` 的兼容测试输入，不能据旧 helper 存在恢复产品 dataStore 接口；当前应用由公开 close 释放运行资源。固定归档内部路径和 provenance 摘要保持原版，不跟随当前源码改写。

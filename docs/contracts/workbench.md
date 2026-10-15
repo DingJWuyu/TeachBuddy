@@ -1,6 +1,6 @@
 # 共享保存与基础业务契约
 
-本页属于共享技术底座，拥有跨模块保存和失败语义；不定义工作台外壳或设置的产品范围。只改公共保存时读[写入、冲突与未知结果](#写入冲突与未知结果)及[保存与恢复反馈](#保存与恢复反馈)；题库基础 API 与兼容任务再读对象、引用及交换用例。认证由[auth](auth.md)定义；基础题目字段在 [workbench.openapi.yaml](../../apps/api/src/contracts/workbench.openapi.yaml)，丰富内容在[材料契约](materials.md)，数学引用在[数学契约](math.md)。正反交换见[基础案例](#基础交换用例)。
+修改公共保存或基础兼容协议时读本页；本页拥有跨模块保存和失败语义，保证改变时同步。不定义工作台外壳或设置的产品范围。只改公共保存时读[写入、冲突与未知结果](#写入冲突与未知结果)及[保存与恢复反馈](#保存与恢复反馈)；题库基础 API 与兼容任务再读对象、引用及交换用例。认证由[auth](auth.md)定义；基础题目字段在 [workbench.openapi.yaml](../../apps/api/src/contracts/workbench.openapi.yaml)，丰富内容在[材料契约](materials.md)，数学引用在[数学契约](math.md)。正反交换见[基础案例](../acceptance/workbench-cases.md)。
 
 身份、保存与冲突规则跨模块共用；下文的内容结构、搜索范围和删除接口描述基础题目 API。材料、数学及[日程](schedule.md)的扩展行为以各自契约为准。
 
@@ -55,85 +55,14 @@
 | 身份失效 | 隐藏业务内容并保留该账户本地草稿，提示重新登录 | 同账户重新验证后继续；异账户不能看到旧草稿；登录恢复由认证 transport 处理 |
 | 本地存储失败 | “草稿无法保留，请先保存”，不得显示已保留 | 在线保存或复制输入；离开/关闭前提示未保护输入，不能承诺强制关闭后的恢复 |
 
-本地草稿、提交中的原始请求、浏览现场按可信账户与当前浏览器分别保存；现场包括当前对象、搜索/过滤、多选顺序、每区滚动、展开项、对照、返回点、面板模式/开合和宽度。刷新先核对身份，再取服务器内容、恢复本地草稿与现场；基线版本不一致进入冲突。恢复草稿保留原编辑基线和未解决冲突；最新服务器对象只用于对照，读取失败也不抹去基线。旧请求确认后若服务器已有后续版本，以该请求的已确认结果作为草稿基线并展示最新对象，直到老师明确处理冲突。数据未加载完成前不错误清除选中和滚动锚点。共享保存消费者的浏览器回归入口为 `apps/web/e2e/savable-document-recovery.config.mjs`。
+本地草稿、提交中的原始请求、浏览现场按可信账户与当前浏览器分别保存；现场包括当前对象、搜索/过滤、多选顺序、每区滚动、展开项、对照、返回点、面板模式/开合和宽度。刷新先核对身份，再取服务器内容、恢复本地草稿与现场；基线版本不一致进入冲突。恢复草稿保留原编辑基线和未解决冲突；最新服务器对象只用于对照，读取失败也不抹去基线。旧请求确认后若服务器已有后续版本，以该请求的已确认结果作为草稿基线并展示最新对象，直到老师明确处理冲突。数据未加载完成前不错误清除选中和滚动锚点。浏览器保护与交换判据见[保存验收](../acceptance/workbench-cases.md)及[验证选择](../acceptance/README.md#模块与底座入口)。
 
 本地草稿不跨设备同步，换设备读取服务器已保存内容并采用当地现场；显式说明只在确有未保存草稿时出现，不常驻页面介绍。退出不主动抹除未保存草稿，重新验证同账户后可恢复；清理该设备数据会丢失本地草稿。API 停止期间刷新会保留本地记录，但身份无法核实时暂不展示，服务恢复并确认同账户后继续。身份切换或失效后到达的旧响应被丢弃，不进入新账户状态。
 
+## 账户偏好兼容
 
-## 共享实现
+`GET/PUT /api/reliability/v1/preferences` 的 `values` 拥有 `theme`（`light` / `dark`）、`background`（`grid` / `parchment` / `circles` / `stripes`）、`avatar`（WebP data URL，空字符串表示删除）和 `locale`（`zh-CN` / `en`）。默认浅色、网格、无头像、简体中文；旧账户读取补默认值，旧客户端省略新字段时保留已存值。精确输入校验与默认值由现行偏好接口定义。该接口还保留 `readingSize`、`motion`、`externalAi` 兼容字段；它们不构成当前设置 UI，也不扩大上文范围。
 
-### 模块与接缝
+客户端居中裁剪头像为 256 × 256 WebP；服务端校验实际格式、尺寸和单帧，限制 data URL 为 128 KiB、请求体为 144 KiB。头像与其他偏好沿现有账户版本、幂等键和身份隔离保存，不另建上传文件或数据库迁移。
 
-全局静态目录、API/Web 装配、共享事务与迁移入口统一见 [SETUP 的代码结构](../SETUP.md#代码结构) 和 [ADR 0001](../adr/0001-use-a-single-static-module-catalog.md)。各模块真实工厂、操作参数与可信调用见 [当前技术入口](../subsystems/README.md)，公共 files/content/jobs 见 [材料公共端口](materials.md#公共端口)。
-
-SQLite 业务写入和幂等成功记录同事务提交；同步 write 不进行网络调用。合法失败沿 `status/problem` 传播并回滚，未知存储错误回滚并映射 503。失败不清空其他模块现场。身份与原键确认的交换保证分别见本页[身份与 HTTP](#身份与-http)、[写入与未知结果](#写入冲突与未知结果)。
-
-### 持久化与演进
-
-| 数据 | 所有者 | 最小持久内容 |
-| --- | --- | --- |
-| 题目 | questions | 可信账户、稳定 ID、版本、题面/答案、独立笔记与标记、不可改来源、时间/软删除 |
-| 已确认请求 | 公共 mutations | 账户+键唯一、操作/请求指纹、成功状态码/响应，与业务同事务 |
-| 本地草稿/现场 | Web，各模块在外壳约定的账户分区内 | 服务器基线版本、编辑输入、未确认请求的原键/体、返回上下文及 UX 指定现场 |
-
-聚合存储由所属模块实现，外部只依赖 OpenAPI。更新请求不能接受客户端自造 snapshot。基础 v1 复制来源快照由 questions 持有，支持原题变化和删除后的阅读。文件与丰富内容由材料 v2 扩展，数学作品沿数学契约读取与保存。未知版本只读保留，不通过转换丢失内容，也不存任意 blob 充当扩展点。
-
-模块迁移只增不改，B12 迁移 runner 与共享存储改动独占。空库、固定输入的旧账户/布局库都需要迁移验证，保留原账户和布局。每个 worktree 独立数据库、文件目录与端口，禁止开发者共享同一写库。构建只验证代码/隔离 fixture 库，不初始化用户数据库；当前 `build:api` 使用临时隔离库核对装配。
-
-整体备份必须包含 SQLite（含来源、引用、幂等记录）及受管文件，恢复到新目录后核对稳定 ID/关系；本地草稿另按设备保留，不承诺换设备恢复未上传输入。
-
-## 基础交换用例
-
-本节消费工作台 `0.1.0-candidate.2` 与认证 `1.0.0-rc.2`，为设计用例，不是运行通过证据。字段和样本值唯一在 [OpenAPI](../../apps/api/src/contracts/workbench.openapi.yaml)；本页开头区分旧测试身份首流与当前认证接续。前端替身与后端 HTTP 集成都从 `components.examples` 取样本并按下表序列验证，不各造一套模型。
-
-### 可复现起点
-
-测试身份场景由 B12 runner 建独立空库、两名测试身份 A/B 和相互独立 Cookie jar；context 的 accountKey 由 runner 注入的服务端 principal 决定。消费当前 schema 的 HTTP fixture 也须带合法页面头，但 test-principal 不能证明 Cookie+页面绑定；真实认证按 C19-C21 建立身份。生产入口不得接受测试 bootstrap。清空测试目录可从零运行；“重启”必须保留同一 SQLite 和文件目录。样本均为本设计自写的高中数学题，不依赖外部文件或密钥。
-
-样本 `CreatePasted` 含题面“已知函数 f(x)=x²-2x，求最小值，并说明理由”、答案 -1、行内/独立 LaTeX 以及教学笔记；原稿有换行，需逐字保持。变式把题面公式改为 `g(x)=x^2-4x`，公式源为 `g(x)=(x-2)^2-4\geq -4`，结论 x=2 时最小值 -4。该公式在 JSON 中按正常反斜杠转义，不存二次转义字符串。
-
-样本中的题目 Q 使用示例 UUID。真实服务创建 Q 后以返回 ID 替换后续样本引用，不能假设服务端按示例 ID 分配。请求键 K1、K2 等均为互不相同的 UUID，重试同一逻辑操作保持原键。每个用例独立 reset，除明确的顺序操作外从同样空库开始。
-
-### 成功与恢复交换
-
-所有请求带浏览器 Cookie 与当前 `X-TeachBuddy-Page: P1`；P1 取外引 PageContext 的 example，仅为非秘密样本。写请求另带 `Content-Type: application/json`、`X-TeachBuddy-Request: 1`、`Idempotency-Key: K`；直接 HTTP 测试补可信 Origin。所有响应均验证 no-store、媒体类型和 schema。
-
-| 用例/BDD | 输入与前置状态 | 必须返回与检查 |
-| --- | --- | --- |
-| C01 / WB-001、002 | A POST questions/items，`CreateManual` 或 `CreatePasted`，K1 | 201 Question、version=1。GET 同 ID/内容/原稿；list q=配方 命中 note，q=不存在 返回空。B 的列表无此项。 |
-| C02 / WB-003 | GET Q v1；PUT Q，`UpdateQuestion`、K2 | 200 同 ID v2；只变已提交输入，source 不变。GET note 为新值。重复 K2 原请求仍返回 v2。 |
-| C03 / WB-004 | Q v1；POST Q/copies，`CopyQuestion` 替换变式公式/答案，K3 | 201 新 ID C v1；正文已是改编结果，source.questionId=Q、version=1、snapshot 是原题；原题不变，copies 可找到 C；分别编辑无联动。 |
-| C09 / WB-012 | POST 创建或 PUT 修改题目，事务提交后丢响应；重启 API，再同键同请求 | 重放原 201/200、同 ID/版本/快照，库中对象数不变；若其他操作已提高版本，重放旧结果后 GET 当前版，UI 不倒退。 |
-| C10 / WB-012、018 | 写事务提交前失败，再同键同请求 | 503 暂时不可用，业务和成功请求记录均无部分写；恢复后成功一次。并发发送两份相同键请求也仅提交一次。 |
-
-### 明确拒绝
-
-以下均在无其他竞争拒绝条件下建立。错误 JSON 的具体例子在 OpenAPI responses；不能只断言非 2xx。拒绝后读取原对象，确认版本、内容及关联无变化。
-
-| 用例/BDD | 触发 | 预期 |
-| --- | --- | --- |
-| C11 / WB-013 | Q 已 v2，PUT/复制/删除/恢复仍给 baseVersion=1 | 409 version-conflict，currentVersion=2；取当前版对照，以新键/新基线再提交。 |
-| C13 / WB-012 | 成功 K1 后，同账户以 K1 发送不同 body 或路径 | 409 idempotency-key-reused；原对象不变。另一账户同 K1 为自己的独立请求。 |
-| C14 / WB-016 | 无可信身份；B 读/写/复制/恢复 A 的 Q；查询 A Q 的 copies | 无身份 401 unauthenticated；跨账户统一 404 not-found，响应不带 A 内容/版本。伪造 accountId 请求体为未知字段，伪造身份头不能授权。 |
-| C15 / WB-018 | 错 Origin、Origin=null、缺保护头、无 Origin 且无有效 Referer | 403 request-not-allowed；有效 Origin 时不允许 Referer 覆盖，来源按协议/主机/端口完全匹配。 |
-| C16 / WB-014、018 | 非 JSON、错误 Content-Type、超过 2 MiB、未知字段、空白题面、未知文档版本/节点 | 分别 400 malformed-json、415 unsupported-media-type、413 payload-too-large；其他 422 invalid-input + field/reason。只返回一个错误：按 schema 字段顺序深度优先，数组按索引；根未知字段先于字段内容检查，同级未知字段按键名升序。 |
-| C17 / WB-009 | 复制/编辑已删除 Q | 409 object-deleted。GET 本账户已删除对象允许，恢复走 deletion。 |
-| C18 / WB-015、017 | 操作期间 context 变身份；旧响应随后返回；重新登录不同账户 | UI 丢弃旧响应，不能显示旧内容/草稿。返回原身份才解锁本地草稿；真实认证动作按认证契约验证，替身只能验证该边界。 |
-
-`invalid-input` 的 field 是 JSON Pointer，例如 `/statement/blocks/0`；缺少键、类型、范围、内容分别使用 schema 中的 reason。题目 title 可以空；未知内容版本使用 unsupported-content-version。
-
-### 真实认证页面接缝
-
-以下复用 WB-016/017/018 与认证 H02/H03、P06、CC-RESTORE 的行为；前端以同版认证/工作台 HTTP 替身验证发送与恢复，后端以真实认证模块 + 隔离 SQLite/HTTPS 验证授权及无写入，不依赖前端。最终 A11/A12 再用真实浏览器组合两侧。Cookie 从 I06 bootstrap 取得，不在样本或证据中写 Cookie 值。A 的身份样本为认证 `ActiveStatus`，工作台返回 `AuthenticatedContext`；真实运行将两者的示例 accountKey 同时替换为服务端实际稳定键。
-
-| 用例 | 输入与前置状态 | 返回、前端与后端断言 |
-| --- | --- | --- |
-| C19 / WB-016、018 | 同一 Cookie jar/P1 经 I01或I03得到 pending，再 I06 activate；使用 P1 请求 context、目录以及 C01-C10 的全部读写操作 | pending 时业务401；active后 context 返回200 AuthenticatedContext，与认证Account.accountKey一致；目录200 ModuleCatalog，业务成功按原样本。前端 transport 在受保护操作都发送当前页面头，保留原body/Idempotency-Key；后端仅以已验证 principal授权。 |
-| C20 / WB-016、018 | 同 Cookie：逐一省略页面头、空/31/33字符、含非十六进制字符、换成合法但未绑定的P2；另仅给合法P1而无Cookie。写请求的来源/保护头先保持合法 | 读写、context/目录均401，body取工作台responses/401的unauthenticated样本；前端锁住业务并复核认证状态，不当成字段422或认证409。后端无业务写入/幂等成功记录；同Cookie不能绕过页面绑定。再叠加错误写来源，先返回responses/403样本；GET不要求来源/保护头。 |
-| C21 / WB-017、018 | P1已active，刷新产生P2；分别验证page与remembered模式；再撤销/到期以及身份存储不可读 | P2在restore前业务401；page模式回登录，remembered按I06恢复成功后以P2得到相同accountKey及原内容。撤销/到期后401；存储不可读映射工作台503样本，不能回退旧身份。前端丢弃P1的迟到响应并保持草稿账户分区；后端实时复核绑定，不自动用恢复指针授权。 |
-
-### UI 独有与故障响应
-
-WB-010/011 不新增草稿或现场 API：在可信账户分区保存文稿、原请求和视图；刷新后先 context 再 GET，服务器已变则冲突。本地缓存无服务器确认不能显示已保存。未知 2xx 结构、未知 Problem、5xx、断线/超时一律进入结果未确认，保持同键原体直到确认；schema 替身需覆盖这些分支，B15 必须用真实提交/断响应复验。
-
-重放成功后立即继续本地输入时，先 GET 当前对象；未被其他操作更改时以重放结果版本作为新基线，若服务器还有其他变化进入对照，不自动覆盖。pending 原始请求与新输入分开存放。测试通过记录必须区分 frontend-substitute、real-api/test-principal、real-auth；本文件不声明任何一类已通过。
+偏好保存沿本页版本、原键核实和身份规则。界面入口与行为见[账户外观](../features/workbench.md#账户外观与共享呈现)，具体实现见[公共底座](../subsystems/foundation.md#工作台外壳偏好与支持页)。

@@ -1,6 +1,6 @@
 # 认证交换用例
 
-状态：`AUTH-CONTRACT-CORRECTION@1 / FROZEN`，消费认证 `1.0.0-rc.2`。本文件是可执行实现的验收规格，不是已通过记录。规范字段、完整样本和错误身份唯一见 [OpenAPI](../../apps/api/src/contracts/auth.openapi.yaml)，业务时点与恢复语义见 [契约入口](auth.md)。以下 CC 组覆盖入口所映射的 CA，表内子编号用于实现证据定位。
+状态：`AUTH-CONTRACT-CORRECTION@1 / FROZEN`，消费认证 `1.0.0-rc.2`。本文件是实现验收规格，不是已通过记录。规范字段、完整样本和错误身份唯一见 [OpenAPI](../../apps/api/src/contracts/auth.openapi.yaml)，业务时点与恢复语义见 [契约入口](../contracts/auth.md)。以下 CC 组覆盖入口所映射的 CA，表内子编号用于实现证据定位。
 
 ## 公共运行条件
 
@@ -19,7 +19,7 @@ API 侧通过真实 HTTP、独立 SQLite、可控时钟和可控投递 adapter �
 | P03，JSON `null`/数组、额外 `confirmPassword`、缺 email、email=123 | 依次 422 invalid-request-body、unknown-field、required-field(field=email)、invalid-field-type(field=email) | 正常 UI 不发送这些请求；替身错误仍能安全呈现 | 对每个适用操作遍历 required 和字段类型，未知字段先于必填，严格拒绝 null 和隐式转换 |
 | P04，返回合法结果带附加属性；再移除必填/改已声明类型/未知 type/未知 HTTP 状态 | 附加属性忽略；其余不当作成功 | I01 为 S36，发码不进入第二步，I03/I05 按 CC-UNKNOWN，I06 不进入工作台 | 产出响应都符合相应操作 schema，错误 status 若存在等于实际状态 |
 | P05，全部成功/失败/204/GET，跨站表单和跨源 fetch | 全部 no-store；204 无 body；跨站 POST 403 | 不从应用缓存/Service Worker 读取身份 | 无跨源允许头；检查 Cookie 固定属性；不因浏览器阻止读取就跳过服务器防护 |
-| P06，认证操作缺/非法页面头；仅伪造页面头、accountKey、Authorization 或别容器 sessionId | 认证操作为409 browser-context-required；有效页面头但无授权按相应匿名/401 结果。工作台结果见 [C19-C21](workbench.md#真实认证页面接缝) | 前端 transport 为认证和业务请求附当前 P | 无 Cookie+绑定不授权；Bearer 和客户端 accountKey 不提供身份 |
+| P06，认证操作缺/非法页面头；仅伪造页面头、accountKey、Authorization 或别容器 sessionId | 认证操作为409 browser-context-required；有效页面头但无授权按相应匿名/401 结果。工作台结果见 [C19-C21](workbench-cases.md#真实认证页面接缝) | 前端 transport 为认证和业务请求附当前 P | 无 Cookie+绑定不授权；Bearer 和客户端 accountKey 不提供身份 |
 
 ## CC-HAPPY 登录、注册及身份
 
@@ -106,3 +106,40 @@ API 侧通过真实 HTTP、独立 SQLite、可控时钟和可控投递 adapter �
 | EXT02，服务进程重启、浏览器重开、两设备A/B、旧库迁移 | 真实密码/昵称/稳定键/会话到期/撤销仍满足上述交换 | 正式三视口E2E及可恢复失败 | 真SQLite事务/迁移/恢复证据；秘密不入日志；真实认证不能以test-principal通过 |
 
 本页定义验收条件；当前接线状态、验证入口与目标环境缺口见[项目状态](../plans/run-state.md)。前端替身、真实 API + fake-mail、真实邮件端到端分开表达，未提供的外部条件仍未验证，不用局部结果关闭完整 A12。
+
+## 上游归属与覆盖
+
+CC-* 用例定义在本页。每个范围内 CA 在下表有唯一入口；纯 UI 场景由前端验证，不为其创建 HTTP。
+
+| CA | 交互/归属 | 用例 |
+| --- | --- | --- |
+| CA01、CA05、CA08、CA10、CA19、CA26、CA28、CA29、CA37、CA39、CA40 | 前端表单、键盘、显隐、确认密码、返回/绑定展示 | CC-UI |
+| CA02、CA03、CA04、CA11、CA12、CA15、CA16、CA17、CA18、CA20、CA21、CA23、CA24、CA30、CA31、CA33、CA34、CA36 | 本地校验；绕过前端的 I01-I05 独立拒绝 | CC-INPUT |
+| CA06、CA09、CA49、CA50、CA51、CA95 | I01/I03/I06 会话寿命 | CC-SESSION |
+| CA07、CA25、CA76 | I01/I03/I06 身份交接；引导与账号行归工作台 | CC-HAPPY |
+| CA13、CA14、CA27、CA32、CA55、CA56、CA60、CA61、CA62、CA64、CA78、CA94 | I02/I04 发码/重发/绑定 | CC-SEND |
+| CA22、CA35、CA57、CA58、CA59、CA92、CA93、CA105 | I03/I05 挑战验证 | CC-CODE |
+| CA38、CA54、CA63 | I05 重置与新密码登录 | CC-RESET |
+| CA41、CA42、CA44、CA45、CA46、CA77、CA100、CA107 | I01 凭据与服务失败 | CC-LOGIN-FAIL |
+| CA43、CA47、CA48、CA82、CA83、CA84、CA85、CA86、CA87、CA88、CA89、CA90、CA91 | I01-I06 请求快照/迟到 | CC-RACE |
+| CA65、CA66、CA104 | I02/I03/I06 注册关闭 | CC-CLOSED |
+| CA67、CA68、CA101、CA102、CA103 | I01-I05 未知结果 | CC-UNKNOWN |
+| CA69、CA70 | I03/I05 持久回滚 | CC-STORE |
+| CA71、CA79、CA80、CA81、CA120 | I06/I07 保存失败、继续、重试、放弃 | CC-PENDING |
+| CA72、CA73、CA96、CA97、CA98、CA106 | I06 恢复等待/故障 | CC-RESTORE |
+| CA52、CA99、CA108、CA109 | I05/I06 目标撤销及隔离 | CC-ISOLATION |
+| CA74、CA75、CA110、CA111、CA112、CA113、CA114、CA115、CA116、CA117、CA118、CA119 | 精确输入、规范化、首错 | CC-BOUNDARY |
+| CA53 | 设置退出调用 I07 | CC-LOGOUT |
+
+| 状态 | 契约归属 |
+| --- | --- |
+| S7 | 工作台已有引导，只消费成功交接 |
+| S14-S18 | 前端表单；I01-I05、I06 的入口/成功结果 |
+| S19-S20 | 本地错误或对应字段 Problem |
+| S21 | active 身份交接到工作台；pending 不得进入 |
+| S36-S37 | 已知失败或重置 204 的结果反馈 |
+| S38-S41 | 请求等待、发码冷却、验证结果和绑定邮箱 |
+| S42 | 保留但当前不产生，无对应新接口 |
+| S43-S44 | 注册关闭和业务结果未知 |
+| S45-S47 | I06 的保存失败、恢复等待、恢复失败 |
+

@@ -100,16 +100,6 @@ DOCX 保留段内换行和制表符，换行后的题号与答案标记可分别
 
 PPT 素材支持复制题面文字与 LaTeX 源、下载透明题面 PNG 分片和单幅配图。复制按钮在写入剪贴板后反馈成功；浏览器拒绝或不支持时，选中就近源文本供手工复制；具体像素/分片与权限在[材料契约](../contracts/materials.md#引用和输出)，不承诺自动制作整套 PPT。
 
-## 接口、代码与判断结果
+## 接口与验收
 
-- 普通题目保存先读[共享契约](../contracts/workbench.md)的身份、内容、引用及写入节；丰富题目、分类和校对再读[材料契约](../contracts/materials.md#内容)。字段只读对应 OpenAPI 操作，不需要通读其他模块或完整项目计划。
-- 页面、校对、提取和保存实现沿[题库技术入口](../subsystems/questions.md#运行路径与持久化)定位。
-- 当前交互浏览器验证 `apps/web/e2e/questions-ux.config.mjs`，用 `WORKBENCH_WEB_DIST` 指定隔离生产构建，覆盖录题、草稿、改编、分类、文字校对、结构编辑、搜索范围、拆分答案归属、未知保存恢复、归档与彻底删除、来源缺失/读取失败、详情返回及深浅色布局。文件上传另验 DOCX 段内换行、PDF 明示续题与缺页/倒序、双栏题干/选项/答案及入库来源页码、未分配片段处理后的保存重开；历史保存场景见 `manual-questions.config.mjs`。HTTP `apps/api/test/first-flow-questions.test.js`、`materials-questions*.test.js`；笔记兼容、出处与附件恢复另见 `materials-question-notes*.test.js`；保存基例 [WB-003/004/011-018](../acceptance/first-flow.feature)，材料基例 [WB-M001-012/025-028](../acceptance/materials.feature)。
-
-保存行为变更至少走自建、直接修改、复制改编、刷新重开；再覆盖本次影响的断线未确认、版本冲突、保存中继续输入、分类变更、身份切换和保存后取用。确认原 ID/来源快照/独立笔记正确，不能仅凭 toast 判断。当前能力边界见[项目状态](../plans/run-state.md)，回归从[核查入口](../plans/run-state.md#核查入口)进入。
-
-识别消费者使用 `apps/web/e2e/questions-recognition.config.mjs`；结构边界在 `questions-tables.spec.js` 和 API `materials-questions*.test.js`。固定输入及真实产物位置见[样本索引](../acceptance/samples.md#固定输入与回放)。回归核对原题、原有答案、公式、题图、来源页码、未分配范围、跨页阻断与人工状态；重试、取消和迟到结果不得覆盖已校对内容。表格列角色、同格多题配图、隐式续题等详细用例由相应测试维护。
-
-从界面上传、校对入库并刷新读回，实际阅读公式与配图并查看深浅主题和窄屏截图。固定产物回放只证明消费与保存；修改识别配置后须按[共用路线与验证](../contracts/recognition.md#路线与验证)重新验证真实原稿，不能复用旧缓存冒充新结果。外部 PDF 回放只需按样本索引下载原件并设置 `M33_PRIVATE_PDF`；固定 E7/E8/E9 机器结果随 `recognition-document-4/` 入库，测试核对完整原件与实际渲染页摘要。`QUESTIONS_OCR_EVIDENCE_DIR`、`QUESTIONS_OCR_EXPANDED_DIR` 仅用于替换同布局的回放目录；默认自编材料消费回归不需要这些变量。缺外部原件只跳过对应专项，不用受控转录代替真实输入通过。
-
-开发模式的列表读取、手动保存和刷新还须通过[开发服务回归](../acceptance/README.md#开发服务回归)。组件重新初始化后恢复读取，过期请求的成功或失败都不能覆盖当前列表状态。
+普通保存与失败见[共享契约](../contracts/workbench.md)，丰富内容、分类、收录与输出见[材料契约](../contracts/materials.md)。当前页面、校对和提取路径见[题库技术入口](../subsystems/questions.md)。真实上传、保存重开、识别回放/真实原稿及外部 E 条件见[题库专项](../acceptance/README.md#题库专项)，质量阈值见[提取判据](../acceptance/mvp-matrix.md#extraction)。

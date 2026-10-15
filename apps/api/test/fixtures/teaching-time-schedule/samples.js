@@ -1,5 +1,5 @@
 /**
- * Fixed schedule samples; behavior cases are in docs/contracts/schedule-cases.md.
+ * Fixed schedule samples; behavior cases are in docs/acceptance/schedule-cases.md.
  * Machine exchange samples live in test/fixtures/contracts/schedule-v1-samples.json.
  */
 export const SAMPLE_IDS = Object.freeze({

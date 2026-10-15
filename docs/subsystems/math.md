@@ -34,8 +34,8 @@ const result = await math.port.operations.exportWork({
 - 普通源沿 [render](../../apps/api/src/modules/math/render.js) 与 [render-worker](../../apps/api/src/modules/math/render-worker.js)；工坊沿 [workshop-render](../../apps/api/src/modules/math/workshop-render.js)，生成固定 PNG/SVG 后存 File。纯公式与数学视图保留各自格式限制。
 - 离线演示沿 [presentation](../../apps/api/src/modules/math/presentation.js) 或 [workshop-presentation](../../apps/api/src/modules/math/workshop-presentation.js)，使用公开 shared 入口打包本地运行资源；外部 HTML 使用隔离包装器，边界见 [隔离语义](../contracts/math.md#导出与-html-隔离)。
 
-网页助理的 [web-ai](../../apps/web/src/features/math/web-ai/) 通过 [浏览器扩展](../../extensions/math-web-ai/README.md) 接老师的 DeepSeek 页面；构造执行仍由编辑器校验/读回，不成为服务器任意 JS、文件或 SQL 工具。当前 workshop 与旧源共存，兼容/未知 renderer 与源版本处理见数学契约。
+网页助理的 [web-ai](../../apps/web/src/features/math/web-ai) 通过 [浏览器扩展](../../extensions/math-web-ai/README.md) 接老师的 DeepSeek 页面；构造执行仍由编辑器校验/读回，不成为服务器任意 JS、文件或 SQL 工具。当前 workshop 与旧源共存，兼容/未知 renderer 与源版本处理见数学契约。
 
 ## 验证入口
 
-[math-integration.test.js](../../apps/api/test/math-integration.test.js) 覆盖 HTTP、账户、版本与重放；[math-workshop.test.js](../../apps/api/test/math-workshop.test.js)、[math-workshop-view.test.js](../../apps/api/test/math-workshop-view.test.js)、[math-geogebra.test.js](../../apps/api/test/math-geogebra.test.js) 覆盖源、视窗与真实制品。当前统一制作浏览器从 [math-unified.config.mjs](../../apps/web/e2e/math-unified.config.mjs) 和 [math-unified-repair.config.mjs](../../apps/web/e2e/math-unified-repair.config.mjs) 进入，保存保护与取消另用 [math-geogebra.config.mjs](../../apps/web/e2e/math-geogebra.config.mjs) 的具名场景。[math-dynamic.test.js](../../apps/api/test/math-dynamic.test.js) 与 [math-isolation.test.js](../../apps/api/test/math-isolation.test.js) 沿真实 HTTP 下载、停服和冷启动打开离线成果，分别检查兼容动态运行与隔离边界。课堂 ZIP/HTML 必须实际解压、禁网冷启动并操作；扩展真实连接、目标触屏/Office 等条件见 [数学验证](../features/math.md#验证入口)，不能由包解析或文件存在代签。执行范围沿 [CI 分工](../agents/github-workflow.md#ci-与本地验证)。
+入口和受影响场景统一从[数学验证](../acceptance/README.md#数学专项)选择，执行分工沿[CI 与本地验证](../agents/github-workflow.md#ci-与本地验证)。制品须沿真实 HTTP 下载、停服并禁网冷启动；包解析不证明离线可操作，浏览器网页替身不证明真实模型。技术入口只描述调用路径，不声明本候选通过。

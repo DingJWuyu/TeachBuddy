@@ -2,7 +2,7 @@
 
 I01-I07 采用认证 `1.0.0-rc.2` 与基础工作台 `0.1.0-candidate.2` 的 PageContext 约定。源版本 `6f3003250d170b44e89f6ac9b0a74f91d658a357`，协议已冻结且真实接入；接线状态与目标环境缺口见[账户规格](../features/identity.md)和[能力证据](../plans/run-state.md#核查入口)。
 
-[OpenAPI](../../apps/api/src/contracts/auth.openapi.yaml)拥有方法、地址、字段、状态码与样本；本文拥有跨操作语义；[交换用例](auth-cases.md)拥有前后端独立验证条件。接线见[技术接线](../features/identity.md#技术接线)，页面见[账户规格](../features/identity.md)。原型 CA/S 编号用于追溯表单场景，入口为[认证行为](../../prototype/behavior/auth.md)，不代表产品已通过对应场景。
+[OpenAPI](../../apps/api/src/contracts/auth.openapi.yaml)拥有方法、地址、字段、状态码与样本；本文拥有跨操作语义；[交换用例](../acceptance/auth-cases.md)拥有前后端独立验证条件。接线见[技术接线](../subsystems/identity.md#页面与可信调用)，页面见[账户规格](../features/identity.md)。原型 CA/S 编号用于追溯表单场景，入口为[认证行为](../../prototype/behavior/auth.md)，不代表产品已通过对应场景。
 
 覆盖登录、开放注册、两类发码、重置、恢复、记住我失败恢复和退出交换。设置退出已接入真实 I07；CA53 编号仍对应退出场景。注册默认开放，关闭只阻止新注册及注册发码。条款链接不跳转；I08 提供教师自助永久删除；不新增管理后台、条款版本、刷新令牌或 Bearer。术语沿用 [GLOSSARY](../../GLOSSARY.md)；本包的会话、挑战和页面上下文是协议术语，不更改业务词义。
 
@@ -65,41 +65,7 @@ Cookie 被浏览器完全禁用时，没有任何可用当前会话，应停在�
 
 设置退出、放弃 pending 和放弃恢复由同一账户动作确认结果；未决目标按 sessionId 持久保留，不保存 Cookie、页面头或密码，也不提供业务授权。刷新后的新页先读取 I06，仅对匹配的未决目标阻止恢复，不锁住另一可信账户。当前页保持原页面头完成定向 I07，确认后再旋转页面上下文、bootstrap 并 GET 确认 Cookie；本次准备不自动采用另一 remembered 身份。退出状态由账户提供，设置路由卸载不丢失核实提示。
 
-## 上游归属与覆盖
-
-用例编号 CC-* 均见 [auth-cases](auth-cases.md)。每个范围内 CA 在下表有唯一入口；纯 UI 场景由前端验证，不为其创建 HTTP。
-
-| CA | 交互/归属 | 用例 |
-| --- | --- | --- |
-| CA01、CA05、CA08、CA10、CA19、CA26、CA28、CA29、CA37、CA39、CA40 | 前端表单、键盘、显隐、确认密码、返回/绑定展示 | CC-UI |
-| CA02、CA03、CA04、CA11、CA12、CA15、CA16、CA17、CA18、CA20、CA21、CA23、CA24、CA30、CA31、CA33、CA34、CA36 | 本地校验；绕过前端的 I01-I05 独立拒绝 | CC-INPUT |
-| CA06、CA09、CA49、CA50、CA51、CA95 | I01/I03/I06 会话寿命 | CC-SESSION |
-| CA07、CA25、CA76 | I01/I03/I06 身份交接；引导与账号行归工作台 | CC-HAPPY |
-| CA13、CA14、CA27、CA32、CA55、CA56、CA60、CA61、CA62、CA64、CA78、CA94 | I02/I04 发码/重发/绑定 | CC-SEND |
-| CA22、CA35、CA57、CA58、CA59、CA92、CA93、CA105 | I03/I05 挑战验证 | CC-CODE |
-| CA38、CA54、CA63 | I05 重置与新密码登录 | CC-RESET |
-| CA41、CA42、CA44、CA45、CA46、CA77、CA100、CA107 | I01 凭据与服务失败 | CC-LOGIN-FAIL |
-| CA43、CA47、CA48、CA82、CA83、CA84、CA85、CA86、CA87、CA88、CA89、CA90、CA91 | I01-I06 请求快照/迟到 | CC-RACE |
-| CA65、CA66、CA104 | I02/I03/I06 注册关闭 | CC-CLOSED |
-| CA67、CA68、CA101、CA102、CA103 | I01-I05 未知结果 | CC-UNKNOWN |
-| CA69、CA70 | I03/I05 持久回滚 | CC-STORE |
-| CA71、CA79、CA80、CA81、CA120 | I06/I07 保存失败、继续、重试、放弃 | CC-PENDING |
-| CA72、CA73、CA96、CA97、CA98、CA106 | I06 恢复等待/故障 | CC-RESTORE |
-| CA52、CA99、CA108、CA109 | I05/I06 目标撤销及隔离 | CC-ISOLATION |
-| CA74、CA75、CA110、CA111、CA112、CA113、CA114、CA115、CA116、CA117、CA118、CA119 | 精确输入、规范化、首错 | CC-BOUNDARY |
-| CA53 | 设置退出调用 I07 | CC-LOGOUT |
-
-| 状态 | 契约归属 |
-| --- | --- |
-| S7 | 工作台已有引导，只消费成功交接 |
-| S14-S18 | 前端表单；I01-I05、I06 的入口/成功结果 |
-| S19-S20 | 本地错误或对应字段 Problem |
-| S21 | active 身份交接到工作台；pending 不得进入 |
-| S36-S37 | 已知失败或重置 204 的结果反馈 |
-| S38-S41 | 请求等待、发码冷却、验证结果和绑定邮箱 |
-| S42 | 保留但当前不产生，无对应新接口 |
-| S43-S44 | 注册关闭和业务结果未知 |
-| S45-S47 | I06 的保存失败、恢复等待、恢复失败 |
+认证 CA/S 到 CC 组的追溯由[认证案例](../acceptance/auth-cases.md#上游归属与覆盖)维护；映射不声明当前产品已通过。
 
 ## 账户删除交换 I08
 

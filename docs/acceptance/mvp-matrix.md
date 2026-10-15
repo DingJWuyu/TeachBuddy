@@ -6,9 +6,9 @@
 
 | 产品分区 | 行为与验证入口 | 完整核查要点 |
 | --- | --- | --- |
-| 账户与身份 | [行为与验证](../features/identity.md)、[auth.feature](auth.feature)、[认证案例](../contracts/auth-cases.md) | 真实登录/恢复/退出、账户删除、邮件与页面绑定、第二设备/账户隔离及恢复后旧身份失效 |
+| 账户与身份 | [行为与验证](../features/identity.md)、[auth.feature](auth.feature)、[认证案例](auth-cases.md) | 真实登录/恢复/退出、账户删除、邮件与页面绑定、第二设备/账户隔离及恢复后旧身份失效 |
 | 工作台与设置 | [行为与验证](../features/workbench.md)、[界面规则](../rules/design-and-verification.md) | 各分区草稿/选择/滚动、失效身份接入、导航和偏好真实生效、当前删减、帮助可达、渐进交互 |
-| 题库 | [行为与验证](../features/questions.md)、[first-flow.feature](first-flow.feature)、[materials.feature](materials.feature) | 四入口原稿、提取校对、自建/修改/复制、笔记/标记/分类、检索、保存刷新、幂等/冲突/未知恢复 |
+| 题库 | [行为与验证](../features/questions.md)、[材料与保存场景](materials.feature)、[基础交换](workbench-cases.md) | 四入口原稿、提取校对、自建/修改/复制、笔记/标记/分类、检索、保存刷新、幂等/冲突/未知恢复 |
 | 资源库 | [行为与验证](../features/resources.md)、[materials.feature](materials.feature) | 文件收录、分类/检索、实际预览、替换与历史版本、归档、恢复和彻底删除 |
 | 数学工坊 | [行为与验证](../features/math.md)、[math.feature](math.feature) | 可改源码、公式/函数/平面/空间/动态、HTML 隔离、离线 |
 | 班级 | [班级行为](../features/classroom.md)、[后端验收](classroom.md) | 名单/座位/自由记录、真实 Excel 与原卷、校对确认及跨考统计、数据生命周期；界面和 AI 接入另行验收 |

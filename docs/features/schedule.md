@@ -66,19 +66,6 @@
 
 窄屏短时段卡片只显示标题，完整事项在右栏；按需弹窗和任务编辑各自滚动，末尾事项与操作可达。
 
-## 接口与实现
+## 接口与验收
 
-日程工厂、提醒组合、只读 port 与 HTTP 写入路径统一见[日程技术入口](../subsystems/schedule.md)。
-
-时间算法、重复与提醒结算见[日程契约](../contracts/schedule.md#安排事项与排序)，时区见[账户时区与日期](../contracts/schedule.md#账户时区与日期)，端口及版本见[日程技术入口](../subsystems/schedule.md#责任与调用面)。未来 AI 接入须复用所属业务校验与幂等提交，当前四模块助理尚未接线。
-
-重复实例查询时展开原始日期并应用例外，再按实际区间筛选，必须覆盖从区间外移入的例外。删除/恢复保留实例身份、例外和通知痕迹。迁移只追加，保留原记录、来源顺序及旧幂等回执；用空库和旧库验证重启，实际数据备份见[数据管理](data.md#部署备份与还原)。
-
-## 验证入口
-
-[日程场景](../acceptance/schedule.feature)中的日程、重复、提醒及通知返回是本分区判据，交换预期见[契约案例](../contracts/schedule-cases.md)。两视口分别记录空态、长文本/重叠段、编辑、保存失败、冲突、删除、通知定位与返回，检查外壳不滚动、无页面级水平溢出、焦点和实际指针/触控。时间选择使用真实指针轨迹，不借合成事件证明；HTML 拖放排序与指针选段按设计规则分别记录。真实平板触控与完整日程链另验，当前候选从[核查入口](../plans/run-state.md#核查入口)选择回归。
-
-日程键盘、字段容量、取消与异步保存恢复使用 `apps/web/e2e/calendar-fixes-enter.config.mjs` 、`apps/web/e2e/calendar-keyboard-ux.config.mjs` 与 `apps/web/e2e/calendar-dialog-keyboard.config.mjs`。`WORKBENCH_WEB_DIST` 指向隔离生产构建；用例通过真实认证、API 与 SQLite 建立独立场景，邮件为测试替身。日程旧路径和系统时区另按各 `calendar-*.config.mjs` 选择回归；输入法键盘属性可自动验证，真实系统输入法另验。
-
-
-系统时区同步、切换竞态、夏令时与拖选范围反馈的浏览器验证入口为 `apps/web/e2e/calendar-time-zone.config.mjs`。
+时间、重复、提醒结算和兼容保证见[日程契约](../contracts/schedule.md)，实际工厂、只读 port 与 HTTP 写入见[日程技术入口](../subsystems/schedule.md)。行为判据见[日程场景](../acceptance/schedule.feature)，交换预期见[日程案例](../acceptance/schedule-cases.md)，浏览器键盘/时区与真实手势的入口和未验边界见[日程专项](../acceptance/README.md#日程专项)。未来 AI 写入须按当前公开操作接入，不据现有只读端口推定工具已完成。

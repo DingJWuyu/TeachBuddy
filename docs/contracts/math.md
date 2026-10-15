@@ -1,6 +1,6 @@
 # 数学契约：作品、源、版本与导出
 
-数学设计已采用。字段唯一归 [math.openapi.json](../../apps/api/src/contracts/math.openapi.json)，[cases](#数学交换用例)与[samples](../../apps/api/test/fixtures/contracts/math-samples.json)用于交换验证；制作行为见[工坊规格](../features/math.md)，技术接缝见[数学架构](../features/math.md#制作实现)。这些定义不声明所有目标环境已经通过。
+修改作品源、数学解释、版本/导出或隔离保证时读本页；接口或数学语义变化时同步。字段唯一归 [math.openapi.json](../../apps/api/src/contracts/math.openapi.json)，[cases](../acceptance/math-cases.md)与[samples](../../apps/api/test/fixtures/contracts/math-samples.json)用于交换验证；制作行为见[工坊规格](../features/math.md)，技术接缝见[数学架构](../subsystems/math.md)。这些定义不声明所有目标环境已经通过。
 
 ## 共同协议与身份
 
@@ -79,13 +79,9 @@ sandbox 隔离读取，CSP限制资源，不是完整恶意代码沙箱或可证
 
 UTF-8且≤1 MiB的HTML支持源码编辑/运行副本；更大或无法UTF-8解码的原件可保存/下载，尝试执行/编辑返回明确受限（source-too-large 413，编码不支持422 unsupported-export），不有损改码。母页面退出或账户代次改变销毁iframe及源码视图；预览异常可停止，不能宣称任意恶意无限循环都能无卡顿回收。
 
-## 目录与公共端口
+## 目录兼容与调用
 
-当前组合使用 ModuleCatalogV4（version=4）；历史目录版本是兼容输入，不能当作当前响应。目录与应用装配见 [SETUP](../SETUP.md#代码结构)。
-
-## 公共端口
-
-数学工厂、操作参数、可信身份、异步准备/事务提交、持久化及产物路径统一见 [数学技术入口](../subsystems/math.md)。DTO 仍以本页链接的 schema 为准，引用读取与文件保留保证仍沿本页交换语义。
+当前组合使用 ModuleCatalogV4（version=4）；历史目录版本是兼容输入，不能当作当前响应。[应用装配](../subsystems/README.md#代码结构)和[数学技术入口](../subsystems/math.md)拥有工厂、可信调用、异步准备/提交与持久化路径。DTO 归本页链接的 schema，历史引用/文件保留保证仍沿本页语义。
 
 ## 错误与恢复
 
@@ -103,41 +99,3 @@ UTF-8且≤1 MiB的HTML支持源码编辑/运行副本；更大或无法UTF-8解
 | 存储或生成临时故障 | 503 temporarily-unavailable / render-unavailable | 结果待确认，同键重试；不新增重复制品 |
 
 基础错误仍沿 `/problems/workbench/`，材料业务错误沿 `/problems/materials/`；新增数学错误沿 `/problems/math/`，各状态的精确联合见schema。新增字段、列和结构只归本版schema，行为变更须新revision再冻结，不能让M41/M42临时猜补。
-
-## 数学交换用例
-
-与同提交 [schema](../../apps/api/src/contracts/math.openapi.json)、[样本](../../apps/api/test/fixtures/contracts/math-samples.json)一起消费。样本 UUID 是隔离 fixture 标识，不是生产种子。前端替身按下表返回已定义结果；后端从公开 HTTP 用相同顺序断言，均不需要另一侧猜字段。替身只能记 self。
-
-| ID / BDD | 输入、结果与双侧断言 |
-| --- | --- |
-| MC01 / WB-MA001、002 | POST create-formula →201 saved-work；PUT update-formula →200 version=2，原version=1仍可GET；render海报非空。源改为错误TeX仍保存且invalid，只能导出source。公式说明选入时图中有中文，分段式条件逐行正确。 |
-| MC02 / WB-MA003、004 | create-plane/triangle/space 保存；改Q2常数-2，顶点(1,-3)、零点1±sqrt(3)；改三角形标注位置颜色；改AC1线型；重新读取源、PNG/SVG，不能只检查文件扩展名。 |
-| MC03 / WB-MA005、006 | create-dynamic 保存，改a范围[-3,3]、步长0.5、步骤标题后PUT；重启重读相同源。每步visibleIds及完整values决定图/点/标签，回到初步保持初态；自由探索不发写请求。 |
-| MC04 / WB-MA007、008 | 用C23实际M-X字节POST files，得到F1；create-html使用F1两字段。编辑标题及range得到F2，PUT仅source.fileId=F2；originalFileId仍F1，取回逐字相等。上传F2成功、PUT响应丢失，同键重试只得同一revision。 |
-| MC07 / WB-MA013、014 | export-transparent 返回File及固定workVersion；用透明度/像素、SVG结构和外部PPT实际插入核验。export-html 原生offline=self-contained，外部unverified；UI对应措辞。全新Chrome配置禁网、关闭服务，双击真实下载物，键盘/拖动/步骤仍工作。 |
-| MC08 / WB-MA016 | 两客户端读version1，A写得2，B以1写409 version-conflict；B源保持。A响应丢失时先同键确认，再GET当前版本，不因超时再建作品。同键异体409；服务重启仍可确认。 |
-| MC09 / WB-MA017 | 未绑页面/过期Cookie401；错误Origin403先于业务；另账户读作品/历史/File/导出/引用统一404。身份切换销毁iframe、锁原草稿；迟到回包不显示到新账户。缺文件503，元数据保持。 |
-| MC12 / WB-MA020 | 在隔离测试中math缺提供方、目录重复ID/path或加入必需依赖环，拒绝装配；HTTP fixture 422 invalid-input，reason=invalid-reference或duplicate-id，field指向错误descriptor。材料+math与当前组合目录均检查。 |
-| MC13 / WB-MA015 | 无模型直接经port调用list/get/create/update/export，结果同HTTP；传accountId或snapshot拒绝。Agent操作清单只暴露声明操作，不能访问SQL、磁盘路径、Cookie或执行HTML。真实模型制作归后续Agent验收，不由此用例代签。 |
-
-### 结构与数学的反例
-
-schema层反例在samples的valid=false中；业务层以下输入均可由合法样本单字段修改形成。前端定位同一字段，后端返回同一type；不能只靠JSON Schema通过。
-
-| 变体 | 预期 |
-| --- | --- |
-| 参数name重复、min≥max、initial超界、step≤0、初值不在网格 | 422 invalid-math-source，field指第一个参数错误；原version不变 |
-| steps少一个参数值、visibleIds缺对象、拖点绑定不对应坐标表达式 | 同上，分别定位steps/drags |
-| view.xMin=xMax；edge引用不存在点；同source内重复element ID | 同上，不能部分保存 |
-| 公式不闭合；expression为 `x+)`；椭圆rx为 `-1` | 结构合法，200保存且render=invalid/reason，poster=null；不可拿上次海报导出 |
-| `1/x` | x=0处断开，两支不跨原点连线；可保存ready |
-| `sqrt(x)` | x<0不绘制，不生成NaN坐标；可保存ready |
-| `-2^2`、`2^3^2`；负数系数/零系数 | 分别-4、512；标签和有限坐标正确，零系数不得继续称抛物线顶点 |
-| source.kind在更新时改变 | 422 invalid-math-source；另建作品承载另一种源 |
-| 原件F1属于另一账户或F2不存在 | 404，不透露文件存在性；作品无变化 |
-
-### 隔离反例与结果核验
-
-M42建立小型测试HTML，分别尝试读parent.document/document.cookie/localStorage、伪造postMessage写作品、form/fetch/WebSocket、远程script/img、window.open、top导航、iframe/worker、`</script>`闭合和自导航。主账户数据与Cookie/PageContext始终不可读，主应用业务无变更；CSP/sandbox预期阻断的请求记录到网络证据。自导航不应被宣传为完全禁网，必须观察销毁/受限反馈。预览本身不得获得认证API能力。坏脚本停止后源和原文件仍能取回。
-
-先用真实浏览器打开/运行按钮触发，再观察请求/DOM；不得用父页面直接eval代替验证隔离。C23的精确M-X、含CDN HTML、损坏HTML和大于1MiB的HTML分别覆盖可运行、受限、源码保留及大小上限。运行副本中CSP不能被源内meta覆盖。下载原始HTML与隔离包装器分别检验，不拿原始文件的行为冒充包装器行为。

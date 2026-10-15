@@ -1,6 +1,6 @@
 # 运行、代码结构与部署
 
-维护实例看[已有本机实例](#已有本机实例)，验证代码看[新的隔离环境](#新的隔离环境)，定位实现看[代码结构](#代码结构)。[正式部署](#正式部署)是尚未选定的运行条件；当前能力和授权见[运行台账](plans/run-state.md)。
+维护实例看[已有本机实例](#已有本机实例)，验证代码看[新的隔离环境](#新的隔离环境)，定位实现看[代码结构](subsystems/README.md#代码结构)。[正式部署](#正式部署)是尚未选定的运行条件；当前能力和授权见[运行台账](plans/run-state.md)。
 
 ## 已有本机实例
 
@@ -169,46 +169,4 @@ python3 scripts/recognition/install.py "$ocrHome"
 
 选定方案后核对其当前价格、额度、Node/系统工具支持及目标网络。实际验证 DNS/TLS、Cookie 页面绑定、上传/下载、SSE、Office 输出、浏览器离线包、重启持久化、停服备份与还原；目标浏览器、平板/学校网络、Word/WPS 和课堂设备分别记录结果。
 
-## 代码结构
-
-### 请求与数据路径
-
-```text
-React 页面
-  → 认证 transport（同源 Cookie、页面上下文）
-  → Express / workbench 公共入口
-  → 所属模块服务与公共端口
-  → SQLite 事务、文件存储、转换任务
-```
-
-这是一个应用和一个 SQLite 持久底座。[八个产品分区](PRODUCT_SCOPE.md#产品分区)用于职责与任务归属，其中五个教学业务模块通过单一静态目录装配，班级当前只注册后端；账户与身份、工作台与设置、AI 助理由应用组合。产品分区不要求一一对应顶层代码目录。重大约束见 [ADR 0001](adr/0001-use-a-single-static-module-catalog.md)；修改模块先从[子系统入口](subsystems/README.md)找到其真实操作和状态约束。
-
-| 代码位置 | 当前职责 |
-| --- | --- |
-| `apps/web/src/features/workbench/` | 工作台与设置的外壳、导航、偏好和支持页；同目录中的共享文稿/保存/冲突机制属于技术底座 |
-| `apps/web/src/features/auth/` | 账户与身份的认证页面、会话恢复及请求 transport；删除确认后调用 App 注入的设备清理端口，各存储拥有者清理自己的资料 |
-| `apps/web/src/features/{questions,resources,math,schedule}/` | 依次对应题库、资源库、数学工坊、日程的界面与交互 |
-| `apps/web/src/features/agent/`、`apps/api/src/agent/` | AI 助理的对话、引用、模型运行与工具调用；首页/侧栏由工作台承载 |
-| `apps/web/src/features/reliability/` | 技术底座的数据导出和设备恢复界面，供设置等调用 |
-| `apps/api/src/server.js` | 同源 HTTPS、可选 Vite 开发服务、启动完成后监听与停止连接 |
-| `apps/api/src/app.js` | 组合认证、workbench、API 和 Web 入口 |
-| `apps/api/src/features/auth/` | 账户与身份的账户、会话、页面绑定、验证码、迁移、删除与恢复操作 |
-| `apps/api/src/contracts/` | API 机器契约及其本地引用，供运行校验和测试读取；文字语义另见[契约说明](README.md#契约说明) |
-| `apps/api/src/workbench/` | 应用装配与身份适配，以及校验、幂等、迁移、文件、识别和任务等技术底座；其中 `navigation.js` 属于工作台与设置 |
-| `apps/api/src/reliability/preferences.js` | 工作台与设置的账户偏好；路径名称不改变职责 |
-| `apps/api/src/modules/` | 题库、资源、数学、日程和班级业务；`classroom/` 拥有名单、考试及统计，消费公共文件端口 |
-| `apps/api/src/workbench/reliability/` | 个人资料包、备份、恢复与维护锁 |
-| `packages/shared/` | 两侧消费的静态模块目录、协议及数学计算、源校验与浏览器/离线呈现；调用方使用 `@refatos/shared` 或显式 `@refatos/shared/math/*` 子路径，实际公开项以 package exports 为准 |
-| `prototype/` | 已确认 UI/UX 的参考，生产运行不依赖原型源码 |
-
-模块事实在 `packages/shared/src/moduleCatalog.js`，实际 API 工厂映射在 `apps/api/src/workbench/moduleImplementations.js`，`moduleLoader.js` 校验并装配它们。Web 的 `features/modules/moduleRegistry.js` 将共享目录投影为页面与图标，外壳、导航、教程和全局搜索消费同一投影，顶层路由从共享目录匹配。目录 v4 的 `webEnabled` 明确页面开放资格，API 装配全部注册模块，Web 只投影已开放模块；班级不需要占位页面。资源深链接适配归属资源模块；`workbench/teachingTime.js` 只装配日程与其内部提醒。新增能力先找所属模块，不增加另一套全局注册表。
-
-### 持久化与失败语义
-
-业务通过自己的服务、仓储及迁移处理数据；跨模块采用公开端口，避免直接操作别人的表。`apps/api/src/workbench/index.js` 在装配时注入公共依赖，`mutations.js#createMutations` 负责账户范围的幂等回执与事务，`migrations.js#createMigrationRunner` 按模块迁移定义升级数据库。保存、版本冲突、幂等与未知结果的共同规则由[共享保存契约](contracts/workbench.md)拥有。
-
-个人资料包在受理事务内同步调用各注册模块既有 port 的 `readForExport(principal)`，由各模块读取账户范围内的业务值、保留历史与专属证据，不补写默认设置或结算通知。`workbench/reliability/portable.js` 负责资料格式、对象关系和附件组装；异步打包在受理提交后执行。调整模块存储时维护模块自己的读取端口，物理备份仍沿既有维护路径。
-
-识别与裁图通过 `workbench/files/preview.js` 的 `readRendition` 读取已有固定预览映射，由文件模块校验原件、派生文件的账户归属与完整性。调用者负责自己的页选择和错误字段，不因当前预览更新而改用另一份来源；交换语义见[共用页识别](contracts/recognition.md)。
-
-SQLite、持久文件目录、认证密钥和外部转换工具各有独立运行配置。UI 本地草稿和现场不等于服务端内容；备份仅复制数据库也不足以恢复文件。当前真实运行位置和保护方式见[已有本机实例](#已有本机实例)。
+代码归属与装配见[当前技术入口](subsystems/README.md#代码结构)；运行条件改变时维护本页，源码职责变化维护对应技术页。备份与恢复先读[数据行为](features/data.md#部署备份与还原)及[恢复契约](contracts/data.md#部署备份与还原)，实际参数以维护 CLI 的 `--help` 为准。
