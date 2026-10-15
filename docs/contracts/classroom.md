@@ -32,7 +32,7 @@ HTTP 前缀 `/api/modules/classroom`。可信身份、页面绑定、Origin/保�
 
 ## Excel 输入与确认
 
-接收标准 `.xlsx` 和 Excel 97-2003 `.xls`；按实际字节判别，拒绝加密文件及伪装的 HTML/XML。单原件最多 10 MiB、ZIP 实际展开最多 64 MiB、最多 20 个工作表、每表 2000 行及 256 列，总计最多 100000 个单元格；超限明确拒绝，不截断录入。SheetJS 固定依赖由锁文件安装；读取器及可重建样例在 `workbook.js` 与 `test/fixtures/classroom/`。
+接收标准 `.xlsx` 和 Excel 97-2003 `.xls`；按实际字节判别，拒绝加密文件及伪装的 HTML/XML。单原件最多 10 MiB、ZIP 实际展开最多 64 MiB、最多 20 个工作表、每表 2000 行及 256 列，总计最多 100000 个单元格；超限明确拒绝，不截断录入。SheetJS 固定依赖由锁文件安装；读取器及可重建样例见 [workbook.js](../../apps/api/src/modules/classroom/workbook.js) 与 [班级 fixtures](../../apps/api/test/fixtures/classroom)。
 
 读取结果保留工作表、行列、显示文本、合并区域和公式信息。公式仅使用已有有限数值缓存，不执行公式；缓存缺失/非法及错误单元格保留为待校对问题。空白为缺失，数值 0 保持为 0，百分比、日期、布尔和非数字文字不能直接变成成绩。学号使用显示文本保留已有前导零，不补猜 Excel 已丢失的零。
 

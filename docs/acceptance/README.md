@@ -52,7 +52,7 @@
 | 公共文稿实际转换 | `apps/api/test/materials-pandoc.test.js` 使用公共转换器生成固定文稿的 DOCX/PDF，检查可编辑公式、正文与真实文件；不经过业务课稿编排入口；隔离公共材料服务由 `apps/api/test/fixtures/materials/server.mjs` 提供。 |
 | Word/WPS 人工编辑与打印 | [Office fixtures](../../apps/web/e2e/fixtures/office) 的六份 DOCX、源文本/公式/图片；按[人工操作](samples.md#人工-office-样本)核对。输入样本不是产品转换成功证明。 |
 | 设置/帮助外观 | 按[界面规则](../rules/design-and-verification.md)核对当前运行页面及用户指定参考；截图留本次验证产物 |
-| 题干/答案原稿独立定位 | 先运行 `node apps/web/e2e/fixtures/materials-questions/build.mjs` 构建隔离题库页面，再执行 `npx playwright test -c apps/web/e2e/fixtures/materials-questions/playwright.config.mjs materials-questions-fragments.spec.js`。该 test-principal fixture 使用自己的页面入口与 API 建场 `apps/api/test/fixtures/questions/server.mjs`，不能用真实认证主应用构建替代。 |
+| 题干/答案原稿独立定位 | 按[独立题库页面](#独立题库页面)构建、启动 fixture，再执行定位 spec。此 test-principal 页面与真实认证主应用分开准备。 |
 | Agent 真实模型保留库 | `apps/api/test/fixtures/c26/live.mjs` 生成模型报告和隔离数据；`apps/web/e2e/c26/agent.spec.js` 读取。二者共用 `AGENT_EVIDENCE_DIR`，默认 `test-results/evidence/C26/v1`。执行前核对报告与数据目录来自同一候选；新环境缺少它们时标记未验证，真实模型请求须有本次授权。Agent 扩展开发仍按[项目状态](../plans/run-state.md)暂停。 |
 | API 字段与兼容 | 从[文字契约](../README.md#契约说明)进入；机器契约在 `apps/api/src/contracts/`，交换样本在 `apps/api/test/fixtures/contracts/`。测试以固定样本和预期行为验证实现，不能只用实现自身生成预期结果。 |
 | 固定旧版升级 | `npm run test:api` 包含 A11/T53、R31 题库旧库升级及退役迁移；数学和材料旧版分别执行 `node scripts/math-support/verify-upgrade.mjs`、`node scripts/materials/verify-migration.mjs`。入口从 `apps/api/test/fixtures/legacy-source/` 的不可变源码包创建旧库，来源、路径和摘要见同目录 `provenance.json`；不需要旧 checkout、Git 归档引用或环境变量。归档内部保留当时的路径。 |
@@ -74,7 +74,7 @@
 | 数学/网页桥/离线 | `math-unified.config.mjs`、`math-unified-repair.config.mjs`、`math-geogebra.config.mjs`；`math-workshop*.test.js`、`math-dynamic.test.js`、`math-isolation.test.js`；[数学案例](math-cases.md) | 浏览器替身不代签真实网页模型，离线必须下载冷启动；[数学专项](#数学专项) |
 | 日程 | `schedule/playwright.config.mjs` 按 capabilities/interaction/keyboard/consistency/time-zone spec 选择；`teaching-time-*.test.js`；[日程案例](schedule-cases.md) | 日常 CI 仅选择 39 条 capabilities，专项全目录共 371 条；具体范围以配置为准，不以 CI 通过替代全部专项；[日程专项](#日程专项) |
 | 班级后端 | [班级验收](classroom.md)内真实 HTTP/Excel/原卷与生命周期入口 | 无教师页面/实际 AI，不以目录注册冒充前端完成 |
-| AI 助理 | `agent.test.js`、[agent.feature](agent.feature)、`fixtures/c26/live.mjs` 与 `c26/agent.spec.js` | 后两者需要同候选保留库与明确真实调用授权，扩展暂停仍有效 |
+| AI 助理 | `agent.test.js`、`agent-rendering.config.mjs`、[agent.feature](agent.feature)；live 另用 `fixtures/c26/live.mjs` 与 `c26/agent.spec.js` | rendering 使用受控 SDK/真实 HTTP/UI，已纳入 CI；live 需要同候选保留库与明确真实调用授权，扩展暂停仍有效 |
 
 API 文件名相对 `apps/api/test/`，浏览器入口相对 `apps/web/e2e/`。表中的通配名用于检索，不能当作配置已经全量收集；命令仍从 package scripts 与对应 Playwright 配置取。
 
@@ -85,11 +85,23 @@ API 文件名相对 `apps/api/test/`，浏览器入口相对 `apps/web/e2e/`。�
 
 保存行为变更至少走自建、直接修改、复制改编、刷新重开；再覆盖本次影响的断线未确认、版本冲突、保存中继续输入、分类变更、身份切换和保存后取用。确认原 ID/来源快照/独立笔记正确，不能仅凭 toast 判断。当前能力边界见[项目状态](../plans/run-state.md)，回归从[核查入口](../plans/run-state.md#核查入口)进入。
 
-识别消费者使用 `apps/web/e2e/questions-recognition.config.mjs`；结构边界在 `questions-tables.spec.js` 和 API `materials-questions*.test.js`。固定输入及真实产物位置见[样本索引](samples.md#固定输入与回放)。回归核对原题、原有答案、公式、题图、来源页码、未分配范围、跨页阻断与人工状态；重试、取消和迟到结果不得覆盖已校对内容。表格列角色、同格多题配图、隐式续题等详细用例由相应测试维护。
+识别消费者使用 `apps/web/e2e/questions-recognition.config.mjs`，该入口和 CI recognition project 均包含 `questions-recognition.spec.js` 与 `questions-tables.spec.js`；后者的私有 E 完整原件场景有独立输入条件，不能把缺原件跳过视为已验。API 结构边界另见 `materials-questions*.test.js`。固定输入及真实产物位置见[样本索引](samples.md#固定输入与回放)。回归核对原题、原有答案、公式、题图、来源页码、未分配范围、跨页阻断与人工状态；重试、取消和迟到结果不得覆盖已校对内容。表格列角色、同格多题配图、隐式续题等详细用例由相应测试维护。
 
 从界面上传、校对入库并刷新读回，实际阅读公式与配图并查看深浅主题和窄屏截图。固定产物回放只证明消费与保存；修改识别配置后须按[共用路线与验证](../contracts/recognition.md#路线与验证)重新验证真实原稿，不能复用旧缓存冒充新结果。外部 PDF 回放只需按样本索引下载原件并设置 `M33_PRIVATE_PDF`；固定 E7/E8/E9 机器结果随仓库根 `test/fixtures/questions/recognition-document-4/` 入库，测试核对完整原件与实际渲染页摘要。`QUESTIONS_OCR_EVIDENCE_DIR`、`QUESTIONS_OCR_EXPANDED_DIR` 仅用于替换同布局的回放目录；默认自编材料消费回归不需要这些变量。缺外部原件只跳过对应专项，不用受控转录代替真实输入通过。
 
 开发模式的列表读取、手动保存和刷新还须通过[开发服务回归](#开发服务回归)。组件重新初始化后恢复读取，过期请求的成功或失败都不能覆盖当前列表状态。
+
+### 独立题库页面
+
+原稿定位的 fixture 配置没有自动启动服务，先在仓库根目录构建并在独立终端启动：
+
+```bash
+node apps/web/e2e/fixtures/materials-questions/build.mjs
+questionsFixtureData="$(mktemp -d)"
+node apps/api/test/fixtures/questions/server.mjs "$questionsFixtureData" 48339
+```
+
+保留该进程，在另一终端运行 `npx playwright test -c apps/web/e2e/fixtures/materials-questions/playwright.config.mjs materials-questions-fragments.spec.js`。CLI 使用刚生成的 `test-results/r33/web`；通过 `/fixture/session` 安装测试身份，不使用真实注册或邮件。更换端口时同步设置 `QUESTIONS_FIXTURE_ORIGIN`，输出可用 `QUESTIONS_FIXTURE_RESULTS` 指定。停止服务后按结果清理本次隔离数据；失败现场保留，不使用用户实例或旧运行残留数据。
 
 ## 资源专项
 
@@ -126,7 +138,7 @@ API 文件名相对 `apps/api/test/`，浏览器入口相对 `apps/web/e2e/`。�
 
 ## 数学专项
 
-统一制作浏览器回归使用 `apps/web/e2e/math-unified.config.mjs`，连续输入、弹窗与播放使用 `math-unified-repair.config.mjs`；保存保护和取消分别使用 `math-geogebra.config.mjs` 中的具名场景；旧源保存/会话保护复用现有 `math-workspace.config.mjs`，按真实旧源导入建场，未新增 session 专用配置。API 核验入口为 `apps/api/test/math-workshop.test.js`、`math-workshop-view.test.js` 和既有 `math-*.test.js`，固定输入在 `apps/api/test/fixtures/math-workshop/`。网页桥回归按[扩展说明](../../extensions/math-web-ai/README.md)执行。
+统一制作浏览器回归使用 `apps/web/e2e/math-unified.config.mjs`，连续输入、弹窗与播放使用 `math-unified-repair.config.mjs`；保存保护和取消分别使用 `math-geogebra.config.mjs` 中的具名场景；旧源保存/会话保护复用现有 `math-workspace.config.mjs`，按真实旧源导入建场。API 核验入口为 `apps/api/test/math-workshop.test.js`、`math-workshop-view.test.js` 和既有 `math-*.test.js`，固定输入在 `apps/api/test/fixtures/math-workshop/`。网页桥回归按[扩展说明](../../extensions/math-web-ai/README.md)执行。
 
 验收须操作真实界面、刷新读回并打开实际文件，区分作者自验、独立核验和用户目标环境。运行与必要回归只依赖仓库内源码、固定输入及按运行指南准备的工具；preview 的 `test-results/math-handoff/math-unified/` 只提供既有执行证据，不是安装或接手前置。整体完成条件与剩余验证在[项目状态](../plans/run-state.md)维护。
 
@@ -142,6 +154,6 @@ C26/C27 用真实题目检查 1440×900、820×1180 和 390×844：首页、AI/�
 
 ## 共用测试输入与建场
 
-跨 API/浏览器消费的题库原稿、配图和录制识别结果归仓库根 `test/fixtures/questions/`；Web 独立页面的 build/config 留在 `apps/web/e2e/fixtures/materials-questions/`，API 建场归 `apps/api/test/fixtures/questions/server.mjs`。不要按路径名相近复制另一套材料，其中八份原稿、recognition 录制、recognition-document-4 与 legacy 旧页均保留固定输入身份，固定内容、摘要与来源说明随实际输入维护。公共预览输入归根 `test/fixtures/materials/`，数学 HTML 修订输入归根 `test/fixtures/math/`；不能按生成来源或年代删除。
+跨 API/浏览器消费的题库原稿、配图和录制识别结果归仓库根 `test/fixtures/questions/`；Web 独立页面的 build/config 留在 `apps/web/e2e/fixtures/materials-questions/`，API 建场归 `apps/api/test/fixtures/questions/server.mjs`。不要按路径名相近复制另一套材料，其中八份材料输入、recognition 录制、recognition-document-4 与 legacy 旧页均保留固定输入身份，固定内容、摘要与来源说明随实际输入维护。公共预览输入归根 `test/fixtures/materials/`，数学 HTML 修订输入归根 `test/fixtures/math/`；不能按生成来源或年代删除。
 
 共用真实认证数学建场为 `apps/api/test/fixtures/math-real.mjs`；数学页面服务为 `apps/api/test/fixtures/math/server.mjs`，资源页面服务为 `apps/api/test/fixtures/resources/server.mjs`，公共材料服务为 `apps/api/test/fixtures/materials/server.mjs`，跨材料集成为 `apps/api/test/fixtures/materials/integration.mjs`。旧 core/dataStore、core/auth 只作为 `apps/api/test/fixtures/legacy-source/` 的兼容测试输入，不能据旧 helper 存在恢复产品 dataStore 接口；当前应用由公开 close 释放运行资源。固定归档内部路径和 provenance 摘要保持原版，不跟随当前源码改写。
