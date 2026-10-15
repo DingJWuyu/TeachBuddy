@@ -1,6 +1,6 @@
 import express from 'express';
 import Ajv from 'ajv';
-import { defaultNavigation, validNavigation } from '@refatos/shared';
+import { defaultNavigation, validNavigation } from '@teachbuddy/shared';
 import { navigationUpdateSchema } from '../contracts/navigation.js';
 import { createGuards, asyncHandler, createMutationHandler, createWorkbenchErrorHandler } from './http.js';
 import { contractError, problems, invalidInput } from './problems.js';

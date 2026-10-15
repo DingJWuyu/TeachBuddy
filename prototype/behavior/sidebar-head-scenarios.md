@@ -21,4 +21,4 @@ Status: Accepted
 
 [交互回归](../verification/verify-sidebar-head.mjs)覆盖键盘、焦点、互斥、导航、资源解码和布局；[几何检查](../verification/verify-sidebar-head-geometry.mjs)、[学期布局](../verification/verify-semester-layout.mjs)、[学期动作](../verification/verify-semester-actions.mjs)分别覆盖尺寸、复制区和提交动作；[状态采集](../verification/capture-sidebar-head.mjs)可重建逐状态截图。运行方式及任务输出见 [manifest](manifest.md)。
 
-认可的视觉用途见[视觉参考](visual-reference.md)。静态图不证明焦点、时序或数据变化；鼠标、键盘与模拟触摸点击也不证明真机手势。旧三端报告及134张采集图属于固定 [71b6abf8](https://github.com/DingJWuyu/TeacherWorkspace/blob/71b6abf8aba732591906712f33eab520d00a80c0/prototype/behavior/sidebar-head-scenarios.md) 的历史输出，本页不声明已在当前候选重跑。
+认可的视觉用途见[视觉参考](visual-reference.md)。静态图不证明焦点、时序或数据变化；鼠标、键盘与模拟触摸点击也不证明真机手势。旧三端报告及134张采集图属于固定 [71b6abf8](https://github.com/DingJWuyu/TeachBuddy/blob/71b6abf8aba732591906712f33eab520d00a80c0/prototype/behavior/sidebar-head-scenarios.md) 的历史输出，本页不声明已在当前候选重跑。

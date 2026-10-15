@@ -13,7 +13,7 @@ import { createApp } from '../app.js';
  * database: a build validates code and an isolated fixture database only.
  */
 const silentLogger = { logDir: null, info() {}, request() {}, error() {} };
-const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'teacher-workspace-build-'));
+const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'teachbuddy-build-'));
 const sqlitePath = path.join(tempDir, 'data', 'build.sqlite');
 
 let workbench;

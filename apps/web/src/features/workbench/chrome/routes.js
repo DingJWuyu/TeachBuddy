@@ -1,4 +1,4 @@
-import { moduleCatalog } from '@refatos/shared';
+import { moduleCatalog } from '@teachbuddy/shared';
 export { navigate } from '../routes.js';
 export { followAnchor as routeClick } from '../routes.js';
 export const HOME_PATH = '/';

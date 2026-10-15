@@ -12,7 +12,7 @@
  * process no longer defines means the schema no longer matches the data, which
  * is a startup failure rather than a silent skip.
  */
-import { moduleCatalogIdPattern } from '@refatos/shared';
+import { moduleCatalogIdPattern } from '@teachbuddy/shared';
 
 export function prefixForModule(moduleId) {
   return `${moduleId.replaceAll('-', '_')}_`;

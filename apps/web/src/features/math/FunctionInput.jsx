@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import {
   piecewiseRows,
   piecewiseExpression,
-} from "@refatos/shared/math/expression";
+} from "@teachbuddy/shared/math/expression";
 
 const readRows = (text) => {
   try {

@@ -3,7 +3,7 @@
  *
  * This is not a product module: it is a test-process fixture mounted only by
  * the isolated runner / API tests with an explicit catalog override, and it is
- * never part of `@refatos/shared`'s catalog or the production build. It
+ * never part of `@teachbuddy/shared`'s catalog or the production build. It
  * implements the frozen module seam (`create<Id>Module({db, mutations})` ->
  * `{router, port}`) so B12 can prove identity, idempotency, transaction
  * rollback and account isolation end to end before B13 lands.

@@ -1,6 +1,6 @@
 # 原型视觉参考
 
-这些图片是已认可原型体验的有限设计输入，源自固定 [71b6abf8](https://github.com/DingJWuyu/TeacherWorkspace/tree/71b6abf8aba732591906712f33eab520d00a80c0/prototype/evidence/screenshots)。它们保留原始文件名和像素，不表示当前产品视觉基线或当前候选已通过。认可边界见 [manifest](manifest.md#认可范围与职责)。
+这些图片是已认可原型体验的有限设计输入，源自固定 [71b6abf8](https://github.com/DingJWuyu/TeachBuddy/tree/71b6abf8aba732591906712f33eab520d00a80c0/prototype/evidence/screenshots)。它们保留原始文件名和像素，不表示当前产品视觉基线或当前候选已通过。认可边界见 [manifest](manifest.md#认可范围与职责)。
 
 只在评估下表所列布局与控件意图时读图。头部图的背景旧业务、固定数据、示例文案与复制分类不产生产品需求；手机截图只说明指定状态的布局，不能证明手势或完整滚动。
 

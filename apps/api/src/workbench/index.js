@@ -30,7 +30,7 @@ import { createFiles } from "./files/index.js";
 import { fileMigrations } from "./files/migrations.js";
 import { createFilesRouter } from "./files/router.js";
 import { createContent } from "./content/index.js";
-import { moduleCatalog } from "@refatos/shared";
+import { moduleCatalog } from "@teachbuddy/shared";
 import { moduleImplementations } from "./moduleImplementations.js";
 import { openWorkbenchDatabase } from "./storage.js";
 import { createIdentity, assertWorkbenchRuntimeConfig } from "./identity.js";

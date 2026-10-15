@@ -23,7 +23,7 @@ import { createWorkbench } from '../src/workbench/index.js';
 import { createEnv } from '../src/config/env.js';
 import { createDataStore } from './fixtures/legacy-source/dataStore.js';
 import { hashPassword } from './fixtures/legacy-source/auth.js';
-import { moduleCatalog } from '@refatos/shared';
+import { moduleCatalog } from '@teachbuddy/shared';
 import { startServer } from '../src/server.js';
 import { ACCOUNT_A, createTempRoot, createWorkbenchContext } from './workbench-test-context.js';
 import { resolveFixtureSets } from './fixtures/first-flow/catalog.js';
@@ -53,7 +53,7 @@ test('an empty database applies migrations once and records them in the ledger',
 });
 
 test('an existing account and layout database is upgraded without losing its data', async () => {
-  const rootDir = createTempRoot('teacher-workspace-upgrade-');
+  const rootDir = createTempRoot('teachbuddy-upgrade-');
   const sqlitePath = path.join(rootDir, 'data', 'workspace.sqlite');
   const layout = {
     hiddenModuleIds: [],
@@ -91,7 +91,7 @@ test('an existing account and layout database is upgraded without losing its dat
 });
 
 test('startServer refuses to open the port when a migration fails', async () => {
-  const rootDir = createTempRoot('teacher-workspace-startup-');
+  const rootDir = createTempRoot('teachbuddy-startup-');
   const { implementations, entries } = resolveFixtureSets(['workbench-broken']);
   const runtimeEnv = createEnv({
     nodeEnv: 'test',
@@ -114,7 +114,7 @@ test('startServer refuses to open the port when a migration fails', async () => 
 });
 
 test('a failing migration leaves no ledger row and no partial table', async () => {
-  const rootDir = createTempRoot('teacher-workspace-broken-');
+  const rootDir = createTempRoot('teachbuddy-broken-');
   const sqlitePath = path.join(rootDir, 'data', 'workspace.sqlite');
   const { implementations, entries } = resolveFixtureSets(['workbench-broken']);
   const runtimeEnv = createEnv({
@@ -146,7 +146,7 @@ test('a failing migration leaves no ledger row and no partial table', async () =
 });
 
 test('the runner validates migration IDs, prefixes and removals', () => {
-  const rootDir = createTempRoot('teacher-workspace-migration-runner-');
+  const rootDir = createTempRoot('teachbuddy-migration-runner-');
   const db = openWorkbenchDatabase({ sqlitePath: path.join(rootDir, 'runner.sqlite') });
   const runner = createMigrationRunner({ db });
   try {

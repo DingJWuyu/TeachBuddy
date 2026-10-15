@@ -3,7 +3,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { startServer } from '../../api/src/server.js';
 
-const rootDir = fs.mkdtempSync(path.join(os.tmpdir(), 'teacher-workspace-e2e-'));
+const rootDir = fs.mkdtempSync(path.join(os.tmpdir(), 'teachbuddy-e2e-'));
 const captureFile = path.resolve(process.cwd(), 'apps/web/e2e/.password-recovery-mail.jsonl');
 fs.rmSync(captureFile, { force: true });
 // startServer is asynchronous: it loads module implementations and applies

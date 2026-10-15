@@ -9,7 +9,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import request from 'supertest';
-import { workbenchHeaders, workbenchPaths } from '@refatos/shared';
+import { workbenchHeaders, workbenchPaths } from '@teachbuddy/shared';
 import {
   ACCOUNT_A,
   TEST_ORIGIN,

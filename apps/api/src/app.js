@@ -1,7 +1,7 @@
 import express from 'express';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { workbenchPaths } from '@refatos/shared';
+import { workbenchPaths } from '@teachbuddy/shared';
 import { createEnv, env as defaultEnv } from './config/env.js';
 import { createAuthCodeSender } from './features/auth/mail.js';
 import { notFound } from './middleware/notFound.js';

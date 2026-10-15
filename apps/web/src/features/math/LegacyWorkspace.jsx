@@ -1,8 +1,8 @@
 import React, { useContext, useEffect, useLayoutEffect } from 'react';
 import i18n from '../../i18n/index.js';
 import { useTranslation } from 'react-i18next';
-import { constructionIssue } from '@refatos/shared/math/geometry';
-import { projectSpace } from '@refatos/shared/math/graphics';
+import { constructionIssue } from '@teachbuddy/shared/math/geometry';
+import { projectSpace } from '@teachbuddy/shared/math/graphics';
 import { useScrollRestore } from '../../components/interaction/useScrollRestore.js';
 import { ModulePresence } from '../../components/interaction/ModuleMotion.jsx';
 import { Popover, MenuItem } from '../../components/interaction/ModuleOverlays.jsx';

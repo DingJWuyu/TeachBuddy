@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useEffect, useState } from 'react';
-import { canRenderMath, supportedDocument } from '@refatos/shared';
+import { canRenderMath, supportedDocument } from '@teachbuddy/shared';
 import { MathFormula } from './MathFormula.jsx';
 import { workbenchBlob } from '../../platform/http/apiClient.js';
 import './materials.css';

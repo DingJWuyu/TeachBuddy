@@ -9,7 +9,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
 import request from 'supertest';
-import { moduleCatalog, workbenchHeaders, workbenchPaths } from '@refatos/shared';
+import { moduleCatalog, workbenchHeaders, workbenchPaths } from '@teachbuddy/shared';
 import { createWorkbench } from '../src/workbench/index.js';
 import { createEnv } from '../src/config/env.js';
 import {
@@ -219,7 +219,7 @@ test('another account cannot read or list an account object and never sees its c
 });
 
 test('a production process refuses the test-principal identity mode', () => {
-  const rootDir = createTempRoot('teacher-workspace-refused-');
+  const rootDir = createTempRoot('teachbuddy-refused-');
   const sqlitePath = path.join(rootDir, 'data', 'workspace.sqlite');
   const productionEnv = createEnv({
     nodeEnv: 'production',

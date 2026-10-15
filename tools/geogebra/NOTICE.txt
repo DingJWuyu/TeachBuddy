@@ -6,7 +6,7 @@ This browser runtime is compiled from the GeoGebra source revision identified in
 manifest.json and modified by the included source/rebuild/scripts/math-support/geogebra-patch.py. GeoGebra's
 source is licensed under EUPL-1.2; the full text is included as EUPL-1.2.txt.
 The original language files, UI artwork, UI stylesheets, application pages,
-GeoGebra deploy loader and online services are excluded. TeacherWorkspace owns
+GeoGebra deploy loader and online services are excluded. TeachBuddy owns
 loader.js and canvas.css. This is not the official GeoGebra application bundle.
 
 Corresponding source can be obtained without login from the fixed source URL in

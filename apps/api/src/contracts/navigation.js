@@ -1,4 +1,4 @@
-import { navigationLayoutSchema } from '@refatos/shared';
+import { navigationLayoutSchema } from '@teachbuddy/shared';
 
 // GET/PUT /api/workbench/navigation. Cookie + PageContext and the shared
 // workbench Problem/Idempotency-Key rules apply to both operations.

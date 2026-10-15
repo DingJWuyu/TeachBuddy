@@ -7,7 +7,7 @@ import { build } from 'vite';
 import react from '@vitejs/plugin-react';
 import sharp from 'sharp';
 import { createIntegration } from '../../api/test/fixtures/auth-integration/harness.js';
-import { moduleCatalog } from '@refatos/shared';
+import { moduleCatalog } from '@teachbuddy/shared';
 import { moduleImplementations } from '../../api/src/workbench/moduleImplementations.js';
 import { prepareMathAssets } from '../../../scripts/math-support/prepare-assets.mjs';
 

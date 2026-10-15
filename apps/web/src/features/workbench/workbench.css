@@ -1,7 +1,7 @@
 /**
  * Workbench shell styles.
  *
- * Values follow the agreed compact EMStudio-derived baseline: 36px navigation
+ * Values follow the agreed compact layout baseline: 36px navigation
  * rows, 30px menu rows, 13-14px body text, 6-12px radii, 1px #e3e3e3 lines and
  * the small two-layer card shadow. Overlays appear progressively (opacity +
  * scale 0.96 + 4px, 180ms). Module surfaces retain content through exit.

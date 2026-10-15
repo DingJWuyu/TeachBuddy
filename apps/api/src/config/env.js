@@ -1,4 +1,5 @@
 import path from 'node:path';
+import { statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -7,6 +8,12 @@ const srcRootDir = path.resolve(__dirname, '..');
 const apiRootDir = path.resolve(srcRootDir, '..');
 const repoRootDir = path.resolve(apiRootDir, '..', '..');
 const dataDir = path.resolve(srcRootDir, 'data');
+
+function defaultDatabasePath() {
+  // Keep existing installations on their database; a brand rename must not create an empty workspace.
+  const legacyPath = path.join(dataDir, 'refatos.sqlite');
+  return statSync(legacyPath, { throwIfNoEntry: false }) ? legacyPath : path.join(dataDir, 'teachbuddy.sqlite');
+}
 
 function listValue(value) {
   if (Array.isArray(value)) return value.filter(Boolean);
@@ -38,7 +45,7 @@ export function createWorkbenchEnv(overrides = {}) {
   return {
     mode: source.mode ?? process.env.WORKBENCH_IDENTITY_MODE ?? 'none',
     testPrincipals: listValue(source.testPrincipals ?? process.env.WORKBENCH_TEST_PRINCIPALS),
-    sessionSecret: source.sessionSecret ?? process.env.WORKBENCH_TEST_SESSION_SECRET ?? 'teacher-workspace-test-session-secret',
+    sessionSecret: source.sessionSecret ?? process.env.WORKBENCH_TEST_SESSION_SECRET ?? 'teachbuddy-test-session-secret',
     publicOrigin,
     trustedOrigins: listValue(trustedOriginsInput),
     tls,
@@ -63,12 +70,12 @@ export function createEnv(overrides = {}) {
   const smtpPassword = overrides.smtpPassword ?? process.env.SMTP_PASSWORD ?? '';
   const smtpFrom = overrides.smtpFrom ?? process.env.SMTP_FROM ?? smtpUser;
   const smtpSecureInput = overrides.smtpSecure ?? process.env.SMTP_SECURE ?? false;
-  const sqlitePathInput = overrides.sqlitePath ?? process.env.SQLITE_PATH ?? process.env.DATABASE_URL ?? path.join(dataDir, 'refatos.sqlite');
+  const sqlitePathInput = overrides.sqlitePath ?? process.env.SQLITE_PATH ?? process.env.DATABASE_URL ?? defaultDatabasePath();
   const sqlitePath = path.isAbsolute(sqlitePathInput) ? sqlitePathInput : path.resolve(process.cwd(), sqlitePathInput);
 
   return {
     agent: overrides.agent ?? { apiKey: process.env.COMMANDCODE_API_KEY ?? '', baseUrl: process.env.COMMANDCODE_BASE_URL ?? 'https://api.commandcode.ai/provider/v1' },
-    appName: overrides.appName ?? 'RefatOS API',
+    appName: overrides.appName ?? 'TeachBuddy API',
     nodeEnv,
     port,
     authCodeSecret: overrides.authCodeSecret ?? process.env.AUTH_CODE_SECRET ?? '',

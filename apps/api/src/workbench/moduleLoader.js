@@ -19,7 +19,7 @@ import {
   moduleCatalog,
   modulePorts,
   projectModuleCatalog
-} from '@refatos/shared';
+} from '@teachbuddy/shared';
 
 export function factoryNameFor(moduleId) {
   const pascal = moduleId

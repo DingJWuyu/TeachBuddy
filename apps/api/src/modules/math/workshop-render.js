@@ -6,12 +6,12 @@ import sharp from 'sharp';
 import JSZip from 'jszip';
 import { DOMParser } from '@xmldom/xmldom';
 import { renderSource, renderWorkshopFormulaAssets } from './render.js';
-import { mathFontStyle } from '@refatos/shared/math/formula';
+import { mathFontStyle } from '@teachbuddy/shared/math/formula';
 import { registerAndReadFont } from './font.js';
-import { MathSourceError } from '@refatos/shared/math/expression';
+import { MathSourceError } from '@teachbuddy/shared/math/expression';
 import { mathError, workshopContractError } from './contract.js';
-import { validateWorkshopReferences, visibleWorkshopFormulas } from '@refatos/shared/math/workshop';
-import { savedWorkshopPlaneViewport, captureWorkshopPlaneViewport, fitWorkshopPlaneViewport } from '@refatos/shared/math/workshop-runtime';
+import { validateWorkshopReferences, visibleWorkshopFormulas } from '@teachbuddy/shared/math/workshop';
+import { savedWorkshopPlaneViewport, captureWorkshopPlaneViewport, fitWorkshopPlaneViewport } from '@teachbuddy/shared/math/workshop-runtime';
 
 export const geogebraDirectory = fileURLToPath(new URL('../../../../web/public/vendor/math/geogebra/', import.meta.url));
 const safe = value => JSON.stringify(value).replaceAll('<', '\\u003c');
@@ -95,7 +95,7 @@ export async function renderWorkshopGraph(source, options = {}) {
     if (undefinedObjects.length) throw new MathSourceError('invalid-geometry', '保存初态或教学步骤包含未定义对象。');
     // The source-built app exposes the classic perspective API. A perspective
     // string is supplied by the shared, verified view implementation below.
-    const viewModule = await import('@refatos/shared/math/workshop-runtime');
+    const viewModule = await import('@teachbuddy/shared/math/workshop-runtime');
     const perspective = viewModule.workshopPerspective(view);
     await page.evaluate(perspective => window.graphApi.setPerspective(perspective), perspective);
     await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));

@@ -13,7 +13,7 @@ import {
   contract,
 } from "./contract.js";
 import { renderSource, rendererVersion, workshopRendererVersion } from "./render.js";
-import { MathSourceError } from "@refatos/shared/math/expression";
+import { MathSourceError } from "@teachbuddy/shared/math/expression";
 import { requestFingerprint } from "../../workbench/mutations.js";
 import { renderWorkshop } from "./workshop-render.js";
 import { workshopPresentation } from "./workshop-presentation.js";

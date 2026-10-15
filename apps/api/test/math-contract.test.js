@@ -1,10 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { parseExpression } from "@refatos/shared/math/expression";
+import { parseExpression } from "@teachbuddy/shared/math/expression";
 import {
   projectSpace,
   sampleCurve,
-} from "@refatos/shared/math/graphics";
+} from "@teachbuddy/shared/math/graphics";
 test("closed expression and projected coordinate independent expected values", () => {
   assert.equal(parseExpression("-2^2")(), -4);
   assert.equal(parseExpression("2^3^2")(), 512);

@@ -1,5 +1,5 @@
 /** Current question/resource composition used by the isolated first-flow harness. */
-import { moduleCatalog } from '@refatos/shared';
+import { moduleCatalog } from '@teachbuddy/shared';
 import { createWorkbench } from '../../../src/workbench/index.js';
 import { moduleImplementations } from '../../../src/workbench/moduleImplementations.js';
 export function createB16Workbench({ env }) {

@@ -1,5 +1,5 @@
 import { getWorkbenchContext } from './api.js';
-import { moduleCatalogVersion } from '@refatos/shared';
+import { moduleCatalogVersion } from '@teachbuddy/shared';
 import { useTranslation } from 'react-i18next';
 import { prepareDeviceRecovery } from '../reliability/deviceRecovery.js';
 import { useEffect, useState } from 'react';

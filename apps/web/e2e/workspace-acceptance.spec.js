@@ -5,11 +5,9 @@ const API_BASE = 'http://127.0.0.1:4100/api';
 
 async function apiCall(page, requestPath, options = {}) {
   return page.evaluate(async ({ apiBase, path, method, body }) => {
-    const token = window.localStorage.getItem('refatos-token') || '';
     const response = await fetch(apiBase + path, {
       method,
       headers: {
-        ...(token ? { Authorization: 'Bearer ' + token } : {}),
         ...(body === undefined ? {} : { 'Content-Type': 'application/json' })
       },
       body: body === undefined ? undefined : JSON.stringify(body)

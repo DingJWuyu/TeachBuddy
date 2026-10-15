@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { Popover, ConfirmDialog } from '../../components/interaction/ModuleOverlays.jsx';
 import { ModulePresence, ModuleDisclosure } from '../../components/interaction/ModuleMotion.jsx';
 import React, { useEffect, useRef, useState } from 'react';
-import { supportedDocument } from '@refatos/shared';
+import { supportedDocument } from '@teachbuddy/shared';
 import { DocumentView } from '../../components/materials/index.js';
 import { get, download } from './materials-api.js';
 import { sourceText, documentAssets } from './question-documents.js';

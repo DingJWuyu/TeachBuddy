@@ -1,7 +1,7 @@
 /**
  * Test-only fixture sets for the B12 public-seam evidence.
  *
- * Fixtures are never part of `@refatos/shared`'s catalog or the production
+ * Fixtures are never part of `@teachbuddy/shared`'s catalog or the production
  * build. The isolated runner and the API tests enable a set explicitly, with a
  * catalog override and extra implementation mapping; production refuses both.
  */

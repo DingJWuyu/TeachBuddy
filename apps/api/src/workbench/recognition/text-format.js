@@ -1,4 +1,4 @@
-import { checkFormula } from '@refatos/shared/math/formula';
+import { checkFormula } from '@teachbuddy/shared/math/formula';
 
 export const hasUnparsedMath = text => /\\(?!n(?:\W|$))[A-Za-z]+|\\[{}]|[_^]\{/.test(text);
 

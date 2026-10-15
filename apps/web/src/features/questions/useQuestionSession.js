@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { questionDocuments, supportedDocument } from '@refatos/shared';
+import { questionDocuments, supportedDocument } from '@teachbuddy/shared';
 import { readLocal, writeLocal, removeLocal } from '../../platform/device/storage.js';
 import { useForegroundRefresh } from '../../components/interaction/useForegroundRefresh.js';
 import { get, write } from './materials-api.js';
