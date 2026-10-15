@@ -31,6 +31,8 @@ const result = await resources.port.operations.restoreResourceFile({
 - 替换与恢复共用 `resource_items` 和 [history](../../apps/api/src/modules/resources/history.js) 的 `resource_file_history`；[taxonomy](../../apps/api/src/modules/resources/taxonomy.js) 持有文件夹与标签，删除分类关联的业务由资源拥有。
 - 正文查询与重试沿 [text-search](../../apps/api/src/modules/resources/text-search.js)，读取受控文件/页识别成果并维护 `resource_text_cache`；识别任务和费用边界沿 [共用识别](../contracts/recognition.md)。GET 查找不是任意重新跑模型入口。
 
+Web 的 [useResourceOperations](../../apps/web/src/features/resources/resourceOperations.js) 拥有资源持久操作的完整流程，包括请求快照、上传/重复选择、原键核实、版本冲突、归档/恢复/彻底删除及 UI 状态反馈。设备上的原请求记录由 [pendingRequests](../../apps/web/src/features/resources/pendingRequests.js) 保存并提供本账户清理端口；根 [accountDeviceData](../../apps/web/src/accountDeviceData.js) 仅在账户删除已确认后组合调用这些清理能力，不承担资源业务操作或解释请求内容。
+
 Web 的 PDF.js worker、CMap 和标准字体随本机构建提供，不依赖外部 CDN。
 
 [模块迁移](../../apps/api/src/modules/resources/migrations/index.js) 提供表结构；其他模块不直接读取这些表，导出沿 readForExport。

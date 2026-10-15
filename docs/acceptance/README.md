@@ -126,7 +126,7 @@ API 文件名相对 `apps/api/test/`，浏览器入口相对 `apps/web/e2e/`。�
 
 ## 数学专项
 
-统一制作浏览器回归使用 `apps/web/e2e/math-unified.config.mjs`，连续输入、弹窗与播放使用 `math-unified-repair.config.mjs`；保存保护和取消分别使用 `math-geogebra.config.mjs` 中的具名场景。API 核验入口为 `apps/api/test/math-workshop.test.js`、`math-workshop-view.test.js` 和既有 `math-*.test.js`，固定输入在 `apps/api/test/fixtures/math-workshop/`。网页桥回归按[扩展说明](../../extensions/math-web-ai/README.md)执行。
+统一制作浏览器回归使用 `apps/web/e2e/math-unified.config.mjs`，连续输入、弹窗与播放使用 `math-unified-repair.config.mjs`；保存保护和取消分别使用 `math-geogebra.config.mjs` 中的具名场景；旧源保存/会话保护复用现有 `math-workspace.config.mjs`，按真实旧源导入建场，未新增 session 专用配置。API 核验入口为 `apps/api/test/math-workshop.test.js`、`math-workshop-view.test.js` 和既有 `math-*.test.js`，固定输入在 `apps/api/test/fixtures/math-workshop/`。网页桥回归按[扩展说明](../../extensions/math-web-ai/README.md)执行。
 
 验收须操作真实界面、刷新读回并打开实际文件，区分作者自验、独立核验和用户目标环境。运行与必要回归只依赖仓库内源码、固定输入及按运行指南准备的工具；preview 的 `test-results/math-handoff/math-unified/` 只提供既有执行证据，不是安装或接手前置。整体完成条件与剩余验证在[项目状态](../plans/run-state.md)维护。
 
@@ -142,6 +142,6 @@ C26/C27 用真实题目检查 1440×900、820×1180 和 390×844：首页、AI/�
 
 ## 共用测试输入与建场
 
-跨 API/浏览器消费的题库原稿、配图和录制识别结果归仓库根 `test/fixtures/questions/`；Web 独立页面的 build/config 留在 `apps/web/e2e/fixtures/materials-questions/`，API 建场归 `apps/api/test/fixtures/questions/server.mjs`。不要按路径名相近复制另一套材料，固定内容、摘要与来源说明随实际输入维护。
+跨 API/浏览器消费的题库原稿、配图和录制识别结果归仓库根 `test/fixtures/questions/`；Web 独立页面的 build/config 留在 `apps/web/e2e/fixtures/materials-questions/`，API 建场归 `apps/api/test/fixtures/questions/server.mjs`。不要按路径名相近复制另一套材料，其中八份原稿、recognition 录制、recognition-document-4 与 legacy 旧页均保留固定输入身份，固定内容、摘要与来源说明随实际输入维护。公共预览输入归根 `test/fixtures/materials/`，数学 HTML 修订输入归根 `test/fixtures/math/`；不能按生成来源或年代删除。
 
-共用真实认证数学建场为 `apps/api/test/fixtures/math-real.mjs`，公共材料服务为 `apps/api/test/fixtures/materials/server.mjs`。旧 core/dataStore、core/auth 只作为 `apps/api/test/fixtures/legacy-source/` 的兼容测试输入，不能据旧 helper 存在恢复产品 dataStore 接口；当前应用由公开 close 释放运行资源。固定归档内部路径和 provenance 摘要保持原版，不跟随当前源码改写。
+共用真实认证数学建场为 `apps/api/test/fixtures/math-real.mjs`；数学页面服务为 `apps/api/test/fixtures/math/server.mjs`，资源页面服务为 `apps/api/test/fixtures/resources/server.mjs`，公共材料服务为 `apps/api/test/fixtures/materials/server.mjs`，跨材料集成为 `apps/api/test/fixtures/materials/integration.mjs`。旧 core/dataStore、core/auth 只作为 `apps/api/test/fixtures/legacy-source/` 的兼容测试输入，不能据旧 helper 存在恢复产品 dataStore 接口；当前应用由公开 close 释放运行资源。固定归档内部路径和 provenance 摘要保持原版，不跟随当前源码改写。

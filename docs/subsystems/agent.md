@@ -12,11 +12,15 @@ pi SDK 负责模型与工具循环、原生 entries 和上下文重建；应用�
 
 调用的 prepared、executing、结果与事件的原子顺序，停止竞态和未知结果只在[工具投影契约](../contracts/agent.md#工具调用的公开投影)维护。每次 provider 请求/工具调用重新核验原会话与可信账户；授权只在内存，重启后由新请求重新取得。网络调用留在业务事务之外。
 
-升级 SDK/entries 格式前用隔离旧库验证重开。未知或损坏记录原样保留，历史公开投影可读，生成显示不可用；不得创建空会话覆盖。备份复用[数据管理](../features/data.md)，不新增 Agent 专用备份服务。
+当前 `@earendil-works/pi-coding-agent`、`pi-ai` 与 `pi-agent-core` 固定为 0.85.1。pi 包自带 npm-shrinkwrap，根 package 的 override 标记不能证明其包内实际安装版本已修复。升级时读取实际安装的包版本与依赖，再用隔离旧 entries 验证重开，并执行现有受控模型/工具调用回归；保留 SDK entries 格式与公开投影的兼容，不用锁文件标记替代运行证据。
+
+[runtime](../../apps/api/src/agent/runtime.js) 直接调用 SDK 的 ModelRuntime/createAgentSession，设置 `noTools: 'builtin'`，仅装配现有 customTools，resource loader 关闭 extensions、skills、prompt templates、themes 和 context files；没有调用 CLI 的 proxy dispatcher。依赖可达性和升级影响按这条实际运行路径判断。
+
+未知或损坏记录原样保留，历史公开投影可读，生成显示不可用；不得创建空会话覆盖。备份复用[数据管理](../features/data.md)，不新增 Agent 专用备份服务。
 
 ## 模型接入
 
-产品使用 pi SDK 的 Command Code `openai-completions` adapter，官方 base URL 为 `https://api.commandcode.ai/provider/v1`，Chat Completions 路径 `/chat/completions`。后端使用私有 `COMMANDCODE_API_KEY`，前端不接收密钥；配置模板 [.env.agent.example](../../.env.agent.example)，实际加载见 [apps/api/src/agent/](../../apps/api/src/agent) 与启动配置。
+产品使用 pi SDK 的 Command Code `openai-completions` adapter，官方 base URL 为 `https://api.commandcode.ai/provider/v1`，Chat Completions 路径 `/chat/completions`。后端使用私有 `COMMANDCODE_API_KEY`，前端不接收密钥；配置模板 [根 .env.example](../../.env.example)，实际加载见 [apps/api/src/agent/](../../apps/api/src/agent) 与启动配置。
 
 <a id="allowed-models"></a>
 ### 模型白名单

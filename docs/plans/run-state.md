@@ -22,6 +22,7 @@
 | `TeacherWorkspace-workflow-questions` / `refactor/workflow-questions-session` | 题库业务会话归属，依赖已集成的前端公共包 |
 | `TeacherWorkspace-workflow-resources` / `refactor/workflow-resources-session` | 资源收录/恢复操作归属，与既有 resources 业务现场分开 |
 | `TeacherWorkspace-workflow-math` / `refactor/workflow-math-session` | 数学作品会话归属，保持编辑器与既有体验 |
+| `TeacherWorkspace-workflow-current-e2e` / `refactor/workflow-current-e2e` | 当前主应用旧专项入口修复，保留有效兼容与恢复保护，依赖数学候选 |
 
 账户、题库、数学、日程、班级后端及两次退役任务均已集成，其临时现场已清理。数学模块后续讨论由用户指定 session 接续，实际新现场以 Git 为准。AI 助理扩展暂停，班级前端与 AI 接入尚未开始；日程暂时保留用户已认可的体验。产品分区逐个打磨，不把旧任务授权延续成新增业务开发。
 

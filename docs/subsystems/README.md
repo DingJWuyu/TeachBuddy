@@ -35,7 +35,7 @@ React 页面
 | [apps/web/src/features/auth/](../../apps/web/src/features/auth) | 账户与身份的认证页面、会话恢复及请求 transport；删除确认后调用 App 注入的设备清理端口，各存储拥有者清理自己的资料 |
 | `apps/web/src/features/{questions,resources,math,schedule}/` | 依次对应题库、资源库、数学工坊、日程的界面与交互 |
 | [apps/web/src/features/agent/](../../apps/web/src/features/agent)、[apps/api/src/agent/](../../apps/api/src/agent) | AI 助理的对话、引用、模型运行与工具调用；首页/侧栏由工作台承载 |
-| [apps/web/src/features/reliability/](../../apps/web/src/features/reliability) | 设置消费个人资料导出；历史设备恢复组件不代表主应用开放管理入口 |
+| [apps/web/src/features/reliability/](../../apps/web/src/features/reliability) | 设置消费个人资料导出；隔离 archive/恢复底座保留，设备草稿管理 UI 未接入 |
 | [apps/api/src/server.js](../../apps/api/src/server.js) | 同源 HTTPS、可选 Vite 开发服务、启动完成后监听与停止连接 |
 | [apps/api/src/app.js](../../apps/api/src/app.js) | 组合认证、workbench、API 和 Web 入口，公开 close 统一释放运行资源；不公开旧 dataStore |
 | [apps/api/src/features/auth/](../../apps/api/src/features/auth) | 账户与身份的账户、会话、页面绑定、验证码、迁移、删除与恢复操作 |

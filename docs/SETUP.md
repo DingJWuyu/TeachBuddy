@@ -71,7 +71,7 @@ WantedBy=default.target
 
 ## 必需配置的来源
 
-变量、默认值与校验以 `apps/api/src/config/env.js` 和 [.env.example](../.env.example) 为准。每个隔离实例配置自己的 SQLite、文件目录、同源 HTTPS 和 Web 构建路径；测试收件器与真实邮件分开。已有实例保持其认证密钥，生产不使用 test-principal。
+环境配置只从根 [.env.example](../.env.example) 准备，变量、默认值与校验以 `apps/api/src/config/env.js` 为准；Agent 可选 key/base URL 也在同一模板，不另读子应用或 Agent 专属模板。每个隔离实例配置自己的 SQLite、文件目录、同源 HTTPS 和 Web 构建路径；测试收件器与真实邮件分开。已有实例保持其认证密钥，生产不使用 test-principal。
 
 <a id="文件转换工具"></a>
 ## 文件转换工具

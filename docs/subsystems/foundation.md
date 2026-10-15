@@ -85,11 +85,11 @@ Job 内部 Interface：`jobs.enqueue({principal, kind, target}, mutation)` 在�
 
 [apps/api/src/workbench/reliability/](../../apps/api/src/workbench/reliability) 拥有个人资料包、维护锁、停服备份与恢复，制品格式归同目录 `archive.schema.json`，装配在 `schema.js`。个人导出受理事务同步调用各模块 `port.readForExport(principal)`，读取业务值、历史和专属证据，不补写默认设置或结算提醒；`portable.js` 组装关系与附件，异步打包在受理提交后执行。模块存储改变时同步其只读导出端口。
 
-维护入口为 `node apps/api/src/scripts/reliability.js --help`；backup/restore/activate 的停服、独占目录及物理隔离要求见[恢复契约](../contracts/data.md#部署备份与还原)。认证清理调用[认证恢复端口](identity.md#恢复与账户生命周期)，外层不拼认证表 SQL。Web `features/reliability/DataManagement.jsx` 被设置的真实导出调用；旧设备恢复管理组件存在不代表主应用开放草稿查看、下载或清理入口。
+维护入口为 `node apps/api/src/scripts/reliability.js --help`；backup/restore/activate 的停服、独占目录及物理隔离要求见[恢复契约](../contracts/data.md#部署备份与还原)。认证清理调用[认证恢复端口](identity.md#恢复与账户生命周期)，外层不拼认证表 SQL。Web `features/reliability/DataManagement.jsx` 被设置的真实导出调用；主应用没有设备草稿查看、下载或清理管理入口；已移除旧 RecoveryDrafts 与 workbench/deviceData，隔离 archive/恢复底座继续按数据契约保护既有内容。
 
 ## 工作台外壳、偏好与支持页
 
-[apps/web/src/features/workbench/WorkbenchApp.jsx](../../apps/web/src/features/workbench/WorkbenchApp.jsx) 装配外壳、导航、辅助栏、偏好和支持页；`WorkbenchSettings.jsx` 与 `settings-shell.css` 拥有设置，`SupportPages.jsx`、`helpContent.js` 与 `support-shell.css` 拥有帮助。导航 API 为 [apps/api/src/workbench/navigation.js](../../apps/api/src/workbench/navigation.js)，偏好为 [apps/api/src/workbench/preferences.js](../../apps/api/src/workbench/preferences.js)；二者都属于工作台偏好/导航职责。共享草稿、保存协议和文稿组件使用独立 platform/components 入口，不回填到工作台业务目录。
+[apps/web/src/features/workbench/WorkbenchApp.jsx](../../apps/web/src/features/workbench/WorkbenchApp.jsx) 装配外壳、导航、辅助栏、偏好和支持页；`WorkbenchSettings.jsx` 与 `settings-shell.css` 拥有设置，`SupportPages.jsx`、`helpContent.js` 与 `support-shell.css` 拥有帮助。工作台客户端 [api.js](../../apps/web/src/features/workbench/api.js) 拥有 `getWorkbenchContext`，再经公共 HTTP 读取可信账户上下文。导航 API 为 [apps/api/src/workbench/navigation.js](../../apps/api/src/workbench/navigation.js)，偏好为 [apps/api/src/workbench/preferences.js](../../apps/api/src/workbench/preferences.js)；二者都属于工作台偏好/导航职责。共享草稿、保存协议和文稿组件使用独立 platform/components 入口，不回填到工作台业务目录。
 
 `appearance.css` 持有全站调色板与内容背景，WorkbenchApp 将同一偏好传给顶栏、侧栏、模块、菜单与弹层。语言词库在 [apps/web/src/i18n/locales/](../../apps/web/src/i18n/locales)，通过 i18next/react-i18next 的显式词条与插值呈现；教师正文及导出内容不参与翻译。
 
