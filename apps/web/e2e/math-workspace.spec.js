@@ -904,10 +904,40 @@ test('已有旧 GeoGebra 类型从作品列表打开并刷新，完整构造仍�
   expect(legacy.source.kind).toBe('geogebra');
   await page.unroute('**/api/modules/math/v1/works');
   await expect.poll(async () => (await currentApi(page, 'A'))?.coords, { timeout: 90000 }).toEqual([2,3]);
+  await expect(page.locator('.math-geogebra')).toHaveAttribute('aria-busy', 'false');
+  // Resize the real mounted canvas before leaving. Native layout XML changes
+  // must not turn an untouched saved construction into an unsaved edit.
+  const width = await page.locator('.math-geogebra-host canvas').first().evaluate(canvas => canvas.width);
+  await page.setViewportSize({ width: 1200, height: 850 });
+  await expect.poll(() => page.locator('.math-geogebra-host canvas').first().evaluate(canvas => canvas.width)).not.toBe(width);
   await page.getByRole('button', { name: '返回工坊', exact: true }).click();
+  expect(await currentApi(page, 'A')).toBeNull();
   await workRow(page, '旧画布作品').locator('>button').click();
+  await expect(page.locator('.math-ggb-workspace')).toBeVisible();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
   await expect.poll(async () => (await currentApi(page, 'A'))?.coords, { timeout: 90000 }).toEqual([2,3]);
+  await expect(page.locator('.math-ggb-status')).toContainText(`已保存 · 版本 ${legacy.version}`);
   await page.reload();
   await expect.poll(async () => (await currentApi(page, 'A'))?.coords, { timeout: 90000 }).toEqual([2,3]);
   await expect(page.getByLabel('作品名称', { exact: true })).toHaveValue('旧画布作品');
+  // The layout guard must still preserve a real pointer edit and its revision.
+  const canvas = await page.locator('.math-geogebra-host canvas').first().boundingBox();
+  const view = await page.evaluate(() => {
+    const host = document.querySelector('.math-geogebra-host > div');
+    const raw = window.mathTestApis[host.id].getViewProperties(1);
+    return typeof raw === 'string' ? JSON.parse(raw) : raw;
+  });
+  const point = (x, y) => ({ x: canvas.x + (x - view.xMin) / view.invXscale, y: canvas.y + view.height - (y - view.yMin) / view.invYscale });
+  const from = point(2, 3), to = point(1, 2);
+  await page.mouse.move(from.x, from.y); await page.mouse.down();
+  await page.mouse.move(to.x, to.y, { steps: 15 }); await page.mouse.up();
+  const dragged = (await currentApi(page, 'A')).coords;
+  expect(dragged[0]).toBeCloseTo(1, 2); expect(dragged[1]).toBeCloseTo(2, 2);
+  const response = page.waitForResponse(result => result.request().method() === 'PUT' && result.url().endsWith(`/works/${legacy.id}`));
+  await page.getByRole('button', { name: '保存', exact: true }).click();
+  const result = await response; expect(result.status()).toBe(200);
+  const saved = await result.json();
+  expect(saved.id).toBe(legacy.id); expect(saved.version).toBe(legacy.version + 1);
+  await page.reload();
+  await expect.poll(async () => (await currentApi(page, 'A'))?.coords, { timeout: 90000 }).toEqual(dragged);
 });
