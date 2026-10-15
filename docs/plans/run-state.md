@@ -4,7 +4,7 @@
 
 ## 工作现场与授权
 
-单人 agent 开发闭环的整体改造仍在进行，当前访谈已收敛，等待用户核对[完整目标与完成判据](agent-workflow.md)后进入实施。已有任务路由、子系统运行参考、代码标准、Lessons 和 CI 改进见[核查入口](#核查入口)，这些结果不代替全仓健康核查与新 Agent 实际交付、接手演练。
+单人 agent 开发闭环的整体改造已获用户明确开工授权，当前进行全仓调查，按[完整目标、执行计划与完成判据](agent-workflow.md)推进。已有任务路由、子系统运行参考、代码标准、Lessons 和 CI 改进见[核查入口](#核查入口)，这些结果不代替全仓健康核查与新 Agent 实际交付、接手演练。
 
 用户体验运行 `TeacherWorkspace-preview` 的集成源码，维护方式见[已有实例](../SETUP.md#已有本机实例)。GitHub 默认分支与日常 trunk 是 `preview/integration`，`main` 是稳定发布分支。用户已授权仓库配置、CI、任务 PR、独立审查、trunk 集成与同步；执行[GitHub 工作流](../agents/github-workflow.md)。未授权实际版本准备、合 main、产品发布、公开部署、新增费用或社区自动运营。模型与外部账户操作沿各自授权，本轮不扩展。
 
@@ -13,6 +13,7 @@
 | `TeacherWorkspace-preview` / `preview/integration` | 集成及用户体验入口，保护私有配置和数据；当前分支与 HEAD 以 Git 核对 |
 | `TeacherWorkspace` / `main` | 保留稳定分支工作树，不在本轮开发范围 |
 | `TeacherWorkspace-resources` / `feat/resources-core` | 保留已有资源库现场；本轮不修改或删除，接续前核对其成果和负责 session |
+| `TeacherWorkspace-workflow` / `refactor/agent-workflow-health` | 总控负责本轮工程改造；从 `71b6abf8` 创建，完成获准集成、验证与证据保全后清理 |
 
 账户、题库、数学、日程、班级后端及两次退役任务均已集成，其临时现场已清理。数学模块后续讨论由用户指定 session 接续，实际新现场以 Git 为准。AI 助理扩展暂停，班级前端与 AI 接入尚未开始；日程暂时保留用户已认可的体验。产品分区逐个打磨，不把旧任务授权延续成新增业务开发。
 
@@ -50,7 +51,7 @@
 
 ### Agent 工程改造
 
-按[任务目标](agent-workflow.md)完成全仓代码与文档职责核查、可靠长程执行和验证交付机制、buffer 发现入口及真实接手演练。需求接手、文档类型、文件职责、范围外发现和原型确认偏好已逐项讨论；当前只沉淀目标和核查事实，尚未开始本轮实施。
+按[任务目标](agent-workflow.md)完成全仓代码与文档职责核查、可靠长程执行和验证交付机制、buffer 发现入口及真实接手演练。用户已确认完整目标并授权实施；进度和依赖统一维护在该任务页，不以本轮部分改动通过代替整体完成。
 
 ### GitHub 交付与首发准备
 
