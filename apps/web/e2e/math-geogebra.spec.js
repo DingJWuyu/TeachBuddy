@@ -50,7 +50,7 @@ test('409 保留当前修改，取消读取保留现场，再按服务器基线�
   await page.getByRole('button',{name:'以服务器版本为基线保留本地内容',exact:true}).click(); const latest=await savedMath(page);
   expect(latest.id).toBe(first.id); expect(latest.version).toBe(server.version+1); expect(await coords(page,'A')).toEqual([8,9]);
   await page.unroute(`**/api/modules/math/v1/works/${first.id}`);
-  await page.getByLabel('更多作品操作',{exact:true}).click(); await page.getByRole('button',{name:'另存作品',exact:true}).click();
+  await page.getByLabel('更多作品操作',{exact:true}).click(); await page.getByRole('menuitem',{name:'另存作品',exact:true}).click();
   const copied=await savedMath(page); expect(copied.id).not.toBe(first.id); expect(await coords(page,'A')).toEqual([8,9]);
 });
 
