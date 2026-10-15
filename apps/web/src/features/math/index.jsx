@@ -51,7 +51,7 @@ function MathSession({ transport, route }) {
   const importFile = useRef(null);
   const sourceFile = useRef(null);
   const session = useMathWorkSession({ transport, route, confirm, reselectHtml: () => importFile.current.click() });
-  const { work: draft, status, pending, conflict, message, busy, home, account, client, actions, editor, history } = session;
+  const { work: draft, status, pending, conflict, message, busy, home, account, client, actions, editor, history, importPending } = session;
   if (session.locked) return <main className="math-lock">
     <h1>{t('请重新验证身份')}</h1><p>{t('原账户内容已保留')}</p>
     <button onClick={actions.identify}>{t('重新验证')}</button>
@@ -66,7 +66,11 @@ function MathSession({ transport, route }) {
   if (home) return <div className="math-workbench wb-module mw-home-wrapper">{confirmationDialog}
     <input ref={importFile} type="file" accept=".html,.htm,text/html" hidden onChange={event => { const file = event.target.files[0]; event.target.value = ''; if (file) void actions.importHtml(file); }}/>
     <input ref={sourceFile} type="file" accept=".json,application/json" hidden onChange={event => { const file = event.target.files[0]; event.target.value = ''; if (file) void actions.importSource(file); }}/>
-    {(message || pending) && <div className="mw-notice" role="alert">{message || t("上次操作结果待确认。")}{pending && <button disabled={busy} onClick={() => actions.save()}>{t('确认操作结果')}</button>}</div>}
+    {(message || pending || importPending) && <div className="mw-notice" role="alert">
+      {message || t('上次操作结果待确认。')}
+      {pending && <button disabled={busy} onClick={() => actions.save()}>{t('确认操作结果')}</button>}
+      {importPending && <button disabled={busy || !!pending} onClick={() => actions.importHtml()}>{importPending.requiresReselection ? t('重选原文件并确认上传') : t('重试原文件上传')}</button>}
+    </div>}
     <WorkspaceHome accountKey={account} client={client} items={session.library.items} search={session.library.search} deleted={session.library.deleted} busy={busy || !!pending}
       onSearch={session.library.searchWorks} onDeleted={session.library.showArchived} onNew={request => actions.newWork('workshop', typeof request === 'string' ? request : null)} onOpen={actions.open}
       onImport={() => importFile.current.click()} onImportSource={() => sourceFile.current.click()} onRestore={actions.archive} onPurge={actions.purge}/>
