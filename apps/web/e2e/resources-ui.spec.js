@@ -1676,10 +1676,10 @@ test("正文逐步检索断网时停止等待，重试后接续结果", async ({
 });
 
 for (const source of [
-  "materials/samples/c22.pptx",
-  "materials/samples/c22.ppt",
-  "materials/samples/w.doc",
-  "materials-resources/samples/w.docx",
+  "test/fixtures/materials/c22.pptx",
+  "test/fixtures/materials/c22.ppt",
+  "test/fixtures/materials/w.doc",
+  "apps/web/e2e/fixtures/materials-resources/samples/w.docx",
 ]) {
   test(`Office 原件真实逐页预览与下载：${path.extname(source)}`, async ({
     page,
@@ -1689,7 +1689,7 @@ for (const source of [
       !process.env.MATERIALS_OFFICE_ROOT,
       "需配置真实 LibreOffice 环境",
     );
-    const original = path.resolve("apps/web/e2e/fixtures", source);
+    const original = path.resolve(source);
     await page
       .getByLabel("上传第一份资料", { exact: true })
       .setInputFiles(original);

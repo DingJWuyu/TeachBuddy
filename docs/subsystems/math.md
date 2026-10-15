@@ -21,7 +21,7 @@ const result = await math.port.operations.exportWork({
 });
 ```
 
-`exportInput.version` 是已保存 revision，不是本地试演现场。操作返回 `Promise<{status, body}>`；读取省略 key，历史读取通过 `getWorkVersion({principal,id,query:{version}})`。合法失败抛 `status/problem`。服务先用 rollback-only `mutations.execute` 探测已有回执，再在事务外读取文件/渲染；成功准备后重新校验归属/版本，在同一 mutations 事务保存作品、revision 或导出记录及成功回执。探测不占成功键，准备阶段不能被解释为已保存；文件有独立持久性，冲突不销毁原件。未知结果沿 [原键核实](../contracts/workbench.md#写入冲突与未知结果)。
+`exportInput.version` 是已保存 revision，不是本地试演现场。操作返回 `Promise<{status, body}>`；读取省略 key，历史读取通过 `getWorkVersion({principal,id,query:{version}})`。合法失败抛 `status/problem`。服务先用只读 `mutations.peek(request)` 读取已有回执，再在事务外读取文件/渲染；成功准备后重新校验归属/版本，在同一 mutations 事务保存作品、revision 或导出记录及成功回执。探测不占成功键，准备阶段不能被解释为已保存；文件有独立持久性，冲突不销毁原件。未知结果沿 [原键核实](../contracts/workbench.md#写入冲突与未知结果)。
 
 引用 HTTP 操作 `readWorkForReference` 只读取已保存作品、版本与固定文件，不现场生成资产；内部读取函数不作为目录端口。当前工作台 Agent 不因此自动获得全部数学工具，网页数学助理沿下述独立桥。
 

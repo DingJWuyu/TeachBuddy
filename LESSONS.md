@@ -6,9 +6,9 @@
 
 ### 当前装配使用当前目录，历史样本只验证兼容
 
-修改目录或协议后，运行当前功能的 fixture 直接使用产品装配；只有明确验证旧版本的测试才加载其冻结样本。目录示例不能替代当前 `moduleCatalog`，否则测试会在业务执行前失效，还会误报覆盖了旧库升级。
+修改目录或协议后，运行当前功能的 fixture 直接使用产品装配；只有明确验证旧版本的测试才加载其冻结样本。目录示例不能替代当前 `moduleCatalog`，否则测试会在业务执行前失效，还会误报覆盖了旧库升级。固定旧版应用仍按其旧接口关闭资源，不能把当前 `close` 端口批量替换进同一升级测试的旧版阶段。
 
-资源 HTTP fixture 曾用材料协议 v2 的示例替换当前资源描述，缺少 `webEnabled`，六个场景均启动失败；其“旧库迁移”场景实际初始化的是当前实现。依据：[原 fixture](https://github.com/DingJWuyu/TeacherWorkspace/blob/71877a7768c904fdd082d5d53864a52c5dc68236/apps/web/e2e/fixtures/materials-resources/server.mjs)、[原测试](https://github.com/DingJWuyu/TeacherWorkspace/blob/71877a7768c904fdd082d5d53864a52c5dc68236/apps/api/test/materials-resources.test.js)；当前行为保护在[资源 HTTP 测试](apps/api/test/materials-resources.test.js)。
+资源 HTTP fixture 曾用材料协议 v2 的示例替换当前资源描述，缺少 `webEnabled`，六个场景均启动失败；其“旧库迁移”场景实际初始化的是当前实现。依据：[原 fixture](https://github.com/DingJWuyu/TeacherWorkspace/blob/71877a7768c904fdd082d5d53864a52c5dc68236/apps/web/e2e/fixtures/materials-resources/server.mjs)、[原测试](https://github.com/DingJWuyu/TeacherWorkspace/blob/71877a7768c904fdd082d5d53864a52c5dc68236/apps/api/test/materials-resources.test.js)；升级夹具批量替换关闭接口导致两个固定 R31 场景失败的依据见 [CI](https://github.com/DingJWuyu/TeacherWorkspace/actions/runs/38683706468)。当前保护在[资源 HTTP 测试](apps/api/test/materials-resources.test.js)和[固定旧库升级](apps/api/test/math-integration-migrations.test.js)。
 
 出现日期：2026-10-14。已核实 1 个不同日期。
 
