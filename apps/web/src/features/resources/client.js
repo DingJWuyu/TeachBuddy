@@ -1,7 +1,6 @@
 import { sendHttpRequest, readHttpBody, fileFormData } from '../../platform/http/request.js';
 import i18n from "../../i18n/index.js";
 const t = (key, options) => i18n.t(key, { ns: "resources", ...options });
-import { deviceRequestStore, clearDeviceRequestAccount } from "../../platform/device/deviceRequestStore.js";
 // Localize known contract identities only. The original problem remains attached
 // to the error for conflict handling and diagnostics.
 function resourceProblemMessage(problem) {
@@ -146,19 +145,4 @@ export function createResourcesClient(transport, getSignal, onIdentityLost) {
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     },
   };
-}
-
-export function pendingStore(accountKey, value) {
-  return deviceRequestStore({
-    database: "teachbuddy-resources-pending",
-    storeName: "requests",
-    account: accountKey,
-    name: "pending:resources",
-    action: value === undefined ? "get" : value === null ? "delete" : "put",
-    value,
-  });
-}
-
-export async function clearResourceDeviceData(account) {
-  await clearDeviceRequestAccount({ database: 'teachbuddy-resources-pending', storeName: 'requests', account });
 }

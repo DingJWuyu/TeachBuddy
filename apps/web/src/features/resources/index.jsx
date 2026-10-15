@@ -9,8 +9,8 @@ import React, {
 import { useWorkbenchShell } from "../workbench/shellContext.js";
 import { useScene } from "../../platform/device/useScene.js";
 import { useForegroundRefresh } from "../../components/interaction/useForegroundRefresh.js";
-import { createResourcesClient, pendingStore } from "./client.js";
-import { reselectDeviceFile } from "../../platform/device/deviceRequestStore.js";
+import { createResourcesClient } from "./client.js";
+import { useResourceOperations } from "./resourceOperations.js";
 import { Preview } from "./Preview.jsx";
 import { Library } from "./Library.jsx";
 import { ResourceInfo } from "./ResourceInfo.jsx";
@@ -96,50 +96,34 @@ function ResourceWorkspace({
     [files, setFiles] = useState({}),
     [fileErrors, setFileErrors] = useState({}),
     [previews, setPreviews] = useState({});
-  const [error, setError] = useState(""),
-    [message, setMessage] = useState(""),
-    [pending, setPending] = useState(null),
-    [busy, setBusy] = useState(false),
-    [loaded, setLoaded] = useState(false),
-    [listLoading, setListLoading] = useState(true),
-    [revision, setRevision] = useState(0),
-    [dialog, setDialog] = useState(null),
-    [conflict, setConflict] = useState(null);
+  const [listLoading, setListLoading] = useState(true);
+  const [revision, setRevision] = useState(0);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [organize, setOrganize] = useState(null);
-  const listRef = useRef(null),
-    opening = useRef(0),
-    triggerRef = useRef(null),
-    pendingRef = useRef(null),
-    busyRef = useRef(false),
-    replaceInput = useRef(null),
-    supplementInput = useRef(null);
+  const listRef = useRef(null), opening = useRef(0), triggerRef = useRef(null),
+    replaceInput = useRef(null), supplementInput = useRef(null);
   const refresh = () => setRevision((n) => n + 1);
-  useEffect(() => {
-    if (!message || busy || pending || error) return;
-    const timer = setTimeout(() => {
-      setMessage("");
-    }, 3000);
-    return () => clearTimeout(timer);
-  }, [message, busy, pending, error]);
-  useForegroundRefresh(() => {
-    if (!busyRef.current && !controller.current.signal.aborted) refresh();
+  const operations = useResourceOperations({
+    accountKey: shell.accountKey, client, controller, sceneRef, patchScene,
+    currentItem: () => allItems.find(entry => entry.id === sceneRef.current.openId),
+    onOpen: open, onClose: close, refresh,
+    onResult: ({ purpose, value }) => {
+      if (purpose === "taxonomy") { setTax(value); return; }
+      const purged = purpose === "purge";
+      setAllItems(current => purged
+        ? current.filter(item => item.id !== value.id)
+        : current.map(item => item.id === value.id ? value : item));
+      setItems(current => purpose === "metadata"
+        ? current.map(item => item.id === value.id ? value : item)
+        : current.filter(item => item.id !== value.id));
+    },
   });
-  useEffect(() => {
-    const signal = controller.current.signal;
-    pendingStore(shell.accountKey)
-      .then((value) => {
-        if (!signal.aborted) {
-          setPending(value ?? null);
-          pendingRef.current = value ?? null;
-          setLoaded(true);
-        }
-      })
-      .catch(() => {
-        if (!signal.aborted)
-          setError(t("无法保存恢复记录，请允许浏览器存储后重试"));
-      });
-  }, [shell.accountKey]);
+  const { pending, busy, loaded, error, message, conflict,
+    confirmation: dialog, write, upload, requestPreview,
+    skipPending: skipDuplicate, reportError } = operations;
+  useForegroundRefresh(() => {
+    if (!operations.isBusy() && !controller.current.signal.aborted) refresh();
+  });
   useEffect(() => {
     let active = true;
     let searchTimer;
@@ -226,7 +210,7 @@ function ResourceWorkspace({
           );
         }
       })
-      .catch((e) => active && setError(e.message))
+      .catch((e) => active && reportError(e.message))
       .finally(() => active && setListLoading(false));
     return () => {
       active = false;
@@ -248,380 +232,6 @@ function ResourceWorkspace({
     if (!scene.openId && listRef.current)
       listRef.current.scrollTop = scene.scroll;
   }, [scene.openId, items]);
-  async function remember(value) {
-    await pendingStore(shell.accountKey, value);
-    pendingRef.current = value;
-    if (!controller.current.signal.aborted) setPending(value);
-  }
-  async function execute(record) {
-    if (busyRef.current) return false;
-    if (!["upload", "create", "replace", "restore-file", "metadata", "taxonomy", "supplement", "deletion", "purge", "organize", "recognition", "recognition-cancel"].includes(record.purpose)) {
-      setError(t("原请求格式暂不支持，已保留设备资料，请核对后处理"));
-      return false;
-    }
-    if (record.requiresReselection) {
-      setError(t("请重新选择原文件核对名称、长度和内容，再确认上传"));
-      return false;
-    }
-    // A retry may commit even after a prior definite rejection. Until this
-    // attempt is confirmed, skipping it could orphan a successfully saved item.
-    record = { ...record, definiteFailure: false };
-    busyRef.current = true;
-    setBusy(true);
-    setError("");
-    setMessage("");
-    try {
-      await remember(record);
-      for (;;) {
-        if (record.duplicateHash) {
-          const matches = await Promise.all(
-            ["active", "deleted"].map((state) =>
-              client.request(
-                `${root}/items?state=${state}&sha256=${record.duplicateHash}`,
-              ),
-            ),
-          );
-          record = {
-            ...record,
-            duplicateHash: null,
-            duplicateMatches: matches.flatMap((result) => result.items),
-          };
-          await remember(record);
-        }
-        if (record.duplicateMatches?.length) break;
-        const value = await client.request(record.path, {
-          method: record.method,
-          input: record.input,
-          key: record.key,
-        });
-        if (record.purpose === "upload") {
-          if (!value.id || !value.name)
-            throw Object.assign(new Error(t("上传结果未确认")), { unknown: true });
-          const meta = record.meta;
-          if (meta.kind === "supplement") {
-            patchScene({
-              supplement: {
-                fileId: value.id,
-                originalFileId: meta.originalFileId,
-                resourceId: meta.id,
-                baseVersion: meta.baseVersion,
-                name: value.name,
-                viewed: [],
-              },
-            });
-            await remember(null);
-            await requestPreview(value.id);
-            break;
-          }
-          record = {
-            remaining: record.remaining,
-            batchTotal: record.batchTotal,
-            completed: record.completed,
-            duplicateHash:
-              meta.kind === "create" && value.duplicateOfFileId
-                ? value.sha256
-                : null,
-            key: crypto.randomUUID(),
-            method: meta.kind === "replace" ? "PUT" : "POST",
-            path:
-              meta.kind === "replace"
-                ? `${root}/items/${meta.id}/file`
-                : `${root}/items`,
-            input:
-              meta.kind === "replace"
-                ? { baseVersion: meta.baseVersion, fileId: value.id }
-                : {
-                    title: value.name,
-                    folderId: meta.folderId || null,
-                    tagIds: [],
-                    note: "",
-                    fileId: value.id,
-                  },
-            purpose: meta.kind === "replace" ? "replace" : "create",
-          };
-          await remember(record);
-          continue;
-        }
-        if (record.purpose === "organize") {
-          if (
-            !Array.isArray(value.items) ||
-            value.items.length !== record.input.items.length
-          )
-            throw Object.assign(new Error(t("批量整理结果未确认")), {
-              unknown: true,
-            });
-          const drafts = { ...sceneRef.current.drafts };
-          for (const item of value.items) {
-            if (!drafts[item.id]) continue;
-            drafts[item.id] = {
-              ...drafts[item.id],
-              baseVersion: item.version,
-              ...(record.input.action === "move"
-                ? { folderId: item.folderId }
-                : {}),
-              ...(record.input.action === "add-tags"
-                ? {
-                    tagIds: [
-                      ...new Set([
-                        ...drafts[item.id].tagIds,
-                        ...record.input.tagIds,
-                      ]),
-                    ],
-                  }
-                : {}),
-            };
-          }
-          patchScene({ selected: [], selectionMode: false, drafts });
-          await remember(null);
-          setMessage(
-            t("已{{value}} {{count}} 份资料", { value: { move: t("移动"), "add-tags": t("添加标签："), archive: t("归档"), restore: t("恢复") }[record.input.action], count: value.items.length }),
-          );
-          refresh();
-          break;
-        }
-        if (record.purpose?.startsWith("recognition")) {
-          if (!value.id || value.kind !== "recognition" || !value.state)
-            throw Object.assign(new Error(t("识别请求结果未确认")), {
-              unknown: true,
-            });
-          await remember(null);
-          setMessage(
-            record.purpose === "recognition-cancel"
-              ? t("已请求停止识别，已完成页面会保留")
-              : t("已受理文字识别"),
-          );
-          setConflict(null);
-          refresh();
-          break;
-        }
-        if (
-          record.purpose === "purge"
-            ? value.permanentlyDeleted !== true || !value.id
-            : !Number.isInteger(value.version)
-        )
-          throw Object.assign(new Error(t("保存结果未确认")), { unknown: true });
-        if (record.purpose === "purge" || record.purpose === "deletion") {
-          const purged = record.purpose === "purge";
-          const drafts = { ...sceneRef.current.drafts };
-          if (purged) delete drafts[value.id];
-          else if (drafts[value.id])
-            drafts[value.id] = {
-              ...drafts[value.id],
-              baseVersion: value.version,
-            };
-          patchScene({
-            drafts,
-            selected: sceneRef.current.selected.filter((id) => id !== value.id),
-            ...(sceneRef.current.supplement?.resourceId === value.id
-              ? { supplement: null }
-              : {}),
-            ...(!purged && !value.deletedAt ? { state: "active" } : {}),
-          });
-          setAllItems((current) =>
-            purged
-              ? current.filter((item) => item.id !== value.id)
-              : current.map((item) => (item.id === value.id ? value : item)),
-          );
-          setItems((current) => current.filter((item) => item.id !== value.id));
-          if (purged || value.deletedAt) close(true);
-        }
-        if (record.purpose === "metadata") {
-          // The next edit must use the acknowledged version even while the
-          // background list refresh is still in flight.
-          setAllItems(current => current.map(item => item.id === value.id ? value : item));
-          setItems(current => current.map(item => item.id === value.id ? value : item));
-          const live = sceneRef.current.drafts[value.id];
-          if (JSON.stringify(live) === JSON.stringify(record.input)) {
-            const drafts = { ...sceneRef.current.drafts };
-            delete drafts[value.id];
-            patchScene({ drafts });
-          } else if (live)
-            patchScene({
-              drafts: {
-                ...sceneRef.current.drafts,
-                [value.id]: { ...live, baseVersion: value.version },
-              },
-            });
-        }
-        if (record.purpose === "taxonomy") {
-          setTax(value);
-          patchScene({
-            folderId: value.folders.some(
-              (f) => f.id === sceneRef.current.folderId,
-            )
-              ? sceneRef.current.folderId
-              : "",
-            tagIds: sceneRef.current.tagIds.filter((id) =>
-              value.tags.some((t) => t.id === id),
-            ),
-          });
-        }
-        if (record.purpose === "create" && !(record.batchTotal > 1))
-          open(value.id);
-        if (["supplement", "replace", "restore-file"].includes(record.purpose))
-          patchScene({ supplement: null });
-        if (["replace", "restore-file"].includes(record.purpose)) {
-          const live = sceneRef.current.drafts[value.id];
-          if (live)
-            patchScene({
-              drafts: {
-                ...sceneRef.current.drafts,
-                [value.id]: { ...live, baseVersion: value.version },
-              },
-            });
-        }
-        const next = nextUpload(record);
-        await remember(next);
-        setMessage(
-          {
-            create:
-              record.batchTotal > 1
-                ? t("已处理 {{value}} / {{batchTotal}} 份资料", { value: (record.completed ?? 0) + 1, batchTotal: record.batchTotal })
-                : t("文件已保存"),
-            replace: t("文件已更新"),
-            "restore-file": t("已恢复历史文件"),
-            metadata: t("资料信息已保存"),
-            taxonomy: t("整理已保存"),
-            supplement: t("已采用补充预览"),
-            deletion: value.deletedAt
-              ? t("资料已归档，可在已归档资料中恢复")
-              : t("资料已恢复"),
-            purge: t("资料已彻底删除"),
-          }[record.purpose] ?? t("已保存"),
-        );
-        setConflict(null);
-        setDialog(null);
-        refresh();
-        if (["create", "replace", "restore-file"].includes(record.purpose))
-          await requestPreview(value.fileId);
-        if (next) {
-          record = next;
-          continue;
-        }
-        break;
-      }
-      return true;
-    } catch (e) {
-      if (!controller.current.signal.aborted) {
-        setError(e.message);
-        setDialog(null);
-        if (e.status === 409 && !record.purpose?.startsWith("recognition")) {
-          setConflict({ record });
-          refresh();
-        }
-        if (!e.unknown && !record.batchTotal) {
-          await remember(null);
-        } else if (!e.unknown) {
-          await remember({ ...record, definiteFailure: true });
-        }
-      }
-      return false;
-    } finally {
-      busyRef.current = false;
-      if (!controller.current.signal.aborted) setBusy(false);
-    }
-  }
-  async function requestPreview(id) {
-    try {
-      await client.request(`/api/workbench/files/${id}/preview`, {
-        method: "POST",
-        input: {},
-        key: crypto.randomUUID(),
-      });
-      refresh();
-    } catch (e) {
-      setError(t("原件已保存，预览未确认：{{message}}", { message: e.message }));
-    }
-  }
-  function write(path, input, purpose, method = "PUT") {
-    if (pendingRef.current || busyRef.current) return Promise.resolve(false);
-    return execute({ key: crypto.randomUUID(), path, method, input, purpose });
-  }
-  function upload(source, kind = "create") {
-    if (!source || pendingRef.current || busyRef.current) return;
-    const sources = Array.isArray(source) ? source : [source];
-    if (!sources.length) return;
-    const invalid = sources.find(
-      (file) => file.size > 100 * 1024 * 1024 || file.name.length > 200,
-    );
-    if (invalid) {
-      setError(
-        t("“{{name}}”超过限制：每份文件最多 100 MB，文件名最多 200 个字符。请调整后重新选择。", { name: invalid.name }),
-      );
-      return;
-    }
-    source = sources[0];
-    const meta = {
-      kind,
-      folderId: scene.folderId,
-      ...(item
-        ? {
-            id: item.id,
-            baseVersion: item.version,
-            originalFileId: item.fileId,
-          }
-        : {}),
-    };
-    if (kind === "replace") {
-      setDialog({ kind: "replace", source, meta });
-      return;
-    }
-    execute({
-      key: crypto.randomUUID(),
-      method: "POST",
-      path: "/api/workbench/files",
-      input: source,
-      purpose: "upload",
-      meta,
-      remaining: sources.slice(1),
-      batchTotal: sources.length > 1 ? sources.length : undefined,
-      completed: 0,
-    });
-  }
-  function nextUpload(record) {
-    if (!record.remaining?.length) return null;
-    const [input, ...remaining] = record.remaining;
-    return {
-      key: crypto.randomUUID(),
-      method: "POST",
-      path: "/api/workbench/files",
-      input,
-      purpose: "upload",
-      meta: {
-        kind: "create",
-        folderId: record.input.folderId ?? record.meta?.folderId ?? null,
-      },
-      remaining,
-      batchTotal: record.batchTotal,
-      completed: (record.completed ?? 0) + 1,
-    };
-  }
-  async function skipDuplicate() {
-    const record = pendingRef.current;
-    if (
-      (!record?.duplicateMatches?.length && !record?.definiteFailure) ||
-      busyRef.current
-    )
-      return;
-    busyRef.current = true;
-    setBusy(true);
-    let next;
-    try {
-      next = nextUpload(record);
-      await remember(next);
-      setError("");
-      setMessage(
-        record.definiteFailure ? t("已跳过未保存的资料") : t("已跳过重复资料"),
-      );
-    } catch (error) {
-      next = null;
-      setError(error.message);
-    } finally {
-      busyRef.current = false;
-      setBusy(false);
-    }
-    if (next && !controller.current.signal.aborted) await execute(next);
-  }
   async function open(id, event) {
     const request = ++opening.current;
     triggerRef.current = event?.currentTarget;
@@ -658,7 +268,7 @@ function ResourceWorkspace({
         });
       } catch (error) {
         if (request === opening.current) {
-          setError(error.message);
+          reportError(error.message);
           refresh();
         }
         return;
@@ -683,8 +293,7 @@ function ResourceWorkspace({
     });
     if (shell.isPanelOpen && shell.panelMode === "resource-taxonomy")
       shell.closePanel?.();
-    setError("");
-    setMessage("");
+    operations.clearFeedback();
   }
   function close(removed = false) {
     opening.current++;
@@ -705,7 +314,7 @@ function ResourceWorkspace({
     patchScene({
       drafts: { ...sceneRef.current.drafts, [item.id]: { ...draft, ...patch } },
     });
-    setMessage("");
+    operations.clearMessage();
   }
   const disabled = busy || !!pending || !loaded;
   const dirty = Boolean(
@@ -834,10 +443,10 @@ function ResourceWorkspace({
               input: {},
               key: crypto.randomUUID(),
             });
-            setError("");
+            reportError("");
             refresh();
           } catch (e) {
-            setError(e.message);
+            reportError(e.message);
           }
         }}
         listRef={listRef}
@@ -873,7 +482,7 @@ function ResourceWorkspace({
                 <button
                   className="res-primary"
                   disabled={disabled}
-                  onClick={() => setDialog({ kind: "delete", item })}
+                  onClick={() => operations.showConfirmation({ kind: "delete", item })}
                 > {t("恢复资料")} </button>
               )}
               <button
@@ -881,7 +490,7 @@ function ResourceWorkspace({
                 onClick={() =>
                   client
                     .download(item.fileId, file.name)
-                    .catch((error) => setError(error.message))
+                    .catch((error) => reportError(error.message))
                 }
               >
                 <Icon name="arrowDown" size={16} />
@@ -963,7 +572,7 @@ function ResourceWorkspace({
                           disabled={disabled || !item}
                           onClick={() => {
                             closeMenu();
-                            setDialog({ kind: "delete", item });
+                            operations.showConfirmation({ kind: "delete", item });
                           }}
                         >
                           <Icon name="trash" size={16} /> {t("归档资料")} </button>
@@ -976,7 +585,7 @@ function ResourceWorkspace({
                         disabled={disabled}
                         onClick={() => {
                           closeMenu();
-                          setDialog({ kind: "purge", item });
+                          operations.showConfirmation({ kind: "purge", item });
                         }}
                       >
                         <Icon name="trash" size={16} /> {t("彻底删除")} </button>
@@ -1125,11 +734,7 @@ function ResourceWorkspace({
                   const file = event.target.files[0];
                   event.target.value = "";
                   if (!file) return;
-                  try {
-                    await execute(await reselectDeviceFile(pending, file));
-                  } catch (error) {
-                    setError(error.message);
-                  }
+                  await operations.reselectOriginal(file);
                 }}
               />
             </label>
@@ -1137,17 +742,14 @@ function ResourceWorkspace({
             pending &&
             !pending.duplicateMatches?.length &&
             !busy && (
-              <button onClick={() => execute(pending)}>{t("重试确认原请求")}</button>
+              <button onClick={() => operations.retryPending()}>{t("重试确认原请求")}</button>
             )
           )}
           {!pending && !busy && (
             <button
               className="res-icon-button"
               aria-label={t("关闭提示")}
-              onClick={() => {
-                setMessage("");
-                setError("");
-              }}
+              onClick={operations.clearFeedback}
             >
               <Icon name="close" size={14} />
             </button>
@@ -1179,7 +781,7 @@ function ResourceWorkspace({
               > {t("跳过这份资料")} </button>
               <button
                 disabled={busy}
-                onClick={() => execute({ ...pending, duplicateMatches: null })}
+                onClick={() => operations.keepDuplicate()}
               > {t("仍然另存一份")} </button>
             </div>
           </ResourceDialog>
@@ -1233,7 +835,7 @@ function ResourceWorkspace({
       </ModulePresence>
       <ModulePresence present={!!conflict}>
         {conflict && (
-          <ResourceDialog label={t("版本冲突")} onClose={() => setConflict(null)}>
+          <ResourceDialog label={t("版本冲突")} onClose={() => operations.dismissConflict()}>
             <h2>{t("内容已在其他地方更新")}</h2>
             <p>
               {conflict.record.purpose === "organize"
@@ -1245,11 +847,11 @@ function ResourceWorkspace({
               onClick={() => {
                 if (item && conflict.record.purpose === "metadata")
                   edit({ baseVersion: item.version });
-                setConflict(null);
-                setError(t("请核对分类和笔记，再次保存"));
+                operations.dismissConflict();
+                reportError(t("请核对分类和笔记，再次保存"));
               }}
             > {t("保留草稿并对照当前版本")} </button>
-            <button onClick={() => setConflict(null)}>{t("稍后处理")}</button>
+            <button onClick={() => operations.dismissConflict()}>{t("稍后处理")}</button>
           </ResourceDialog>
         )}
       </ModulePresence>
@@ -1263,7 +865,7 @@ function ResourceWorkspace({
                   ? t("彻底删除确认")
                   : t("归档恢复确认")
             }
-            onClose={() => setDialog(null)}
+            onClose={() => operations.dismissConfirmation()}
           >
             <h2>
               {dialog.kind === "replace"
@@ -1299,33 +901,7 @@ function ResourceWorkspace({
                     : "res-primary"
                 }
                 disabled={disabled}
-                onClick={() =>
-                  dialog.kind === "replace"
-                    ? execute({
-                        key: crypto.randomUUID(),
-                        method: "POST",
-                        path: "/api/workbench/files",
-                        input: dialog.source,
-                        purpose: "upload",
-                        meta: dialog.meta,
-                      })
-                    : dialog.kind === "purge"
-                      ? write(
-                          `${root}/items/${dialog.item.id}/purge`,
-                          { baseVersion: dialog.item.version },
-                          "purge",
-                          "POST",
-                        )
-                      : write(
-                          `${root}/items/${dialog.item.id}/deletion`,
-                          {
-                            baseVersion: dialog.item.version,
-                            deleted: !dialog.item.deletedAt,
-                          },
-                          "deletion",
-                          "POST",
-                        )
-                }
+                onClick={operations.confirmOperation}
               > {t("确认")} {dialog.kind === "replace"
                   ? t("更新")
                   : dialog.kind === "purge"
@@ -1334,7 +910,7 @@ function ResourceWorkspace({
                       ? t("恢复")
                       : t("归档")}
               </button>
-              <button onClick={() => setDialog(null)}>{t("取消")}</button>
+              <button onClick={() => operations.dismissConfirmation()}>{t("取消")}</button>
             </div>
           </ResourceDialog>
         )}
