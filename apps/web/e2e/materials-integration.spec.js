@@ -1,15 +1,16 @@
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 import path from "node:path";
+import os from "node:os";
 import { createIntegration } from "../../api/test/fixtures/auth-integration/harness.js";
-const evidence = path.resolve(process.env.R34_BROWSER_EVIDENCE ?? "test-results/r34-integration/evidence");
-const root = path.resolve("test-results/r34-integration");
-fs.mkdirSync(root, { recursive: true });
+const evidence = path.resolve(process.env.MATERIALS_INTEGRATION_EVIDENCE_DIR ?? "test-results/materials-integration/evidence");
 fs.mkdirSync(evidence, { recursive: true });
 let world;
-test.afterEach(async ({ context }) => {
+test.afterEach(async ({ context }, info) => {
   await context.close();
   await world?.close();
+  if (world && info.status === info.expectedStatus) fs.rmSync(world.directory, { recursive: true, force: true });
+  else if (world) console.error(`材料集成失败现场保留：${world.directory}`);
 });
 async function register(page) {
   await page.goto(world.origin);
@@ -28,14 +29,20 @@ async function register(page) {
   await page.getByRole("checkbox").check();
   await page.getByRole("button", { name: "注册", exact: true }).click();
   await expect(page.locator(".wb-shell")).toBeVisible();
+  await page.getByRole("button", { name: "知道了", exact: true }).click();
+}
+async function infoPanel(page) {
+  const button = page.getByRole("button", { name: "资料信息", exact: true });
+  if (await button.getAttribute("aria-expanded") !== "true") await button.click();
+  await expect(page.getByLabel("资源名称")).toBeVisible();
 }
 const nav = (page, name) =>
-  page.locator(".wb-sidebar").getByRole("link", { name, exact: true }).click();
+  page.getByRole("navigation", { name: "功能模块" }).getByRole("link", { name: new RegExp("^" + name) }).click();
 test("真实身份外壳：原件预览替换、校对入库与重启恢复", async ({
   page,
   browser,
 }) => {
-  const directory = fs.mkdtempSync(path.join(root, "chain-"));
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "materials-chain-"));
   world = await createIntegration({ directory });
   const errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
@@ -51,24 +58,27 @@ test("真实身份外壳：原件预览替换、校对入库与重启恢复", as
   await register(page);
   await nav(page, "资源库");
   await page
-    .getByLabel("上传资料", { exact: true })
+    .getByLabel("上传第一份资料", { exact: true })
     .setInputFiles("test/fixtures/materials/c22.pptx");
   await expect(page.getByAltText("第 1 页", { exact: true })).toBeVisible({
     timeout: 60000,
   });
+  await infoPanel(page);
   await page.getByLabel("资源名称").fill("集成课堂课件");
-  await page.getByRole("button", { name: "保存资料", exact: true }).click();
+  await page.getByRole("button", { name: "保存修改", exact: true }).click();
   await expect(page.locator(".res-status")).toContainText("已保存");
   await page.screenshot({
     animations: "disabled",
     path: path.join(evidence, "resource-original.png"),
   });
   await nav(page, "题库");
-  await page.getByRole("button", { name: "收录", exact: true }).click();
+  await page.locator(".q-finder").getByRole("button", { name: "从资料收录", exact: true }).click();
+  await page.getByRole("button", { name: /^粘贴文字/ }).click();
   await page
     .getByLabel("原始文字")
     .fill("1. 求 $x^2=4$ 的解。\n答案：$x=\\pm2$");
-  await page.getByRole("button", { name: "保存原稿并整理" }).click();
+  await page.getByRole("button", { name: "开始整理" }).click();
+  await page.getByRole("button", { name: "修改题目", exact: true }).click();
   await expect(page.getByLabel("草稿标题")).toBeVisible();
   await page.getByLabel("草稿标题").fill("集成校对题");
   await page
@@ -77,29 +87,37 @@ test("真实身份外壳：原件预览替换、校对入库与重启恢复", as
     .fill("求 $x^2=9$ 的解。");
   await page.locator(".q-review-result textarea").nth(1).fill("$x=\\pm3$");
   await page.locator(".q-issue select").selectOption("corrected");
-  await page.getByRole("button", { name: "保存校对", exact: true }).click();
+  await page.getByRole("button", { name: "保存检查进度", exact: true }).click();
   await expect(page.locator(".q-message")).toContainText("校对已保存");
   await page.screenshot({
     animations: "disabled",
     path: path.join(evidence, "question-review.png"),
   });
-  await page.getByRole("button", { name: "确认收录", exact: true }).click();
-  await page.getByRole("button", { name: "查看已入库题目" }).click();
+  const committed = page.waitForResponse(response => response.request().method() === "POST" && /\/imports\/[^/]+\/commit$/.test(new URL(response.url()).pathname));
+  await page.getByRole("button", { name: "确认这道题", exact: true }).click();
+  const committedResponse = await committed;
+  expect(committedResponse.status()).toBe(200);
+  const questionPath = "/questions/" + (await committedResponse.json()).questions[0].id;
+  await page.getByRole("button", { name: "查看题目", exact: true }).click();
+  await page.getByRole("button", { name: "编辑题目", exact: true }).click();
   await expect(page.getByLabel("题目标题")).toHaveValue("集成校对题");
-  const questionPath = new URL(page.url()).pathname;
   await nav(page, "资源库");
+  await infoPanel(page);
   await expect(page.getByLabel("资源名称")).toHaveValue("集成课堂课件");
-  await page
-    .getByLabel("更新文件", { exact: true })
-    .setInputFiles("test/fixtures/materials/c22.pdf");
-  await page.getByRole("button", { name: "确认更新", exact: true }).click();
+  await page.getByRole("button", { name: "资料更多操作", exact: true }).click();
+  const chooser = page.waitForEvent("filechooser");
+  await page.getByRole("menuitem", { name: "更新文件", exact: true }).click();
+  await (await chooser).setFiles("test/fixtures/materials/c22.pdf");
+  await page.getByRole("button", { name: "确认 更新", exact: true }).click();
   await expect(page.locator(".res-file-info strong")).toHaveText("c22.pdf");
   await page.getByRole("button", { name: "返回资源库", exact: true }).click();
   await page
     .getByLabel("上传资料", { exact: true })
     .setInputFiles("test/fixtures/questions/figure.png");
+  await infoPanel(page);
   await expect(page.getByLabel("资源名称")).toHaveValue("figure.png");
   await page.reload();
+  await infoPanel(page);
   await expect(page.getByLabel("资源名称")).toHaveValue("figure.png");
   await page.screenshot({
     animations: "disabled",
@@ -108,18 +126,17 @@ test("真实身份外壳：原件预览替换、校对入库与重启恢复", as
 
   for (const width of [1280, 1024]) {
     await page.setViewportSize({ width, height: 800 });
-    if (width === 1024)
-      await expect
-        .poll(() =>
-          page
-            .locator(".wb-sidebar")
-            .evaluate((el) => el.getBoundingClientRect().width),
-        )
-        .toBe(72);
+    if (width === 1024) {
+      await expect(page.locator(".tb-sidebar")).toBeHidden();
+      await page.getByRole("button", { name: "打开工作台导航", exact: true }).click();
+      await expect(page.locator(".tb-sidebar")).toBeVisible();
+      expect(await page.locator(".tb-sidebar").evaluate(el => el.getBoundingClientRect().width)).toBeLessThan(width);
+      await page.locator(".tb-sidebar").getByRole("button", { name: "关闭", exact: true }).click();
+      await expect(page.locator(".tb-sidebar")).toBeHidden();
+    }
     if (width === 1280)
       await page
-        .getByRole("button", { name: "AI 助理", exact: true })
-        .first()
+        .getByRole("tab", { name: "AI 助理", exact: true })
         .click();
     expect(
       await page.evaluate(
@@ -149,6 +166,9 @@ test("真实身份外壳：原件预览替换、校对入库与重启恢复", as
   });
   const reopened = await fresh.newPage();
   await reopened.goto(world.origin + questionPath);
+  await expect(reopened.getByRole("heading", { name: "集成校对题", exact: true })).toBeVisible();
+  await reopened.getByRole("button", { name: "知道了", exact: true }).click();
+  await reopened.getByRole("button", { name: "编辑题目", exact: true }).click();
   await expect(reopened.getByLabel("题目标题")).toHaveValue("集成校对题");
   await reopened.screenshot({
     path: path.join(evidence, "restart-new-browser.png"),

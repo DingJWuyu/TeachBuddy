@@ -9,7 +9,7 @@ export default defineConfig({
   reporter: [["list"]],
   outputDir: fileURLToPath(
     new URL(
-      "../../../../../test-results/r34-integration/browser",
+      "../../../../../test-results/materials-integration/browser",
       import.meta.url,
     ),
   ),
