@@ -4,8 +4,6 @@
 
 ## 工作现场与授权
 
-当前获准执行[TeachBuddy 项目身份统一](teachbuddy-identity.md)，范围包括仓库内容、GitHub 仓库名称、本机目录和运行配置迁移；保持现有功能及数据，直接使用的第三方组件和许可保留。任务现场为 `TeachBuddy-branding` / `refactor/teachbuddy-identity`，由总控组织代码与文档分工、集中验证、trunk 集成和清理。下表列迁移后的目录，实际迁移状态以任务记录和 Git 为准。
-
 当前开发沿[开发约定](../agents/module-development.md)接收明确需求、维护长程任务、分配职责并完成获准交付；子系统运行参考、代码标准、Lessons 和 buffer 各自维护所属信息。全仓职责改造、真实代码中断接手及最近集成的证据见[核查入口](#核查入口)。本轮工程改造已交付，后续按用户选定的任务接续，不自动扩大业务范围。
 
 用户体验运行 `TeachBuddy-preview` 的集成源码，维护方式见[已有实例](../SETUP.md#已有本机实例)。GitHub 默认分支与日常 trunk 是 `preview/integration`，`main` 是稳定发布分支。用户已授权仓库配置、CI、任务 PR、独立审查、trunk 集成与同步；执行[GitHub 工作流](../agents/github-workflow.md)。未授权实际版本准备、合 main、产品发布、公开部署、新增费用或社区自动运营。模型与外部账户操作沿各自授权，本轮不扩展。
@@ -106,7 +104,8 @@
 
 | 范围 | 已集成证据 | 可重建入口及边界 |
 | --- | --- | --- |
-| 工程闭环与最近完整 CI | [PR #44](https://github.com/DingJWuyu/TeachBuddy/pull/44)，`872ab0cd`；[CI](https://github.com/DingJWuyu/TeachBuddy/actions/runs/38690968669) 对应候选 `870ee1d0`，squash 后文件树一致 | 干净 Runner 构建、274 项 HTTP/SQLite、50 项真实输出、317 项浏览器检查通过；2 项因缺私人 E 原稿明确跳过。Standards/Spec 独立审查无未关闭发现。两位 fresh 作者完成真实代码中断接手及 8 项 HTTP 验证；独立安装与 GeoGebra 源码冷构建已验。preview 已备份、安装并重启，登录页面与迁移后的公共导入正常；真实模型、GPU OCR、邮件和目标设备沿专项另验 |
+| 当前安装与运行 | [PR #45](https://github.com/DingJWuyu/TeachBuddy/pull/45)，`afaf7880`；[CI](https://github.com/DingJWuyu/TeachBuddy/actions/runs/38699507239) 对应候选 `0bdb426d`，squash 后文件树一致 | TeachBuddy 包、全工作区构建、274 项 HTTP/SQLite、50 项真实输出和 317 项浏览器检查通过；2 项缺私人原稿明确跳过。Standards/Spec 独立审查无未关闭发现。现有旧库升级、本机目录及服务、文件转换、OCR 固定环境和实际登录入口已验；数据库与附件保留，真实 GPU 推理和外部服务不在本次命名核对中重跑 |
+| 工程闭环 | [PR #44](https://github.com/DingJWuyu/TeachBuddy/pull/44)，`872ab0cd`；[CI](https://github.com/DingJWuyu/TeachBuddy/actions/runs/38690968669) 对应候选 `870ee1d0`，squash 后文件树一致 | 干净 Runner 构建、274 项 HTTP/SQLite、50 项真实输出、317 项浏览器检查通过；2 项因缺私人 E 原稿明确跳过。Standards/Spec 独立审查无未关闭发现。两位 fresh 作者完成真实代码中断接手及 8 项 HTTP 验证；独立安装与 GeoGebra 源码冷构建已验。preview 已备份、安装并重启，登录页面与迁移后的公共导入正常；真实模型、GPU OCR、邮件和目标设备沿专项另验 |
 | 班级后端 | [PR #42](https://github.com/DingJWuyu/TeachBuddy/pull/42)，`614b7ee3`；[CI](https://github.com/DingJWuyu/TeachBuddy/actions/runs/38422366903) | [班级验收](../acceptance/classroom.md)；HTTP/SQLite、真实 Excel/原卷、恢复与浏览器已验，班级页面和实际 AI 未验 |
 | 题库核心体验 | [PR #40](https://github.com/DingJWuyu/TeachBuddy/pull/40)，`a53f2285`；[CI](https://github.com/DingJWuyu/TeachBuddy/actions/runs/38387387677) | `apps/web/e2e/questions-ux.config.mjs`、`materials-question-notes*.test.js`、`materials-questions-output.test.js`；实际模型及外部原件按专项另验 |
 | 账户与身份 | [PR #37](https://github.com/DingJWuyu/TeachBuddy/pull/37)，`de8bd99b`；入口 [PR #39](https://github.com/DingJWuyu/TeachBuddy/pull/39)，`2c43d63e`；[入口 CI](https://github.com/DingJWuyu/TeachBuddy/actions/runs/38362936254) | `auth-completeness.config.mjs`、`auth-integration.config.mjs`、`fixtures/auth-contract/playwright.config.mjs`、`account-deletion.test.js`；全浏览器进程重启的 Cookie 生命周期、掉电与真实邮件未验 |
@@ -120,4 +119,4 @@
 
 上述测试文件名相对 `apps/api/test/` 或 `apps/web/e2e/`。模块技术页链接准确源码与验证入口；完整产品交付再展开[验收矩阵](../acceptance/mvp-matrix.md)。
 
-已有本机回执保存在 preview 的 `test-results/`：`workflow-health-integration/root-receipt.json`、`agent-workflow-integration/root-receipt.json`、`classroom-backend-integration/root-receipt.json`、`questions-integration/receipt.json`、`identity-integration/receipt.json`、`auth-ui-integration/receipt.json`、`settings-nickname/receipt.json`、`math-integration/receipt.json`。退役回执为 `remove-lessons-integration/root-receipt.json` 与 `remove-classes-integration/root-receipt.json`；工程更新、两次退役和班级后端升级前备份位置分别在同目录 `preview-backup.json`。旧数学/日程交接在 `math-handoff/`。这些现存证据和私有备份独立保全，不作为安装、运行或必要回归的前置。
+已有本机回执保存在 preview 的 `test-results/`：`teachbuddy-identity-integration/root-receipt.json`、`workflow-health-integration/root-receipt.json`、`agent-workflow-integration/root-receipt.json`、`classroom-backend-integration/root-receipt.json`、`questions-integration/receipt.json`、`identity-integration/receipt.json`、`auth-ui-integration/receipt.json`、`settings-nickname/receipt.json`、`math-integration/receipt.json`。退役回执为 `remove-lessons-integration/root-receipt.json` 与 `remove-classes-integration/root-receipt.json`；工程更新、两次退役和班级后端升级前备份位置分别在同目录 `preview-backup.json`。旧数学/日程交接在 `math-handoff/`。这些现存证据和私有备份独立保全，不作为安装、运行或必要回归的前置。
