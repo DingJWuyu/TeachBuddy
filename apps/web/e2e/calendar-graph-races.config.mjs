@@ -1,2 +1,0 @@
-import {defineConfig} from '@playwright/test';
-export default defineConfig({testDir:'.',testMatch:'calendar-graph-races.spec.js',workers:2,fullyParallel:true,retries:0,timeout:40000,expect:{timeout:7000},outputDir:'../../../test-results/schedule-qa-graph/race-results',reporter:[['list'],['json',{outputFile:new URL('../../../test-results/schedule-qa-graph/races.json',import.meta.url).pathname}]],use:{ignoreHTTPSErrors:true,viewport:{width:1675,height:950},trace:'retain-on-failure',screenshot:'only-on-failure'}});

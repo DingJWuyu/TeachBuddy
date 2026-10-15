@@ -1,37 +1,40 @@
 import { test, expect } from '@playwright/test';
-import fs from 'node:fs';
-import path from 'node:path';
-import os from 'node:os';
 import { randomUUID } from 'node:crypto';
-import { createIntegration } from '../../api/test/fixtures/auth-integration/harness.js';
-import { registerMath } from './fixtures/math-static/real.mjs';
+import { createIntegration } from '../../../api/test/fixtures/auth-integration/harness.js';
+import { registerMath } from '../../../api/test/fixtures/math-real.mjs';
+import { createScheduleWorld, loginSchedule, closeScheduleWorld } from './fixture.mjs';
+
+test.use({ timezoneId: 'Asia/Shanghai' });
 
 const E = '/api/modules/schedule/entries';
+
 const N = '/api/modules/schedule/notifications';
+
 let world, client, now, pageErrors;
+
 const input = (title, extra = {}) => ({ title, items: [], time: { date: '2026-09-25', startTime: '15:00', durationMinutes: 60, timeZone: 'Asia/Shanghai' },
   repeat: null, reminder: null, calendar: { allDay: false, notes: '', tags: [] }, ...extra });
+
 async function call(method, url, body) {
   const r = await client.request(method, url, { body, headers: method === 'GET' ? {} : { 'Idempotency-Key': randomUUID() } });
   expect(r.status, JSON.stringify(r.json)).toBeLessThan(300); return r.json;
 }
+
 async function saved(title) { return (await call('GET', E)).items.find(x => x.title === title); }
+
 async function login(page, email = 'schedule-capabilities@example.test') {
-  await page.goto(`${world.origin}/calendar`);
-  await page.getByLabel('邮箱', { exact: true }).fill(email);
-  await page.getByLabel('密码', { exact: true }).fill('math-password');
-  await page.getByRole('button', { name: '登录', exact: true }).click();
-  await expect(page.locator('.cal-page')).toBeVisible();
-  const welcome = page.getByRole('button', { name: '知道了', exact: true });
-  if (await welcome.isVisible()) await welcome.click();
-  await expect(page.locator('.cal-loading')).toHaveCount(0);
+  await loginSchedule(page, world, email);
 }
+
 async function action(page, name) {
   await page.getByRole('button', { name: '任务操作', exact: true }).click();
   await page.getByRole('menuitem', { name, exact: true }).click();
 }
+
 async function close(page) { await page.getByRole('button', { name: '关闭任务', exact: true }).click(); await expect(page.locator('.cal-editor')).toHaveCount(0); }
+
 async function open(page, title) { await page.locator('.cal-upcoming-row').filter({ hasText: title }).click(); }
+
 async function shot(page, name) {
   await page.evaluate(() => document.fonts.ready);
   await expect.poll(() => page.locator('.cal-overlay-presence:not([inert])').evaluateAll(nodes => nodes.every(node => node.dataset.state === 'open' && Number(getComputedStyle(node).opacity) === 1))).toBeTruthy();
@@ -39,19 +42,18 @@ async function shot(page, name) {
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
   await page.screenshot({ path: test.info().outputPath(`${name}.png`), animations: 'disabled' });
 }
+
 test.beforeEach(async ({ page }) => {
   if (!process.env.WORKBENCH_WEB_DIST) throw new Error('Use an isolated production build.');
   now = '2026-09-25T06:00:00Z';
   await page.clock.setFixedTime(new Date(now));
   pageErrors = []; page.on('pageerror', error => pageErrors.push(error.message));
-  world = await createIntegration({ directory: fs.mkdtempSync(path.join(os.tmpdir(), 'schedule-capabilities-')), workbenchClock: () => new Date(now) });
-  ({ client } = await registerMath(world, 'schedule-capabilities@example.test'));
+  ({ world, client } = await createScheduleWorld(() => new Date(now), 'schedule-capabilities@example.test'));
   await login(page);
 });
+
 test.afterEach(async ({ context }, info) => {
-  await context.close(); await world?.close();
-  if (info.status === info.expectedStatus && !pageErrors.length) fs.rmSync(world.directory, { recursive: true, force: true });
-  expect(pageErrors).toEqual([]);
+  await closeScheduleWorld(context, world, pageErrors, info);
 });
 
 test('通知长标题不溢出，已读可切回未读，顶部空白关闭', async ({ page }) => {
@@ -291,7 +293,6 @@ test('提醒按需配置，关闭浏览器后补呈现原时间，计划不被�
   expect((await call('GET', `${E}/${task.id}`)).version).toBe(task.version);
   await context.close();
 });
-
 
 test('删除任务不保留，响应丢失后刷新原键确认，单次删除不影响整组', async ({ page }) => {
   const task = await call('POST', E, input('永久删除的课堂'));
@@ -911,7 +912,6 @@ test('连续点击添加不堆积空事项，放弃空输入也不删除或保�
   await close(page);
   expect((await call('GET', E)).items).toHaveLength(before);
 });
-
 
 test('真实指针选九十分钟，自动保存后刷新及服务重启仍可重开', async ({ page, browser }, info) => {
   await page.getByRole('button', { name: '日历视图', exact: true }).click();
