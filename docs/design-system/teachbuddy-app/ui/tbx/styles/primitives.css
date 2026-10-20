@@ -1,0 +1,223 @@
+/* Shared building blocks used by every module (scoped under .wb-shell). */
+
+.wb-button,
+.wb-icon-button {
+  border: 0;
+  background: var(--tb-fill);
+  color: var(--tb-ink);
+  font-weight: 600;
+  transition: background var(--tb-d1) var(--tb-ease), color var(--tb-d1), transform var(--tb-d2) var(--tb-spring), box-shadow var(--tb-d2);
+}
+.wb-button {
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 11px;
+  font-size: 13px;
+}
+.wb-icon-button {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--tb-muted);
+}
+.wb-button:hover:not(:disabled) {
+  background: var(--tb-fill-hover);
+}
+.wb-icon-button:hover:not(:disabled),
+.wb-icon-button[aria-expanded=true] {
+  background: var(--tb-fill-hover);
+  color: var(--tb-ink);
+}
+.wb-button:active:not(:disabled),
+.wb-icon-button:active:not(:disabled) {
+  transform: scale(0.96);
+}
+.wb-button.is-primary {
+  background: var(--tb-primary);
+  color: var(--tb-on-primary);
+  box-shadow: 0 8px 18px -12px var(--tb-primary-glow);
+}
+.wb-button.is-primary:hover:not(:disabled) {
+  background: var(--tb-primary-hover);
+}
+.wb-button.is-on {
+  background: var(--tb-accent-soft);
+  color: var(--tb-accent);
+}
+.wb-button.is-danger {
+  background: var(--tb-danger-soft);
+  color: var(--tb-danger);
+}
+:is(.wb-input, .wb-button, .wb-icon-button, .wb-chip, .wb-tab):focus-visible {
+  outline: 2px solid var(--tb-focus);
+  outline-offset: 2px;
+}
+.wb-input {
+  min-height: 36px;
+  padding: 7px 12px;
+  border: 1px solid transparent;
+  border-radius: 11px;
+  background: var(--tb-fill);
+  transition: background var(--tb-d2), border-color var(--tb-d2), box-shadow var(--tb-d2);
+}
+.wb-input:hover:not(:focus) {
+  background: var(--tb-fill-hover);
+}
+.wb-input:focus {
+  background: var(--tb-surface);
+  border-color: var(--tb-accent);
+  box-shadow: var(--tb-ring);
+  outline: none;
+}
+.wb-label {
+  color: var(--tb-muted);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.wb-chip {
+  height: 28px;
+  padding: 0 11px;
+  border: 0;
+  background: var(--tb-fill);
+  color: var(--tb-ink-2);
+  font-weight: 600;
+  transition: background var(--tb-d1), color var(--tb-d1);
+}
+.wb-chip:hover {
+  background: var(--tb-fill-hover);
+}
+.wb-chip.is-active {
+  background: var(--tb-ink);
+  color: var(--tb-surface);
+}
+.wb-tabs {
+  gap: 2px;
+  padding: 3px;
+  border-radius: 12px;
+  background: var(--tb-fill);
+  flex: 0 1 auto;
+}
+.wb-tab {
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 9px;
+  color: var(--tb-muted);
+  font-weight: 600;
+  transition: background var(--tb-d2) var(--tb-ease), color var(--tb-d2);
+}
+.wb-tab.is-active {
+  background: var(--tb-surface);
+  color: var(--tb-ink);
+  box-shadow: var(--tb-shadow-1);
+}
+
+/* menus and popovers: light glass sheets */
+.wb-popover {
+  min-width: 180px;
+  padding: 6px;
+  border-radius: 16px;
+  background: color-mix(in oklab, var(--tb-surface) 92%, transparent);
+  backdrop-filter: var(--tb-blur);
+  box-shadow: var(--tb-shadow-3);
+  animation: tbx-pop-in 200ms var(--tb-ease) both;
+}
+.wb-menu-item {
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 10px;
+  color: var(--tb-ink);
+  font-size: 13.5px;
+  font-weight: 500;
+  transition: background var(--tb-d1);
+}
+.wb-menu-item:hover {
+  background: var(--tb-fill);
+}
+.wb-menu-item.is-danger {
+  color: var(--tb-danger);
+}
+.wb-menu-item.is-danger:hover {
+  background: var(--tb-danger-soft);
+}
+
+/* dialogs: sheets that rise from a blurred room */
+.wb-dialog-scrim {
+  background: rgb(0 0 0 / 0.32);
+  backdrop-filter: blur(6px);
+  animation: tbx-fade-in 260ms var(--tb-ease) both;
+}
+.wb-dialog {
+  gap: 14px;
+  padding: 22px;
+  border-radius: 24px;
+  background: var(--tb-surface);
+  box-shadow: var(--tb-shadow-3);
+  animation: tbx-sheet-in 360ms var(--tb-ease) both;
+}
+.wb-dialog h2 {
+  font-size: 18px;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+}
+@keyframes tbx-sheet-in {
+  from { opacity: 0; transform: translateY(18px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+
+/* disclosures */
+.wb-module-disclosure-trigger {
+  border-radius: 12px;
+  font-weight: 650;
+}
+
+/* selection bar floats like an iOS toolbar */
+.wb-selection-bar {
+  border-radius: 16px;
+  background: var(--tb-ink);
+  color: var(--tb-surface);
+  box-shadow: var(--tb-shadow-3);
+}
+
+/* the auxiliary side panel */
+.wb-aux {
+  background: var(--tb-surface);
+}
+.wb-aux-head {
+  height: 54px;
+  padding: 0 10px 0 12px;
+  border-bottom: 1px solid var(--tb-line-soft);
+}
+.wb-aux-resizer::after {
+  background: var(--tb-accent);
+}
+
+/* toasts and status strips */
+.wb-storage-warning,
+.wb-recovery-notice {
+  margin: 0 0 10px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--tb-yellow-soft);
+  color: var(--tb-warning-ink);
+}
+
+/* plain form controls inside modules and the side panel */
+:where(.wb-main, .wb-aux) :where(input[type=text], input[type=search], input[type=email], input[type=number], input:not([type]), select, textarea) {
+  border: 1px solid transparent;
+  border-radius: 11px;
+  background-color: var(--tb-fill);
+  color: var(--tb-ink);
+  transition: background-color var(--tb-d2), border-color var(--tb-d2), box-shadow var(--tb-d2);
+}
+:where(.wb-main, .wb-aux) :where(input[type=text], input[type=search], input:not([type]), select, textarea):focus {
+  background-color: var(--tb-surface);
+  border-color: var(--tb-accent);
+  box-shadow: var(--tb-ring);
+  outline: none;
+}
+:where(.wb-main, .wb-aux) input[type=checkbox] {
+  accent-color: var(--tb-accent);
+}

@@ -1,0 +1,73 @@
+{
+  "v": 3,
+  "assetGroups": {
+    "Logos": {
+      "name": "Logos",
+      "tile": "m",
+      "order": [
+        "teachbuddy-app-icon.svg",
+        "teachbuddy-app-icon-dark.svg",
+        "teachbuddy-symbol.svg"
+      ],
+      "files": {
+        "teachbuddy-app-icon.svg": {
+          "name": "teachbuddy-app-icon.svg",
+          "blob": "1263f6437b9bd51b389a49fc7bcb2cb1",
+          "size": 813,
+          "type": "image/svg+xml"
+        },
+        "teachbuddy-app-icon-dark.svg": {
+          "name": "teachbuddy-app-icon-dark.svg",
+          "blob": "b7e4d49821a485e53931ac2ff9af8e21",
+          "size": 813,
+          "type": "image/svg+xml"
+        },
+        "teachbuddy-symbol.svg": {
+          "name": "teachbuddy-symbol.svg",
+          "blob": "11880eaeb5b9cc6321d7a0d26e6bf927",
+          "size": 497,
+          "type": "image/svg+xml"
+        }
+      }
+    },
+    "Illustrations": {
+      "name": "Illustrations",
+      "tile": "l",
+      "order": [
+        "classroom-cast.svg"
+      ],
+      "files": {
+        "classroom-cast.svg": {
+          "name": "classroom-cast.svg",
+          "blob": "68c0b9f8d60fc052e711a0346004a7a1",
+          "size": 34332,
+          "type": "image/svg+xml"
+        }
+      }
+    }
+  },
+  "blobs": {},
+  "createdOnFiles": {
+    "at": "2026-10-16T08:43:11Z",
+    "v": 1
+  },
+  "docs": {
+    "readme": "project/README.md",
+    "sections": []
+  },
+  "groups": [
+    "Logos",
+    "Illustrations"
+  ],
+  "lastChange": {
+    "by": "Claude",
+    "at": "2026-10-20T07:10:00Z",
+    "via": "Claude",
+    "note": "Second UX pass: menu insets, group menu toggle, task sheet closes like the side panel, overlay blur, resource folders inline + drag, shared FilterMenu"
+  },
+  "layout": "files",
+  "libraries": [],
+  "namespace": "TeachBuddy",
+  "sections": {},
+  "title": "TeachBuddy"
+}

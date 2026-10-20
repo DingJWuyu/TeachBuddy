@@ -1,0 +1,12 @@
+/* Project-owned layout for a canvas-only source-built GeoGebra applet. */
+.appletParameters,.appletParameters .GeoGebraFrame { position: relative; overflow: hidden; }
+.appletParameters .GeoGebraFrame { font-family: Arial, sans-serif; background: white; }
+.appletParameters canvas { display: block; touch-action: none; }
+.appletParameters .main,.appletParameters .DockPanel { position: relative; }
+.appletParameters .gwt-SplitLayoutPanel { position: absolute; inset: 0; overflow: hidden; }
+.appletParameters .gwt-SplitLayoutPanel-HDragger,.appletParameters .gwt-SplitLayoutPanel-VDragger { display: none; }
+.appletParameters .EuclidianPanel { overflow: hidden; }
+.appletParameters .EuclidianPanel canvas { position: absolute; left: 0; top: 0; }
+.appletParameters .toolbarPanel,.appletParameters .AlgebraView,.appletParameters .algebraView,
+.appletParameters .keyboard,.appletParameters .zoomPanel,.appletParameters .stylebar { display: none; }
+.appletParameters .screenReaderStyle { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }

@@ -1,0 +1,23 @@
+<!-- @dsCard group="Actions" height=110 subtitle="主按钮、次按钮、幽灵按钮与小号" -->
+<div class="demo">
+  <style>
+  :where(html){--tb-canvas:#f5f5f7;--tb-surface:#fff;--tb-surface-2:#fafafa;--tb-fill:#f0f0f2;--tb-fill-hover:#e8e8ed;--tb-line:#e2e2e7;--tb-line-soft:#ececef;--tb-ink:#1d1d1f;--tb-ink-2:#424245;--tb-muted:#6e6e73;--tb-faint:#86868b;--tb-brand:#0071e3;--tb-brand-soft:#e8f1fc;--tb-accent:#0066cc;--tb-accent-soft:#eef5fd;--tb-primary:#0071e3;--tb-primary-hover:#0077ed;--tb-on-primary:#fff;--tb-yellow:#ffd60a;--tb-yellow-soft:#fff8db;--tb-orange:#ff9500;--tb-coral:#ff9500;--tb-coral-soft:#fff4e5;--tb-lavender-deep:#af52de;--tb-lavender-soft:#f5f2fd;--tb-lavender-ink:#8a3fb8;--tb-blue:#0071e3;--tb-blue-soft:#e8f1fc;--tb-mint:#34c759;--tb-alert:#ff3b30;--tb-danger:#d70015;--tb-danger-soft:#fff0f0;--tb-warning-ink:#8a5a00;--tb-info:#0066cc;--tb-shadow-1:0 1px 2px rgb(0 0 0/.04),0 0 0 1px rgb(0 0 0/.04);--tb-shadow-2:0 12px 30px -14px rgb(0 0 0/.16),0 2px 6px rgb(0 0 0/.04),0 0 0 1px rgb(0 0 0/.04);}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Noto Sans SC",sans-serif;color:var(--tb-ink);background:var(--tb-canvas);-webkit-font-smoothing:antialiased}
+  .demo{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:28px}
+  .b{display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 18px;border:0;border-radius:14px;font:650 14.5px/1 inherit;font-family:inherit;cursor:pointer;transition:transform 220ms cubic-bezier(.34,1.56,.64,1),background 120ms,box-shadow 220ms}
+  .b:active{transform:scale(.97)}
+  .p{background:var(--tb-primary);color:var(--tb-on-primary);box-shadow:0 8px 18px -12px rgb(0 113 227/.5)}
+  .p:hover{background:var(--tb-primary-hover);transform:translateY(-1px)}
+  .s{background:var(--tb-fill);color:var(--tb-ink)}
+  .s:hover{background:var(--tb-fill-hover)}
+  .g{background:transparent;color:var(--tb-muted)}
+  .g:hover{background:var(--tb-fill-hover);color:var(--tb-ink)}
+  .sm{height:30px;padding:0 11px;border-radius:9px;font-size:12.5px}
+  .d{background:var(--tb-danger-soft);color:var(--tb-danger)}
+  svg{flex:none}
+  </style>
+  <button class="b p"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 19V5m-6 6 6-6 6 6"/></svg>上传资料</button>
+  <button class="b s">手动录题</button>
+  <button class="b g">返回工作</button>
+  <button class="b s sm">新对话</button>
+  <button class="b d sm">删除</button>
+</div>

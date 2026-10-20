@@ -1,0 +1,1 @@
+$wnd.web3d.runAsyncCallback11("vZc(5920,1,QFp);_.Qe=function(){var a,b,c,d,e;d=k8n(this.g.i.db);a=YKd('collabUrl',d);b=(Oqd(),Lqd).hostname;e=Eud(b,'\\\\W','')+'_'+this.n;c=new $wnd.GGBMultiplayer(this.i,e,a,this.k.k);this.j.xh(c)};yGo(Qc)(11);\n//# sourceURL=web3d-11.js\n")

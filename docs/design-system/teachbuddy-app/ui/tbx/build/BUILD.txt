@@ -1,0 +1,21 @@
+# TeachBuddy redesign layer
+
+The redesign lives beside the original bundle instead of inside it:
+
+- `ui/tbx/src/` — new interface components (JSX), bundled to `ui/tbx.js`
+- `ui/tbx/styles/` — the new visual language (CSS), bundled to `ui/tbx.css`
+- `ui/tbx/build/patch_app.py` — small, exact hooks into `ui/app.js` that route a
+  few components (sign-in, top bar, home assistant, schedule board) to the new
+  layer and expose the app's internals to it
+- `ui/tbx/build/ux_patches.py` — the UX pass (semester copy source, resource
+  library write hooks, batch actions keep the selection); exec'd by patch_app.py
+- `ui/tbx/build/patch_agent.py` — hooks the mock assistant (`data/agent.js`, from
+  the pristine copy `agent.orig.js`) up to the scripted replies in
+  `src/agent/script.js`: tool steps, markdown answers and result cards; also adds
+  references to schedule entries and resources, and rename / pin / delete
+- `ui/tbx/build/remap_css.py` — carries the legacy stylesheet onto the new palette
+  and radii
+- `ui/tbx/build/scope_css.py` — scopes component sheets under `:is(.wb-shell, .tbx-portal-host)` (the host class marks surfaces the app portals into <body>)
+- `ui/tbx/build/build.sh` — runs all of the above (expects the untouched original
+  prototype at `/home/claude/teachbuddy-original/current-ui`)
+- `ui/tbx/build/seed.js` — sample week of content (also offered on the home page)

@@ -1,0 +1,38 @@
+<!-- @dsCard height=288 -->
+<div class="cover">
+  <style>
+  :where(html){--tb-canvas:#f5f5f7;--tb-ink:#1d1d1f;--tb-muted:#6e6e73;--tb-board:#1d1d1f;--tb-yellow:#ffd60a;--tb-orange:#ff9f0a;--tb-blue:#0a84ff;--tb-chalk-ink:#f5f5f7;--tb-r-xl:26px}
+  html,body{margin:0;background:var(--tb-canvas)}
+  .cover{position:relative;width:960px;height:288px;overflow:hidden;background:var(--tb-canvas);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","PingFang SC","Microsoft YaHei",sans-serif}
+  svg{position:absolute;inset:0}
+  .slate{fill:var(--tb-board)}
+  .chalk{fill:var(--tb-chalk-ink)}
+  .dot{fill:var(--tb-chalk-ink);opacity:.18}
+  .yellow{fill:var(--tb-yellow)}
+  .coral{fill:var(--tb-orange)}
+  .blue{fill:var(--tb-blue)}
+  .name{position:absolute;left:48px;bottom:74px;margin:0;color:var(--tb-ink);font-size:72px;font-weight:750;line-height:.95;letter-spacing:-.035em}
+  .tag{position:absolute;left:50px;bottom:44px;width:440px;margin:0;color:var(--tb-muted);font-size:14px;line-height:1.4}
+  </style>
+  <svg viewBox="0 0 960 288" width="960" height="288" aria-hidden="true">
+    <!--
+      blocks: graphite board slab 440×288 (r tb-r-xl top-left), tb-chalk-ink capsule 72×176, tb-blue block 64×112 (r 20), tb-yellow dome 64×92, tb-orange disc r34
+      arrangement: one tall graphite slab bleeding off the right and bottom edges, the class lined up on its floor like the sign-in board
+      pattern: dot grid — the brand's canvas is dot paper, so the board carries the same dots at one 20px spacing step (8×4 = 32 dots)
+      scales: spacing 20px (pitch), 28px (tb-r-xl), pills and discs at half their short side
+    -->
+    <path class="slate" d="M548 0 H960 V288 H520 V28 A28 28 0 0 1 548 0 Z"/>
+    <g>
+      <circle class="dot" cx="580" cy="40" r="2.4"/><circle class="dot" cx="600" cy="40" r="2.4"/><circle class="dot" cx="620" cy="40" r="2.4"/><circle class="dot" cx="640" cy="40" r="2.4"/><circle class="dot" cx="660" cy="40" r="2.4"/><circle class="dot" cx="680" cy="40" r="2.4"/><circle class="dot" cx="700" cy="40" r="2.4"/><circle class="dot" cx="720" cy="40" r="2.4"/>
+      <circle class="dot" cx="580" cy="60" r="2.4"/><circle class="dot" cx="600" cy="60" r="2.4"/><circle class="dot" cx="620" cy="60" r="2.4"/><circle class="dot" cx="640" cy="60" r="2.4"/><circle class="dot" cx="660" cy="60" r="2.4"/><circle class="dot" cx="680" cy="60" r="2.4"/><circle class="dot" cx="700" cy="60" r="2.4"/><circle class="dot" cx="720" cy="60" r="2.4"/>
+      <circle class="dot" cx="580" cy="80" r="2.4"/><circle class="dot" cx="600" cy="80" r="2.4"/><circle class="dot" cx="620" cy="80" r="2.4"/><circle class="dot" cx="640" cy="80" r="2.4"/><circle class="dot" cx="660" cy="80" r="2.4"/><circle class="dot" cx="680" cy="80" r="2.4"/><circle class="dot" cx="700" cy="80" r="2.4"/><circle class="dot" cx="720" cy="80" r="2.4"/>
+      <circle class="dot" cx="580" cy="100" r="2.4"/><circle class="dot" cx="600" cy="100" r="2.4"/><circle class="dot" cx="620" cy="100" r="2.4"/><circle class="dot" cx="640" cy="100" r="2.4"/><circle class="dot" cx="660" cy="100" r="2.4"/><circle class="dot" cx="680" cy="100" r="2.4"/><circle class="dot" cx="700" cy="100" r="2.4"/><circle class="dot" cx="720" cy="100" r="2.4"/>
+    </g>
+    <rect class="chalk" x="600" y="112" width="72" height="196" rx="36"/>
+    <rect class="blue" x="688" y="176" width="64" height="132" rx="20"/>
+    <path class="yellow" d="M768 288 V228 A32 32 0 0 1 832 228 V288 Z"/>
+    <circle class="coral" cx="882" cy="254" r="34"/>
+  </svg>
+  <p class="name">TeachBuddy</p>
+  <p class="tag">给老师的工作台：一块好用的黑板，一群有生气的学生。</p>
+</div>
