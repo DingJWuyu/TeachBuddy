@@ -93,4 +93,6 @@
 | 资源列表读到旧 pending 预览及已成功 Job 后停止轮询；单轮读取失败也无声停止 | 真实 PDF 上传和受控响应时序已复现，服务端预览 ready 而列表无缩略图。资源作者复用详情已有终态重读语义；失败沿已有卡片错误及详情“重新读取文件”恢复，不加新控件或重试框架。增强已有上传回归，定点验证 |
 | 历史菜单 portal 化后键盘留在触发器，Tab 跳到下一会话 | 独立实页及旧内联 DOM 顺序单变量对照确认。首页作者改用已有共享 Menu，保留视觉、置顶/改名/删除确认和浮层定位，增强已有底部菜单用例 |
 
-旧 [CI](https://github.com/DingJWuyu/TeachBuddy/actions/runs/39489284343) 的 HTTP/SQLite 通过，其他执行已由总控取消，避免旧候选继续耗费；取消不算完整 CI 通过。作者先完成这两项红绿，统一固定修复候选后只补审增量及影响范围，再一次推送同一 PR，完成 CI、preview 核对和现场清理。回执在 `test-results/prototype-parity/review/`，没有真实证据的状态仍保留为未验。
+旧 [CI](https://github.com/DingJWuyu/TeachBuddy/actions/runs/39489284343) 的 HTTP/SQLite 通过，其他执行已由总控取消，避免旧候选继续耗费；取消不算完整 CI 通过。两项在修复候选 `f8d15c0e` 各自增强原用例并通过。菜单连续实页进一步发现共享 Menu 的 Tab 退出落 BODY，再次 Tab 跳到品牌链接，Shift+Tab 跳到首页底部；总控沿公共组件修正为关闭前回到触发器，再由浏览器继续原顺序，作者只增强同一菜单回归，不新增管理层或重复套件。
+
+上述增量完成后固定新候选，只补审增量及影响范围，再一次推送同一 PR，完成 CI、preview 核对和现场清理。回执在 `test-results/prototype-parity/review/`，没有真实证据的状态仍保留为未验。

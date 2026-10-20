@@ -683,7 +683,8 @@ test('原型对照：历史底部会话菜单可完整点击，删除保留就�
   await page.reload();
   const last = page.locator('.tbx-thread').last();
   const menu = page.getByRole('menu');
-  const keyboardTrigger = page.locator('.tbx-thread').first().getByRole('button', { name: '对话选项', exact: true });
+  const keyboardRow = page.locator('.tbx-thread').first();
+  const keyboardTrigger = keyboardRow.getByRole('button', { name: '对话选项', exact: true });
   await keyboardTrigger.focus();
   await keyboardTrigger.press('Enter');
   await expect(menu.getByRole('menuitem', { name: '置顶', exact: true })).toBeFocused();
@@ -698,6 +699,17 @@ test('原型对照：历史底部会话菜单可完整点击，删除保留就�
   await page.keyboard.press('Escape');
   await expect(menu).toHaveCount(0);
   await expect(keyboardTrigger).toBeFocused();
+  await keyboardTrigger.press('Enter');
+  await expect(menu.getByRole('menuitem', { name: '置顶', exact: true })).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(menu).toHaveCount(0);
+  await expect(page.locator('.tbx-thread').nth(1)).toBeFocused();
+  await keyboardTrigger.focus();
+  await keyboardTrigger.press('Enter');
+  await expect(menu.getByRole('menuitem', { name: '置顶', exact: true })).toBeFocused();
+  await page.keyboard.press('Shift+Tab');
+  await expect(menu).toHaveCount(0);
+  await expect(keyboardRow).toBeFocused();
   for (const viewport of [{ width: 1440, height: 900 }, { width: 820, height: 1180 }, { width: 390, height: 844 }]) {
     await page.setViewportSize(viewport);
     const toggle = page.getByRole('button', { name: '对话列表', exact: true });
