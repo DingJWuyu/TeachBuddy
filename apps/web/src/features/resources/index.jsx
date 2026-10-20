@@ -464,6 +464,7 @@ function ResourceWorkspace({
                 > {t("恢复资料")} </button>
               )}
               <button
+                aria-label={t("下载原件")}
                 disabled={!file}
                 onClick={() =>
                   client

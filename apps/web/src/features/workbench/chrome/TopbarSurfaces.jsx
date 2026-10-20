@@ -8,6 +8,7 @@ import { useWorkbenchShell } from '../shellContext.js';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createDragChip } from './dragChip.js';
 import { Icon } from '../../../components/icons.jsx';
+import { useModuleDialogFocus } from '../../../components/interaction/ModuleMotion.jsx';
 import { navigate, routeClick, withSearch } from './routes.js';
 import { workbenchModules, moduleDisplayName } from '../../modules/moduleRegistry.js';
 
@@ -28,6 +29,8 @@ export function SearchModal({ onClose, onAnnounce }) {
   const [query, setQuery] = useState('');
   const [activeIndex, setActiveIndex] = useState(0);
   const inputRef = useRef(null);
+  const panelRef = useRef(null);
+  useModuleDialogFocus(panelRef, onClose);
   const groups = useMemo(() => {
     const needle = query.trim().toLowerCase();
     return searchGroups()
@@ -39,10 +42,6 @@ export function SearchModal({ onClose, onAnnounce }) {
   }, [query, i18n.resolvedLanguage]);
 
   const flat = useMemo(() => groups.flatMap((group) => group.items), [groups]);
-
-  useEffect(() => {
-    inputRef.current?.focus();
-  }, []);
 
   useEffect(() => {
     setActiveIndex(0);
@@ -77,6 +76,7 @@ export function SearchModal({ onClose, onAnnounce }) {
     <div className="tb-search-layer">
       <div className="tb-search-backdrop" onPointerDown={onClose} />
       <div
+        ref={panelRef}
         className="tb-search-panel"
         role="dialog"
         aria-modal="true"

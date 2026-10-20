@@ -224,7 +224,7 @@ function ThreadMenu({ item, agent, onRename, onClose }) {
 }
 
 /* ---------- thread list (home) ---------- */
-export function ThreadList({ onPick }) {
+export function ThreadList({ onPick, listRef }) {
   useLocale();
   const agent = useAgent();
   const [query, setQuery] = useState('');
@@ -254,7 +254,7 @@ export function ThreadList({ onPick }) {
   }
 
   return (
-    <aside className="tbx-threads" aria-label={tx('对话')}>
+    <aside className="tbx-threads" ref={listRef} aria-label={tx('对话')}>
       <div className="tbx-threads-head">
         <label className="tbx-thread-search">
           <Glyph name="search" size={15} />
@@ -278,7 +278,7 @@ export function ThreadList({ onPick }) {
                 style={{ '--i': i }}
                 className={cx('tbx-thread', item.id === agent.id && 'is-active', menu?.id === item.id && 'is-menu')}
                 onClick={() => { if (renaming !== item.id) { agent.select(item.id); onPick?.(); } }}
-                onKeyDown={(e) => { if (e.key === 'Enter' && renaming !== item.id) agent.select(item.id); }}
+                onKeyDown={(e) => { if (e.key === 'Enter' && e.target === e.currentTarget && renaming !== item.id) { agent.select(item.id); onPick?.(); } }}
                 aria-current={item.id === agent.id ? 'true' : undefined}
               >
                 <span className="tbx-thread-line">
@@ -1134,6 +1134,36 @@ export function Home({ returnPath }) {
   useLocale();
   const agent = useAgent();
   const [threadsOpen, setThreadsOpen] = useState(false);
+  const threadsRef = useRef(null);
+  const threadsToggleRef = useRef(null);
+  useLayoutEffect(() => {
+    const list = threadsRef.current;
+    if (!list) return undefined;
+    const syncInteraction = () => {
+      list.inert = !threadsOpen && getComputedStyle(list).position === 'absolute';
+    };
+    syncInteraction();
+    const observer = new ResizeObserver(syncInteraction);
+    observer.observe(list.parentElement);
+    return () => observer.disconnect();
+  }, [threadsOpen]);
+  useEffect(() => {
+    if (!threadsOpen) return undefined;
+    const closeOutside = (event) => {
+      if (!threadsRef.current?.contains(event.target) && !threadsToggleRef.current?.contains(event.target)) setThreadsOpen(false);
+    };
+    const closeOnEscape = (event) => {
+      if (event.key !== 'Escape' || threadsRef.current?.querySelector('[role="menu"], .tbx-thread-rename')) return;
+      setThreadsOpen(false);
+      threadsToggleRef.current?.focus();
+    };
+    document.addEventListener('pointerdown', closeOutside);
+    document.addEventListener('keydown', closeOnEscape);
+    return () => {
+      document.removeEventListener('pointerdown', closeOutside);
+      document.removeEventListener('keydown', closeOnEscape);
+    };
+  }, [threadsOpen]);
   useEffect(() => {
     const onKey = (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'n' && !e.shiftKey) {
@@ -1147,10 +1177,10 @@ export function Home({ returnPath }) {
   const hasMessages = Boolean(agent.snapshot?.messages?.length);
   return (
     <div className={cx('tbx-home', threadsOpen && 'is-threads-open')}>
-      <ThreadList onPick={() => setThreadsOpen(false)} />
+      <ThreadList listRef={threadsRef} onPick={() => setThreadsOpen(false)} />
       <div className="tbx-home-main">
         <div className="tbx-home-bar">
-          <button className="tbx-icon-btn tbx-threads-toggle" onClick={() => setThreadsOpen(!threadsOpen)} aria-label={tx('对话列表')}>
+          <button ref={threadsToggleRef} className="tbx-icon-btn tbx-threads-toggle" onClick={() => setThreadsOpen(!threadsOpen)} aria-label={tx('对话列表')} aria-expanded={threadsOpen}>
             <Glyph name="list" size={17} />
           </button>
           <span className="tbx-home-title">{hasMessages ? threadTitle(agent.snapshot.conversation.title) : ''}</span>

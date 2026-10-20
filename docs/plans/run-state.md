@@ -4,13 +4,14 @@
 
 ## 工作现场与授权
 
-本轮 Design System 全站前端迁移已由 [PR #46](https://github.com/DingJWuyu/TeachBuddy/pull/46) 集成，当前无继续执行的迁移任务。界面参考从[设计输入](../design-system/README.md)进入，行为与实现事实归各分区规格和子系统；后端能力差异及原型自身问题集中在 [buffer](../../buffer.md)。工程通则沿[开发约定](../agents/module-development.md)，交付证据见[核查入口](#核查入口)。
+Design System 全站前端迁移已由 [PR #46](https://github.com/DingJWuyu/TeachBuddy/pull/46) 集成。当前执行[全站界面与交互清查](ui-interaction-audit.md)，从用户反馈的首页图标挤压和日程切换闪烁开始，核查各模块实际布局与动态交互。界面参考从[设计输入](../design-system/README.md)进入，行为与实现事实归各分区规格和子系统；后端能力差异集中在 [buffer](../../buffer.md)。工程通则沿[开发约定](../agents/module-development.md)，既有交付证据见[核查入口](#核查入口)。
 
 用户体验运行 `TeachBuddy-preview` 的集成源码，维护方式见[已有实例](../SETUP.md#已有本机实例)。GitHub 默认分支与日常 trunk 是 `preview/integration`，`main` 是稳定发布分支。用户已授权仓库配置、CI、任务 PR、独立审查、trunk 集成与同步；执行[GitHub 工作流](../agents/github-workflow.md)。未授权实际版本准备、合 main、产品发布、公开部署、新增费用或社区自动运营。模型与外部账户操作沿各自授权，本轮不扩展。
 
 | 现场 | 当前安排 |
 | --- | --- |
 | `TeachBuddy-preview` / `preview/integration` | 集成及用户体验入口，保护私有配置和数据；当前分支与 HEAD 以 Git 核对 |
+| `TeachBuddy-ui-audit` / `fix/ui-interaction-audit` | 本轮界面清查与修复；范围、分工及接续见当前任务记录，完成集成后清理 |
 | `TeachBuddy` / `main` | 保留稳定分支工作树，不在本轮开发范围 |
 | `TeachBuddy-resources` / `feat/resources-core` | 保留已有资源库现场；本轮不修改或删除，接续前核对其成果和负责 session |
 

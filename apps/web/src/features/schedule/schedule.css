@@ -1445,6 +1445,10 @@
   font-size: inherit;
 }
 
+.cal-dialog .cal-field-pair.cal-reminder-fields {
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+}
+
 .cal-select-wrap {
   display: block;
   position: relative;

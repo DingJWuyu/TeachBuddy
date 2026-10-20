@@ -53,6 +53,7 @@
 }
 :is(.wb-shell, .tbx-portal-host) .tbx-thread-search {
   flex: 1;
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: 7px;
@@ -252,6 +253,7 @@
   box-shadow: var(--tb-shadow-1);
   overflow: hidden;
 }
+:is(.wb-shell, .tbx-portal-host) .tbx-home-main > .tbx-agent { isolation: isolate; }
 :is(.wb-shell, .tbx-portal-host) .tbx-home-bar {
   position: absolute;
   z-index: 6;

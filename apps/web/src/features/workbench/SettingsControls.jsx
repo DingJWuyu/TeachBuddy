@@ -36,7 +36,7 @@ function SettingsDialogBody({ title, children, confirmLabel, onConfirm, onClose,
     } }}>
     <div className="settings-dialog-heading"><h2 id={titleId}>{title}</h2><button type="button" className="settings-dialog-close" onClick={onClose} aria-label={t("关闭")}>×</button></div>
     <div className="settings-confirm-copy">{children}</div>
-    <div className="settings-confirm-actions"><button type="button" className="wb-button" onClick={onClose} autoFocus>{closeLabel || (confirmLabel ? t("取消") : t("关闭"))}</button>
+    <div className="settings-confirm-actions"><button type="button" className="wb-button" onClick={onClose}>{closeLabel || (confirmLabel ? t("取消") : t("关闭"))}</button>
       {confirmLabel && <button type="button" className={`wb-button ${danger ? 'settings-danger-button' : 'settings-primary'}`} disabled={confirmDisabled} onClick={onConfirm}>{confirmLabel}</button>}</div>
   </dialog>;
 }
