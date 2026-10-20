@@ -4,18 +4,17 @@
 
 ## 工作现场与授权
 
-Design System 全站前端迁移已由 [PR #46](https://github.com/DingJWuyu/TeachBuddy/pull/46) 集成。当前执行[全站界面与交互清查](ui-interaction-audit.md)，从用户反馈的首页图标挤压和日程切换闪烁开始，核查各模块实际布局与动态交互。界面参考从[设计输入](../design-system/README.md)进入，行为与实现事实归各分区规格和子系统；后端能力差异集中在 [buffer](../../buffer.md)。工程通则沿[开发约定](../agents/module-development.md)，既有交付证据见[核查入口](#核查入口)。
+Design System 全站前端迁移已由 [PR #46](https://github.com/DingJWuyu/TeachBuddy/pull/46) 集成；后续全站界面与交互清查已由 [PR #47](https://github.com/DingJWuyu/TeachBuddy/pull/47) 完成，首页图标挤压、日程切换闪烁及本轮确认的布局、焦点问题已修复并集成。当前无进行中的全站界面任务。界面参考从[设计输入](../design-system/README.md)进入，行为与实现事实归各分区规格和子系统；后端能力差异集中在 [buffer](../../buffer.md)。工程通则沿[开发约定](../agents/module-development.md)，既有交付证据见[核查入口](#核查入口)。
 
 用户体验运行 `TeachBuddy-preview` 的集成源码，维护方式见[已有实例](../SETUP.md#已有本机实例)。GitHub 默认分支与日常 trunk 是 `preview/integration`，`main` 是稳定发布分支。用户已授权仓库配置、CI、任务 PR、独立审查、trunk 集成与同步；执行[GitHub 工作流](../agents/github-workflow.md)。未授权实际版本准备、合 main、产品发布、公开部署、新增费用或社区自动运营。模型与外部账户操作沿各自授权，本轮不扩展。
 
 | 现场 | 当前安排 |
 | --- | --- |
 | `TeachBuddy-preview` / `preview/integration` | 集成及用户体验入口，保护私有配置和数据；当前分支与 HEAD 以 Git 核对 |
-| `TeachBuddy-ui-audit` / `fix/ui-interaction-audit` | 本轮界面清查与修复；范围、分工及接续见当前任务记录，完成集成后清理 |
 | `TeachBuddy` / `main` | 保留稳定分支工作树，不在本轮开发范围 |
 | `TeachBuddy-resources` / `feat/resources-core` | 保留已有资源库现场；本轮不修改或删除，接续前核对其成果和负责 session |
 
-账户、题库、数学、日程、班级后端、两次退役及本轮全站前端迁移均已集成，已完成任务的临时现场已清理。AI 和其他后端扩展仍未授权；本轮局部模拟不等于已增加后端能力。
+账户、题库、数学、日程、班级后端、两次退役、全站前端迁移及界面清查均已集成，已完成任务的临时现场已清理。AI 和其他后端扩展仍未授权；前端局部模拟不等于已增加后端能力。
 
 总控管理公共文件唯一写者、工作树和集成。未提交成果、固定输入、私有配置和有效证据须保留；测试业务数据可按已授权范围处置。证据不充当运行依赖，换机从入库输入与[SETUP](../SETUP.md)重建。
 
@@ -105,7 +104,7 @@ Design System 全站前端迁移已由 [PR #46](https://github.com/DingJWuyu/Tea
 
 | 范围 | 已集成证据 | 可重建入口及边界 |
 | --- | --- | --- |
-| 全站前端与当前运行 | [PR #46](https://github.com/DingJWuyu/TeachBuddy/pull/46)，`6763f64a`；[CI](https://github.com/DingJWuyu/TeachBuddy/actions/runs/39444858003) 对应候选 `d7fb9ec9`，squash 后文件树一致 | 全工作区构建、274 项 HTTP/SQLite、50 项真实输出、343 项浏览器检查通过；2 项缺私人原稿跳过。Standards/Spec 独立审查无未关闭发现，作者另有视觉/交互及 CI 外专项证据。班级真实导入/统计、主动示例载入、账户清理和恢复均已验；后端业务和设计输入未改。preview 已同步并核对实际登录入口；真实邮件、模型、Office 和目标设备沿下方具名边界 |
+| 全站界面与当前运行 | [PR #47](https://github.com/DingJWuyu/TeachBuddy/pull/47)，`8dce6dee`；[CI](https://github.com/DingJWuyu/TeachBuddy/actions/runs/39466545665) 对应候选 `6e9381e4`，squash 后文件树一致 | 全工作区构建、274 项 HTTP/SQLite、50 项真实输出、350 项浏览器检查通过；2 项缺私人原稿跳过。六条工作线实查宽窄容器、中英文、深浅色及实际保存操作，Standards/Spec 独立审查无未关闭发现；首页按钮和日程切回逐帧复核通过。修正了两处错误测试前置或预期，未改变后端保存契约。preview 已同步并核对实际入口，有效证据保留在本机 `test-results/ui-interaction-audit/`，临时现场已清理；真实邮件、模型、Office 和目标设备沿下方具名边界 |
 | 命名与安装基线 | [PR #45](https://github.com/DingJWuyu/TeachBuddy/pull/45)，`afaf7880`；[CI](https://github.com/DingJWuyu/TeachBuddy/actions/runs/38699507239) 对应候选 `0bdb426d`，squash 后文件树一致 | TeachBuddy 包、全工作区构建、274 项 HTTP/SQLite、50 项真实输出和 317 项浏览器检查通过；2 项缺私人原稿明确跳过。Standards/Spec 独立审查无未关闭发现。现有旧库升级、本机目录及服务、文件转换、OCR 固定环境和实际登录入口已验；数据库与附件保留，真实 GPU 推理和外部服务不在本次命名核对中重跑 |
 | 工程闭环 | [PR #44](https://github.com/DingJWuyu/TeachBuddy/pull/44)，`872ab0cd`；[CI](https://github.com/DingJWuyu/TeachBuddy/actions/runs/38690968669) 对应候选 `870ee1d0`，squash 后文件树一致 | 干净 Runner 构建、274 项 HTTP/SQLite、50 项真实输出、317 项浏览器检查通过；2 项因缺私人 E 原稿明确跳过。Standards/Spec 独立审查无未关闭发现。两位 fresh 作者完成真实代码中断接手及 8 项 HTTP 验证；独立安装与 GeoGebra 源码冷构建已验。preview 已备份、安装并重启，登录页面与迁移后的公共导入正常；真实模型、GPU OCR、邮件和目标设备沿专项另验 |
 | 班级后端 | [PR #42](https://github.com/DingJWuyu/TeachBuddy/pull/42)，`614b7ee3`；[CI](https://github.com/DingJWuyu/TeachBuddy/actions/runs/38422366903) | [班级验收](../acceptance/classroom.md)；HTTP/SQLite、真实 Excel/原卷、恢复与浏览器已验，班级页面和实际 AI 未验 |
