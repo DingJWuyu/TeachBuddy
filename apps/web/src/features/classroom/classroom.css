@@ -2880,8 +2880,8 @@
   :is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-tabs button {
     flex: 1;
     justify-content: center;
-    gap: 4px;
-    padding: 0 6px;
+    gap: 2px;
+    padding: 0 3px;
   }
   :is(.wb-shell, .tbx-portal-host) .cr-view,
   :is(.wb-shell, .tbx-portal-host) .cr-page-scroll {

@@ -27,10 +27,62 @@ test('即时返回、切模块、刷新和正常关闭保留统一作品，已�
   await enterMath(page,'B=(5,7)','B'); await module(page,'资源库'); await module(page,'数学工坊');
   expect(await coords(page,'B')).toEqual([5,7]);
   await enterMath(page,'C=(9,10)','C'); await page.reload(); expect(await coords(page,'C')).toEqual([9,10]);
-  await enterMath(page,'D=(11,12)','D'); const address=page.url(); await page.close({runBeforeUnload:true});
-  page=await context.newPage(); await installMathProbe(page); await page.goto(address); expect(await coords(page,'D')).toEqual([11,12]);
-  await savedMath(page); await module(page,'资源库'); await module(page,'数学工坊');
-  await expect(page.locator('.mw-save-state')).toHaveText('已保存'); expect(await coords(page,'A')).toEqual([2,3]);
+  const beforeClose = await savedMath(page);
+  const originalPage = page;
+  const committed = Promise.withResolvers();
+  const releaseResponse = Promise.withResolvers();
+  let originalRequest;
+  let savedOnServer;
+  let responseHandling;
+  const workPath = `/api/modules/math/v1/works/${beforeClose.id}`;
+  await context.route(`**${workPath}`, async route => {
+    if (route.request().method() !== 'PUT' || originalRequest) return route.continue();
+    originalRequest = route.request();
+    responseHandling = (async () => {
+      const response = await route.fetch();
+      expect(response.status()).toBe(200);
+      savedOnServer = await response.json();
+      committed.resolve();
+      // Keep the real response undelivered until its page has closed.
+      await releaseResponse.promise;
+      await route.abort('aborted');
+    })();
+    try { await responseHandling; } catch (error) { committed.reject(error); }
+  });
+  try {
+    // Settle the preceding refresh, then deliberately close during a new save.
+    await page.getByLabel('作品名', { exact: true }).fill('正常关闭保护');
+    await committed.promise;
+    expect(savedOnServer.id).toBe(beforeClose.id);
+    expect(savedOnServer.version).toBe(beforeClose.version + 1);
+    await enterMath(page,'D=(11,12)','D');
+    const address = page.url();
+    await page.close({ runBeforeUnload: true });
+    releaseResponse.resolve();
+    await context.unrouteAll({ behavior: 'wait' });
+    await responseHandling;
+    page = await context.newPage(); await installMathProbe(page); await page.goto(address);
+    expect(await coords(page,'D')).toEqual([11,12]);
+    await expect(page.locator('.mw-save-state')).toHaveText('待确认');
+    const confirmation = page.waitForRequest(request => request.method() === 'PUT' && new URL(request.url()).pathname === workPath);
+    await page.getByRole('button', { name: '确认结果', exact: true }).click();
+    const request = await confirmation;
+    expect(request.headers()['idempotency-key']).toBe(originalRequest.headers()['idempotency-key']);
+    expect(request.postData()).toBe(originalRequest.postData());
+    const saved = await savedMath(page);
+    expect(saved.id).toBe(beforeClose.id);
+    expect(saved.version).toBe(savedOnServer.version + 1);
+    await module(page,'资源库'); await module(page,'数学工坊');
+    await expect(page.locator('.mw-save-state')).toHaveText('已保存');
+    for (const [name, expected] of Object.entries({ A: [2,3], B: [5,7], C: [9,10], D: [11,12] })) expect(await coords(page,name)).toEqual(expected);
+    await page.getByRole('button', { name: '返回工坊', exact: true }).click();
+    await expect(page.locator('.tbx-mw-card')).toHaveCount(1);
+  } finally {
+    await originalPage.close();
+    releaseResponse.resolve();
+    await context.unrouteAll({ behavior: 'wait' });
+    await responseHandling;
+  }
 });
 test('409 保留当前修改，取消读取保留现场，再按服务器基线保存与另存', async ({ page }) => {
   await enterMath(page,'A=(2,3)','A'); const first=await savedMath(page);

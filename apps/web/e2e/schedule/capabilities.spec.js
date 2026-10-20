@@ -1053,8 +1053,10 @@ test('任务列滚动切换模块和刷新后恢复，独立于日历时间网�
   await page.reload(); await page.getByRole('button', { name: '任务', exact: true }).click();
   const inbox = page.locator('.tbx-col.is-inbox .tbx-col-body');
   await expect(inbox.locator('.tbx-task')).toHaveCount(30);
-  await inbox.hover(); await page.mouse.wheel(0, 730);
-  await expect.poll(() => inbox.evaluate(node => node.scrollTop)).toBeGreaterThan(400);
+  await inbox.hover();
+  const inboxBeforeWheel = await inbox.evaluate(node => node.scrollTop);
+  await page.mouse.wheel(0, 730);
+  await expect.poll(() => inbox.evaluate(node => node.scrollTop)).toBe(inboxBeforeWheel + 730);
   const top = await inbox.evaluate(node => node.scrollTop);
   await page.getByRole('link', { name: /^题库。/ }).click();
   await page.getByRole('link', { name: '日程', exact: true }).click();
@@ -1064,8 +1066,11 @@ test('任务列滚动切换模块和刷新后恢复，独立于日历时间网�
   await expect.poll(() => inbox.evaluate(node => node.scrollTop)).toBe(top);
   await page.getByRole('button', { name: '日历', exact: true }).click();
   const grid = page.locator('.cal-grid-wrap .fc-scroller-liquid-absolute');
-  await grid.hover(); await page.mouse.wheel(0, 300);
-  await expect.poll(() => grid.evaluate(node => node.scrollTop)).toBeGreaterThan(0);
+  await grid.hover();
+  const gridBeforeWheel = await grid.evaluate(node => node.scrollTop);
+  await page.mouse.wheel(0, 300);
+  // Wheel dispatch can finish before Chromium applies the scroll. Capture the result of this gesture.
+  await expect.poll(() => grid.evaluate(node => node.scrollTop)).toBe(gridBeforeWheel + 300);
   const gridTop = await grid.evaluate(node => node.scrollTop);
   await page.getByRole('button', { name: '任务', exact: true }).click();
   await expect.poll(() => inbox.evaluate(node => node.scrollTop)).toBe(top);
