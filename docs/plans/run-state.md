@@ -15,6 +15,7 @@ Design System 全站前端迁移、界面清查和原型功能差异收口分别
 | `TeachBuddy-preview` / `preview/integration` | 集成及用户体验入口，保护私有配置和数据；当前分支与 HEAD 以 Git 核对 |
 | `TeachBuddy` / `main` | 保留稳定分支工作树，不在本轮开发范围 |
 | `TeachBuddy-resources` / `feat/resources-core` | 保留已有资源库现场；本轮不修改或删除，接续前核对其成果和负责 session |
+| `TeachBuddy-prototype-parity` / `fix/prototype-parity-audit` | 全站原型对照的隔离现场，从 `6fa3465e` 启动，分工与进度沿当前任务记录 |
 
 下表能力已集成到 preview，已完成任务的临时现场已清理。后续对照任务的授权与边界见当前任务记录；学期与反馈已由用户明确暂缓。
 
