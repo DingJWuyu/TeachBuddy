@@ -128,6 +128,14 @@ function ResourceWorkspace({
   const { pending, busy, loaded, error, message, conflict,
     confirmation: dialog, write, upload, requestPreview,
     skipPending: skipDuplicate, reportError } = operations;
+  // Persist the field on every keystroke; debounce only the HTTP query.
+  const [searchQuery, setSearchQuery] = useState(scene.q);
+  useEffect(() => {
+    if (!scene.q) { setSearchQuery(""); return undefined; }
+    if (scene.q === searchQuery) return undefined;
+    const timer = setTimeout(() => setSearchQuery(scene.q), 280);
+    return () => clearTimeout(timer);
+  }, [scene.q]);
   useForegroundRefresh(() => {
     if (!operations.isBusy() && !controller.current.signal.aborted) refresh();
   });
@@ -137,7 +145,8 @@ function ResourceWorkspace({
     setListLoading(true);
     setSearchInfo(null);
     const query = new URLSearchParams();
-    for (const name of ["q", "folderId", "mediaType", "state"])
+    if (searchQuery) query.set("q", searchQuery);
+    for (const name of ["folderId", "mediaType", "state"])
       if (scene[name]) query.set(name, scene[name]);
     scene.tagIds.forEach((id) => query.append("tagIds", id));
     const receiveSearch = (list) => {
@@ -225,7 +234,7 @@ function ResourceWorkspace({
     };
   }, [
     client,
-    scene.q,
+    searchQuery,
     scene.folderId,
     scene.mediaType,
     scene.state,
@@ -423,6 +432,7 @@ function ResourceWorkspace({
         onUpload={upload}
         onWrite={writeLibrary}
         onError={reportError}
+        onSearch={setSearchQuery}
         onOrganize={(action) =>
           setOrganize({
             action,

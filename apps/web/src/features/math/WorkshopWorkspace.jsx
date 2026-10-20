@@ -146,7 +146,7 @@ export default function WorkshopWorkspace({ draft, accountKey, takeAssistantRequ
   useEffect(() => { setLocalFormula(null); setLocalStep(null); }, [state.selection?.id]);
   useEffect(() => {
     const keys = event => {
-      const dialogOpen = [...document.querySelectorAll('[role="dialog"]')].some(node => node.getClientRects().length && !node.closest('[inert]'));
+      const dialogOpen = [...document.querySelectorAll('[role="dialog"], [role="alertdialog"]')].some(node => node.getClientRects().length && !node.closest('[inert]'));
       if (dialogOpen) { if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') event.preventDefault(); return; }
       if (event.key === 'Escape') { if (presenting) void endPreview(); else if (tool) setTool(null); else shell?.closePanel(); }
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') { event.preventDefault(); void onSave(); }

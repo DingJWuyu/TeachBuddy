@@ -46,6 +46,33 @@ test.describe('输入确认与持久化', () => {
     await closeScheduleWorld(context, world, errors, info);
   });
 
+  test('移回待安排确认阻止 Ctrl+S 保存底层草稿，取消后仍可显式保存', async ({ page }) => {
+    const task = await call('POST', E, content('确认遮挡保存测试'));
+    await open(page, task);
+    await page.clock.install({ time: new Date('2026-09-25T06:00:00Z') });
+    await page.clock.pauseAt(new Date('2026-09-25T06:00:01Z'));
+    const notes = page.getByRole('textbox', { name: '备注', exact: true });
+    await notes.fill('确认期间保留的未保存备注');
+    await page.locator('.tbx-sheet-head').getByRole('button', { name: '移回待安排', exact: true }).click();
+    const confirm = page.getByRole('alertdialog', { name: '移回待安排？', exact: true });
+    await expect(confirm).toBeVisible();
+    const sent = page.waitForRequest(req => req.method() === 'PUT' && req.url().endsWith(`${E}/${task.id}`), { timeout: 500 }).catch(() => null);
+    await page.keyboard.press('ControlOrMeta+s');
+    expect(await sent).toBeNull();
+    await expect(confirm).toBeVisible();
+    const unchanged = await call('GET', `${E}/${task.id}`);
+    expect(unchanged.version).toBe(task.version);
+    expect(unchanged.calendar.notes).toBe('');
+    expect(unchanged.time).toEqual(task.time);
+    await confirm.getByRole('button', { name: '取消', exact: true }).click();
+    await expect(notes).toHaveValue('确认期间保留的未保存备注');
+    await page.keyboard.press('ControlOrMeta+s');
+    await expect.poll(async () => (await call('GET', `${E}/${task.id}`)).calendar.notes).toBe('确认期间保留的未保存备注');
+    await page.clock.resume();
+    await page.reload();
+    await expect(notes).toHaveValue('确认期间保留的未保存备注');
+  });
+
   for (const pending of [false, true]) for (const existing of [false, true]) test(`Enter ${pending ? '待安排' : '任务'}${existing ? '编辑' : '新建'}标题保存保留编辑器，重开读回`, async ({ page }) => {
     let task;
     if (existing) { task = await call('POST', E, content('原始标题', pending)); await open(page, task); }

@@ -128,7 +128,12 @@ export function ConfirmDialog({
         e.preventDefault();
         e.stopPropagation();
         if (e.isComposing || e.keyCode === 229 || e.repeat || e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
-        ref.current?.querySelector('.tbx-confirm-ok:not(:disabled)')?.click();
+        const focusedButton = e.target.closest?.('button');
+        if (focusedButton && ref.current?.contains(focusedButton)) {
+          if (!focusedButton.disabled) focusedButton.click();
+        } else {
+          ref.current?.querySelector('.tbx-confirm-ok:not(:disabled)')?.click();
+        }
       }
       if (e.key !== 'Tab') return;
       const controls = [...ref.current.querySelectorAll('button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), a[href], [tabindex="0"]')].filter((el) => el.getClientRects().length);

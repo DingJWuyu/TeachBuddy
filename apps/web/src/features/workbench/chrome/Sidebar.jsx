@@ -449,7 +449,7 @@ export default function Sidebar({
         className={cx('tb-sidebar tbx-side', mobileOpen && 'is-mobile-open', railCollapsed && 'is-rail-collapsed', drag?.active && 'is-dragging')}
         aria-label={tw('工作台导航')}
         aria-hidden={isNarrow && !mobileOpen ? true : undefined}
-        inert={isNarrow && !mobileOpen ? '' : undefined}
+        inert={isNarrow && !mobileOpen}
       >
         {isNarrow && (
           <div className="tbx-side-mobile-head">

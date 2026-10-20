@@ -521,7 +521,7 @@ export default function SchedulePage({ route }) {
   useEffect(() => {
     const keydown = event => {
       const typing = event.target.closest('input,textarea,select,[contenteditable="true"]');
-      if ([...document.querySelectorAll('[role="dialog"], [role="menu"]')].some(node => !node.closest('[inert]'))) return;
+      if ([...document.querySelectorAll('[role="dialog"], [role="alertdialog"], [role="menu"]')].some(node => !node.closest('[inert]'))) return;
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's' && sceneRef.current.draft) { event.preventDefault(); actionsRef.current.flush({ explicit: true, confirmConflict: true }); return; }
       if (event.key === 'Escape') { actionsRef.current.closeEditor(); return; }
       if (typing || event.ctrlKey || event.metaKey || event.altKey) return;

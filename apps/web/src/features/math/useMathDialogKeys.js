@@ -12,7 +12,7 @@ export function useMathDialogKeys(ref) {
     (field ?? confirm() ?? dialog).focus();
     const keydown = event => {
       if (event.key !== 'Enter') return;
-      const top = [...document.querySelectorAll('[role="dialog"]')].filter(node => node.getClientRects().length && !node.closest('[inert]')).at(-1);
+      const top = [...document.querySelectorAll('[role="dialog"], [role="alertdialog"]')].filter(node => node.getClientRects().length && !node.closest('[inert]')).at(-1);
       if (top !== dialog) return;
       const editingText = event.target.closest?.('input, textarea, [contenteditable="true"]');
       const multiline = event.target.closest?.('textarea, [contenteditable="true"]');

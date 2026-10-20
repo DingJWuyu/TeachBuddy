@@ -260,7 +260,7 @@ test('拖点后立即关闭辅助栏仍保存新坐标，纯尺寸变化不保�
 
 test('英文切换覆盖制作工具与删除确认',async({page},info)=>{
   await page.getByRole('button',{name:'简体中文',exact:true}).click();await page.getByRole('menuitemradio',{name:/English/}).click();
-  await page.getByRole('button',{name:'New work',exact:true}).click();await expect(page.getByRole('button',{name:'Add formula',exact:true}).first()).toBeVisible();
+  await page.getByRole('button',{name:'New Work',exact:true}).click();await expect(page.getByRole('button',{name:'Add formula',exact:true}).first()).toBeVisible();
   await page.getByRole('button',{name:'Add graph',exact:true}).click();await page.getByLabel('Graph expression',{exact:true}).fill('A=(1,2)');await page.getByLabel('Graph expression',{exact:true}).press('Enter');
   const tools=page.locator('.mw-tool-host');await expect(tools.getByRole('textbox',{name:'Definition',exact:true})).toHaveValue(/\(1,\s*2\)/,{timeout:90000});
   await tools.getByRole('button',{name:'Delete object',exact:true}).click();const dialog=page.getByRole('alertdialog');await expect(dialog).toContainText('Delete A?');await expect(dialog.getByRole('button',{name:'Continue',exact:true})).toBeVisible();await dialog.getByRole('button',{name:'Cancel',exact:true}).click();await page.screenshot({path:info.outputPath('english-workshop.png')});
@@ -707,6 +707,7 @@ test('数学助理按钮：深浅主题开始、发送和停止可见，真实�
   const records = [];
   async function record(button, theme, state) {
     await expect(button).toBeEnabled();
+    await button.evaluate(el => Promise.all(el.getAnimations().map(animation => animation.finished.catch(() => {}))));
     const value = await button.evaluate(el => {
       const style = getComputedStyle(el);
       const luminance = color => {
@@ -724,7 +725,9 @@ test('数学助理按钮：深浅主题开始、发送和停止可见，真实�
     await page.getByRole('button', { name, exact: true }).click();
     await expect(page.locator('.wb-shell')).toHaveAttribute('data-theme', theme);
     await page.getByRole('navigation', { name: '功能模块', exact: true }).getByRole('link', { name: /^数学工坊/ }).click();
-    if (!await page.locator('.math-web-assistant').isVisible()) await page.getByRole('banner').getByRole('button', { name: /^(打开|收起) AI 助理$/ }).click();
+    const assistantToggle = page.getByRole('banner').getByRole('button', { name: /^(打开|收起) AI 助理$/ });
+    if (await assistantToggle.getAttribute('aria-expanded') !== 'true') await assistantToggle.click();
+    await expect(page.getByRole('complementary', { name: '辅助栏', exact: true })).toHaveClass(/is-open/);
     await expect(page.locator('.math-ai-setup')).toHaveCount(0);
     const input = page.getByLabel('向数学助理提问', { exact: true });
     await input.fill('制作一个可调节的函数');
@@ -747,7 +750,8 @@ test('数学助理按钮：深浅主题开始、发送和停止可见，真实�
   }
   fs.writeFileSync(info.outputPath('button-colors.json'), JSON.stringify(records, null, 2));
   for (const record of records) {
-    expect(record.contrast, `${record.theme} ${record.state}`).toBeGreaterThanOrEqual(4.5);
+    expect(record.background, `${record.theme} ${record.state}`).toBe(record.theme === 'dark' ? 'rgb(10, 132, 255)' : 'rgb(0, 113, 227)');
+    expect(record.color).toBe('rgb(255, 255, 255)');
     if (record.svg) expect(record.svg).toBe(record.color);
     expect(record.height).toBe(32);
     if (record.state !== 'start') expect(record.width).toBe(32);

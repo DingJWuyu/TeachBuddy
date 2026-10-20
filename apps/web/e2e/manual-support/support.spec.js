@@ -176,9 +176,13 @@ test('资源两标签页上传互不覆盖，原文件确认后筛选与视图�
   expect((await replay).headers()['idempotency-key']).toBe(key);
   await expect(page.locator('.tbx-res-open').filter({ hasText: '甲页原图.png' })).toBeVisible();
   await expect(page.locator('.tbx-res-card')).toHaveCount(2);
+  // Refresh before the debounced search request can run; the typed view state must already be saved.
+  await page.clock.install();
+  await page.clock.pauseAt(new Date(Date.now() + 100));
   await page.getByLabel('搜索资料').fill('甲页');
   await page.getByRole('button', { name: '列表视图', exact: true }).click();
   await page.reload();
+  await page.clock.resume();
   await expect(page.getByLabel('搜索资料')).toHaveValue('甲页');
   await expect(page.getByRole('button', { name: '列表视图', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await expect(page.locator('.tbx-res-card')).toHaveCount(1);

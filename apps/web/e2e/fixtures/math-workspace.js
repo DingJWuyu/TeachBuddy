@@ -17,6 +17,11 @@ export async function importMathSource(page, source, title = '兼容作品') {
   return imported.json();
 }
 export async function chooseFile(page, action, file) {
+  const auxiliary = page.locator('.wb-aux');
+  if (await auxiliary.evaluate(node => node.classList.contains('is-open'))) {
+    await auxiliary.getByRole('button', { name: '关闭辅助栏', exact: true }).click();
+    await expect(auxiliary).not.toHaveClass(/is-open/);
+  }
   const chooser = page.waitForEvent('filechooser');
   await page.getByRole('complementary', { name: '数学工坊导航', exact: true }).getByRole('button', { name: new RegExp(`^${action}`) }).click();
   await (await chooser).setFiles(file);

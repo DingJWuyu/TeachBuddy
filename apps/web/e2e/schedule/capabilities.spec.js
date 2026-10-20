@@ -32,7 +32,13 @@ async function action(page, name) { await scheduleAction(page, name); }
 
 async function close(page) { await page.getByRole('button', { name: '关闭', exact: true }).click(); await expect(page.locator('.tbx-sheet')).toHaveCount(0); }
 
-async function open(page, title) { const row = page.locator('.cal-upcoming-row').filter({ hasText: title }); if (!await row.isVisible() && await page.getByRole('button', { name: '打开月份与任务', exact: true }).isVisible()) await page.getByRole('button', { name: '打开月份与任务', exact: true }).click(); await row.click(); }
+async function open(page, title) {
+  await expect(page.locator('.cal-page')).toBeVisible();
+  const row = page.locator('.cal-upcoming-row').filter({ hasText: title });
+  const toggle = page.getByRole('button', { name: '打开月份与任务', exact: true });
+  if (await toggle.isVisible() && !await page.locator('.cal-page').evaluate(el => el.classList.contains('sidebar-open'))) await toggle.click();
+  await row.click();
+}
 
 async function shot(page, name) {
   await page.evaluate(() => document.fonts.ready);
@@ -240,7 +246,7 @@ test('重复任务这一次移回待安排，保留内容及后续排期', async
   await page.reload(); await open(page, value.title);
   await page.locator('.tbx-sheet-head').getByRole('button', { name: '移回待安排', exact: true }).click();
   const dialog = page.getByRole('alertdialog', { name: '移回待安排？', exact: true });
-  await expect(dialog).toContainText('移除这项任务的时间和提醒');
+  await expect(dialog).toContainText('会去掉这件事的时间和提醒，它会回到“待安排”。');
   await dialog.getByRole('button', { name: '取消', exact: true }).click();
   expect((await saved(value.title)).repeat).not.toBeNull();
   await page.locator('.tbx-sheet-head').getByRole('button', { name: '移回待安排', exact: true }).click();
@@ -700,11 +706,18 @@ for (const mode of ['未选中拖动', '选中拖动', '编辑后拖动', '重�
   const card = page.locator('.fc-timegrid-event').filter({ hasText: entry.title });
   await card.scrollIntoViewIfNeeded(); const box = await card.boundingBox();
   if (mode === '编辑后拖动') {
+    // Keep the edited draft inside the 600ms debounce while operating the real picker.
+    await page.clock.install({ time: new Date(now) });
+    await page.clock.pauseAt(new Date(Date.parse(now) + 1000));
     await page.getByRole('textbox', { name: '备注', exact: true }).fill('这次不要的备注');
     await setScheduleField(page, '结束时间', '15:50');
+    expect(writes).toHaveLength(0);
   }
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2); await page.mouse.down();
-  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2 - 52, { steps: 8 }); await page.mouse.up();
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2 - 52, { steps: 8 });
+  if (mode === '编辑后拖动') await page.clock.runFor(100);
+  await page.mouse.up();
+  if (mode === '编辑后拖动') await page.clock.resume();
   const prompt = page.getByRole('dialog', { name: '提醒时间已过去', exact: true });
   await expect(prompt).toBeVisible();
   await prompt.getByRole('button', { name: '放弃本次修改', exact: true }).click();
@@ -713,7 +726,7 @@ for (const mode of ['未选中拖动', '选中拖动', '编辑后拖动', '重�
   if (mode !== '未选中拖动') {
     await expectScheduleField(page, '开始时间', '15:00');
     await expectScheduleField(page, '结束时间', '16:00');
-    await expect(page.getByRole('textbox', { name: '备注', exact: true })).toHaveText('');
+    await expect(page.getByRole('textbox', { name: '备注', exact: true })).toHaveValue('');
     await close(page);
   }
   await page.reload(); await expect(card).toContainText('15:00 - 16:00');
@@ -805,10 +818,17 @@ test('编辑时间尚未保存就拖动同一任务，关闭提醒保存最后�
   page.on('request', req => { if (req.method() === 'PUT' && req.url().endsWith(`${E}/${entry.id}`)) writes.push(req.postDataJSON()); });
   const card = page.locator('.fc-timegrid-event').filter({ hasText: entry.title });
   await card.scrollIntoViewIfNeeded(); const box = await card.boundingBox();
+  // Exercise the unsaved-edit race without letting picker animation consume the debounce.
+  await page.clock.install({ time: new Date(now) });
+  await page.clock.pauseAt(new Date(Date.parse(now) + 1000));
   await page.getByRole('textbox', { name: '备注', exact: true }).fill('保留这次改期的备注');
   await setScheduleField(page, '结束时间', '15:50');
+  expect(writes).toHaveLength(0);
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2); await page.mouse.down();
-  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2 - 52, { steps: 8 }); await page.mouse.up();
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2 - 52, { steps: 8 });
+  await page.clock.runFor(100);
+  await page.mouse.up();
+  await page.clock.resume();
   const prompt = page.getByRole('dialog', { name: '提醒时间已过去', exact: true });
   await expect(prompt).toBeVisible();
   const attempted = writes[0].time;

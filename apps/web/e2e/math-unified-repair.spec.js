@@ -58,7 +58,7 @@ test('历史恢复取消确认后焦点回到历史弹窗',async({page},info)=>{
   await page.getByLabel('作品名',{exact:true}).fill('未保存的作品名');
   await page.getByLabel('更多作品操作',{exact:true}).click();await page.clock.runFor(200);await page.getByRole('menuitem',{name:'历史版本',exact:true}).click();await page.clock.runFor(50);
   const history=page.getByRole('dialog',{name:'历史版本',exact:true});const restore=history.getByRole('button',{name:'恢复版本',exact:true});await restore.click();await page.clock.runFor(200);
-  const confirm=page.getByRole('alertdialog',{name:'确认操作',exact:true});await expect(confirm).toContainText('恢复将替换未保存修改。是否继续？');await page.screenshot({path:info.outputPath('nested-confirm.png'),animations:'disabled'});await confirm.getByRole('button',{name:'取消',exact:true}).click();await page.clock.runFor(200);
+  const confirm=page.getByRole('alertdialog',{name:'确认操作',exact:true});await expect(confirm).toContainText('恢复将替换未保存修改。是否继续？');await page.screenshot({path:info.outputPath('nested-confirm.png'),animations:'disabled'});await confirm.getByRole('button',{name:'取消',exact:true}).focus();await page.keyboard.press('Enter');await page.clock.runFor(200);
   await expect(confirm).toHaveCount(0);await expect(history).toBeVisible();await expect(restore).toBeFocused();
   await page.keyboard.press('Escape');await page.clock.runFor(200);await expect(history).toHaveCount(0);await page.clock.resume();
 });

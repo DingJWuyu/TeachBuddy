@@ -25,7 +25,7 @@ export function AuxiliaryPanel({ hidden = false, available = true }) {
       data-region="auxiliary"
       aria-label={tw('辅助栏')}
       aria-hidden={open ? undefined : true}
-      inert={open ? undefined : ''}
+      inert={!open}
     >
       <div className="tbx-aux-inner">
         <header className="wb-aux-head tbx-aux-head">

@@ -41,7 +41,9 @@ async function openUploaded(page, title) {
   await expect(page.locator('.res-detail')).toBeVisible();
 }
 async function upload(page, file = image) {
-  await page.getByLabel("上传资料", { exact: true }).setInputFiles(file);
+  const input = page.getByLabel("上传资料", { exact: true });
+  await expect(input).toBeEnabled();
+  await input.setInputFiles(file);
   await expect(page.locator(".res-status")).toContainText("文件已保存");
   await expect(page.locator('.res-detail')).toHaveCount(0);
   await openUploaded(page, typeof file === 'string' ? path.basename(file) : file.name);
@@ -1306,6 +1308,8 @@ test("查找本页：迟到读取、换文件、快速翻页与重新进入不�
     await registerMath(world, "find-other@example.test");
     await page.getByRole("link", { name: /^账户：/ }).click();
     await page.getByRole("button", { name: "退出登录", exact: true }).click();
+    await page.getByRole('dialog', { name: '要退出 TeachBuddy 吗？', exact: true })
+      .getByRole('button', { name: '退出登录', exact: true }).click();
     await page
       .getByLabel("邮箱", { exact: true })
       .fill("find-other@example.test");
@@ -1323,7 +1327,7 @@ test("查找本页：迟到读取、换文件、快速翻页与重新进入不�
     await expect.poll(() => findHighlights(page)).toEqual([]);
   } finally {
     release();
-    await page.unroute(`**/api/workbench/files/${first.fileId}/content`);
+    if (!page.isClosed()) await page.unroute(`**/api/workbench/files/${first.fileId}/content`);
   }
 });
 

@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { cx } from '../../components/ui/classNames.js';
 import { tx, useLocale, monthDay } from '../../i18n/presentation.js';
 import { Icon as SharedIcon } from '../../components/icons.jsx';
@@ -192,7 +192,7 @@ export function Library(props) {
   useLocale();
   const {
     scene, patchScene, items, allItems, tax, files, previews, fileErrors = {}, client, busy, loading: listLoading,
-    searchInfo, onRetrySearch, listRef, breadcrumbs, onOpen, onUpload, onOrganize, onWrite, onError,
+    searchInfo, onRetrySearch, listRef, breadcrumbs, onOpen, onUpload, onOrganize, onWrite, onError, onSearch,
   } = props;
   const gestures = useRef(new Set());
   useEffect(() => () => {
@@ -226,7 +226,7 @@ export function Library(props) {
   const tagOf = (id) => tax.tags.find((t) => t.id === id);
   const folderName = (id) => tax.folders.find((f) => f.id === id)?.name;
   const go = (patch) => patchScene({ selected: [], selectionMode: false, ...patch });
-  const clear = () => { setQ(''); sent.current = ''; patchScene({ q: '', folderId: '', unfiled: false, tagIds: [], mediaType: '', kinds: [] }); };
+  const clear = () => patchScene({ q: '', folderId: '', unfiled: false, tagIds: [], mediaType: '', kinds: [] });
   const toggleTag = (id) => patchScene({ tagIds: scene.tagIds.includes(id) ? scene.tagIds.filter((x) => x !== id) : [...scene.tagIds, id] });
 
   // an older saved view may still carry one media type: it becomes a kind
@@ -241,18 +241,6 @@ export function Library(props) {
   // "未分组" holds the files that sit in no folder
   const shown = unfiled ? byKind.filter((r) => !r.folderId) : byKind;
   const byId = new Map(allItems.map((r) => [r.id, r]));
-
-  /* ---------- search: typed here, sent when the typing pauses ---------- */
-  const [q, setQ] = useState(scene.q);
-  const sent = useRef(scene.q);
-  useLayoutEffect(() => {
-    if (scene.q !== sent.current) { sent.current = scene.q; setQ(scene.q); }
-  }, [scene.q]);
-  useEffect(() => {
-    if (q === sent.current) return undefined;
-    const timer = setTimeout(() => { sent.current = q; patchScene({ q }); }, 280);
-    return () => clearTimeout(timer);
-  }, [q]);
 
   /* ---------- folders as a tree that folds ---------- */
   const closed = new Set(scene.foldersClosed || []);
@@ -454,7 +442,7 @@ export function Library(props) {
           </div>
         )}
         {(children.length > 0 || (editing?.mode === 'new' && editing.parentId === f.id)) && (
-          <div className={cx('tbx-rail-fold', !isOpen && 'is-closed')} inert={isOpen ? undefined : ''}>
+          <div className={cx('tbx-rail-fold', !isOpen && 'is-closed')} inert={!isOpen}>
             <div>
               {folderRows(f.id, depth + 1)}
               {editing?.mode === 'new' && editing.parentId === f.id && nameField(depth + 1)}
@@ -665,11 +653,11 @@ export function Library(props) {
                   aria-label={tx('搜索资料')}
                   placeholder={tx('搜索名称、备注或正文')}
                   maxLength={200}
-                  value={q}
-                  onChange={(e) => setQ(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === 'Enter') { sent.current = q; patchScene({ q }); } }}
+                  value={scene.q}
+                  onChange={(e) => patchScene({ q: e.target.value })}
+                  onKeyDown={(e) => { if (e.key === 'Enter') onSearch?.(scene.q); }}
                 />
-                {q && <button type="button" className="tbx-res-clear" aria-label={tx('清除搜索')} onClick={() => { setQ(''); sent.current = ''; patchScene({ q: '' }); }}><Icon name="close" size={11} stroke={2.8} /></button>}
+                {scene.q && <button type="button" className="tbx-res-clear" aria-label={tx('清除搜索')} onClick={() => patchScene({ q: '' })}><Icon name="close" size={11} stroke={2.8} /></button>}
               </label>
               <FilterMenu
                 label={tx('类型')}
