@@ -97,4 +97,6 @@
 
 最终产品候选为 `51df1941abdacd4c2a01dec8ff6d467c4faf1a6e`，只读产物 `candidate-menu-tab-web/`。增强后的菜单原用例 1/1 通过，连续实页确认 Tab 到下一会话、Shift+Tab 到当前会话；三宽度、改名置顶与删除复用 `f8d15c0e` 的实页结果。资源同一增强用例在 `f8d15c0e` 1/1 通过，之后资源源码未变。没有重跑其他分区已通过的定点套件。
 
-当前仅待两位原审查者对 `19521709` 之后的增量及影响范围补审、同一 PR 的新 CI、preview 核对和现场清理。回执在 `test-results/prototype-parity/review/`，没有真实证据的状态仍保留为未验。
+对 `ccd7162c` 的增量补审已关闭菜单及资源成功/读取失败路径，但确认资源仍遗漏“旧 pending 预览 + failed Job”的失败终态。真实损坏 PDF 已在固定候选复现列表没有“无法预览”；作者统一读取各终态的已提交预览，并在已有失败重试用例中加入该断言，保留原有重试、补充 PDF 和原件下载。详情已有 Job 失败呈现，完整核对后不顺带修改。第二次 [CI](https://github.com/DingJWuyu/TeachBuddy/actions/runs/39492230199) 已取消，不作为完整通过证据。
+
+当前先固定上述最小修复、定点验证并由原两位审查者关闭剩余发现，再推送同一 PR 的最终 CI，随后完成 preview 核对和现场清理。回执在 `test-results/prototype-parity/review/`，没有真实证据的状态仍保留为未验。

@@ -276,9 +276,9 @@ function ResourceWorkspace({
           client.request(`/api/workbench/files/${id}/preview`),
           client.request(`/api/workbench/jobs/${jobId}`),
         ]);
-        // The task can finish after the preview snapshot was read. Match the
-        // detail viewer: read the committed rendition before stopping.
-        const preview = ["succeeded", "partial"].includes(job.state)
+        // Any terminal task can arrive after an older pending preview.
+        // Read the committed preview before ending this polling cycle.
+        const preview = ["succeeded", "partial", "failed", "cancelled", "interrupted"].includes(job.state)
           ? await client.request(`/api/workbench/files/${id}/preview`)
           : snapshot;
         return { id, preview, job };

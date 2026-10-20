@@ -393,12 +393,43 @@ test("文件夹树、框选、拖动、详情菜单和助理覆盖在宽窄屏�
 test("预览失败后可以重试，并逐页核对补充 PDF，原文件仍可下载", async ({
   page,
 }, info) => {
+  let pendingPreview;
+  let failedJobSeen = false;
+  await page.route('**/api/workbench/files/*/preview', async route => {
+    if (route.request().method() === 'POST') {
+      const response = await route.fetch();
+      const job = await response.json();
+      pendingPreview = (await api.request('GET', `/api/workbench/files/${job.target.id}/preview`)).json;
+      expect(pendingPreview.state).toBe('pending');
+      expect(pendingPreview.jobId).toBe(job.id);
+      // Keep the actual earlier preview snapshot in flight until conversion
+      // has really failed and committed its failed preview.
+      await expect.poll(async () => (await api.request('GET', `/api/workbench/jobs/${job.id}`)).json.state)
+        .toBe('failed');
+      await route.fulfill({ response });
+      return;
+    }
+    if (pendingPreview && !failedJobSeen) {
+      await route.fulfill({ json: pendingPreview });
+      return;
+    }
+    await route.continue();
+  });
+  await page.route('**/api/workbench/jobs/*', async route => {
+    const response = await route.fetch();
+    expect((await response.json()).state).toBe('failed');
+    failedJobSeen = true;
+    await route.fulfill({ response });
+  });
   const bytes = Buffer.from("%PDF-1.4\ntruncated");
   await page.getByLabel("上传资料", { exact: true }).setInputFiles({
     name: "待核对的课件.pdf",
     mimeType: "application/pdf",
     buffer: bytes,
   });
+  await expect(page.locator('.tbx-res-thumb-error')).toHaveText('无法预览');
+  expect(failedJobSeen).toBe(true);
+  await page.unrouteAll({ behavior: 'wait' });
   await openUploaded(page);
   await expect(
     page.getByRole("heading", { name: "暂时无法预览" }),
