@@ -821,7 +821,7 @@
 :is(.wb-shell, .tbx-portal-host) .math-workshop .mw-download > .is-primary { width: 100%; min-height: 40px; }
 
 /* classroom display */
-:is(.wb-shell, .tbx-portal-host) .math-workshop.is-presenting { inset: 0; padding: 14px; border-radius: 0; background: var(--tb-canvas); }
+:is(.wb-shell, .tbx-portal-host) .math-workshop.is-presenting { inset: 0; padding: 0; border-radius: 0; background: var(--tb-canvas); }
 
 /* ---------- the side panel ("编辑") ---------- */
 :is(.wb-shell, .tbx-portal-host) .mw-tool-host { color: var(--tb-ink); font-family: var(--tb-font); }

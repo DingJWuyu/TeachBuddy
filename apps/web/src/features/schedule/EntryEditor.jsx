@@ -28,7 +28,7 @@ export const PRIORITIES = [
 ];
 
 export function G({ name, size = 16, stroke = 1.8 }) {
-  return <Icon name={name === 'chevron' ? 'forward' : name} size={size} strokeWidth={stroke} />;
+  return <Icon name={name} size={size} strokeWidth={stroke} />;
 }
 
 /* A textarea as tall as its text. It is measured again whenever its width
