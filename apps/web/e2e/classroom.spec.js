@@ -257,7 +257,7 @@ test('班级真实保存：座位、记录、Excel校对和成绩观察在刷新
   await page.getByRole('alertdialog').getByRole('button', { name: '归档', exact: true }).click();
   await expect(page.getByRole('heading', { name: '把你教的班级放在这里' })).toBeVisible();
   await page.locator('.tbx-rail').getByRole('button', { name: '已归档', exact: true }).click();
-  await expect(page.locator('.cr-archive')).toContainText('初三（2）班');
+  await expect(page.locator('.cr-archive li').filter({ hasText: '初三（2）班' })).toBeVisible();
   await page.locator('.cr-archive li').filter({ hasText: '初三（2）班' }).getByRole('button', { name: '恢复', exact: true }).click();
   expect((await read(page, `classes/${cls.id}`)).deletedAt).toBeNull();
   expect((await read(page, `classes/${cls.id}`)).seating.seats[0].studentId).toBe(first.id);

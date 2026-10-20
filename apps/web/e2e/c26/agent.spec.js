@@ -629,6 +629,14 @@ test('原型对照：日程引用保留时间，引用浮层不被首页卡片�
   }
   await page.reload();
   await page.locator('.tbx-composer.is-placeholder').click();
+  const input = page.getByRole('textbox', { name: 'AI 输入' });
+  await input.fill('为二次函数图像与性质设计一节课，讨论顶点坐标、对称轴、开口方向和参数变化，安排由易到难的课堂练习，保留每一步推导。');
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect.poll(() => input.evaluate(element => element.clientHeight >= Math.min(element.scrollHeight, 240) - 1)).toBe(true);
+  await page.locator('.tbx-empty-stage').evaluate(element => { element.scrollTop = 0; });
+  await expect.poll(() => page.locator('.tbx-empty-stage').evaluate(element => element.querySelector('.tbx-hero').getBoundingClientRect().top >= element.getBoundingClientRect().top)).toBe(true);
+  await input.fill('');
+  await page.setViewportSize({ width: 1440, height: 900 });
   await page.getByRole('button', { name: '引用工作台里的内容', exact: true }).click();
   const menu = page.getByRole('listbox', { name: '引用工作台里的内容' });
   await expect(menu.getByRole('option')).toHaveCount(9);

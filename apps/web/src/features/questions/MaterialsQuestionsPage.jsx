@@ -493,7 +493,7 @@ export default function MaterialsQuestionsPage({
               </>
             )}
             {copies.map((q) => (
-              <button key={q.id} onClick={() => open("question", q.id)}> {t("改编题：")}{q.title || t("未命名")}
+              <button key={q.id} onClick={() => open("question", q.id)}> {t("改编题：{{title}}", { title: q.title || t("未命名") })}
               </button>
             ))}
             {value.id && (

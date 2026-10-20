@@ -330,7 +330,7 @@ export default function OriginalPane({
                     ? onScene({ textStart: l.start })
                     : onScene({ fileId: l.fileId, paragraph: l.paragraph, originalView: "paragraphs" })
               }
-            > {t("定位")}{roleName[l.role]}{l.kind === 'page' ? t(" · 第 {{page}} 页", { page: l.page }) : l.kind === 'docx' ? t(" · 段落 {{paragraph}}", { paragraph: l.paragraph }) : ''}
+            > {t("定位{{role}}", { role: roleName[l.role] })}{l.kind === 'page' ? t(" · 第 {{page}} 页", { page: l.page }) : l.kind === 'docx' ? t(" · 段落 {{paragraph}}", { paragraph: l.paragraph }) : ''}
             </button>
           ))}
         </div>

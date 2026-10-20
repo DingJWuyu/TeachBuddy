@@ -710,9 +710,20 @@ function Composer({ agent, running, ready, variant, autoFocus, focusKey, context
   const [mention, setMention] = useState(null);
   useLayoutEffect(() => {
     const el = area.current;
-    if (!el) return;
-    el.style.height = 'auto';
-    el.style.height = `${Math.min(el.scrollHeight, variant === 'panel' ? 180 : 240)}px`;
+    if (!el) return undefined;
+    const fit = () => {
+      el.style.height = 'auto';
+      el.style.height = `${Math.min(el.scrollHeight, variant === 'panel' ? 180 : 240)}px`;
+    };
+    let width = el.clientWidth;
+    fit();
+    const observer = new ResizeObserver(() => {
+      if (el.clientWidth === width) return;
+      width = el.clientWidth;
+      fit();
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
   }, [draft?.text, variant]);
   useEffect(() => { if (autoFocus || focusKey) area.current?.focus(); }, [autoFocus, focusKey, Boolean(draft)]);
   const refs = draft?.references ?? [];

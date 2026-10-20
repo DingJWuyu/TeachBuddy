@@ -74,7 +74,7 @@
 | 数学/网页桥/离线 | `math-workspace.config.mjs`、`math-unified.config.mjs`、`math-unified-repair.config.mjs`、`math-geogebra.config.mjs`；`math-workshop*.test.js`、`math-dynamic.test.js`、`math-isolation.test.js`；[数学案例](math-cases.md) | 浏览器替身不代签真实网页模型，离线必须下载冷启动；[数学专项](#数学专项) |
 | 日程 | `schedule/playwright.config.mjs` 按 capabilities/interaction/keyboard/consistency/time-zone spec 选择；`teaching-time-*.test.js`；[日程案例](schedule-cases.md) | 日常 CI 仅选择 capabilities；具体范围以配置为准，不以 CI 通过替代全部专项；[日程专项](#日程专项) |
 | 班级 | `classroom.config.mjs` / `classroom.spec.js` 及[班级验收](classroom.md)内真实 HTTP/Excel/原卷与生命周期入口 | 浏览器检查完整教师页面与刷新读回，独立核对实际 AI 工具，不能用后端通过代签 |
-| AI 助理 | `agent.test.js`、`agent-rendering.config.mjs`、[agent.feature](agent.feature)；live 另用 `fixtures/c26/live.mjs` 与 `c26/agent.spec.js` | rendering 与 c26 的非 live 场景使用受控 SDK/真实 HTTP/UI，已纳入 CI；live 需要同候选保留库与明确真实调用授权，新增引用与结果卡的能力差异查根 buffer |
+| AI 助理 | `agent.test.js`、`agent-rendering.config.mjs`、[agent.feature](agent.feature)；live 另用 `fixtures/c26/live.mjs` 与 `c26/agent.spec.js` | rendering 与 c26 的非 live 场景使用受控 SDK/真实 HTTP/UI，已纳入 CI；live 需要同候选保留库与明确真实调用授权，引用、工具结果与提案的当前能力见[助理规格](../features/agent.md) |
 
 API 文件名相对 `apps/api/test/`，浏览器入口相对 `apps/web/e2e/`。表中的通配名用于检索，不能当作配置已经全量收集；命令仍从 package scripts 与对应 Playwright 配置取。
 

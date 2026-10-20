@@ -587,7 +587,9 @@ export default function SchedulePage({ route }) {
     </section>
     <aside className="cal-sidebar" aria-label={t("月份与任务")}><div className="cal-mobile-close"><IconButton name="close" label={t("关闭月份与任务")} onClick={() => setMobileSidebar(false)}/></div>
       <MiniCalendar month={scene.month} from={highlightFrom} to={highlightTo} today={today} onMonth={month => updateScene({ month })} onSelect={(from, to, dragged) => {
-        const view = dragged ? { kind: 'days', days: diffDays(from, to) + 1 } : scene.view;
+        const wholeMonth = dragged && from.slice(8) === '01' && to === addDays(`${shiftMonth(from.slice(0, 7), 1)}-01`, -1);
+        const wholeWeek = dragged && from === monday(from) && to === addDays(from, 6);
+        const view = wholeMonth ? { kind: 'month', days: 7 } : wholeWeek ? { kind: 'week', days: 7 } : dragged ? { kind: 'days', days: diffDays(from, to) + 1 } : scene.view;
         setDisplayMonth(from.slice(0, 7)); updateScene({ anchor: view.kind === 'week' ? monday(from) : from, view, month: from.slice(0, 7), monthScroll: null, monthJump: (scene.monthJump || 0) + 1 });
       }}/>
       {draft ? <EntryEditor key={draft.clientId} draft={draft} onPatch={patchContent} onClose={closeEditor} onConfirm={() => flush({ explicit: true })} onDelete={() => { ++editorIntent.current; return draft.id ? setDeletePrompt(true) : closeEditor(); }} onRemove={discardOrRemove} onMoveItem={startItemMove} locked={op.pending?.payload.kind === 'moveItem'}

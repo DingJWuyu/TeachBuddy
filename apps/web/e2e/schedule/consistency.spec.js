@@ -117,6 +117,12 @@ test.describe('任务读取与保存一致性', () => {
    }
    await expect(page.locator('.cal-sidebar')).toHaveCSS('opacity','1');
    await page.screenshot({path:test.info().outputPath(`long-text-${width}.png`),animations:'disabled'});
+   const label=page.locator('.tbx-labels').getByRole('button',{name:tag.name,exact:true});
+   await expect(label).toHaveAttribute('title',expect.stringContaining(tag.name));
+   await label.dblclick();
+   const editor=page.getByRole('dialog',{name:'编辑标签',exact:true});
+   await expect(editor.getByLabel('标签名称',{exact:true})).toHaveValue(tag.name);
+   await editor.getByRole('button',{name:'取消',exact:true}).click();
    await closed(page);await page.reload();expect((await call('GET',`${E}/${task.id}`)).calendar).toEqual(task.calendar);
   });
 
