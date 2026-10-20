@@ -38,9 +38,19 @@
 
 ### 浮层内操作完成后保留有效焦点
 
-菜单移入 portal 时，验证打开、操作成功或失败、继续 Tab 和关闭的连续路径。失败保留输入以便重试；成功若会禁用或移除当前控件，在状态更新前把焦点交给同一浮层中仍有效的控件。异步返回时先确认原浮层仍打开且焦点未由用户移走。
+菜单移入 portal 时，验证打开、操作成功或失败、继续 Tab 和关闭的连续路径。失败保留输入以便重试；成功若会禁用或移除当前控件，在状态更新前把焦点交给同一浮层中仍有效的控件。异步返回时先确认原浮层仍打开且焦点未由用户移走。关闭后实际继续 Tab/Shift+Tab，核对焦点接回触发器相邻控件，不能只检查浮层消失。
 
 班级题目标签菜单新增成功后清空输入，曾禁用当前“添加”按钮，使焦点落到 BODY，下一次 Tab 跳到工作台外壳。只验证立即 Escape 会漏掉这一步。依据：[原新增路径](https://github.com/DingJWuyu/TeachBuddy/blob/b110e6ad2d97862ba3df6e83693cf6ac2736e637/apps/web/src/features/classroom/Exams.jsx)、[修复 PR #47](https://github.com/DingJWuyu/TeachBuddy/pull/47)；当前保护在[班级完整保存回归](apps/web/e2e/classroom.spec.js)。
+
+全站原型对照又发现共享 Menu 的 Tab 关闭只卸载浮层，焦点同样落到 BODY；修正为关闭前回到触发器，再由浏览器继续原顺序。依据：[修复 PR #49](https://github.com/DingJWuyu/TeachBuddy/pull/49)；连续 Tab/Shift+Tab、Escape 与不误选会话的保护在[历史菜单回归](apps/web/e2e/c26/agent.spec.js)。
+
+出现日期：2026-10-20。已核实 1 个不同日期。
+
+### 区分业务时钟与浏览器动效时间线
+
+固定业务日期时，先确认测试工具是否同时接管 RAF 和定时器；JS 时钟推进不代表原生 CSS 时间线推进。验证短暂退出动效时，核对浏览器实际 transition 的插值，再检查卸载、焦点与后续操作。单次 RAF 采样未命中不足以证明动效缺失。
+
+日程提醒浮层的 CI 失败中，采样与 Escape 仅隔 5.827 ms，节点已进入关闭态却未采到中间透明度。探针确认受控 JS 时钟与 CSS 时间线独立；原用例改为暂停 JS 卸载、读取真实 transition 中点，再播放完成并恢复时钟，保留原有卸载、归焦、重开和保存检查。移除淡出的对照仍明确失败。依据：[失败 CI](https://github.com/DingJWuyu/TeachBuddy/actions/runs/39493111710)、[固定修正](https://github.com/DingJWuyu/TeachBuddy/blob/9255745c163d260564a7ebc7132a45a99a6cd3f6/apps/web/e2e/schedule/capabilities.spec.js)；当前保护在[日程能力回归](apps/web/e2e/schedule/capabilities.spec.js)。
 
 出现日期：2026-10-20。已核实 1 个不同日期。
 
