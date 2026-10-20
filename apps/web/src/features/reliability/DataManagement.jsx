@@ -1,6 +1,6 @@
 import i18n from "../../i18n/index.js";
 import { useTranslation } from 'react-i18next';
-import { SettingsConfirm, SettingsDisclosure } from "../workbench/SettingsControls.jsx";
+import { SettingsConfirm, SettingsDisclosure, ExportItem } from "../workbench/SettingsControls.jsx";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   workbenchGet,
@@ -9,6 +9,7 @@ import {
 } from "../../platform/http/apiClient.js";
 import { useIdempotentSubmit } from "../../platform/saving/useIdempotentSubmit.js";
 import { useWorkbenchShell } from "../workbench/shellContext.js";
+import { useScene } from '../../platform/device/useScene.js';
 import "./reliability.css";
 const base = "/api/reliability/v1";
 const states = {
@@ -26,6 +27,11 @@ export function DataManagement({ accountActions, dangerActions }) {
     [message, setMessage] = useState(""),
     [busy, setBusy] = useState("");
   const { accountKey } = useWorkbenchShell();
+  // The prototype's package removal has no server endpoint. Keep its view state
+  // separate from real export records and isolate it using the account scene.
+  const [scene, patchScene] = useScene(accountKey, 'export-packages', { hidden: [] });
+  const visibleExports = exports.filter(item => !scene.hidden.includes(item.id));
+  const remove = item => patchScene(current => ({ hidden: [...current.hidden, item.id] }));
   const [exportOpen, setExportOpen] = useState(false);
   const [resetOpen, setResetOpen] = useState(false);
   const action = useIdempotentSubmit({
@@ -138,10 +144,7 @@ export function DataManagement({ accountActions, dangerActions }) {
       <p className="wb-note">{t("文件可重新上传，正文与公式可复制；资料包不能覆盖账户或恢复原关联。")}</p>
       {busy === 'export' && <p role="status">{t("正在生成资料包…")}</p>}
       {visibleError && !action.pending && <button className="wb-button" disabled={!!busy} onClick={createExport}>{t("重试生成")}</button>}
-      {exports.length > 0 && <ul className="reliability-list" aria-label={t("个人资料导出记录")}>{exports.map(item => <li key={item.id}>
-        <div><span>{date(item.snapshotAt)}</span><small>{t(states[item.state])}</small>{item.problem && <small>{item.problem.detail}</small>}</div>
-        {item.state === 'ready' && <button className="wb-button" disabled={!!busy} onClick={() => download(item)}>{t("下载资料包")}</button>}
-      </li>)}</ul>}
+      {visibleExports.length > 0 && <ul className="reliability-list" aria-label={t("个人资料导出记录")}>{visibleExports.map(item => <ExportItem key={item.id} item={item} date={date(item.snapshotAt)} state={t(states[item.state])} busy={!!busy} working={busy === item.id} onDownload={() => download(item)} onDelete={() => remove(item)} />)}</ul>}
       {(visibleError || action.problem) && <p role="alert">{visibleError || action.problem.message}</p>}
       {action.pending && <div className="reliability-pending"><button className="wb-button" disabled={!!busy} onClick={retry}>{t("重试确认操作")}</button><SettingsDisclosure title={t("查看待确认请求")}><pre>{JSON.stringify(action.pending, null, 2)}</pre><button className="wb-button" onClick={() => setResetOpen(true)}>{t("放弃重试")}</button></SettingsDisclosure></div>}
     </SettingsConfirm>

@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { NotificationPanel } from './TopbarSurfaces.jsx';
-import { Icon } from './icons.jsx';
+import { Icon } from '../../../components/icons.jsx';
 import { useWorkbenchShell } from '../shellContext.js';
 import { useNotifications } from '../../schedule/useNotifications.js';
 

@@ -1,3 +1,6 @@
+import { Icon } from '../../components/icons.jsx';
+import { WorkIllustration } from './WorkspaceHome.jsx';
+import { tx } from '../../i18n/presentation.js';
 import { useTranslation } from 'react-i18next';
 
 import { ModulePresence } from "../../components/interaction/ModuleMotion.jsx";
@@ -70,6 +73,11 @@ export default function HtmlEditor({
           {t("取回原文件")}
         </button>
       </div>
+      {!running && !editing && <div className="math-html-empty">
+        <div className="math-html-window" aria-hidden="true"><i/><i/><i/><WorkIllustration kind="dynamic"/></div>
+        <h2>{t('网页演示')}</h2><p>{tx('运行预览，看看它在课堂上的样子；也可以打开源码修改。')}</p>
+        <button className="math-html-run" disabled={current === null || !!error || tooLarge} onClick={() => setRunning(true)}><Icon name="play" size={13}/>{t('运行预览')}</button>
+      </div>}
       {!draft.id && <p>{t("原件已上传，保存作品后可修改源码。")}</p>}
       {(error || tooLarge) && (
         <p role="alert">

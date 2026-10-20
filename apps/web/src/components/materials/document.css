@@ -36,8 +36,8 @@
   max-width: 100%;
   padding: 1px 6px;
   border-radius: 6px;
-  background: light-dark(#fdf3f5, var(--app-soft));
-  color: var(--wb-danger);
+  background: var(--tb-danger-soft);
+  color: var(--tb-danger);
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 12px;
   overflow-wrap: anywhere;
@@ -53,7 +53,7 @@
 .wb-document-readonly {
   padding: 8px 10px;
   border-radius: 8px;
-  background: light-dark(#fbf7ee, var(--app-soft));
+  background: var(--tb-warning-soft);
 }
 
 .wb-block {
@@ -74,7 +74,7 @@
 .wb-inline-preview,
 .wb-math-block-preview {
   padding: 2px 4px;
-  color: var(--wb-ink);
+  color: var(--tb-ink-2);
   overflow-x: auto;
   font-size: 14px;
   line-height: 1.9;
@@ -93,7 +93,7 @@
 }
 
 .wb-preview-empty {
-  color: light-dark(#c3c4c8, var(--app-faint));
+  color: var(--tb-faint);
 }
 
 .wb-block-controls {

@@ -1,12 +1,13 @@
 import i18n from "../../../i18n/index.js";
 import { useTranslation } from 'react-i18next';
 const t = (key, options) => i18n.t(key, { ns: "workbench", ...options });
+import { tx } from '../../../i18n/presentation.js';
 import { useScene } from '../../../platform/device/useScene.js';
 import { useWorkbenchShell } from '../shellContext.js';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createDragChip } from './dragChip.js';
-import { Icon } from './icons.jsx';
+import { Icon } from '../../../components/icons.jsx';
 import { navigate, routeClick, withSearch } from './routes.js';
 import { workbenchModules, moduleDisplayName } from '../../modules/moduleRegistry.js';
 
@@ -156,6 +157,12 @@ export function NotificationPanel({ items, onChange, onAnnounce, onOpenItem, fee
    */
   const [draggingId, setDraggingId] = useState(null);
   const [overTrash, setOverTrash] = useState(false);
+  const [pendingDrop, setPendingDrop] = useState(null);
+  useEffect(() => {
+    if (!pendingDrop) return;
+    const timer = setTimeout(() => setPendingDrop(null), 3200);
+    return () => clearTimeout(timer);
+  }, [pendingDrop]);
   // The drag image in flight. A row is wider than the trash it is aimed at, so
   // without a smaller image the trash is covered at the exact moment it should
   // be confirming the drop.
@@ -176,12 +183,18 @@ export function NotificationPanel({ items, onChange, onAnnounce, onOpenItem, fee
   // closed or navigated away from must not leave the disc behind either.
   useEffect(() => removeChip, []);
 
-  function removeDragged() {
-    const dragged = items.find((item) => item.id === draggingId);
+  function confirmDrop() {
+    const dragged = items.find(item => item.id === pendingDrop);
+    setPendingDrop(null);
     if (dragged) {
-      onChange(items.filter((item) => item.id !== dragged.id));
+      onChange(items.filter(item => item.id !== dragged.id));
       onAnnounce(t("通知已删除"));
     }
+  }
+
+  function removeDragged() {
+    const dragged = items.find((item) => item.id === draggingId);
+    if (dragged) setPendingDrop(dragged.id);
     setDraggingId(null);
     setOverTrash(false);
     /* A removed source cannot receive dragend; remove the chip at drop and on unmount too. */
@@ -229,7 +242,6 @@ export function NotificationPanel({ items, onChange, onAnnounce, onOpenItem, fee
               aria-pressed={item.read}
               title={item.eventId && !item.read ? t("查看对应时间段") : item.read ? t("点击标为未读，或拖到垃圾桶删除") : t("点击标为已读")}
               onClick={() => {
-                if (item.eventId && !item.read) { onOpenItem?.(item); return; }
                 setRead(item.id, !item.read);
                 onAnnounce(item.read ? t("「{{text}}」已标为未读", { text: item.text }) : t("「{{text}}」已标为已读", { text: item.text }));
               }}
@@ -253,6 +265,13 @@ export function NotificationPanel({ items, onChange, onAnnounce, onOpenItem, fee
               <span className="tb-row-icon"><Icon name={item.icon} size={16} /></span>
               <span className="tb-row-label"><span className="tb-row-text">{item.text}</span></span>
               <span className="tb-row-meta">{item.time}</span>
+              {item.eventId && <span className="tb-notification-open" role="button" tabIndex={0}
+                aria-label={tx('在日程中查看')} title={tx('在日程中查看')}
+                onClick={event => { event.stopPropagation(); onOpenItem?.(item); }}
+                onKeyDown={event => {
+                  if (!['Enter', ' '].includes(event.key)) return;
+                  event.preventDefault(); event.stopPropagation(); onOpenItem?.(item);
+                }}><Icon name="chevron" size={14} /></span>}
             </button>
           ))}
         </div>
@@ -263,7 +282,13 @@ export function NotificationPanel({ items, onChange, onAnnounce, onOpenItem, fee
        * so it sits idle until a read one is picked up.
        */}
       <div
-        className="tb-notification-trash"
+        className={`tb-notification-trash${pendingDrop ? ' is-armed' : ''}`}
+        role={pendingDrop ? 'button' : undefined}
+        tabIndex={pendingDrop ? 0 : undefined}
+        onClick={pendingDrop ? confirmDrop : undefined}
+        onKeyDown={event => {
+          if (pendingDrop && ['Enter', ' '].includes(event.key)) { event.preventDefault(); confirmDrop(); }
+        }}
         onDragOver={(event) => {
           if (!draggingId) return;
           event.preventDefault();
@@ -277,13 +302,20 @@ export function NotificationPanel({ items, onChange, onAnnounce, onOpenItem, fee
         }}
       >
         <span className="tb-notification-trash-icon"><Icon name="trash" size={16} /></span>
-        <span>{t("删除消息")}</span>
+        <span>{pendingDrop ? tx('确认删除') : t("删除消息")}</span>
       </div>
     </div>
   );
 }
 
 /* ---------------------------------------------------------------- feedback */
+
+const FEEDBACK_REPLIES = {
+  建议: { title: '好主意，收到了。', note: '每一条建议，我们都会认真读完。' },
+  错误报告: { title: '谢谢你帮我们找到它。', note: '我们会尽快修好这个问题。' },
+  问题: { title: '你的问题，我们收到了。', note: '我们会尽快给你答复。' },
+  赞扬: { title: '这句话，我们会记很久。', note: '谢谢你，这对我们意义重大。' },
+};
 
 const FEEDBACK_TYPES = [
   { label: '建议', color: '#7c3aed', tint: 'rgba(124, 58, 237, .1)' },
@@ -300,6 +332,9 @@ export function FeedbackPanel({ onAnnounce, onClose }) {
   const body = feedback.body;
   const setBody = body => patchFeedback({ body });
   const [sent, setSent] = useState(false);
+  const [files, setFiles] = useState([]);
+  const addFiles = list => setFiles(current => [...current,
+    ...Array.from(list || [], file => ({ name: file.name || tx('截图'), size: file.size }))].slice(0, 5));
   const canSend = body.trim().length > 0;
 
   if (sent) {
@@ -307,7 +342,8 @@ export function FeedbackPanel({ onAnnounce, onClose }) {
       <div className="tb-popover tb-popover-feedback" role="dialog" aria-labelledby="tb-feedback-title">
         <div className="tb-feedback-sent">
           <span className="tb-feedback-sent-mark"><Icon name="check" size={20} /></span>
-          <h2 id="tb-feedback-title">{t("已记录，谢谢你的反馈！")}</h2>
+          <h2 id="tb-feedback-title">{tx(FEEDBACK_REPLIES[type].title)}</h2>
+          <p className="tbx-feedback-note">{tx(FEEDBACK_REPLIES[type].note)}</p>
           {/* The acknowledgement replaces the form, so it has to carry its own
               way out; otherwise the only exits are Escape and a click outside. */}
           <button type="button" className="tb-feedback-dismiss" onClick={onClose}>{t("知道了")}</button>
@@ -340,17 +376,32 @@ export function FeedbackPanel({ onAnnounce, onClose }) {
         value={body}
         placeholder={t("说说你的想法，或者遇到的问题…")}
         aria-label={t("反馈内容")}
+        onPaste={event => {
+          if (!event.clipboardData?.files?.length) return;
+          event.preventDefault(); addFiles(event.clipboardData.files);
+        }}
         onChange={(event) => setBody(event.target.value)}
       />
       <div className="tb-feedback-foot">
-        <p className="tb-feedback-hint"> {t("粘贴截图：")} <kbd>Win</kbd> + <kbd>Shift</kbd> + <kbd>S</kbd>
-        </p>
+        <div className="tb-feedback-attach">
+          <label className="tb-feedback-clip" title={tx('可以直接粘贴截图')}>
+            <Icon name="paperclip" size={16} /><span>{files.length ? tx('继续添加') : tx('附上截图或文件')}</span>
+            <input type="file" hidden multiple accept="image/*,.pdf" onChange={event => {
+              addFiles(event.target.files); event.target.value = '';
+            }} />
+          </label>
+          {files.map((file, index) => <span className="tb-feedback-file" title={file.name} key={index}>
+            <span>{file.name}</span><button type="button" aria-label={tx('移除附件')}
+              onClick={() => setFiles(list => list.filter((_, at) => at !== index))}><Icon name="close" size={11} /></button>
+          </span>)}
+        </div>
         <button
           type="button"
           className="tb-button-primary"
           disabled={!canSend}
           onClick={() => {
-            patchFeedback({ body: '', records: [...feedback.records, { type, body, createdAt: new Date().toISOString() }] });
+            patchFeedback({ body: '', records: [...feedback.records, { type, body, attachments: files, createdAt: new Date().toISOString() }] });
+            setFiles([]);
             setSent(true);
             onAnnounce(t("反馈已记录"));
           }}
@@ -421,53 +472,6 @@ export function CoachMark({ onDismiss }) {
       <span className="tb-coach-caret" aria-hidden="true" />
       <p id="tb-coach-text">{t("想了解什么功能，就点击对应项来学习吧～")}</p>
       <button type="button" className="tb-coach-dismiss" onClick={onDismiss}>{t("知道了")}</button>
-    </div>
-  );
-}
-
-/* ------------------------------------------------------------- celebration */
-
-const BURSTS = [
-  { x: 20, y: 30, delay: 0, color: '#fe9a00' },
-  { x: 78, y: 26, delay: .45, color: '#7160a7' },
-  { x: 50, y: 14, delay: .9, color: '#fb2c36' },
-  { x: 28, y: 70, delay: 1.35, color: '#16a34a' },
-  { x: 72, y: 74, delay: 1.8, color: '#2563eb' }
-];
-const PARTICLES = 14;
-
-export function TutorialCelebration({ onClose }) {
-  const { t } = useTranslation("workbench");
-  return (
-    <div className="tb-celebration" role="dialog" aria-modal="true" aria-labelledby="tb-celebration-title">
-      <div className="tb-celebration-scrim" onPointerDown={onClose} />
-      <div className="tb-celebration-sky" aria-hidden="true">
-        {BURSTS.map((burst) => (
-          <span
-            className="tb-firework"
-            key={`${burst.x}-${burst.y}`}
-            style={{ left: `${burst.x}%`, top: `${burst.y}%`, color: burst.color, '--tb-flash-delay': `${burst.delay}s` }}
-          >
-            {Array.from({ length: PARTICLES }, (_, index) => (
-              <span
-                className="tb-firework-particle"
-                key={index}
-                style={{
-                  '--tb-angle': `${(360 / PARTICLES) * index}deg`,
-                  '--tb-distance': `${52 + (index % 4) * 10}px`,
-                  '--tb-delay': `${(burst.delay + index * 0.025).toFixed(3)}s`
-                }}
-              />
-            ))}
-          </span>
-        ))}
-      </div>
-      <div className="tb-celebration-card">
-        <span className="tb-celebration-mark" aria-hidden="true"><Icon name="tutorial" size={24} /></span>
-        <h2 id="tb-celebration-title">{t("恭喜您完成了所有引导！")}</h2>
-        <p>{t("请尽情享受吧～")}</p>
-        <button type="button" className="tb-button-primary" onClick={onClose}>{t("好的")}</button>
-      </div>
     </div>
   );
 }

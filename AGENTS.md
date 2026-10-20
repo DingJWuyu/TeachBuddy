@@ -3,7 +3,7 @@
 ## 项目入口
 
 - 接手、实施或交付任务时读[开发约定](docs/agents/module-development.md)；全局工作现场与授权查[运行台账](docs/plans/run-state.md)，长程任务沿其指向的当前记录接续。本次用户指令及已生效授权优先，阅读参考不扩大写入或外部操作权限。
-- 核对实际能力与运行入口时读 [README](README.md)；配置、隔离与部署读 [SETUP](docs/SETUP.md)。`apps/` 是产品实现，`prototype/` 是交互参考。
+- 核对实际能力与运行入口时读 [README](README.md)；配置、隔离与部署读 [SETUP](docs/SETUP.md)。`apps/` 是产品实现，`docs/design-system/` 是只读设计输入。
 - 查范围、行为、契约或验收时从[文档入口](docs/README.md)按任务展开；产品范围不能由旧代码或原型反推。身份交接或退出读取[认证契约](docs/contracts/auth.md)。
 - 修改或审查子系统时先读[运行参考](docs/subsystems/README.md)，追到实际源码与调用路径。涉及模块装配、跨模块访问或公共职责时另读[模块边界决议](docs/adr/0001-use-a-single-static-module-catalog.md)。
 - 汇报整体项目进度时使用[项目进度汇报](docs/agents/module-development.md#项目进度汇报)格式，事实来自运行台账。
@@ -16,7 +16,7 @@
 
 ## 开发与验证规则
 
-修改代码前读 [LESSONS](LESSONS.md)；实现与审查依据[代码标准](docs/code-standards.md)。界面改动同时读[设计与验证规则](docs/rules/design-and-verification.md)；选择本地、CI 和目标环境验证前读[验证入口](docs/acceptance/README.md)与[CI 分工](docs/agents/github-workflow.md#ci-与本地验证)。
+修改代码前读 [LESSONS](LESSONS.md)；实现与审查依据[代码标准](docs/code-standards.md)。界面改动同时读[设计输入](docs/design-system/README.md)；选择本地、CI 和目标环境验证前读[验证入口](docs/acceptance/README.md)与[CI 分工](docs/agents/github-workflow.md#ci-与本地验证)。
 
 ## Git 规则
 

@@ -3,7 +3,8 @@ import { useTranslation } from 'react-i18next';
 import i18n from '../../i18n/index.js';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import BrandMark from './BrandMark.jsx';
-import AuthEntryLayout from './AuthEntryLayout.jsx';
+import AuthEntryLayout, { SUBTITLES } from './AuthEntryLayout.jsx';
+import { tx } from '../../i18n/presentation.js';
 import PasswordToggle from './PasswordToggle.jsx';
 import { useInternalAuth } from './AuthProvider.jsx';
 import { COPY, unknownResultMessage } from './presentation.js';
@@ -540,6 +541,7 @@ export default function AuthSurface() {
         <div className="ae-card">
           <div className="ae-card-head">
             <h1>{closed ? MODE_COPY.register.heading : copy.heading || copy.title}</h1>
+            {!closed && SUBTITLES[mode] && <p className="tbx-auth-sub">{tx(SUBTITLES[mode])}</p>}
           </div>
 
           {revocation ? (

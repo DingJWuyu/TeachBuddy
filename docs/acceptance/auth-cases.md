@@ -34,14 +34,14 @@ API 侧通过真实 HTTP、独立 SQLite、可控时钟和可控投递 adapter �
 
 | 子例与条件 | 交换/错误 | 前端断言 | 后端断言 |
 | --- | --- | --- | --- |
-| IN01，邮箱空/非法，昵称空/过长，密码短/过长，码形状错，条款false | 正常 UI 无业务请求；直连分别为422 email-empty/email-invalid-format/nickname-empty/nickname-too-long/password-too-short/password-too-long/verification-code-invalid-format/terms-not-accepted | 按 G06 顺序定位单字段，编辑后恢复；请求数为0 | 每个适用操作独立拒绝，预算/账户无变化；不检查不存在的确认密码 |
+| IN01，邮箱空/非法，昵称空/过长，密码短/过长，码形状错，条款false | 正常 UI 无业务请求；直连分别为422 email-empty/email-invalid-format/nickname-empty/nickname-too-long/password-too-short/password-too-long/verification-code-invalid-format/terms-not-accepted | 按[账户输入规则](../features/identity.md#输入与本地校验)顺序定位单字段，编辑后恢复；请求数为0 | 每个适用操作独立拒绝，预算/账户无变化；不检查不存在的确认密码 |
 | IN02，未成功发码就提交；API 缺 challengeId、空字符串、未知合法 id | UI 本地码提示；API 分别 required-field(field=challengeId)、verification-code-missing、verification-code-missing | 未发码状态不提交；绑定错误同样落验证码控件 | 缺字段与业务缺挑战分开；不把客户端已发码标记当证据 |
 | B01，` Teacher@Example.COM `、254字符合法邮箱、255字符、local 64/65、标签63/64、连续点/首尾点/单标签/首尾连字符/非ASCII | 规范结果 teacher@example.com；边界按 CanonicalEmail；非法422 email-invalid-format | 输入原文不改；发送目标规范化，长地址单行省略且可访问全文 | 绕过前端也规范化；同一规范地址不可重复创建；不查DNS |
 | B02，昵称两端空白，40/41个含emoji字符、全空白 | 40接受并trim，41 nickname-too-long，空 nickname-empty | 计数不是UTF-16，错误保留输入 | 保存规范值；后续登录/恢复/重置后登录同昵称 |
 | B03，原始密码8/128/129个字符、emoji、前后空白、大小写、组合/分解Unicode | 8/128接受、129 password-too-long、7 password-too-short；变换后的不同密码401 credentials-rejected | 确认密码必须逐值相等，不做trim/normalize；显隐不改值 | 保存/校验使用原字节对应的字符串值；没有截断或规范化 |
 | B04，`001234`、`12345`、`1234567`、全角数字、数字JSON值 | 前者保留零；形状错422 verification-code-invalid-format；JSON数422 invalid-field-type | 本地拦截形状错误，不扣次数 | 直接请求同样拒绝，不把值转数字 |
 | B05，码形状错+条款false；形状合法但值错+条款false | 前者验证码形状错；后者terms-not-accepted；均不做值判断 | CA118/CA74 分开断言错误位置 | 挑战剩余次数仍5，勾选后首次错码才降至4 |
-| U01，初始默认记住、条款未选、密码显隐、键盘Enter、确认不一致、切卡保留邮箱、返回清密、条款链接、找回邮箱只读/更换 | 纯UI无新增交换；正常Enter只提交一次；更换邮箱需重新I04 | CA01等本地归属场景三视口真实交互；错误/按钮不溢出 | 不接收确认密码或显隐字段；发送时仍按正常契约 |
+| U01，初始默认记住、条款未选、密码显隐、键盘Enter、确认不一致、切卡保留邮箱、返回清密、条款链接、找回邮箱只读/更换 | 纯UI无新增交换；正常Enter只提交一次；更换邮箱需重新I04 | 按本页覆盖表定位纯界面场景，三视口真实交互；错误/按钮不溢出 | 不接收确认密码或显隐字段；发送时仍按正常契约 |
 
 ## CC-SEND、CC-CODE
 

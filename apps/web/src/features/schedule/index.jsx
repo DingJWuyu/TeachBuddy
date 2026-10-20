@@ -7,12 +7,14 @@ import { useForegroundRefresh } from '../../components/interaction/useForeground
 import { CalendarDialog, CalendarIcon, CalendarOverlay, IconButton, MiniCalendar, MonthTitle, ViewMenu } from './CalendarControls.jsx';
 import { MoveItemDialog } from './CalendarItems.jsx';
 import { reminderLabel } from './CalendarDetails.jsx';
-import CalendarEditor from './CalendarEditor.jsx';
+import { EntryEditor } from './EntryEditor.jsx';
+import { FocusToggle, TaskBoard } from './TaskBoard.jsx';
 import TimeGrid from './TimeGrid.jsx';
 import { addDays, contentOf, contentProblem, timeProblem, endTimeProblem, diffDays, formatClock, monday, newContent, repeatAnchor, shiftMonth, weekday, timeFromEvent, timeRangeLabel, titleOf, todayInZone } from './calendarModel.js';
 import { localParts } from './zoned.js';
 import * as api from './api.js';
 import './schedule.css';
+import './presentation.css';
 
 const withoutEmptyItems = content => content && ({ ...contentOf(content), items: content.items.filter(item => item.text.trim()) });
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
@@ -80,7 +82,7 @@ export default function SchedulePage({ route }) {
   const [systemZone, setSystemZone] = useState(systemTimeZone);
   const initialToday = todayInZone(systemZone);
   const [scene, patchScene] = useScene(shell.accountKey, 'schedule-calendar', {
-    anchor: initialToday, view: { kind: 'days', days: 7 }, month: initialToday.slice(0, 7), scroll: 0, grouped: false, unscheduledGrouped: false, draft: null
+    anchor: initialToday, view: { kind: 'days', days: 7 }, focus: 'calendar', month: initialToday.slice(0, 7), scroll: 0, grouped: false, unscheduledGrouped: false, draft: null
   });
   const sceneRef = useRef(scene); sceneRef.current = scene;
   const mounted = useRef(true);
@@ -173,11 +175,11 @@ export default function SchedulePage({ route }) {
       await synchronizeTimeZone(systemZone);
       if (cancelled) return;
       const date = todayInZone(systemZone);
-      const [entries, result, labels, daily] = await Promise.all([api.listEntries(), api.listOccurrences(range), api.listLabels(), api.listOccurrences({ from: date, to: date })]);
+      const [entries, result, labels, daily] = await Promise.all([api.listEntries(), api.listOccurrences(scene.focus === 'tasks' ? { from: today, to: addDays(today, 30) > '2100-12-31' ? '2100-12-31' : addDays(today, 30) } : range), api.listLabels(), api.listOccurrences({ from: date, to: date })]);
       if (!cancelled && systemTimeZone() === systemZone) { setZone(systemZone); shell.setTimeZone(systemZone); setData({ entries, occurrences: result.items, labels, daily: daily.items }); setLoadError(''); }
     })().catch(error => { if (!cancelled) setLoadError(error.problem?.message ?? error.message ?? t("日程未能更新")); });
     return () => { cancelled = true; };
-  }, [range.from, range.to, revision, shell.generation, today, systemZone]);
+  }, [range.from, range.to, revision, shell.generation, today, systemZone, scene.focus]);
   useForegroundRefresh(reload);
 
   async function applySaved(result, payload) {
@@ -476,6 +478,34 @@ export default function SchedulePage({ route }) {
       else if (sceneRef.current.draft?.id === entry.id) await openEntry(ok.id, single ? null : entry.repeat ? content.time.date : null, { bypass: true });
     } catch (error) { info.revert(); setLoadError(error.problem?.message ?? t("调整时间未能保存")); }
   }
+  async function discardOrRemove(scope) {
+    const clientId = sceneRef.current.draft?.clientId;
+    if (flight.current) await flight.current;
+    const current = sceneRef.current.draft;
+    if (!current || current.clientId !== clientId || opRef.current.pending) return;
+    if (current.id) return remove(scope);
+    ++editorIntent.current;
+    setDraft(null); setValidation(''); setMobileSidebar(false);
+  }
+  async function toggleBoardItem(value, itemId, completed) {
+    const id = value.key?.entryId ?? value.id;
+    const origin = value.key?.originDate ?? null;
+    try {
+      const current = sceneRef.current.draft;
+      if (current?.id === id && (current.origin ?? null) === origin) {
+        await patchContent({ items: current.content.items.map(item => item.id === itemId ? { ...item, completed } : item) });
+        return Boolean(await flush({ explicit: true }));
+      }
+      if (!await leaveEditor()) return false;
+      const entry = await api.getEntry(id);
+      const occurrence = origin ? await api.getOccurrence(id, origin) : null;
+      if (occurrence && occurrence.state !== 'active') { reload(); return false; }
+      const content = contentOf(occurrence ? { ...entry, ...occurrence, repeat: entry.repeat } : entry);
+      content.items = content.items.map(item => item.id === itemId ? { ...item, completed } : item);
+      if (origin) content.repeat = null;
+      return Boolean(await perform({ kind: origin ? 'detach' : 'update', id, origin, version: entry.version, content }));
+    } catch (error) { setLoadError(error.problem?.message ?? t('保存失败')); return false; }
+  }
   function changeView(view) {
     updateScene({ view, anchor: view.kind === 'week' ? monday(sceneRef.current.anchor) : sceneRef.current.anchor });
   }
@@ -529,10 +559,11 @@ export default function SchedulePage({ route }) {
   const zoneOffset = new Intl.DateTimeFormat('en-US', { timeZone: zone, timeZoneName: 'longOffset' }).formatToParts(now).find(part => part.type === 'timeZoneName').value;
   const zoneLabel = `${zoneOffset === 'GMT' ? 'UTC+00:00' : zoneOffset.replace(/^GMT/, 'UTC')} · ${zone}`;
   const labelsChanged = label => { setData(current => ({ ...current, labels: label.deleted ? current.labels.filter(x => x.id !== label.id) : [...current.labels.filter(x => x.id !== label.id), label] })); reload(); };
-  return <div className={`cal-page${mobileSidebar ? ' sidebar-open' : ''}${shell.isPanelOpen && shell.panelMode === 'ai' ? ' has-ai' : ''}`} data-region="schedule">
+  return <div className={`cal-page${mobileSidebar ? ' sidebar-open' : ''}${shell.isPanelOpen ? ' has-ai' : ''}`} data-region="schedule" data-focus={scene.focus || 'calendar'} data-editing={draft ? 'true' : 'false'}>
     {(loadError || (op.problem && !draft && !reminderRejected)) && <div className="cal-load-error" role="alert">{loadError || op.problem.message}<button onClick={() => op.pending ? perform(null, true) : reload()}>{t("重试")}</button></div>}
-    <section className="cal-board" aria-label={t("日历")}><header className="cal-toolbar"><div className="cal-calendar-title"><MonthTitle date={scene.view.kind === 'month' ? `${displayMonth}-01` : scene.anchor}/><span className="cal-time-zone" title={zone}>{zoneLabel}</span></div><div className="cal-toolbar-actions"><ViewMenu view={scene.view} onChange={changeView}/><button className="cal-today-button" onClick={() => { setDisplayMonth(today.slice(0, 7)); updateScene({ anchor: scene.view.kind === 'week' ? monday(today) : today, month: today.slice(0, 7), monthScroll: null, monthJump: (scene.monthJump || 0) + 1 }); }}>{t("今天")}</button><IconButton name="left" label={t("上一段")} onClick={() => navigate(-1)}/><IconButton name="right" label={t("下一段")} onClick={() => navigate(1)}/><span className="cal-mobile-toggle"><IconButton name="grid" label={t("打开月份与任务")} onClick={() => setMobileSidebar(true)}/></span></div></header>
-      <TimeGrid key={scene.view.kind === 'month' ? `${zone}:${scene.anchor}:${scene.monthJump}` : `time:${zone}`} view={scene.view} anchor={scene.anchor} zone={zone} occurrences={data.occurrences} labels={data.labels} selected={draft}
+    <section className="cal-board" aria-label={t("日历")}><header className="cal-toolbar"><div className="cal-calendar-title"><MonthTitle date={scene.view.kind === 'month' ? `${displayMonth}-01` : scene.anchor}/><span className="cal-time-zone" title={zone}>{zoneLabel}</span></div><div className="cal-toolbar-actions"><FocusToggle value={scene.focus || 'calendar'} onChange={focus => updateScene({ focus })}/><ViewMenu view={scene.view} onChange={changeView}/><button className="cal-today-button" onClick={() => { setDisplayMonth(today.slice(0, 7)); updateScene({ anchor: scene.view.kind === 'week' ? monday(today) : today, month: today.slice(0, 7), monthScroll: null, monthJump: (scene.monthJump || 0) + 1 }); }}>{t("今天")}</button><IconButton name="left" label={t("上一段")} onClick={() => navigate(-1)}/><IconButton name="right" label={t("下一段")} onClick={() => navigate(1)}/><span className="cal-mobile-toggle"><IconButton name="grid" label={t("打开月份与任务")} onClick={() => setMobileSidebar(true)}/></span></div></header>
+      {scene.focus === 'tasks' ? <TaskBoard entries={data.entries} occurrences={data.occurrences} daily={data.daily} labels={data.labels} zone={zone} now={now} today={today} draft={draft} draftId={draft?.id} onOpen={openEntry} onClose={closeEditor} onNew={unscheduled => create(undefined, undefined, false, unscheduled)} onToggle={toggleBoardItem} accountKey={shell.accountKey} helpers={{ localParts, formatClock }}/>
+      : <TimeGrid key={scene.view.kind === 'month' ? `${zone}:${scene.anchor}:${scene.monthJump}` : `time:${zone}`} view={scene.view} anchor={scene.anchor} zone={zone} occurrences={data.occurrences} labels={data.labels} selected={draft}
         onRange={(from, to) => {
           from = from < '1900-01-01' ? '1900-01-01' : from;
           to = to > '2100-12-31' ? '2100-12-31' : to;
@@ -541,14 +572,23 @@ export default function SchedulePage({ route }) {
         onSelect={create} onClear={closeEditor} onOpen={occurrence => openEntry(occurrence.key.entryId, occurrence.key.originDate)} onMove={moveEvent}
         onDay={date => updateScene({ anchor: date, view: { kind: 'day', days: 1 }, month: date.slice(0, 7) })}
         onMonthScroll={(month, monthScroll) => { setDisplayMonth(month); updateScene({ month, monthScroll }); }}
-        scroll={scene.scroll} monthScroll={scene.monthScroll} onScroll={scroll => updateScene({ scroll })} disabled={op.isRunning || Boolean(op.pending)}/>
+        scroll={scene.scroll} monthScroll={scene.monthScroll} onScroll={scroll => updateScene({ scroll })} onDraftMove={info => {
+          const current = sceneRef.current.draft;
+          if (!current || current.id || !current.content.time) return info.revert();
+          const event = info.event;
+          const day = event.startStr.slice(0, 10);
+          const time = event.allDay
+            ? { date: day, startTime: '00:00', durationMinutes: Math.max(1, diffDays(day, (event.endStr || addDays(day, 1)).slice(0, 10))) * 1440, timeZone: zoneRef.current }
+            : timeFromEvent(event, zoneRef.current);
+          patchContent({ time: { ...current.content.time, ...time }, calendar: { ...current.content.calendar, allDay: event.allDay } });
+        }} disabled={op.isRunning || Boolean(op.pending)}/>}
     </section>
     <aside className="cal-sidebar" aria-label={t("月份与任务")}><div className="cal-mobile-close"><IconButton name="close" label={t("关闭月份与任务")} onClick={() => setMobileSidebar(false)}/></div>
       <MiniCalendar month={scene.month} from={highlightFrom} to={highlightTo} today={today} onMonth={month => updateScene({ month })} onSelect={(from, to, dragged) => {
         const view = dragged ? { kind: 'days', days: diffDays(from, to) + 1 } : scene.view;
         setDisplayMonth(from.slice(0, 7)); updateScene({ anchor: view.kind === 'week' ? monday(from) : from, view, month: from.slice(0, 7), monthScroll: null, monthJump: (scene.monthJump || 0) + 1 });
       }}/>
-      {draft ? <CalendarEditor key={draft.clientId} draft={draft} onPatch={patchContent} onClose={closeEditor} onConfirm={() => flush({ explicit: true })} onDelete={() => { ++editorIntent.current; return draft.id ? setDeletePrompt(true) : closeEditor(); }} onMoveItem={startItemMove} locked={op.pending?.payload.kind === 'moveItem'}
+      {draft ? <EntryEditor key={draft.clientId} draft={draft} onPatch={patchContent} onClose={closeEditor} onConfirm={() => flush({ explicit: true })} onDelete={() => { ++editorIntent.current; return draft.id ? setDeletePrompt(true) : closeEditor(); }} onRemove={discardOrRemove} onMoveItem={startItemMove} locked={op.pending?.payload.kind === 'moveItem'}
         labels={data.labels} onLabels={labelsChanged} accountKey={shell.accountKey} status={op.status} error={saveError}
         onRetry={() => op.pending ? perform(null, true) : flush({ explicit: true, confirmConflict: true })} onAdoptServer={adoptServer}
         onReload={op.problem?.kind === 'conflict' ? reloadConflict : null}/>

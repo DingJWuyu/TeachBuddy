@@ -51,7 +51,7 @@
 | --- | --- |
 | 公共文稿实际转换 | `apps/api/test/materials-pandoc.test.js` 使用公共转换器生成固定文稿的 DOCX/PDF，检查可编辑公式、正文与真实文件；不经过业务课稿编排入口；隔离公共材料服务由 `apps/api/test/fixtures/materials/server.mjs` 提供。 |
 | Word/WPS 人工编辑与打印 | [Office fixtures](../../apps/web/e2e/fixtures/office) 的六份 DOCX、源文本/公式/图片；按[人工操作](samples.md#人工-office-样本)核对。输入样本不是产品转换成功证明。 |
-| 设置/帮助外观 | 按[界面规则](../rules/design-and-verification.md)核对当前运行页面及用户指定参考；截图留本次验证产物 |
+| 设置/帮助外观 | 按[设计输入](../design-system/README.md)核对当前运行页面及用户指定参考；截图留本次验证产物 |
 | 题干/答案原稿独立定位 | 按[独立题库页面](#独立题库页面)构建、启动 fixture，再执行定位 spec。此 test-principal 页面与真实认证主应用分开准备。 |
 | Agent 真实模型保留库 | `apps/api/test/fixtures/c26/live.mjs` 生成模型报告和隔离数据；`apps/web/e2e/c26/agent.spec.js` 读取。二者共用 `AGENT_EVIDENCE_DIR`，默认 `test-results/evidence/C26/v1`。执行前核对报告与数据目录来自同一候选；新环境缺少报告或对应数据库时显式跳过并标记未验证；准备步骤见[真实模型保留库](#真实模型保留库)。 |
 | API 字段与兼容 | 从[文字契约](../README.md#契约说明)进入；机器契约在 `apps/api/src/contracts/`，交换样本在 `apps/api/test/fixtures/contracts/`。测试以固定样本和预期行为验证实现，不能只用实现自身生成预期结果。 |
@@ -148,13 +148,13 @@ node apps/api/test/fixtures/questions/server.mjs "$questionsFixtureData" 48339
 
 ## 账户与工作台专项
 
-交互动效、焦点、参考尺寸见[界面规则](../rules/design-and-verification.md)。修改设置时用 `apps/web/e2e/settings-shell.config.mjs` 的隔离真实认证/可靠性服务；帮助用 `help-shell.config.mjs`。资料包及备份恢复用 `manual-data/manual-data.config.mjs`，跨模块草稿、冲突和未确认请求用 `manual-support/playwright.config.mjs`；这些入口均相对于 `apps/web/e2e/`。
+交互动效、焦点、参考尺寸见[设计输入](../design-system/README.md)。修改设置时用 `apps/web/e2e/settings-shell.config.mjs` 的隔离真实认证/可靠性服务；帮助用 `help-shell.config.mjs`。资料包及备份恢复用 `manual-data/manual-data.config.mjs`，跨模块草稿、冲突和未确认请求用 `manual-support/playwright.config.mjs`；这些入口均相对于 `apps/web/e2e/`。
 
 完成相关 UI 修改应实际检查桌面及 390px 窄屏、各页面主题/背景组合、头像上传/删除同步侧栏及重新登录读回、键盘菜单、弹层退出中间态、快速反向和焦点恢复；同时确认偏好保存失败可重试、真实导出和退出可用。语言和删号使用 `apps/web/e2e/settings-implementation.config.mjs` 与 `apps/api/test/account-deletion.test.js` 验证真实认证、跨账户和未知结果。后端用 `apps/api/test/reliability.test.js` 核对账户隔离、版本冲突、旧字段兼容及头像输入校验。帮助另检查搜索空结果、无效文章、刷新返回和目录现场。当前验证入口见[核查入口](../plans/run-state.md#核查入口)。
 
 ## AI 助理呈现专项
 
-C26/C27 用真实题目检查 1440×900、820×1180 和 390×844：首页、AI/工具切换、长对话与公式、历史弹层、草稿失败、冲突、停止/重连、操作结果打开后返回。截图与实际指针/键盘操作一起留证；测主要区域滚动独立、外壳无横向溢出、按钮可点击、焦点返回和新消息提示。既有原型只提供入口关系，未继承其固定回答或验收结论。
+C26/C27 用真实题目检查 1440×900、820×1180 和 390×844：首页、AI 辅助栏覆盖与关闭、长对话与公式、历史弹层、草稿失败、冲突、停止/重连、操作结果打开后返回。截图与实际指针/键盘操作一起留证；测主要区域滚动独立、外壳无横向溢出、按钮可点击、焦点返回和新消息提示。界面及交互对照[设计输入](../design-system/README.md)与完整应用原型，模拟回复不能代签真实 SSE、业务写入或本候选验收。
 
 ### 真实模型保留库
 

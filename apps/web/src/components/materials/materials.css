@@ -2,7 +2,7 @@
 .material-document,
 .material-editor {
   min-width: 0;
-  color: var(--tb-text, light-dark(#27272a, var(--app-text)));
+  color: var(--tb-ink);
   font-size: 14px;
   line-height: 1.6;
 }
@@ -31,13 +31,13 @@
   gap: 10px;
 }
 .material-note {
-  border-left: 2px solid light-dark(#94a3b8, var(--app-line));
+  border-left: 2px solid var(--tb-line);
   padding: 4px 12px;
   margin: 12px 0;
-  background: light-dark(#f8fafc, var(--app-soft));
+  background: var(--tb-surface-2);
 }
 .material-note > span {
-  color: light-dark(#64748b, var(--app-muted));
+  color: var(--tb-muted);
   font-size: 12px;
 }
 .material-table-scroll {
@@ -50,7 +50,7 @@
 }
 .material-table-scroll td {
   min-width: 120px;
-  border: 1px solid light-dark(#e3e3e3, var(--app-line));
+  border: 1px solid var(--tb-line);
   padding: 8px;
   vertical-align: top;
 }
@@ -70,16 +70,16 @@
 .material-editor input,
 .material-editor select {
   max-width: 100%;
-  border: 1px solid light-dark(#e3e3e3, var(--app-line));
+  border: 1px solid var(--tb-line);
   border-radius: 6px;
   padding: 4px 8px;
   font: inherit;
 }
 .material-editor button {
-  border: 1px solid light-dark(#e3e3e3, var(--app-line));
+  border: 1px solid var(--tb-line);
   border-radius: 6px;
   padding: 4px 8px;
-  background: light-dark(white, var(--app-surface));
+  background: var(--tb-surface);
   font: inherit;
   cursor: pointer;
 }
@@ -88,7 +88,7 @@
   cursor: default;
 }
 .material-editor button:focus-visible {
-  outline: 2px solid #64748b;
+  outline: 2px solid var(--tb-accent);
   outline-offset: 2px;
 }
 .material-editor .wb-block-add {
@@ -98,7 +98,7 @@
 }
 .material-list-item {
   padding-left: 10px;
-  border-left: 1px solid light-dark(#e3e3e3, var(--app-line));
+  border-left: 1px solid var(--tb-line);
 }
 .material-unknown pre {
   white-space: pre-wrap;
@@ -107,8 +107,6 @@
 .material-move-up { transform: rotate(-90deg); }
 .material-move-down { transform: rotate(90deg); }
 .material-editor .wb-block-add { align-items: center; }
-.material-editor .wb-menu-item { border: 0; border-radius: 6px; padding: 0 12px; }
-.material-editor .wb-menu-item:hover { background: light-dark(#f4f4f5, var(--app-soft)); }
 .material-editor .material-edit-block { margin: 8px 0 12px; }
 .material-editor .wb-block-controls { opacity: .6; transition: opacity 140ms ease; }
 .material-editor .material-edit-block:is(:hover, :focus-within) > .wb-block-controls { opacity: 1; }

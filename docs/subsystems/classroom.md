@@ -1,6 +1,12 @@
 # 班级技术入口
 
-改名单、成绩导入/确认、统计或维护校验时读本页。行为见 [班级规格](../features/classroom.md)，交换关系、统计口径与失败保证见 [班级契约](../contracts/classroom.md)，字段见 [classroom.openapi.json](../../apps/api/src/contracts/classroom.openapi.json)。当前只开放后端，目录 `webEnabled=false`，没有班级页面或已接通的班级 Agent 工具。
+改名单、成绩导入/确认、统计或维护校验时读本页。行为见 [班级规格](../features/classroom.md)，交换关系、统计口径与失败保证见 [班级契约](../contracts/classroom.md)，字段见 [classroom.openapi.json](../../apps/api/src/contracts/classroom.openapi.json)。Web 页面按单一模块目录装配，页面开放及当前候选验收查[项目状态](../plans/run-state.md)，不从前端存在推定班级 Agent 工具已接通。
+
+## 教师页面与适配
+
+[ClassroomPage.jsx](../../apps/web/src/features/classroom/ClassroomPage.jsx) 组织班级工作区，分担到座位、学生、记录、考试、导入、成绩与归档组件；[index.jsx](../../apps/web/src/features/classroom/index.jsx) 在可信账户及身份代次下建立页面会话，卸载时中止旧请求。
+
+[createClassroomApi](../../apps/web/src/features/classroom/api.js) 负责现有 HTTP 契约到页面结构的适配：学号、性格、日期、座位行列、试卷及计分题、工作簿映射和统计结果均在此转换，不改写后端业务字段。真实文件经公共文件接口上传、下载；写入保留账户范围的原逻辑键与请求体，未知结果重试不能创建第二笔操作。页面布局与动效来自设计输入，统计计算与缺分、缺考口径继续由后端裁决。
 
 ## 责任与调用面
 

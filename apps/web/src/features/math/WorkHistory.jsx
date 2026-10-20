@@ -1,3 +1,4 @@
+import { Icon } from '../../components/icons.jsx';
 import i18n from '../../i18n/index.js';
 import { useTranslation } from 'react-i18next';
 
@@ -29,7 +30,7 @@ export default function WorkHistory({ work, client, font, hasChanges, onClose, o
   return <div className="wb-dialog-host wb-module-dialog math-history-host" data-overlay="dialog">
     <div className="wb-dialog-scrim" onClick={onClose} role="presentation"/>
     <div ref={ref} className="wb-dialog math-history" role="dialog" aria-modal="true" aria-label={t("历史版本")}>
-      <div className="math-history-heading"><h2>{t("历史版本")}</h2><button className="math-icon-button" aria-label={t("关闭历史版本")} onClick={onClose}>×</button></div>
+      <div className="math-history-heading"><h2>{t("历史版本")}</h2><button className="math-icon-button" aria-label={t("关闭历史版本")} onClick={onClose}><Icon name="close" size={15}/></button></div>
       <p className="math-hint">{t("选一版查看。恢复后成为当前编辑内容，保存时生成新版本。")}</p>
       {error ? <p role="alert">{error}<button onClick={() => retry(n => n + 1)}>{t("重试")}</button></p> : !items ? <p role="status">{t("正在读取历史版本…")}</p> : <>
         <label className="math-version-select">{t("保存记录")}<select aria-label={t("保存记录")} value={selected?.version ?? ''} onChange={event => setSelected(items.find(item => item.version === Number(event.target.value)))}>

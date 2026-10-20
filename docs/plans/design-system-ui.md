@@ -8,7 +8,7 @@
 - 设计输入：`5ef44923` 中的 [design-system](../design-system/README.md) 与 [teachbuddy-app](../design-system/teachbuddy-app/index.html)。原型组件、补丁与最终打包产物共同提供定位依据，原件保持不变。
 - 实现基线：`5ef44923`；它在 `fa931d93` 上仅保全用户新输入和删除旧 `docs/rules/design-and-verification.md` 的动作。
 - 工作现场：`TeachBuddy-ui`，分支 `feat/design-system-ui`。所有实施者在该任务工作树内按下表独占文件，Git 与集成由总控负责。preview 用户实例、main、资源库旧工作树、私有数据和凭据不属于并行写入范围。
-- 目前状态：输入固定，开始并行源码迁移；尚未实现、验收或集成新版前端。
+- 目前状态：各工作线首轮源码迁移完成，正式前端构建通过，进入集中页面对照与有效回归迁移。新版尚未完成验收或集成。
 
 ## 本次硬边界
 
@@ -28,15 +28,16 @@
 
 | 工作线 | 独占源码 | 输入与完成范围 | 当前状态 |
 | --- | --- | --- | --- |
-| ds_common | `components/ui/`、`components/icons.jsx`、`styles/`、`i18n/` | tokens、图标、通用控件/浮层/确认/日期/筛选/动效、翻译；正常模块导出 | 待派发 |
-| ds_shell | `features/workbench/`，排除下一行文件；`features/modules/` | 顶侧栏、分组/拖拽、通知/反馈/引导/搜索、辅助栏覆盖与路由；班级装配交总控 | 待派发 |
-| ds_auth_support | `features/auth/`、`features/reliability/DataManagement.jsx`、`features/reliability/reliability.css`、`features/workbench/{WorkbenchSettings.jsx,SettingsControls.jsx,SupportPages.jsx,helpContent.js,settings-shell.css,support-shell.css,help/}` | 认证舞台/表单、设置/帮助/协议/退出/删除/资料导出；保持真实身份机制 | 待派发 |
-| ds_schedule | `features/schedule/` | 日历、任务看板、编辑面板、重复/提醒/标签/拖动与保存；原型全部操作 | 待派发 |
-| ds_questions | `features/questions/`、`components/materials/` | 列表/阅读/编辑/收录校对、公共文稿呈现；真实数据接线 | 待派发 |
-| ds_resources | `features/resources/` | 文件夹/标签、列表/框选/批量/拖动、详情/预览/历史；真实数据接线 | 待派发 |
-| ds_math | `features/math/` | 首页/制作/网页/输出/历史/演示/网页助理；保留引擎与源内容语义 | 待派发 |
-| ds_classroom | `features/classroom/` | 班级/学生/座位/记录/考试/导入/统计/归档；现有后端字段适配 | 待派发 |
-| ds_agent | `features/agent/` | 首页/窄栏、会话/引用/流式回答/结果卡；已有能力真实接入，缺口局部模拟 | 待派发 |
+| ds_common | `components/ui/`、`components/icons.jsx`、`components/interaction/{ModuleOverlays.jsx,overlays.jsx,surfaces.css}`、`styles/`、`i18n/` | tokens、图标、通用控件/浮层/确认/日期/筛选/动效、翻译；正常模块导出 | 第一批落地，统一旧菜单入口中 |
+| ds_shell | `features/workbench/`，排除下一行文件；`features/modules/` | 顶侧栏、分组/拖拽、通知/反馈/引导/搜索、辅助栏覆盖与路由；班级装配交总控 | 第一批落地，核对最终补丁中 |
+| ds_auth_support | `features/auth/`、`features/reliability/DataManagement.jsx`、`features/reliability/reliability.css`、`features/workbench/{WorkbenchSettings.jsx,SettingsControls.jsx,SupportPages.jsx,helpContent.js,settings-shell.css,support-shell.css,help/}` | 认证舞台/表单、设置/帮助/协议/退出/删除/资料导出；保持真实身份机制 | 实现中 |
+| ds_schedule | `features/schedule/` | 日历、任务看板、编辑面板、重复/提醒/标签/拖动与保存；原型全部操作 | 实现中 |
+| ds_questions | `features/questions/`、`components/materials/` | 列表/阅读/编辑/收录校对、公共文稿呈现；真实数据接线 | 实现中 |
+| ds_resources | `features/resources/` | 文件夹/标签、列表/框选/批量/拖动、详情/预览/历史；真实数据接线 | 实现中 |
+| ds_math | `features/math/` | 首页/制作/网页/输出/历史/演示/网页助理；保留引擎与源内容语义 | 实现中 |
+| ds_classroom | `features/classroom/` | 班级/学生/座位/记录/考试/导入/统计/归档；现有后端字段适配 | 实现中 |
+| ds_agent | `features/agent/` | 首页/窄栏、会话/引用/流式回答/结果卡；已有能力真实接入，缺口局部模拟 | 实现中 |
+| ds_docs | 既有 `docs/`，排除 design-system/plans；根 README/GLOSSARY/AGENTS | 删除失效指针，按最终实现同步规格、技术参考与验收入口 | 实现中 |
 | 总控 | App/main、公共装配、packages/shared 的页面开放配置、全局文档、测试收集与集成 | 协调依赖、事实收口、验收与旧入口清理 | 进行中 |
 
 公共导出位置固定为 `components/ui/{confirm,popover,segmented,datetime,filter,rail}.jsx`、`components/ui/{motion,colors,classNames}.js`；语义沿原型对应导出。React hooks 直接来自 React，`cx` 来自 classNames，翻译/日期 helpers 来自 `i18n/presentation.js`，图标使用 `components/icons.jsx`。RailHint 的业务打开动作由调用方传入。不要创建模拟原型全局桥接的总入口对象。
@@ -76,4 +77,8 @@
 
 ## 当前接续
 
-下一步：派发以上工作线、建立公共正常 imports，再集中构建一次检查跨模块装配。当前无产品改动验证结论。完成后按 GitHub 工作流集成 preview，main 与正式发布保持未授权。
+已完成公共正常 imports、业务首轮接线、班级页面目录开放、旧原型退役及失效文档入口替换。新原型通过根 `npm run prototype` 只读运行；产品构建不加载设计资料。依赖使用锁文件安装，GeoGebra 从固定源码及已有构建缓存生成并校验，未修改引擎输入。
+
+正式前端 `npm run build:web` 通过；当前仅说明模块能够装配。账户页面在相同 1440×900 视口对照原型，静态布局与角色画面已核对，动画逐帧与全部状态仍待验证。助理作者已在真实认证、受控模型下复现并修复“保存草稿期间点击发送丢失”问题，修复后同一次发送只有一个 turn 与一次模型调用；示例卡、停止、刷新不触发真实模型。尚无全站完成结论。
+
+下一步：固定首轮候选，分域迁移仍有效的浏览器回归并核对真实页面；总控收口跨模块、主题、语言和尺寸组合以及文档与 buffer 事实。作者回执在 `.scratch/design-system-ui/`，失效或失败证据保留到任务完成。大阶段独立审查、CI、preview 集成与清理尚未执行。main 与正式发布保持未授权。

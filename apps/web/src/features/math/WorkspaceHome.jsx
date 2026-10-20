@@ -1,11 +1,18 @@
 import i18n from '../../i18n/index.js';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { useAuxiliaryAssistant } from '../workbench/shellContext.js';
+import { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import Markdown from 'react-markdown';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import 'katex/dist/katex.min.css';
+import { ShellContext, useAuxiliaryAssistant } from '../workbench/shellContext.js';
 import { MathWebAssistant } from './web-ai/MathWebAssistant.jsx';
-import { MathMenu, MenuItem } from './MathMenu.jsx';
-import { useTranslation } from 'react-i18next';
-const t = (key, options) => i18n.t(key, { ns: 'math', ...options });
 import { Icon } from '../../components/icons.jsx';
+import { cx } from '../../components/ui/classNames.js';
+import { tx, useLocale, monthDay } from '../../i18n/presentation.js';
+import { Rail, RailSection, RailItem, RailHint, PaneTitle, PrimaryButton } from '../../components/ui/rail.jsx';
+import { Segmented } from '../../components/ui/segmented.jsx';
+const t = (key, options) => i18n.t(key, { ns: 'math', ...options });
+const MathMark = ({ size = 20 }) => <Icon name="math" size={size} strokeWidth={2} />;
 
 export function mathStatusLabel(status) {
   const labels = {
@@ -14,14 +21,6 @@ export function mathStatusLabel(status) {
   };
   return labels[status] ?? status;
 }
-
-export const workshopKinds = [
-  { kind: 'geogebra', get title() { return t("GeoGebra 数学画布"); }, get purpose() { return t("自由作图，与 AI 一起修改同一份作品"); } },
-  { kind: 'formula', get title() { return t("公式"); }, get purpose() { return t("排出清晰公式，放进讲义或课件"); } },
-  { kind: 'plane', get title() { return t("平面图形"); }, get purpose() { return t("画函数图像、几何图形与标注"); } },
-  { kind: 'space', get title() { return t("空间图形"); }, get purpose() { return t("制作立体几何示意图"); } },
-  { kind: 'dynamic', get title() { return t("动态演示"); }, get purpose() { return t("拖动参数，观察图形如何变化"); } },
-];
 
 export function WorkIllustration({ kind }) {
   return <svg className="math-work-illustration" viewBox="0 0 220 100" fill="none" aria-hidden="true">
@@ -40,32 +39,230 @@ export function WorkIllustration({ kind }) {
   </svg>;
 }
 
-export default function WorkspaceHome({ items, search, deleted, busy, client, accountKey, onSearch, onDeleted, onNew, onOpen, onImport, onImportSource, onRestore, onPurge }) {
-  const { t, i18n } = useTranslation('math');
-  const actions = useRef({ onNew, busy });
-  actions.current = { onNew, busy };
-  useAuxiliaryAssistant(useCallback(() => <MathWebAssistant key={accountKey} accountKey={accountKey} onStart={request => { if (!actions.current.busy) return actions.current.onNew(request); }}/>, [accountKey]));
-  return <div className="mw-home">
-    <header className="mw-home-heading"><div className="mw-home-title"><Icon name="math" size={26}/><h1 id="math-start-heading" tabIndex={-1}>{t('数学工坊')}</h1></div><button className="mw-button is-primary" disabled={busy} onClick={onNew}><Icon name="plus" size={18}/>{t('新建作品')}</button></header>
-    <div className="mw-library-toolbar"><h2>{t(deleted ? '已归档' : '我的作品')}<span>{items.length}</span></h2><div className="mw-library-actions"><label className="mw-search"><Icon name="search" size={17}/><input aria-label={t('搜索作品')} placeholder={t('搜索作品')} value={search} onChange={event => onSearch(event.target.value)}/></label>
-      <MathMenu label={t('作品操作')} className="mw-home-actions">{({ close }) => <><MenuItem onClick={() => { close(); onImportSource(); }} disabled={busy}>{t('导入作品')}</MenuItem><MenuItem onClick={() => { close(); onImport(); }} disabled={busy}>{t('导入网页')}</MenuItem><MenuItem onClick={() => { close(); onDeleted(!deleted); }}>{t(deleted ? '我的作品' : '已归档')}</MenuItem></>}</MathMenu>
-    </div></div>
-    <section className="mw-library" aria-label={t('我的作品')}>
-      {items.map(item => <article className="mw-library-row" key={item.id}><button disabled={busy} onClick={() => onOpen(item)}><WorkThumbnail item={item} client={client}/><span className="mw-library-caption"><strong>{item.title}</strong><small>{item.updatedAt ? new Date(item.updatedAt).toLocaleDateString(i18n.resolvedLanguage, { month: 'long', day: 'numeric' }) : t('数学作品')}</small></span></button>{deleted && <div className="mw-archive-actions"><button className="mw-button" disabled={busy} onClick={() => onRestore(item)}>{t('恢复')}</button><button className="mw-button" disabled={busy} onClick={() => onPurge(item)}>{t('彻底删除')}</button></div>}</article>)}
-      {!items.length && <div className="mw-library-empty"><Icon name="math" size={32}/><h2>{t(search ? '没有找到作品' : deleted ? '没有归档作品' : '还没有作品')}</h2><p>{t(search ? '试试其他名称。' : deleted ? '归档的作品会放在这里。' : '新建作品，写公式、画图或制作演示。')}</p></div>}
-    </section>
-  </div>;
+const viewKey = accountKey => `teachbuddy.${accountKey}.math.view`;
+
+const readView = (VIEW_KEY) => { try { return localStorage.getItem(VIEW_KEY) === 'list' ? 'list' : 'grid'; } catch { return 'grid'; } };
+const saveView = (VIEW_KEY, v) => { try { localStorage.setItem(VIEW_KEY, v); } catch { /* private mode */ } };
+
+/* what a work is, in one word */
+function kindOf(item) {
+  const s = item.source || {};
+  if (s.kind === 'html') return 'html';
+  if (s.kind === 'workshop') return s.graph ? 'graph' : 'formula';
+  if (s.kind === 'formula') return 'formula';
+  if (s.kind === 'space') return 'space';
+  if (s.kind === 'dynamic') return 'dynamic';
+  return 'graph';
+}
+const KIND_LABEL = { formula: '公式', graph: '图形', space: '立体图形', dynamic: '动态演示', html: '网页演示' };
+const FILTERS = [
+  ['all', '全部作品', 'grid'],
+  ['made', '公式与图形', 'math'],
+  ['html', '网页演示', 'file'],
+];
+const matches = (filter, item) => filter === 'all' || (filter === 'html' ? kindOf(item) === 'html' : kindOf(item) !== 'html');
+
+/* ideas handed to the assistant, each with the drawing that suggests it */
+const IDEAS = [
+  ['graph', '画一条可调节的抛物线', 'is-blue'],
+  ['space', '演示正方体的展开', 'is-orange'],
+  ['formula', '推导一元二次方程的求根公式', 'is-green'],
+];
+
+const Illustration = ({ kind }) => <WorkIllustration kind={kind === 'html' ? 'dynamic' : kind} />;
+
+/* formulas typeset live, so they stay sharp at any size */
+function Formulas({ list }) {
+  return (
+    <span className="tbx-mw-formulas" aria-hidden="true">
+      {list.slice(0, 2).map((f) => (
+        <Markdown key={f.id} remarkPlugins={[remarkMath]} rehypePlugins={[[rehypeKatex, { throwOnError: false, strict: false }]]} skipHtml>
+          {`$$\n${f.latex}\n$$`}
+        </Markdown>
+      ))}
+    </span>
+  );
 }
 
-function WorkThumbnail({ item, client }) {
-  const { t } = useTranslation('math');
+function Poster({ item, client, mini }) {
   const [url, setUrl] = useState(null);
-  const id = item.render?.posterFileId;
+  const kind = kindOf(item);
+  const formulas = item.source?.kind === 'workshop' && !item.source.graph ? item.source.formulas : item.source?.kind === 'formula' && item.source.latex ? [{ id: 'f', latex: item.source.latex }] : null;
+  const id = formulas?.length ? null : item.render?.posterFileId;
   useEffect(() => {
-    let live = true, objectUrl;
+    let live = true;
+    let objectUrl;
     setUrl(null);
-    if (id && client) client.blob(`/api/workbench/files/${id}/content`).then(blob => { if (live) { objectUrl = URL.createObjectURL(blob); setUrl(objectUrl); } }).catch(() => {});
+    if (id && client) {
+      client.blob(`/api/workbench/files/${id}/content`).then((blob) => {
+        if (!live) return;
+        objectUrl = URL.createObjectURL(blob);
+        setUrl(objectUrl);
+      }).catch(() => {});
+    }
     return () => { live = false; if (objectUrl) URL.revokeObjectURL(objectUrl); };
   }, [id, client]);
-  return <span className="mw-library-thumbnail">{url ? <img src={url} alt="" onError={() => setUrl(null)}/> : <span><Icon name={item.source?.kind === 'html' ? 'prep' : 'math'} size={30}/><span>{t(item.source?.kind === 'html' ? '网页演示' : '数学作品')}</span></span>}</span>;
+  if (mini) {
+    return (
+      <span className={cx('tbx-mw-thumb is-mini', `is-${kind}`)} aria-hidden="true">
+        {kind === 'html' ? <Icon name="file" size={18} strokeWidth={1.9} /> : kind === 'formula' ? <MathMark size={18} /> : <Icon name="graph" size={18} strokeWidth={1.9} />}
+      </span>
+    );
+  }
+  return (
+    <span className={cx('tbx-mw-thumb', `is-${kind}`)}>
+      {formulas?.length
+        ? <Formulas list={formulas} />
+        : url
+        ? <img src={url} alt="" onError={() => setUrl(null)} />
+        : kind === 'html'
+          ? (
+            <span className="tbx-mw-window" aria-hidden="true">
+              <i /><i /><i />
+              <Illustration kind="dynamic" />
+            </span>
+          )
+          : <span className="tbx-mw-art" aria-hidden="true"><Illustration kind={kind} /></span>}
+      <span className="tbx-mw-badge">{tx(KIND_LABEL[kind])}</span>
+    </span>
+  );
+}
+
+export default function WorkspaceHome(props) {
+  useLocale();
+  const shell = useContext(ShellContext);
+  const { items, search, deleted, busy, client, accountKey, onSearch, onDeleted, onNew, onOpen, onImport, onImportSource, onRestore, onPurge } = props;
+  const [view, setView] = useState(() => readView(viewKey(accountKey)));
+  const [filter, setFilter] = useState('all');
+  const known = useRef({ all: 0, made: 0, html: 0 });
+
+  // the side panel's assistant starts a new work from a request, as before
+  const actions = useRef({ onNew, busy });
+  actions.current = { onNew, busy };
+  useAuxiliaryAssistant(useCallback(
+    () => (<MathWebAssistant key={accountKey} accountKey={accountKey} onStart={(request) => { if (!actions.current.busy) return actions.current.onNew(request); return undefined; }} />),
+    [accountKey],
+  ));
+
+  if (!deleted && !search) {
+    known.current = {
+      all: items.length,
+      made: items.filter((i) => matches('made', i)).length,
+      html: items.filter((i) => matches('html', i)).length,
+    };
+  }
+  const shown = deleted ? items : items.filter((i) => matches(filter, i));
+  const title = deleted ? tx('已归档') : tx(FILTERS.find(([k]) => k === filter)[1]);
+  const starting = !deleted && !search && filter === 'all';
+  const go = (next) => { setFilter(next); if (deleted) onDeleted(false); };
+  const pickView = (v) => { setView(v); saveView(viewKey(accountKey), v); };
+  const date = (iso) => (iso ? monthDay(new Date(iso).toLocaleDateString('sv')) : '');
+
+  return (
+    <section className="tbx-mw tbx-split">
+      {/* ---------- works ---------- */}
+      <div className="tbx-mw-main" aria-busy={busy}>
+        <header className="tbx-mw-bar">
+          <PaneTitle
+            icon={<MathMark size={21} />}
+            tone="purple"
+            id="math-start-heading"
+            title={title}
+            sub={tx('{{n}} 个作品', { n: shown.length, count: shown.length })}
+          />
+          <div className="tbx-mw-tools">
+            <label className="tbx-mw-search">
+              <Icon name="search" size={16} strokeWidth={2} />
+              <input aria-label={tx('搜索作品')} placeholder={tx('搜索作品')} maxLength={200} value={search} onChange={(e) => onSearch(e.target.value)} />
+              {search && <button type="button" className="tbx-mw-clear" aria-label={tx('清除搜索')} onClick={() => onSearch('')}><Icon name="close" size={11} strokeWidth={2.8} /></button>}
+            </label>
+            <Segmented
+              iconOnly
+              label={tx('作品显示方式')}
+              value={view}
+              onChange={pickView}
+              options={[
+                { value: 'grid', label: tx('缩略图视图'), icon: <Icon name="grid" size={15} strokeWidth={2} /> },
+                { value: 'list', label: tx('列表视图'), icon: <Icon name="list" size={16} strokeWidth={2} /> },
+              ]}
+            />
+            {!deleted && <PrimaryButton label={tx('新建作品')} disabled={busy} onClick={() => onNew()} />}
+          </div>
+        </header>
+
+        <div className={cx('tbx-mw-scroll', `is-${view}`)}>
+          {starting && (
+            <section className="tbx-mw-start" aria-label={tx('开始制作')}>
+              {IDEAS.map(([kind, prompt, hue]) => (
+                <button key={prompt} type="button" className={cx('tbx-mw-idea', hue)} disabled={busy} onClick={() => onNew(tx(prompt))}>
+                  <span className="tbx-mw-idea-art"><Illustration kind={kind} /></span>
+                  <span className="tbx-mw-idea-copy">
+                    <strong>{tx(prompt)}</strong>
+                    <small><Icon name="sparkles" size={12} strokeWidth={2} />{tx('交给助理起个头')}</small>
+                  </span>
+                </button>
+              ))}
+            </section>
+          )}
+
+          {starting && shown.length > 0 && <h3 className="tbx-mw-section">{tx('最近编辑')}</h3>}
+
+          {shown.length > 0 && view === 'list' && (
+            <div className="tbx-mw-thead" aria-hidden="true">
+              <span>{tx('名称')}</span><span>{tx('类型')}</span><span>{deleted ? '' : tx('修改日期')}</span>
+            </div>
+          )}
+
+          {shown.length > 0 && (
+            <div className="tbx-mw-items" key={view}>
+              {shown.map((item, i) => (
+                <article key={item.id} className={cx('tbx-mw-card', deleted && 'is-archived')} style={{ '--i': Math.min(i, 12) }}>
+                  <button type="button" className="tbx-mw-open" disabled={busy} onClick={() => onOpen(item)}>
+                    <Poster item={item} client={client} mini={view === 'list'} />
+                    <span className="tbx-mw-copy">
+                      <strong title={item.title}>{item.title}</strong>
+                      <small>{view === 'list' ? tx(KIND_LABEL[kindOf(item)]) : (item.updatedAt ? tx(deleted ? '{{date}} 归档' : '{{date}} 编辑', { date: date(item.updatedAt) }) : tx('数学作品'))}</small>
+                    </span>
+                    {view === 'list' && <span className="tbx-mw-col">{tx(KIND_LABEL[kindOf(item)])}</span>}
+                    {view === 'list' && !deleted && <span className="tbx-mw-col tbx-num">{date(item.updatedAt)}</span>}
+                  </button>
+                  {deleted && (
+                    <div className="tbx-mw-archive">
+                      <button type="button" disabled={busy} onClick={() => onRestore(item)}><Icon name="restore" size={14} strokeWidth={2} />{tx('恢复')}</button>
+                      <button type="button" className="is-danger" disabled={busy} onClick={() => onPurge(item)}>{tx('彻底删除')}</button>
+                    </div>
+                  )}
+                </article>
+              ))}
+            </div>
+          )}
+
+          {!shown.length && (
+            <div className={cx('tbx-mw-empty', starting && 'is-quiet')}>
+              <span className="tbx-mw-empty-icon">
+                {search ? <Icon name="search" size={24} strokeWidth={1.8} /> : deleted ? <Icon name="trash" size={24} strokeWidth={1.8} /> : <MathMark size={26} />}
+              </span>
+              <h3>{tx(search ? '没有找到作品' : deleted ? '没有归档作品' : starting ? '还没有作品' : '这里还是空的')}</h3>
+              <p>{tx(search ? '试试其他名称。' : deleted ? '归档的作品会放在这里，随时可以恢复。' : starting ? '从上面挑一种方式开始，做好的作品会出现在这里。' : '换个分类看看，或者新建一个作品。')}</p>
+              {search && <button type="button" className="tbx-mw-chipbtn" onClick={() => onSearch('')}>{tx('清除搜索')}</button>}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ---------- rail: what to show, ways in, the assistant ---------- */}
+      <Rail label={tx('数学工坊导航')} footer={<RailItem icon="trash" label={tx('已归档')} current={deleted} onClick={() => onDeleted(!deleted)} />}>
+        <RailSection title={tx('数学工坊')} count={known.current.all || ''}>
+          {FILTERS.map(([key, label, icon]) => (
+            <RailItem key={key} icon={icon} label={tx(label)} count={known.current[key]} current={!deleted && filter === key} onClick={() => go(key)} />
+          ))}
+        </RailSection>
+        <RailSection title={tx('导入')}>
+          <RailItem icon="upload" label={tx('导入作品')} count=".json" disabled={busy} onClick={onImportSource} />
+          <RailItem icon="link" label={tx('导入网页')} count=".html" disabled={busy} onClick={onImport} />
+        </RailSection>
+        <RailHint tone="purple" onClick={() => shell?.openPanel('assistant')}>{tx('说说想做什么，助理会帮你搭好作品。')}</RailHint>
+      </Rail>
+    </section>
+  );
 }

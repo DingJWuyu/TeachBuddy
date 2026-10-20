@@ -147,11 +147,11 @@ python3 scripts/recognition/install.py "$ocrHome"
 
 工具目录含有指向安装位置的解释器链接，迁移时应在目标位置重新执行安装器。仓库不携带权重或私有配置，也不依赖本机实验目录。MinerU 采用 Apache-2.0 加附加条款，提供第三方在线服务须在界面或公开文档中明确标识使用 MinerU；模型与第三方依赖各自保留许可。依据见 [MinerU 许可](https://github.com/opendatalab/MinerU/blob/ed50cc15bc2c9bfb00520dadfe61979866e62236/LICENSE.md)及安装清单中的固定来源。
 
-## 验证与原型
+## 验证与设计参考
 
 具体测试选择和数据隔离见[验证指南](acceptance/README.md)。全量命令不能替代当前功能的实际操作，也不要在在线实例旁盲目运行会覆盖 `dist` 或写证据的旧脚本。
 
-原型使用 `npm run prototype:sidebar`，默认 `http://localhost:4174/`。原型内数据不是产品账户或持久数据；行为入口在 `prototype/behavior/manifest.md`。
+界面参考从[设计输入](design-system/README.md)进入，完整应用为 [teachbuddy-app](design-system/teachbuddy-app/index.html)。参考文件保持只读，不作为产品构建或运行依赖；其中模拟账户、资料和回复不能用于验证真实保存。
 
 ## 正式部署
 

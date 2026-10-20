@@ -174,21 +174,21 @@ export default function GgbWorkspace({ draft, accountKey, busy, pending, status,
     finally { if (live.current) setReading(false); }
   }
   const disabled = busy || reading || !controller || !!draft.deletedAt;
-  return <div className="math-workbench wb-module math-ggb-workspace">
+  return <section className="math-workshop math-ggb-workspace">
     {children}
-    <section className="math-main math-ggb-main">
-      <header className="math-ggb-header">
-        <button className="math-return" onClick={onHome} disabled={busy || reading}><Icon name="back"/><span>{t('返回工坊')}</span></button>
-        <div className="math-ggb-document"><span className="math-ggb-kind">{t('数学画布')}</span>
-          <input className="math-work-title" aria-label={t('作品名称')} value={draft.title} maxLength={200} readOnly={!!draft.deletedAt} onChange={event => onTitle(event.target.value)}/>
+    <div className="math-ggb-main">
+      <header className="mw-heading">
+        <button className="mw-icon" aria-label={t('返回工坊')} title={t('返回工坊')} onClick={onHome} disabled={busy || reading}><Icon name="back" size={18}/></button>
+        <div className="mw-title-group"><span className="mw-module-name">{t('数学工坊')}</span>
+          <input className="mw-title" aria-label={t('作品名称')} value={draft.title} maxLength={200} readOnly={!!draft.deletedAt} onChange={event => onTitle(event.target.value)}/>
         </div>
-        <span className="math-ggb-status" role="status">{draft.deletedAt ? t('已归档') : mathStatusLabel(status)}{draft.version ? ` · ${t('版本')} ${draft.version}` : ''}</span>
-        <div className="math-ggb-actions">
-          <button className="math-icon-button" title={t('撤销')} aria-label={t('撤销')} disabled={disabled || !!pending} onClick={() => { try { controller.undo(); } catch (error) { onError(error); } }}><Icon name="back"/></button>
-          <button className="math-icon-button math-ggb-redo" title={t('重做')} aria-label={t('重做')} disabled={disabled || !!pending} onClick={() => { try { controller.redo(); } catch (error) { onError(error); } }}><Icon name="back"/></button>
-          {draft.id && <button disabled={busy || !!pending} onClick={onHistory}>{t('历史版本')}</button>}
-          <button disabled={disabled} onClick={download}>{reading ? t('正在读取画布…') : t('下载 .ggb')}</button>
-          <button className="math-primary" disabled={busy || reading || (!controller && !pending)} onClick={draft.deletedAt ? onRestore : submit}>{busy ? t('保存中') : pending ? t('确认保存结果') : draft.deletedAt ? t('恢复作品') : t('保存')}</button>
+        <span className="mw-save-state" role="status">{draft.deletedAt ? t('已归档') : mathStatusLabel(status)}{draft.version ? ` · ${t('版本')} ${draft.version}` : ''}</span>
+        <div className="mw-heading-actions">
+          <button className="mw-icon" title={t('撤销')} aria-label={t('撤销')} disabled={disabled || !!pending} onClick={() => { try { controller.undo(); } catch (error) { onError(error); } }}><Icon name="undo" size={17}/></button>
+          <button className="mw-icon" title={t('重做')} aria-label={t('重做')} disabled={disabled || !!pending} onClick={() => { try { controller.redo(); } catch (error) { onError(error); } }}><Icon name="redo" size={17}/></button>
+          {draft.id && <button className="mw-button" disabled={busy || !!pending} onClick={onHistory}>{t('历史版本')}</button>}
+          <button className="mw-button" disabled={disabled} onClick={download}><Icon name="arrowDown" size={15}/>{reading ? t('正在读取画布…') : t('下载 .ggb')}</button>
+          <button className="mw-button is-primary" disabled={busy || reading || (!controller && !pending)} onClick={draft.deletedAt ? onRestore : submit}>{busy ? t('保存中') : pending ? t('确认保存结果') : draft.deletedAt ? t('恢复作品') : t('保存')}</button>
         </div>
       </header>
       {message && <div className="math-message" role="alert">{message}</div>}
@@ -196,6 +196,6 @@ export default function GgbWorkspace({ draft, accountKey, busy, pending, status,
       {draft.deletedAt ? <div className="math-ggb-archived">{t('已归档，恢复后可继续编辑。')}</div> : <div className="math-ggb-canvas" onPointerDownCapture={interactedWithCanvas} onKeyDownCapture={interactedWithCanvas} onWheelCapture={interactedWithCanvas}>
         <GeoGebraEditor initialBase64={initialBase64.current} appName={draft.source.appName} onReady={setController} onChange={changed} onRecovery={recovered} onError={onError}/>
       </div>}
-    </section>
-  </div>;
+    </div>
+  </section>;
 }

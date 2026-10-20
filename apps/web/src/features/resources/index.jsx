@@ -14,9 +14,10 @@ import { useResourceOperations } from "./resourceOperations.js";
 import { Preview } from "./Preview.jsx";
 import { Library } from "./Library.jsx";
 import { ResourceInfo } from "./ResourceInfo.jsx";
-import { Icon } from "../workbench/chrome/icons.jsx";
-import { Popover } from "../../components/interaction/ModuleOverlays.jsx";
-import { Taxonomy, TaxonomyDialog } from "./Taxonomy.jsx";
+import { Icon } from "../../components/icons.jsx";
+import { TaxonomyDialog } from "./Taxonomy.jsx";
+import { Rail } from "../../components/ui/rail.jsx";
+import { Menu as Popover } from "../../components/ui/menu.jsx";
 import "./resources.css";
 import { ResourceDialog } from "./ResourceDialog.jsx";
 import { ModulePresence } from "../../components/interaction/ModuleMotion.jsx";
@@ -83,19 +84,19 @@ function ResourceWorkspace({
     zoom: 100,
     drafts: {},
     supplement: null,
-    libraryPanelOpen: false,
-    filtersOpen: false,
     recognitionOpen: false,
+    tagColors: {},
   });
   const sceneRef = useRef(scene);
   sceneRef.current = scene;
   const [items, setItems] = useState([]),
     [searchInfo, setSearchInfo] = useState(null),
     [allItems, setAllItems] = useState([]),
-    [tax, setTax] = useState({ version: 1, folders: [], tags: [] }),
+    [storedTax, setTax] = useState({ version: 1, folders: [], tags: [] }),
     [files, setFiles] = useState({}),
     [fileErrors, setFileErrors] = useState({}),
     [previews, setPreviews] = useState({});
+  const tax = { ...storedTax, tags: storedTax.tags.map(tag => ({ ...tag, ...(scene.tagColors?.[tag.id] ? { color: scene.tagColors[tag.id] } : {}) })) };
   const [listLoading, setListLoading] = useState(true);
   const [revision, setRevision] = useState(0);
   const [historyOpen, setHistoryOpen] = useState(false);
@@ -106,9 +107,15 @@ function ResourceWorkspace({
   const operations = useResourceOperations({
     accountKey: shell.accountKey, client, controller, sceneRef, patchScene,
     currentItem: () => allItems.find(entry => entry.id === sceneRef.current.openId),
-    onOpen: open, onClose: close, refresh,
+    onClose: close, refresh,
     onResult: ({ purpose, value }) => {
       if (purpose === "taxonomy") { setTax(value); return; }
+      if (purpose === "organize") {
+        const updates = new Map(value.items.map(item => [item.id, item]));
+        setAllItems(current => current.map(item => updates.get(item.id) ?? item));
+        setItems(current => current.map(item => updates.get(item.id) ?? item).filter(item => Boolean(item.deletedAt) === (sceneRef.current.state === "deleted")));
+        return;
+      }
       const purged = purpose === "purge";
       setAllItems(current => purged
         ? current.filter(item => item.id !== value.id)
@@ -287,27 +294,19 @@ function ResourceWorkspace({
     patchScene({
       openId: id,
       recognitionOpen: Boolean(match?.recognition),
-      libraryPanelOpen: Boolean(
-        shell.isPanelOpen && shell.panelMode === "resource-taxonomy",
-      ),
     });
-    if (shell.isPanelOpen && shell.panelMode === "resource-taxonomy")
-      shell.closePanel?.();
+
     operations.clearFeedback();
   }
   function close(removed = false) {
     opening.current++;
     patchScene({ openId: null, recognitionOpen: false });
-    if (!shell.isPanelOpen || shell.panelMode === "resource-taxonomy") {
-      if (scene.libraryPanelOpen) shell.openPanel?.("resource-taxonomy");
-      else if (shell.isPanelOpen) shell.closePanel?.();
-    }
     refresh();
     requestAnimationFrame(() => {
       if (!removed && triggerRef.current?.isConnected)
         triggerRef.current.focus();
       else
-        listRef.current?.closest(".res-library")?.querySelector("h1")?.focus();
+        listRef.current?.closest(".tbx-res")?.querySelector("h1")?.focus();
     });
   }
   function edit(patch) {
@@ -341,7 +340,7 @@ function ResourceWorkspace({
   }
   async function saveTaxonomy(input, created) {
     const before = scene.taxonomyDraft;
-    if (!(await write(`${root}/taxonomy`, input, "taxonomy"))) return;
+    if (!(await writeLibrary(`${root}/taxonomy`, input, "taxonomy"))) return;
     if (created && before.attachTo && !before.edit.item) {
       const currentItem = allItems.find(
         (entry) => entry.id === before.attachTo,
@@ -364,51 +363,15 @@ function ResourceWorkspace({
     }
     patchScene({ taxonomyDraft: null });
   }
-  const infoOpen = shell.isPanelOpen && shell.panelMode === "resource-taxonomy";
-  function toggleTools() {
-    if (infoOpen) shell.closePanel?.();
-    else shell.openPanel?.("resource-taxonomy");
+  // Information now occupies the module rail; the shell's auxiliary panel is reserved for the assistant.
+  useEffect(() => { shell.registerTools([]); }, [shell.registerTools]);
+  async function writeLibrary(path, input, purpose, method) {
+    if (purpose !== "taxonomy") return write(path, input, purpose, method);
+    const colors = Object.fromEntries(input.tags.filter(tag => tag.color).map(tag => [tag.id, tag.color]));
+    const saved = await write(path, { ...input, tags: input.tags.map(({ id, name }) => ({ id, name })) }, purpose, method);
+    if (saved) patchScene({ tagColors: colors });
+    return saved;
   }
-  useEffect(() => {
-    shell.registerTools([
-      {
-        id: "resource-taxonomy",
-        label: scene.openId ? t("资料信息") : t("文件夹与标签"),
-        render: () =>
-          scene.openId ? (
-            <ResourceInfo
-              item={item}
-              file={file}
-              draft={draft}
-              tax={tax}
-              onEdit={edit}
-              onSave={() =>
-                write(`${root}/items/${item.id}`, draft, "metadata")
-              }
-              onManage={(kind) => manageTaxonomy(kind, null, true)}
-              disabled={disabled}
-              dirty={dirty}
-            />
-          ) : (
-            <Taxonomy
-              value={tax}
-              scene={scene}
-              patchScene={patchScene}
-              disabled={disabled}
-              onManage={manageTaxonomy}
-            />
-          ),
-      },
-    ]);
-  }, [
-    shell.registerTools,
-    tax,
-    scene,
-    disabled,
-    allItems,
-    files,
-  ]);
-  useEffect(() => () => shell.registerTools([]), [shell.registerTools]);
   const breadcrumbs = [];
   let folder = tax.folders.find((f) => f.id === scene.folderId);
   while (folder) {
@@ -422,7 +385,12 @@ function ResourceWorkspace({
       : (item?.supplementPreviewFileId ?? item?.fileId);
   const page = scene.pages[previewId] ?? 1;
   return (
-    <div className="res-workspace res-ui wb-module">
+    <div className={`res-workspace res-ui wb-module${scene.openId ? " tbx-split" : ""}`}>
+      {scene.openId && <Rail label={t("资料信息")} className="res-info-rail">
+        <ResourceInfo item={item} file={file} draft={draft} tax={tax} onEdit={edit}
+          onSave={() => write(`${root}/items/${item.id}`, draft, "metadata")}
+          onManage={(kind) => manageTaxonomy(kind, null, true)} disabled={disabled} dirty={dirty} />
+      </Rail>}
       <Library
         scene={scene}
         patchScene={patchScene}
@@ -453,8 +421,8 @@ function ResourceWorkspace({
         breadcrumbs={breadcrumbs}
         onOpen={open}
         onUpload={upload}
-        onFolders={shell.openPanel ? toggleTools : null}
-        foldersOpen={infoOpen}
+        onWrite={writeLibrary}
+        onError={reportError}
         onOrganize={(action) =>
           setOrganize({
             action,
@@ -495,17 +463,6 @@ function ResourceWorkspace({
               >
                 <Icon name="arrowDown" size={16} />
                 <span>{t("下载原件")}</span>
-              </button>
-              <button
-                aria-expanded={Boolean(infoOpen)}
-                aria-label={t("资料信息")}
-                title={t("资料信息")}
-                className={`res-info-toggle${infoOpen ? " is-selected" : ""}`}
-                onClick={toggleTools}
-              >
-                <Icon name="info" size={17} />
-                <span>{t("资料信息")}</span>
-                {dirty && <span className="res-unsaved-dot" />}
               </button>
               <Popover
                 label={t("资料更多操作")}

@@ -1,3478 +1,3056 @@
-@scope (.tb-prototype) to (.wb-workspace) {
-
-:scope {
-  --tb-ink: #2d3037;
-  --tb-muted: #7c8089;
-  --tb-line: #e3e3e3;
-  --tb-soft: #f4f4f3;
-  --tb-page: #f9f9f9;
-  --tb-purple: #7963bd;
-  --tb-sidebar-width: 256px;
-  /* Top-bar brand column: fixed at the expanded sidebar width. */
-  --tb-shell-brand-column: 256px;
-  --tb-primary: #2e3137;
-  --tb-primary-foreground: #fff;
-  --tb-sidebar-foreground: #4d4d4d;
-  --tb-sidebar-accent: #f3f3f3;
-  /* The account row and the language menu rows sit one step darker than the
-   * buttons; both values are measured from the reference, not derived. */
-  --tb-account-hover: #f2f2f2;
-  --tb-primary-tint: rgb(46 49 55 / .05);
-  --tb-destructive: #dc2626;
-  --tb-sidebar-accent-foreground: #131313;
-  --tb-sidebar-border: #ededed;
-  --tb-muted-foreground-faint: #919191;
-  /* Top-bar tokens. */
-  --tb-muted-foreground: #555555;
-  --tb-brand-mark: #28272a;
-  --tb-badge-red: #fb2c36;
-  --tb-badge-amber: #fe9a00;
-  --tb-accent: #7160a7;
-  --tb-accent-tint: rgba(113, 96, 167, .1);
-  --tb-card-elevation: 0 4px 12px 0 #0000000d, 0 2px 4px -1px #00000008;
-  /* Navigation rows use compact 36px targets. */
-  --tb-row-height: 36px;
-  --tb-row-gap: 4px;
-  --tb-row-padding: 10px;
-  --tb-row-radius: 8px;
-  --tb-icon-size: 20px;
-  /* The sidebar imposes the same width on trash rows and every module row. */
-  --tb-row-width: 232px;
-  --tb-ease: cubic-bezier(.4, 0, .2, 1);
-  --tb-duration: .2s;
-  /*
-   * Drag chip. Every drag carries a 32px white disc with the dragged item's own
-   * icon instead of a full-size snapshot, so the drop target stays visible while
-   * something is over it. The disc is a real element placed by dragChip.js, which
-   * is what makes it centre on the pointer exactly; the edge and the shadow are
-   * what keep a white disc legible on a white page.
-   */
-  --tb-chip-surface: #ffffff;
-  --tb-chip-ink: #2d3037;
-  --tb-chip-edge: rgba(15, 18, 24, .12);
-  --tb-chip-size: 32px;
-  min-height: 100vh;
-  color: var(--tb-ink);
-  background: var(--tb-page);
-  font-family: "DM Sans", "Noto Sans SC", "PingFang SC", system-ui, sans-serif;
-  font-size: 16px;
-  line-height: 24px;
-}
-
-:scope *,
-:scope *::before,
-:scope *::after {
-  box-sizing: border-box;
-}
-
-.tb-account-row .tb-avatar {
-  display: grid;
-  flex: 0 0 32px;
-  width: 32px;
-  height: 32px;
-  place-items: center;
-  border-radius: 50%;
-  color: #fff;
-  background: #6d4aad;
-  font-size: 14px;
-  font-weight: 600;
-}
-
-/* Scope control typography above the shared global.css font reset. */
-:scope button,
-:scope input {
-  color: inherit;
-  font: inherit;
-}
-
-:scope button {
-  border: 0;
-  cursor: pointer;
-}
-
-/*
- * The UA stylesheet gives <button> a `1px 6px` padding that global.css never
- * resets. Every fixed-size icon button then centres its glyph inside a 20px
- * content box instead of the full 32px, which measurably nudged each top-bar icon
- * 1px right of its hover box. :where() holds this at the specificity of a bare
- * `:scope`, so any rule that declares its own padding keeps winning; that
- * is also why this must stay above every rule that does.
- */
-:scope :where(button) {
-  padding: 0;
-}
-
-:scope button:focus-visible,
-:scope input:focus-visible,
-:scope [tabindex]:focus-visible {
-  outline: 3px solid rgba(46, 49, 55, .32);
-  outline-offset: 2px;
-}
-
-.tb-icon {
-  display: block;
-  flex: none;
-}
-
-/* ------------------------------------------------------------------ top bar */
-
-.tb-topbar {
-  position: sticky;
-  z-index: 60;
-  top: 0;
-  display: grid;
-  /*
-   * The brand column is pinned, not derived from --tb-sidebar-width. The top bar
-   * is a fixed shell: collapsing the sidebar must not drag the centre nav left
-   * or clamp the brand, so this column keeps its expanded width in both states.
-   */
-  /* Keep the original five-icon track (5 * 32px + 4 * 8px) as the nav anchor. */
-  grid-template-columns: var(--tb-shell-brand-column) minmax(0, 1fr) 192px;
-  align-items: center;
-  height: 65px;
-
-  padding: 0 48px 0 18px;
-  border-bottom: 1px solid var(--tb-line);
-  background: light-dark(#fff, var(--app-surface));
-}
-
-:scope.is-sidebar-collapsed {
-  --tb-sidebar-width: 72px;
-}
-
-.tb-brand-slot,
-.tb-top-actions,
-.tb-global-nav {
-  display: flex;
-  align-items: center;
-}
-
-.tb-brand-slot {
-  min-width: 0;
-}
-
-.tb-global-nav {
-  display: flex;
-  align-items: center;
-}
-
-.tb-brand-slot {
-  min-width: 0;
-}
-
-:scope .tb-brand {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--tb-ink);
-  text-decoration: none;
-}
-
-.tb-brand-mark {
-  display: grid;
-  flex: none;
-  width: 28px;
-  height: 28px;
-  place-items: center;
-  border-radius: 6px;
-  color: #fff;
-  background: var(--tb-brand-mark);
-  font-size: 15px;
-  font-weight: 700;
-  line-height: 1;
-}
-
-:scope .tb-brand-wordmark {
-  font-size: 18px;
-  font-weight: 400;
-  line-height: 27px;
-  letter-spacing: -.36px;
-  white-space: nowrap;
-}
-
-.tb-global-nav {
-  justify-content: center;
-  gap: 4px;
-}
-
-:scope .tb-nav-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  height: 32px;
-  padding: 6px 20px;
-  border-radius: 9999px;
-  color: var(--tb-muted-foreground);
-  background: transparent;
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 20px;
-  text-decoration: none;
-  white-space: nowrap;
-  transition: background .2s var(--tb-ease), color .2s var(--tb-ease);
-}
-
-:scope .tb-nav-item:hover,
-:scope .tb-nav-item.is-open {
-  color: var(--tb-sidebar-accent-foreground);
-  background: var(--tb-sidebar-accent);
-}
-
-:scope .tb-nav-item.is-current {
-  color: var(--tb-primary-foreground);
-  background: var(--tb-ink);
-}
-
-:scope .tb-support-wrap {
-  position: relative;
-  display: inline-flex;
-}
-
-:scope .tb-support-menu {
-  position: absolute;
-  z-index: 80;
-  top: calc(100% + 8px);
-  left: 50%;
-  display: grid;
-  width: 167px;
-  gap: 0;
-  padding: 4px;
-  border: 1px solid var(--tb-line);
-  border-radius: 12px;
-  background: light-dark(#fff, var(--app-surface));
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, .1), 0 2px 4px -2px rgba(0, 0, 0, .1);
-  transform: translateX(-50%);
-  transform-origin: top center;
-  animation: tb-surface-in-centered .18s var(--tb-ease) both;
-}
-
-/*
- * The support menu is centred on its trigger with translateX(-50%), so it cannot
- * use the shared reveal: a keyframe's transform replaces the element's own while
- * the animation runs, and would drop the centring for its whole duration. This
- * variant carries the -50% through both ends of the motion.
- */
-@keyframes tb-surface-in-centered {
-  from {
-    opacity: 0;
-    transform: translateX(-50%) scale(.96) translateY(-4px);
+/* Workbench account controls and global surfaces. */
+  .wb-shell.tb-prototype .tb-account-row .tb-avatar {
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
   }
-  to {
-    opacity: 1;
+  .wb-shell.tb-prototype .tb-icon {
+    display: block;
+    flex: none;
+  }
+  .wb-shell.tb-prototype .tb-support-wrap {
+    display: inline-flex;
+  }
+  .wb-shell.tb-prototype .tb-support-menu {
+    position: absolute;
+    z-index: 80;
+    top: calc(100% + 8px);
+    left: 50%;
+    display: grid;
+    width: 167px;
+    gap: 0;
+    padding: 4px;
+    border: 1px solid var(--tb-line);
+    border-radius: 14px;
+    background: light-dark(#fff, var(--app-surface));
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, .1), 0 2px 4px -2px rgba(0, 0, 0, .1);
     transform: translateX(-50%);
+    transform-origin: top center;
+    animation: tb-surface-in-centered .18s var(--tb-ease) both;
   }
-}
-
-:scope .tb-support-menu [role="menuitem"] {
-  display: flex;
-  width: 100%;
-  height: 30px;
-  align-items: center;
-  gap: 10px;
-  padding: 6px 12px;
-  border-radius: 8px;
-  color: var(--tb-ink);
-  background: transparent;
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 20px;
-  text-align: left;
-  white-space: nowrap;
-  text-decoration: none;
-}
-
-/*
- * The panel hangs 8px below its trigger. Without this bridge the pointer crosses
- * space that belongs to neither, the wrapper fires pointerleave, and the menu
- * unmounts before the pointer can reach the item it was heading for. It lives on
- * the panel rather than the wrapper so it exists only while the menu is open and
- * cannot sit over the page swallowing presses when it is closed.
- */
-:scope .tb-support-menu::before {
-  position: absolute;
-  bottom: 100%;
-  left: 0;
-  right: 0;
-  height: 8px;
-  content: '';
-}
-
-:scope .tb-support-menu [role="menuitem"]:hover {
-  background: var(--tb-sidebar-accent);
-}
-
-/*
- * The chevron flips up while the menu is showing. It rotates left rather than
- * right so the motion reads as the arrow tipping over, not spinning.
- */
-:scope .tb-support-wrap .tb-nav-item > svg {
-  transition: transform .25s var(--tb-ease);
-}
-
-:scope .tb-support-wrap:hover .tb-nav-item > svg,
-:scope .tb-support-wrap .tb-nav-item.is-open > svg {
-  transform: rotate(-180deg);
-}
-
-.tb-top-actions {
-  justify-self: end;
-  width: max-content;
-  justify-content: flex-end;
-  gap: 8px;
-}
-
-:scope .tb-entry-wrap {
-  position: relative;
-  display: inline-flex;
-}
-
-:scope .tb-entry {
-  position: relative;
-  display: grid;
-  width: 32px;
-  height: 32px;
-  place-items: center;
-  border-radius: 6px;
-  color: var(--tb-muted-foreground);
-  background: transparent;
-  transition: background .14s ease, color .14s ease;
-}
-
-:scope .tb-entry:hover,
-:scope .tb-entry[aria-expanded="true"] {
-  color: var(--tb-sidebar-accent-foreground);
-  background: var(--tb-sidebar-accent);
-}
-
-/*
- * Hidden on desktop; revealed by the narrow-screen media query below. It must
- * stay at the same specificity as the shared entry rule, or the desktop
- * display:none loses and the hamburger leaks into the desktop top bar.
- */
-:scope .tb-mobile-menu {
-  display: none;
-  width: 32px;
-  height: 32px;
-  place-items: center;
-  border-radius: 6px;
-  color: var(--tb-muted-foreground);
-  background: transparent;
-}
-
-:scope .tb-mobile-menu:hover {
-  color: var(--tb-sidebar-accent-foreground);
-  background: var(--tb-sidebar-accent);
-}
-
-/* Absolute positioning keeps the collapse control out of the topbar grid's row sizing. */
-:scope .tb-sidebar-toggle {
-  position: absolute;
-  z-index: 2;
-  top: 50%;
-  /* Anchored to the pinned brand column, so it stays put when the sidebar
-   * collapses: this control lives in the top bar, and the top bar is fixed. */
-  left: calc(var(--tb-shell-brand-column) - 36px);
-  display: grid;
-  width: 32px;
-  height: 32px;
-  place-items: center;
-  border-radius: 6px;
-  color: var(--tb-sidebar-foreground);
-  background: transparent;
-  font-size: 14px;
-  opacity: 0;
-  pointer-events: none;
-  transform: translateY(-50%);
-  transition: left var(--tb-duration) var(--tb-ease), opacity .14s ease, background .14s ease;
-}
-
-.tb-topbar:hover .tb-sidebar-toggle,
-.tb-sidebar-toggle:focus-visible {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-:scope .tb-sidebar-toggle:hover {
-  background: var(--tb-sidebar-accent);
-}
-
-.tb-badge {
-  position: absolute;
-  top: -2px;
-  right: -1px;
-  display: grid;
-  min-width: 16px;
-  height: 16px;
-  padding: 0 4px;
-  place-items: center;
-  border-radius: 9999px;
-  color: #fff;
-  font-size: 10px;
-  font-weight: 600;
-  line-height: 1;
-}
-
-.tb-badge.is-red { background: var(--tb-badge-red); }
-.tb-badge.is-amber { background: var(--tb-badge-amber); }
-
-/*
- * Tooltip: the same component as the collapsed rail tooltip, placed 18px below a
- * 32px trigger so it lands just under the 65px bar. It appears only after a
- * delay, hides at once, and never intercepts the pointer.
- */
-:scope .tb-tooltip {
-  position: absolute;
-  z-index: 90;
-  top: calc(100% + 18px);
-  left: 50%;
-  padding: 6px 12px;
-  border-radius: 6px;
-  color: var(--tb-page);
-  background: var(--tb-ink);
-  font-size: 12px;
-  line-height: 16px;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transform: translateX(-50%);
-  transition: opacity .08s ease;
-}
-
-:scope .tb-entry-wrap:hover .tb-tooltip,
-:scope .tb-entry:focus-visible + .tb-tooltip {
-  opacity: 1;
-  transition-delay: .4s;
-}
-
-/*
- * The last entry sits closest to the viewport edge, where a centred tooltip
- * would push the document's scroll width past the viewport even while invisible.
- * Right-aligning it keeps the bar free of horizontal overflow at every width.
- */
-:scope .tb-top-actions .tb-entry-wrap:last-child .tb-tooltip {
-  left: auto;
-  right: 0;
-  transform: none;
-}
-
-/*
- * First-run coach mark: a one-shot bubble pointing at the tutorial entry. The
- * caret is offset so it lines up with the trigger's centre rather than the
- * bubble's, which sits 8px wider than the 32px trigger.
- */
-:scope .tb-coach {
-  position: absolute;
-  z-index: 95;
-  top: calc(100% + 14px);
-  animation: tb-coach-rise .34s cubic-bezier(.2, .7, .3, 1) .3s both;
-  right: -8px;
-  display: flex;
-  width: 244px;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 14px;
-  border: 1px solid var(--tb-line);
-  border-radius: 12px;
-  background: light-dark(#fff, var(--app-surface));
-  box-shadow: var(--tb-card-elevation);
-  transform-origin: top right;
-}
-
-/* The coach mark already rose into place; it grows on the same anchor as every
- * other top-bar surface so first-run and normal reveals share one grammar. */
-@keyframes tb-coach-rise {
-  from { opacity: 0; transform: translateY(8px) scale(.96); }
-  to { opacity: 1; transform: none; }
-}
-
-.tb-coach-caret {
-  position: absolute;
-  top: -5px;
-  right: 20px;
-  width: 8px;
-  height: 8px;
-  border-top: 1px solid var(--tb-line);
-  border-left: 1px solid var(--tb-line);
-  background: light-dark(#fff, var(--app-surface));
-  transform: rotate(45deg);
-}
-
-:scope .tb-coach p {
-  flex: 1 1 100%;
-  margin: 0;
-  color: var(--tb-ink);
-  font-size: 14px;
-  line-height: 20px;
-}
-
-:scope .tb-coach-dismiss {
-  margin-left: auto;
-  padding: 4px 10px;
-  border-radius: 9999px;
-  color: var(--tb-accent);
-  background: var(--tb-accent-tint);
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 16px;
-}
-
-/*
- * First-run spotlight. The scrim is a sibling of .tb-top-actions, and the coached
- * wrapper is lifted above it, so the tutorial entry (and its panel and bubble,
- * which live in the same wrapper) stay lit while everything else dims. The scrim
- * also swallows pointer presses, so the guide cannot be clicked past.
- */
-/*
- * Entrance is staged rather than instant: the page dims first, the entry lights
- * up out of a slight shrink, and only then does the sentence rise into place.
- * Every stage uses `both` so its opening frame also holds before it starts,
- * which is what stops the bubble flashing at full opacity before it animates.
- */
-.tb-coach-scrim {
-  position: fixed;
-  z-index: 94;
-  inset: 0;
-  background: rgba(0, 0, 0, .5);
-  animation: tb-coach-dim .24s ease-out both;
-}
-
-@keyframes tb-coach-dim {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.tb-entry-wrap.is-coached {
-  z-index: 96;
-}
-
-.tb-entry-wrap.is-coached .tb-entry {
-  color: var(--tb-ink);
-  background: light-dark(#fff, var(--app-surface));
-  animation: tb-coach-light .42s cubic-bezier(.2, .7, .3, 1) .06s both;
-}
-
-@keyframes tb-coach-light {
-  from { transform: scale(.84); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
-  to { transform: scale(1); box-shadow: 0 0 0 4px rgba(255, 255, 255, .55); }
-}
-
-/* ------------------------------------------------------------- celebration */
-
-.tb-celebration {
-  position: fixed;
-  z-index: 300;
-  inset: 0;
-  display: grid;
-  place-items: center;
-}
-
-.tb-celebration-scrim {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, .55);
-}
-
-.tb-celebration-sky {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.tb-firework {
-  position: absolute;
-  width: 0;
-  height: 0;
-}
-
-/* Flash at the burst origin, so a firework reads even before its sparks travel. */
-.tb-firework::after {
-  position: absolute;
-  width: 0;
-  height: 0;
-  border-radius: 9999px;
-  box-shadow: 0 0 26px 7px currentColor;
-  opacity: 0;
-  content: '';
-  animation: tb-firework-flash 1.8s ease-out var(--tb-flash-delay) infinite;
-}
-
-@keyframes tb-firework-flash {
-  0% { opacity: .85; transform: scale(.3); }
-  30% { opacity: 0; transform: scale(2.6); }
-  100% { opacity: 0; transform: scale(2.6); }
-}
-
-.tb-firework-particle {
-  position: absolute;
-  width: 7px;
-  height: 7px;
-  margin: -3.5px 0 0 -3.5px;
-  border-radius: 9999px;
-  background: currentColor;
-  box-shadow: 0 0 8px currentColor;
-  /*
-   * Invisible until its own delay elapses. Without this the default opacity of 1
-   * applies during the delay, so a not-yet-started burst shows every particle
-   * stacked on the origin and the whole effect collapses to one dot per burst.
-   */
-  opacity: 0;
-  animation: tb-firework 1.8s cubic-bezier(.2, .7, .3, 1) var(--tb-delay) infinite;
-}
-
-@keyframes tb-firework {
-  0% { opacity: 0; transform: rotate(var(--tb-angle)) translateX(0) scale(.35); }
-  8% { opacity: 1; }
-  55% { opacity: 1; }
-  100% { opacity: 0; transform: rotate(var(--tb-angle)) translateX(var(--tb-distance)) scale(1); }
-}
-
-.tb-celebration-card {
-  position: relative;
-  display: grid;
-  justify-items: center;
-  gap: 6px;
-  width: 380px;
-  padding: 28px 28px 24px;
-  border-radius: 16px;
-  background: light-dark(#fff, var(--app-surface));
-  box-shadow: var(--tb-card-elevation);
-  text-align: center;
-}
-
-.tb-celebration-mark {
-  display: grid;
-  width: 48px;
-  height: 48px;
-  place-items: center;
-  border-radius: 9999px;
-  color: #fff;
-  background: var(--tb-badge-amber);
-}
-
-:scope .tb-celebration-card h2 {
-  margin: 6px 0 0;
-  color: var(--tb-ink);
-  font-size: 18px;
-  font-weight: 600;
-  line-height: 26px;
-}
-
-:scope .tb-celebration-card p {
-  margin: 0 0 14px;
-  color: var(--tb-muted-foreground);
-  font-size: 14px;
-  line-height: 20px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .tb-firework-particle,
-  .tb-firework::after {
-    animation: none;
-    opacity: 0;
+  @keyframes tb-surface-in-centered {
+    from {
+      opacity: 0;
+      transform: translateX(-50%) scale(.96) translateY(-4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(-50%);
+    }
   }
-
-  /* Skip the staged entrance and land on the settled state immediately. */
-  .tb-coach-scrim,
-  .tb-entry-wrap.is-coached .tb-entry,
-  :scope .tb-coach,
-  .tb-page {
-    animation: none;
-  }
-
-  /*
-   * A progressive reveal is motion, so it is dropped rather than shortened. The
-   * surfaces still appear; they simply arrive with the panel already at rest.
-   */
-  :scope .tb-popover,
-  :scope .tb-support-menu,
-  :scope .tb-search-panel,
-  .tb-notification.is-read .tb-row-text::after,
-  .tb-notification:not(.is-read) .tb-row-text::after,
-  .tb-module-collapse {
-    animation: none;
-    transition: none;
-  }
-}
-
-/* -------------------------------------------------------- entry surfaces */
-
-/*
- * Anchored popovers line up with their trigger's right edge and start 8px below
- * a 32px trigger, both measured. Panel chrome is the card elevation token plus a
- * 1px #e3e3e3 hairline, and the padding is 16px 20px, which the measured title
- * and textarea positions both confirm.
- */
-:scope .tb-popover {
-  position: absolute;
-  z-index: 80;
-  top: calc(100% + 8px);
-  right: 0;
-  padding: 16px 20px;
-  border: 1px solid var(--tb-line);
-  border-radius: 12px;
-  background: light-dark(#fff, var(--app-surface));
-  box-shadow: var(--tb-card-elevation);
-  transform-origin: top right;
-  animation: tb-surface-in .18s var(--tb-ease) both;
-}
-
-/*
- * Progressive reveal for every surface that appears over the shell. A popover
- * that snaps into existence reads as a jump cut; growing it from its own anchor
- * gives the eye a direction to follow. Surfaces anchored to the right grow from
- * their top-right corner, the centred support menu from its top centre, and the
- * centred modals keep a centred origin, so each one unfolds the way it hangs.
- */
-@keyframes tb-surface-in {
-  from {
-    opacity: 0;
-    transform: scale(.96) translateY(-4px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-:scope .tb-popover h2 {
-  margin: 0;
-  color: var(--tb-ink);
-  font-size: 16px;
-  font-weight: 600;
-  line-height: 24px;
-}
-
-.tb-popover-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-:scope .tb-popover-desc {
-  margin: 2px 0 0;
-  color: var(--tb-muted-foreground);
-  font-size: 12px;
-  line-height: 18px;
-}
-
-:scope .tb-popover-action {
-  flex: none;
-  padding: 0;
-  color: var(--tb-accent);
-  background: transparent;
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 18px;
-  white-space: nowrap;
-}
-
-:scope .tb-popover-action:hover {
-  text-decoration: underline;
-}
-
-.tb-popover-list {
-  display: grid;
-  margin-top: 12px;
-}
-
-:scope .tb-row {
-  display: flex;
-  width: 100%;
-  height: 36px;
-  align-items: center;
-  /*
-   * No side padding. The row fills the panel's content box on purpose, so its
-   * hover tint and its icon column line up with the panel edge and with every
-   * other row. The trailing meta text gets its breathing room from its own
-   * margin instead, which is added below.
-   */
-  padding: 0;
-  border-radius: 6px;
-  color: var(--tb-muted-foreground);
-  background: transparent;
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 20px;
-  text-align: left;
-}
-
-:scope .tb-row:hover {
-  background: var(--tb-sidebar-accent);
-}
-
-.tb-row-check {
-  display: grid;
-  flex: none;
-  width: 18px;
-  height: 18px;
-  margin-right: 8px;
-  place-items: center;
-  border: 1px solid var(--tb-line);
-  border-radius: 5px;
-  color: #fff;
-}
-
-:scope .tb-row.is-done .tb-row-check {
-  border-color: transparent;
-  background: var(--tb-badge-amber);
-}
-
-.tb-row-icon {
-  display: grid;
-  flex: none;
-  width: 24px;
-  height: 24px;
-  margin-right: 12px;
-  place-items: center;
-  border-radius: 6px;
-  background: var(--tb-sidebar-accent);
-}
-
-.tb-row-label {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.tb-row-meta {
-  flex: none;
-  margin-left: 8px;
-  /*
-   * Trailing room. Without it the last thing in the row, which is this meta
-   * text, sits flush against the row's edge and reads as clipped by it. The row
-   * itself keeps padding 0 so its hover tint still spans the panel.
-   */
-  margin-right: 10px;
-  color: var(--tb-muted-foreground-faint);
-  font-size: 12px;
-  line-height: 16px;
-}
-
-:scope .tb-row.is-unread .tb-row-label {
-  color: var(--tb-sidebar-accent-foreground);
-  font-weight: 500;
-}
-/*
- * Unread rows carry the emphasis: dark ink at weight 500 against the muted
- * weight-400 body. Read ones keep the label in place behind a rule rather than
- * dimming it, because the rule is what the user just asked for and it has to
- * stay readable enough to recognise which message they struck out.
- */
-:scope .tb-notification {
-  cursor: pointer;
-}
-
-:scope .tb-notification:not(.is-read) .tb-row-label {
-  color: var(--tb-sidebar-accent-foreground);
-  font-weight: 500;
-}
-
-/* The dragged row fades while its chip follows the pointer, which is the only
- * feedback that the removal is still pending rather than already done. */
-:scope .tb-notification.is-dragging {
-  background: var(--tb-sidebar-accent);
-  cursor: grabbing;
-}
-
-/*
- * Read marks. The rule is a pseudo-element rather than a text-decoration because
- * a decoration cannot be animated: it would appear at full width in one frame.
- * Drawing it from scaleX(0) makes the line cross the label, and the unread
- * direction reuses the same transition so the line retracts instead of blinking
- * out.
- *
- * The measured element is the label span, not the flex label box: the box takes
- * all the row's leftover width, and a rule across that would run through empty
- * space well past the end of the message.
- */
-.tb-notification .tb-row-text {
-  position: relative;
-  display: inline-block;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  vertical-align: bottom;
-}
-
-.tb-notification .tb-row-text::after {
-  position: absolute;
-  top: calc(50% - .5px);
-  left: 0;
-  width: 100%;
-  height: 1px;
-  background: currentColor;
-  content: "";
-  transform: scaleX(0);
-  transform-origin: left center;
-  transition: transform .28s var(--tb-ease);
-}
-
-.tb-notification.is-read .tb-row-label {
-  color: var(--tb-muted);
-}
-
-.tb-notification.is-read .tb-row-text::after {
-  transform: scaleX(1);
-}
-
-/*
- * The trash lives at the foot of the notification list and is always drawn, so
- * the delete affordance is discoverable before anything is being dragged. It
- * reacts only once a read notification is over it: the icon goes red and swells,
- * which is the confirmation that releasing here will remove the message.
- */
-.tb-notification-trash {
-  display: flex;
-  height: 36px;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 8px;
-  border-top: 1px solid var(--tb-line);
-  padding-top: 12px;
-  margin-bottom: -4px;
-  color: var(--tb-muted-foreground-faint);
-  font-size: 12px;
-  line-height: 18px;
-  transition: color var(--tb-duration) var(--tb-ease);
-}
-
-.tb-notification-trash-icon {
-  display: grid;
-  place-items: center;
-  transition: color .18s var(--tb-ease), transform .18s cubic-bezier(.2, .8, .3, 1.4);
-}
-
-.tb-popover-notifications.is-over-trash .tb-notification-trash {
-  color: #d92d20;
-}
-
-.tb-popover-notifications.is-over-trash .tb-notification-trash-icon {
-  color: #d92d20;
-  transform: scale(1.28);
-}
-
-:scope .tb-popover-tutorial,
-:scope .tb-popover-notifications {
-  width: 320px;
-}
-
-:scope .tb-progress {
-  display: flex;
-  align-items: center;
-  gap: 13px;
-  margin-top: 8px;
-}
-
-.tb-progress-track {
-  flex: 1;
-  min-width: 0;
-  height: 6px;
-  overflow: hidden;
-  border-radius: 9999px;
-  background: var(--tb-sidebar-accent);
-}
-
-.tb-progress-fill {
-  display: block;
-  height: 100%;
-  border-radius: 9999px;
-  background: var(--tb-badge-amber);
-  transition: width .3s var(--tb-ease);
-}
-
-:scope .tb-progress-label {
-  flex: none;
-  color: var(--tb-muted-foreground);
-  font-size: 12px;
-  line-height: 18px;
-}
-
-.tb-popover-empty {
-  display: grid;
-  justify-items: center;
-  gap: 6px;
-  padding: 20px 0 8px;
-  color: var(--tb-muted-foreground-faint);
-  text-align: center;
-}
-
-:scope .tb-popover-empty p {
-  margin: 0;
-  font-size: 12px;
-  line-height: 18px;
-}
-
-/* Feedback: 540px wide, and the vertical rhythm is 16 + title 24 + 10 + body
- * 105 + 14 + footer 36 + 16, which reproduces the measured 222px panel. */
-:scope .tb-popover-feedback {
-  width: 540px;
-}
-
-.tb-feedback-types {
-  display: flex;
-  flex: none;
-  gap: 6px;
-}
-
-:scope .tb-chip {
-  height: 24px;
-  padding: 4px 10px;
-  border-radius: 9999px;
-  color: var(--tb-muted-foreground);
-  background: var(--tb-page);
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 16px;
-  white-space: nowrap;
-}
-
-/* Each type owns a colour while selected; the rest stay grey. */
-:scope .tb-chip.is-current {
-  color: var(--tb-chip-color, var(--tb-accent));
-  background: var(--tb-chip-tint, var(--tb-accent-tint));
-}
-
-:scope .tb-feedback-body {
-  display: block;
-  width: 100%;
-  height: 105px;
-  margin-top: 10px;
-  padding: 12px 16px;
-  border: 0;
-  border-radius: 8px;
-  color: var(--tb-sidebar-accent-foreground);
-  background: var(--tb-page);
-  font-family: inherit;
-  font-size: 14px;
-  line-height: 20px;
-  resize: none;
-}
-
-.tb-feedback-foot {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  margin-top: 14px;
-}
-
-:scope .tb-feedback-hint {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin: 0;
-  color: var(--tb-muted-foreground-faint);
-  font-size: 11px;
-  line-height: 16px;
-}
-
-:scope .tb-feedback-hint kbd {
-  padding: 2px 4px;
-  border-radius: 4px;
-  background: var(--tb-sidebar-accent);
-  font-family: inherit;
-  font-size: 10px;
-  line-height: 15px;
-}
-
-:scope .tb-button-primary {
-  height: 36px;
-  padding: 0 20px;
-  border-radius: 9999px;
-  color: var(--app-on-primary);
-  background: var(--tb-ink);
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 20px;
-}
-
-:scope .tb-button-primary:disabled {
-  background: #96989b;
-  cursor: not-allowed;
-}
-
-.tb-feedback-sent {
-  display: grid;
-  justify-items: center;
-  gap: 6px;
-  padding: 12px 20px 16px;
-  text-align: center;
-}
-/*
- * Sent state. It now holds a mark and a single line, so the rhythm is the mark's
- * own disc, a slightly wider 14px gap and the heading, with equal padding above
- * and below: an acknowledgement that lands centred and even rather than crowded
- * against one edge.
- */
-.tb-feedback-sent {
-  display: grid;
-  justify-items: center;
-  gap: 14px;
-  padding: 18px 20px 20px;
-  text-align: center;
-}
-
-.tb-feedback-sent-mark {
-  display: grid;
-  width: 40px;
-  height: 40px;
-  place-items: center;
-  border-radius: 9999px;
-  color: #fff;
-  background: var(--tb-badge-amber);
-}
-
-:scope .tb-feedback-sent p {
-  margin: 0;
-  color: var(--tb-muted-foreground);
-  font-size: 12px;
-  line-height: 18px;
-}:scope .tb-feedback-sent h2 {
-  font-weight: 600;
-}
-
-/* Same dismiss grammar as the coach mark: a quiet tinted pill, so the
- * acknowledgement ends on a control rather than on an open edge. */
-:scope .tb-feedback-dismiss {
-  padding: 6px 14px;
-  border-radius: 9999px;
-  color: var(--tb-accent);
-  background: var(--tb-accent-tint);
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 18px;
-}
-
-:scope .tb-popover-privacy {
-  display: flex;
-  width: max-content;
-  align-items: center;
-  gap: 14px;
-  border-radius: 16px;
-}
-
-:scope .tb-popover-privacy h2 {
-  font-weight: 800;
-}
-
-.tb-privacy-mark {
-  display: grid;
-  flex: none;
-  width: 28px;
-  height: 28px;
-  place-items: center;
-  border-radius: 9999px;
-  color: #5a4a9a;
-  background: light-dark(#eee9fb, var(--app-soft));
-}
-
-/* Search: a viewport-centred 512px modal over a 50% scrim, with no shadow on the
- * panel and the page colour as its background rather than white. */
-.tb-search-layer {
-  position: fixed;
-  z-index: 200;
-  inset: 0;
-  display: grid;
-  place-items: center;
-}
-
-.tb-search-backdrop {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, .5);
-}
-
-.tb-search-panel {
-  position: relative;
-  width: 512px;
-  max-width: calc(100vw - 32px);
-  overflow: hidden;
-  border: 1px solid var(--tb-line);
-  border-radius: 8px;
-  background: var(--tb-page);
-  animation: tb-surface-in .18s var(--tb-ease) both;
-}
-
-.tb-search-input-row {
-  display: flex;
-  height: 48px;
-  align-items: center;
-  gap: 8px;
-  padding: 0 8px 0 15px;
-  color: var(--tb-muted-foreground);
-  background: light-dark(#fff, var(--app-surface));
-}
-
-:scope .tb-search-input {
-  flex: 1;
-  min-width: 0;
-  padding: 12px 0;
-  border: 0;
-  color: var(--tb-sidebar-accent-foreground);
-  background: transparent;
-  font-size: 14px;
-  line-height: 20px;
-  outline: none;
-}
-
-:scope .tb-search-input:focus-visible {
-  outline: none;
-}
-
-:scope .tb-search-input::placeholder {
-  color: var(--tb-muted-foreground-faint);
-}
-
-:scope .tb-search-close {
-  display: grid;
-  flex: none;
-  width: 32px;
-  height: 32px;
-  place-items: center;
-  border-radius: 6px;
-  color: var(--tb-muted-foreground);
-  background: transparent;
-}
-
-:scope .tb-search-close:hover {
-  background: var(--tb-sidebar-accent);
-}
-
-.tb-search-results {
-  max-height: 320px;
-  overflow-y: auto;
-}
-
-.tb-search-group-label {
-  height: 28px;
-  padding: 6px 8px;
-  color: var(--tb-muted-foreground);
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 16px;
-}
-
-:scope .tb-search-item {
-  text-decoration: none;
-  display: flex;
-  width: 100%;
-  height: 36px;
-  align-items: center;
-  gap: 8px;
-  padding: 0 8px 0 16px;
-  color: var(--tb-sidebar-accent-foreground);
-  background: light-dark(#fff, var(--app-surface));
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 20px;
-  text-align: left;
-}
-
-:scope .tb-search-item.is-active {
-  background: var(--tb-sidebar-accent);
-}
-
-.tb-search-dot {
-  flex: none;
-  width: 12px;
-  height: 12px;
-  border-radius: 9999px;
-}
-
-.tb-search-item-name {
-  flex: none;
-}
-
-.tb-search-item-hint {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  color: var(--tb-muted-foreground-faint);
-  font-size: 12px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.tb-search-empty {
-  display: grid;
-  justify-items: center;
-  gap: 4px;
-  padding: 24px 20px 28px;
-  color: var(--tb-muted-foreground-faint);
-  text-align: center;
-}
-
-:scope .tb-search-empty p {
-  margin: 0;
-  color: var(--tb-ink);
-  font-size: 14px;
-  line-height: 20px;
-}
-
-:scope .tb-search-empty span {
-  font-size: 12px;
-  line-height: 18px;
-}
-
-/*
- * Grid-template-columns is animatable, so this transition drives the sidebar
- * width and the content reflow together. The top bar carries the matching
- * transition on its own first column.
- */
-.tb-shell {
-  display: grid;
-  grid-template-columns: var(--tb-sidebar-width) minmax(0, 1fr);
-  min-height: calc(100vh - 65px);
-  transition: grid-template-columns var(--tb-duration) var(--tb-ease);
-}
-
-/*
- * The page body. Navigation replaces this element and nothing else, so the top
- * bar and the sidebar are never rebuilt: no reload, no white frame, and no loss
- * of anything the session is holding.
- *
- * The entrance is opacity only. A transform here would move the content under
- * the pointer on every page change, and the shell is dense enough that a small
- * slide reads as a jolt rather than as an arrival.
- */
-.tb-page {
-  display: grid;
-  min-width: 0;
-  min-height: 100%;
-  animation: tb-page-in .16s var(--tb-ease) both;
-}
-
-@keyframes tb-page-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.tb-sidebar {
-  position: sticky;
-  z-index: 40;
-  top: 65px;
-  display: flex;
-  min-width: 0;
-  height: calc(100vh - 65px);
-  flex-direction: column;
-  border-right: 0;
-  background: light-dark(#fff, var(--app-surface));
-}
-
-.tb-sidebar-mobile-head {
-  display: none;
-}
-
-:scope .tb-account-block {
-  position: relative;
-  display: flex;
-  align-items: flex-start;
-  /* 20px above the row plus the row's own 4px top padding and 12px below it,
-   * matching the reference head block's 56px account row. */
-  height: 56px;
-  padding-top: 4px;
-  margin: 20px 0 0;
-}
-
-:scope .tb-account-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 183px;
-  height: 40px;
-  margin: 0 0 0 16px;
-  padding: 4px;
-  border-radius: 6px;
-  color: inherit;
-  background: transparent;
-  text-align: left;
-  text-decoration: none;
-  transition: background-color .15s var(--tb-ease);
-}
-
-:scope .tb-account-row:hover {
-  background: var(--tb-account-hover);
-}
-
-:scope .tb-account-name {
-  min-width: 0;
-  overflow: hidden;
-  margin: 0;
-  color: var(--tb-ink);
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 20px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* Sits at the right end of the account row, vertically centred against the
- * 40px row: 4px block padding + 4px centring. */
-:scope .tb-language-row {
-  position: absolute;
-  top: 8px;
-  right: 20px;
-  display: flex;
-  width: 32px;
-  height: 32px;
-  align-items: center;
-  justify-content: center;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  border-radius: 6px;
-  color: var(--tb-sidebar-foreground);
-  background: transparent;
-  transition: background-color .15s var(--tb-ease);
-}
-
-:scope .tb-language-row:hover,
-:scope .tb-term-button:hover,
-:scope .tb-semester-option:hover,
-:scope .tb-semester-create:hover {
-  background: var(--tb-sidebar-accent);
-}
-
-/* The current language rides the globe's bottom-right corner and overhangs it
- * by 2px, ringed in white so it stays legible against the icon. */
-:scope .tb-language-flag {
-  position: absolute;
-  right: -2px;
-  bottom: -2px;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  box-shadow: 0 0 0 2px light-dark(#fff, var(--app-line-soft));
-}
-
-:scope .tb-language-menu {
-  position: absolute;
-  z-index: 60;
-  top: 44px;
-  left: 0;
-  display: flex;
-  width: 100%;
-  max-height: 321px;
-  flex-direction: column;
-  overflow-y: auto;
-  border: 1px solid rgb(0 0 0 / .06);
-  border-radius: 12px;
-  background: light-dark(#fff, var(--app-surface));
-  box-shadow: 0 10px 15px -3px rgb(0 0 0 / .1), 0 4px 6px -4px rgb(0 0 0 / .1);
-  animation: tb-grow-in .18s var(--tb-ease) both;
-  transform-origin: 100% 0;
-}
-
-:scope .tb-language-option {
-  display: flex;
-  flex: 0 0 auto;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  padding: 12px 16px;
-  border: 0;
-  border-bottom: 1px solid rgb(0 0 0 / .06);
-  color: var(--tb-ink);
-  background: transparent;
-  cursor: pointer;
-  font-size: 14px;
-  text-align: left;
-  transition: background-color .15s var(--tb-ease);
-}
-
-:scope .tb-language-option:last-child {
-  border-bottom: 0;
-}
-
-:scope .tb-language-option:hover {
-  background: var(--tb-account-hover);
-}
-
-:scope .tb-language-option-flag {
-  width: 24px;
-  height: 24px;
-  flex: 0 0 auto;
-  border-radius: 50%;
-}
-
-:scope .tb-language-option-name {
-  display: flex;
-  flex: 1 1 auto;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 6px;
-  min-width: 0;
-}
-
-:scope .tb-language-native {
-  font-weight: 500;
-}
-
-:scope .tb-language-english {
-  color: var(--tb-muted);
-  font-weight: 400;
-}
-
-:scope .tb-language-check {
-  flex: 0 0 auto;
-  color: var(--tb-primary);
-}
-
-:scope .tb-term-button {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  width: calc(100% - 24px);
-  height: 36px;
-  margin: 4px 12px 0;
-  padding: 0 10px;
-  border: 0;
-  border-radius: 6px;
-  color: var(--tb-sidebar-foreground);
-  background: light-dark(#fff, var(--app-surface));
-  box-shadow: 0 1px 2px rgb(0 0 0 / .05);
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 20px;
-  text-align: left;
-  transition: background-color .15s var(--tb-ease);
-}
-
-:scope .tb-term-name {
-  flex: 1 1 auto;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-:scope .tb-term-tooltip {
-  position: absolute;
-  bottom: calc(100% + 10px);
-  left: 50%;
-  z-index: 70;
-  padding: 6px 12px;
-  transform: translateX(-50%);
-  border-radius: 6px;
-  color: var(--tb-page);
-  background: var(--tb-ink);
-  font-size: 12px;
-  font-weight: 400;
-  line-height: 14px;
-  white-space: nowrap;
-  pointer-events: none;
-}
-
-/* Caret pointing down at the trigger. */
-:scope .tb-term-tooltip::after {
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  width: 8px;
-  height: 4px;
-  transform: translateX(-50%);
-  background: var(--tb-ink);
-  clip-path: polygon(50% 100%, 0 0, 100% 0);
-  content: "";
-}
-
-:scope .tb-semester-popover {
-  position: absolute;
-  z-index: 60;
-  top: calc(100% + 4px);
-  left: 12px;
-  /* The wrapper is exactly as tall as the button, so 100% is the button's
-   * bottom edge and the popover opens 4px under it. */
-  width: 280px;
-  max-width: calc(100vw - 24px);
-  max-height: calc(100dvh - 200px);
-  overflow-y: auto;
-  border: 1px solid rgb(0 0 0 / .06);
-  border-radius: 6px;
-  background: light-dark(#fff, var(--app-surface));
-  box-shadow: 0 10px 15px -3px rgb(0 0 0 / .1), 0 4px 6px -4px rgb(0 0 0 / .1);
-  animation: tb-grow-in .18s var(--tb-ease) both;
-  transform-origin: 0 0;
-}
-
-:scope .tb-term-wrap {
-  position: relative;
-  display: block;
-}
-
-:scope .tb-semester-list {
-  display: grid;
-  gap: 2px;
-  padding: 8px;
-}
-
-:scope .tb-semester-option {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 10px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color .15s var(--tb-ease);
-}
-
-:scope .tb-semester-option-body {
-  display: grid;
-  flex: 1 1 auto;
-  gap: 2px;
-  min-width: 0;
-}
-
-:scope .tb-semester-option-name {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--tb-ink);
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 20px;
-}
-
-:scope .tb-semester-name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-:scope .tb-semester-range {
-  margin: 0;
-  color: var(--tb-muted);
-  font-size: 12px;
-  font-weight: 400;
-  line-height: 18px;
-}
-
-/* Revealed only while its row is hovered, so the list stays quiet at rest. */
-:scope .tb-semester-edit {
-  display: flex;
-  width: 28px;
-  height: 28px;
-  flex: 0 0 auto;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  border: 0;
-  border-radius: 6px;
-  opacity: 0;
-  color: var(--tb-ink);
-  background: var(--tb-sidebar-accent);
-  cursor: pointer;
-  transition: opacity .15s var(--tb-ease);
-}
-
-/* The reference button holds focus while its row is hovered, so the ring shows
- * together with the reveal. Ring colour matches the shell's focus token. */
-:scope .tb-semester-option:hover .tb-semester-edit,
-:scope .tb-semester-edit:focus-visible {
-  opacity: 1;
-  outline: 2px solid rgb(46 49 55 / .5);
-  outline-offset: 1px;
-}
-
-:scope .tb-semester-create-row {
-  display: block;
-  padding: 8px;
-  border-top: 1px solid var(--tb-line);
-}
-
-:scope .tb-semester-create {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  height: 36px;
-  padding: 8px 10px;
-  border: 0;
-  border-radius: 6px;
-  color: var(--tb-muted);
-  background: transparent;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 400;
-  text-align: left;
-  transition: background-color .15s var(--tb-ease);
-}
-
-@keyframes tb-grow-in {
-  from {
-    opacity: 0;
-    transform: scale(.96) translateY(4px);
-  }
-
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-:scope .tb-dialog-layer {
-  position: fixed;
-  z-index: 80;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  width: 100%;
-  height: 100%;
-  max-width: none;
-  max-height: none;
-  margin: 0;
-  border: 0;
-  padding: 16px;
-  background: transparent;
-}
-
-:scope .tb-dialog-layer::backdrop {
-  background: rgb(0 0 0 / .5);
-  animation: tb-fade-in .18s var(--tb-ease) both;
-}
-
-:scope .tb-dialog {
-  position: relative;
-  display: grid;
-  width: 1000px;
-  max-width: calc(100vw - 32px);
-  height: 601px;
-  max-height: calc(100dvh - 32px);
-  grid-template-columns: 380px minmax(0, 1fr);
-  /* Without this the row is sized by its content, so a long copy list pushes
-   * both columns past the fixed height and the footer gets clipped. */
-  grid-template-rows: minmax(0, 1fr) auto;
-  overflow: hidden;
-  border-radius: 8px;
-  background: light-dark(#fff, var(--app-surface));
-  box-shadow: 0 10px 15px -3px rgb(0 0 0 / .1), 0 4px 6px -4px rgb(0 0 0 / .1);
-  animation: tb-grow-in .18s var(--tb-ease) both;
-}
-
-:scope .tb-dialog-form {
-  display: flex;
-  min-width: 0;
-  min-height: 0;
-  flex-direction: column;
-  grid-column: 1;
-  grid-row: 1;
-  background: rgb(246 246 246 / .3);
-}
-
-:scope .tb-dialog-head {
-  padding: 20px 28px;
-}
-
-:scope .tb-dialog-close {
-  display: flex;
-  width: 24px;
-  height: 24px;
-  /* Pulled left so the icon, not the hit area, lines up with the title. */
-  margin-left: -4px;
-  align-items: center;
-  justify-content: center;
-  padding: 4px;
-  border: 0;
-  border-radius: 2px;
-  color: var(--tb-ink);
-  background: transparent;
-  cursor: pointer;
-}
-
-:scope .tb-dialog-title-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 8px;
-}
-
-:scope .tb-dialog-more {
-  display: flex;
-  width: 32px;
-  height: 32px;
-  flex: 0 0 auto;
-  align-items: center;
-  justify-content: center;
-  margin: -2px -5px -2px auto;
-  padding: 0;
-  border: 0;
-  border-radius: 6px;
-  color: var(--tb-ink);
-  background: transparent;
-  cursor: pointer;
-}
-
-:scope .tb-dialog-more:hover {
-  background: var(--tb-sidebar-accent);
-}
-
-:scope .tb-dialog-more-wrap {
-  position: relative;
-  margin: -2px -5px -2px auto;
-}
-
-:scope .tb-dialog-more-menu {
-  position: absolute;
-  z-index: 70;
-  top: calc(100% + 4px);
-  right: 0;
-  width: 122px;
-  padding: 4px;
-  border: 1px solid rgb(0 0 0 / .06);
-  border-radius: 6px;
-  background: light-dark(#fff, var(--app-surface));
-  box-shadow: 0 10px 15px -3px rgb(0 0 0 / .1), 0 4px 6px -4px rgb(0 0 0 / .1);
-  animation: tb-grow-in .18s var(--tb-ease) both;
-  transform-origin: 100% 0;
-}
-
-:scope .tb-dialog-more-item {
-  display: flex;
-  width: 100%;
-  height: 30px;
-  align-items: center;
-  padding: 6px 8px;
-  border: 0;
-  border-radius: 2px;
-  color: var(--tb-destructive);
-  background: transparent;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 400;
-  text-align: left;
-}
-
-:scope .tb-dialog-more-item:hover {
-  background: var(--tb-account-hover);
-}
-
-:scope .tb-dialog-more-item:disabled {
-  color: var(--tb-muted);
-  cursor: default;
-}
-
-:scope .tb-dialog-title {
-  margin: 0;
-  color: var(--tb-ink);
-  font-size: 24px;
-  font-weight: 800;
-  line-height: 36px;
-}
-
-:scope .tb-dialog-desc {
-  margin: 4px 0 0;
-  color: var(--tb-muted);
-  font-size: 12px;
-  line-height: 18px;
-}
-
-:scope .tb-dialog-body {
-  display: flex;
-  flex: 1 1 auto;
-  flex-direction: column;
-  gap: 16px;
-  padding: 0 28px 12px;
-}
-
-:scope .tb-field {
-  display: grid;
-  gap: 8px;
-}
-
-:scope .tb-field-label {
-  color: var(--tb-ink);
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 14px;
-}
-
-:scope .tb-field-input {
-  min-width: 0;
-  width: 100%;
-  height: 36px;
-  padding: 4px 12px;
-  border: 1px solid var(--tb-line);
-  border-radius: 6px;
-  color: var(--tb-ink);
-  background: light-dark(#fff, var(--app-surface));
-  font-size: 14px;
-  font-weight: 400;
-}
-
-:scope .tb-field-dates {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-}
-
-:scope .tb-field-mode {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding-top: 12px;
-}
-
-:scope .tb-mode-cards {
-  display: grid;
-  gap: 8px;
-}
-
-:scope .tb-mode-card {
-  display: flex;
-  min-height: 82px;
-  flex-direction: column;
-  justify-content: center;
-  gap: 4px;
-  padding: 16px;
-  border: 1px solid var(--tb-line);
-  border-radius: 8px;
-  color: var(--tb-ink);
-  background: light-dark(#fff, var(--app-surface));
-  cursor: pointer;
-  text-align: left;
-}
-
-:scope .tb-mode-card.is-selected {
-  border-color: var(--tb-primary);
-  background: var(--tb-primary-tint);
-}
-
-:scope .tb-mode-card-head {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 20px;
-}
-
-:scope .tb-mode-card-note {
-  margin: 0;
-  padding-left: 30px;
-  color: var(--tb-muted);
-  font-size: 12px;
-  font-weight: 400;
-  line-height: 17px;
-}
-
-:scope .tb-dialog-foot {
-  display: grid;
-  grid-column: 1;
-  grid-row: 2;
-  gap: 8px;
-  padding: 12px 28px 20px;
-  background: light-dark(#fcfcfc, var(--app-surface));
-}
-
-:scope .tb-dialog-submit {
-  height: 36px;
-  padding: 8px 16px;
-  border: 0;
-  border-radius: 6px;
-  color: var(--tb-primary-foreground);
-  background: var(--tb-primary);
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-:scope .tb-dialog-cancel {
-  height: 28px;
-  padding: 4px 0;
-  border: 0;
-  color: var(--tb-muted);
-  background: transparent;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 400;
-}
-
-:scope .tb-dialog-preview {
-  display: flex;
-  min-width: 0;
-  min-height: 0;
-  flex-direction: column;
-  grid-column: 2;
-  grid-row: 1 / 3;
-}
-
-:scope .tb-dialog-preview-head {
-  padding: 20px 24px 16px;
-  background: var(--tb-page);
-}
-
-:scope .tb-dialog-preview-head h3 {
-  margin: 0;
-  color: var(--tb-ink);
-  font-size: 18px;
-  font-weight: 600;
-  line-height: 27px;
-}
-
-:scope .tb-dialog-preview-body {
-  display: flex;
-  flex: 1 1 auto;
-  align-items: center;
-  justify-content: center;
-  padding: 32px 24px;
-}
-
-:scope .tb-preview-card {
-  display: grid;
-  width: 384px;
-  max-width: 100%;
-  gap: 14px;
-  justify-items: center;
-  text-align: center;
-}
-
-:scope .tb-preview-mark {
-  display: flex;
-  width: 56px;
-  height: 56px;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  color: var(--tb-primary);
-  background: rgb(46 49 55 / .1);
-}
-
-:scope .tb-preview-card p {
-  margin: 0;
-  color: var(--tb-muted);
-  font-size: 14px;
-  line-height: 20px;
-}
-
-:scope .tb-copy-panel {
-  display: flex;
-  flex: 1 1 auto;
-  flex-direction: column;
-  min-height: 0;
-}
-
-:scope .tb-copy-source-block {
-  display: grid;
-  gap: 8px;
-  padding: 20px 24px 8px;
-}
-
-:scope .tb-copy-field {
-  display: grid;
-  gap: 8px;
-}
-
-:scope .tb-copy-source-wrap {
-  position: relative;
-}
-
-:scope .tb-copy-source-placeholder {
-  color: var(--tb-muted);
-}
-
-/* Opens over the select it belongs to; width follows the trigger. */
-:scope .tb-copy-source-menu {
-  position: absolute;
-  z-index: 70;
-  top: calc(100% + 4px);
-  left: 0;
-  width: 100%;
-  max-height: 180px;
-  overflow-y: auto;
-  padding: 4px;
-  border: 1px solid rgb(0 0 0 / .06);
-  border-radius: 6px;
-  background: light-dark(#fff, var(--app-surface));
-  box-shadow: 0 10px 15px -3px rgb(0 0 0 / .1), 0 4px 6px -4px rgb(0 0 0 / .1);
-  animation: tb-grow-in .18s var(--tb-ease) both;
-}
-
-:scope .tb-copy-source-option {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  height: 36px;
-  padding: 8px 10px;
-  border: 0;
-  border-radius: 2px;
-  color: var(--tb-ink);
-  background: transparent;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 400;
-  text-align: left;
-}
-
-.tb-copy-source-option > span:last-child {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-:scope .tb-copy-source-option:hover {
-  background: var(--tb-account-hover);
-}
-
-:scope .tb-copy-source-mark {
-  display: flex;
-  width: 14px;
-  height: 14px;
-  flex: 0 0 auto;
-  align-items: center;
-  justify-content: center;
-}
-
-/* One copyable category: [checkbox] [icon] [name] [count]. */
-:scope .tb-copy-list {
-  display: grid;
-  border: 1px solid var(--tb-line);
-  border-radius: 6px;
-}
-
-:scope .tb-copy-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-height: 50px;
-  padding: 10px 14px;
-  border-bottom: 1px solid var(--tb-line);
-}
-
-:scope .tb-copy-item:last-child {
-  border-bottom: 0;
-}
-
-:scope .tb-copy-item.is-disabled {
-  opacity: .55;
-}
-
-:scope .tb-checkbox {
-  display: flex;
-  width: 15px;
-  height: 15px;
-  flex: 0 0 auto;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  border: 1px solid var(--tb-line);
-  border-radius: 4px;
-  color: #fff;
-  background: light-dark(#fff, var(--app-surface));
-  cursor: pointer;
-}
-
-:scope .tb-checkbox.is-checked {
-  border-color: var(--tb-primary);
-  background: var(--tb-primary);
-}
-
-:scope .tb-checkbox:disabled {
-  cursor: default;
-}
-
-:scope .tb-copy-item-icon {
-  display: flex;
-  width: 30px;
-  height: 30px;
-  flex: 0 0 auto;
-  align-items: center;
-  justify-content: center;
-  border-radius: 6px;
-  color: var(--tb-ink);
-  background: var(--tb-sidebar-accent);
-}
-
-:scope .tb-copy-item-name {
-  flex: 1 1 auto;
-  color: var(--tb-ink);
-  font-size: 14px;
-  font-weight: 500;
-}
-
-:scope .tb-copy-item-count {
-  flex: 0 0 auto;
-  padding: 2px 8px;
-  border-radius: 9999px;
-  color: var(--tb-ink);
-  background: var(--tb-sidebar-accent);
-  font-size: 12px;
-  font-weight: 500;
-}
-
-:scope .tb-copy-source {
-  display: flex;
-  width: 100%;
-  height: 40px;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 12px;
-  border: 1px solid var(--tb-line);
-  border-radius: 6px;
-  color: var(--tb-muted);
-  background: light-dark(#fff, var(--app-surface));
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 400;
-  text-align: left;
-}
-
-:scope .tb-copy-body {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow-y: auto;
-  padding: 0 24px;
-}
-
-:scope .tb-copy-empty {
-  padding: 32px 16px;
-  border: 1px dashed var(--tb-line);
-  border-radius: 6px;
-  background: rgb(246 246 246 / .2);
-}
-
-:scope .tb-copy-empty p {
-  margin: 0;
-  color: var(--tb-muted);
-  font-size: 14px;
-  line-height: 20px;
-}
-
-/* Sits at the bottom of the copy panel, matching the reference. */
-:scope .tb-copy-note-row {
-  margin-top: auto;
-  padding: 12px 24px 20px;
-}
-
-:scope .tb-copy-note {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px;
-  border-radius: 6px;
-}
-
-:scope .tb-copy-note .tb-icon {
-  flex: 0 0 auto;
-}
-
-:scope .tb-copy-note p {
-  margin: 0;
-  font-size: 12px;
-  line-height: 20px;
-}
-
-/* Amber warns about the target semester; blue explains what copying shares. */
-:scope .tb-copy-note.is-warn {
-  border: 1px solid #ffd230;
-  background: light-dark(#fffbeb, var(--app-soft));
-}
-
-:scope .tb-copy-note.is-warn .tb-icon {
-  color: #e17100;
-}
-
-:scope .tb-copy-note.is-warn p {
-  color: #461901;
-}
-
-/* Values sampled from the reference capture, not derived. */
-:scope .tb-copy-note.is-info {
-  border: 1px solid #93c5fd;
-  background: light-dark(#eff6ff, var(--app-soft));
-}
-
-:scope .tb-copy-note.is-info .tb-icon {
-  color: #8ec5ff;
-}
-
-:scope .tb-copy-note.is-info p {
-  color: #162556;
-}
-
-@keyframes tb-fade-in {
-  from { opacity: 0; }
-
-  to { opacity: 1; }
-}
-
-@media (max-width: 700px) {
-  :scope .tb-dialog {
+  .wb-shell.tb-prototype .tb-support-menu [role=menuitem] {
     display: flex;
     width: 100%;
-    height: auto;
-    flex-direction: column;
-    overflow-y: auto;
-    overscroll-behavior: contain;
+    height: 30px;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 12px;
+    border-radius: 10px;
+    color: var(--tb-ink);
+    background: transparent;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 20px;
+    text-align: left;
+    white-space: nowrap;
+    text-decoration: none;
   }
-
-  :scope .tb-dialog-form,
-  :scope .tb-dialog-preview,
-  :scope .tb-copy-panel {
-    flex: none;
-  }
-
-  :scope .tb-dialog-form {
-    display: contents;
-  }
-
-  :scope .tb-dialog-head { order: 0; padding: 20px 24px; }
-  :scope .tb-dialog-body { order: 1; flex: none; padding: 0 24px 20px; }
-  :scope .tb-dialog-preview { order: 2; border-top: 1px solid var(--tb-line); }
-  :scope .tb-dialog-foot {
-    position: sticky;
-    z-index: 1;
-    bottom: 0;
-    order: 3;
-    flex: none;
-    padding: 12px 24px 16px;
-    border-top: 1px solid var(--tb-line);
-    background: light-dark(#fff, var(--app-surface));
-  }
-  :scope .tb-copy-body { flex: none; overflow: visible; }
-  :scope .tb-copy-item { gap: 8px; padding: 10px; }
-  :scope .tb-semester-edit { opacity: 1; }
-  :scope .tb-language-menu { max-height: min(321px, calc(100dvh - 140px)); }
-}
-
-.tb-workspace-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 24px;
-
-  margin-top: 16px;
-  padding: 0 12px;
-  color: var(--tb-sidebar-foreground);
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: .5px;
-  line-height: 15px;
-  text-transform: uppercase;
-}
-
-.tb-workspace-heading > strong {
-  opacity: .7;
-}
-
-/* Flex centring rather than place-items: with a block-level SVG child, grid
- * place-items left the glyph visually off-centre inside the square. */
-:scope .tb-workspace-heading > button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  line-height: 0;
-  font-size: 10px;
-  width: 20px;
-  height: 20px;
-  border-radius: 5px;
-  color: var(--tb-sidebar-foreground);
-  background: transparent;
-  opacity: .7;
-  transition: background var(--tb-duration) var(--tb-ease), opacity var(--tb-duration) var(--tb-ease);
-}
-
-.tb-workspace-heading > button:hover,
-.tb-workspace-heading > button[aria-expanded="true"] {
-  background: var(--tb-sidebar-accent);
-  opacity: 1;
-}
-
-:scope .tb-new-group-form {
-  position: fixed;
-  z-index: 70;
-  display: flex;
-  width: 184px;
-  padding: 6px;
-  border: 1px solid var(--tb-line);
-  border-radius: 10px;
-  background: light-dark(#fff, var(--app-surface));
-  box-shadow: var(--tb-card-elevation);
-}
-
-:scope .tb-new-group-form input {
-  width: 100%;
-  min-width: 0;
-  height: 30px;
-  padding: 0 8px;
-  border: 1px solid light-dark(#d8d8d6, var(--app-line));
-  border-radius: 7px;
-  color: var(--tb-ink);
-  background: light-dark(#fff, var(--app-surface));
-  font-size: 14px;
-  line-height: 20px;
-}
-
-/* The popover opens with the field already focused, and the shared 3px focus
- * ring reads as a second border inside this 236px surface, so the focus state
- * is carried by the border colour alone. */
-:scope .tb-new-group-form input:focus-visible {
-  outline: 0;
-  border-color: var(--tb-primary);
-}
-
-/* Empty state occupies exactly one module row so the panel keeps the same
- * footprint whether or not anything has been dropped in. */
-:scope .tb-hidden-panel > p {
-  display: flex;
-  width: 100%;
-  height: var(--tb-row-height);
-  align-items: center;
-  justify-content: center;
-  margin: 0;
-  padding: 0;
-  color: var(--tb-muted-foreground-faint);
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 20px;
-}
-
-.tb-module-nav {
-  min-height: 0;
-  flex: 1;
-  overflow-x: hidden;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  padding: 0 12px 12px;
-}
-
-/*
- * Drag chip. A real element rather than a `setDragImage` snapshot, because the
- * browser draws the native image wherever it likes and paints the system cursor
- * over it: a disc centred on the pointer still reads as off-centre while the
- * arrow sits inside it. This one is centred on the pointer by its own transform,
- * so its geometry is exact and stays exact.
- *
- * It is invisible until it has been placed, since a drag can begin before the
- * pointer has moved and an unpositioned chip would flash in the corner.
- */
-:scope .tb-drag-chip {
-  position: fixed;
-  z-index: 9999;
-  top: 0;
-  left: 0;
-  display: grid;
-  width: var(--tb-chip-size);
-  height: var(--tb-chip-size);
-  place-items: center;
-  border: 1px solid var(--tb-chip-edge);
-  border-radius: 50%;
-  color: var(--tb-chip-ink);
-  background: var(--tb-chip-surface);
-  box-shadow: 0 2px 6px rgba(15, 18, 24, .22);
-  opacity: 0;
-  pointer-events: none;
-  /*
-   * The disc is centred on the pointer by its own transform. The position is
-   * written to `left`/`top` for exactly that reason: sharing one property would
-   * mean the position call replaced the centring.
-   */
-  transform: translate(-50%, -50%);
-  transition: opacity .12s var(--tb-ease);
-}
-
-:scope .tb-drag-chip.is-placed {
-  opacity: 1;
-}
-
-/*
- * The grab hand during a drag, best effort.
- *
- * The browser owns the cursor for a native drag and normally paints its own
- * arrow, which CSS cannot override. These rules ask for the hand anyway: where a
- * platform honours them the drag reads as holding the chip, and where it does not
- * the arrow is unchanged. The chip itself is unaffected either way, because it is
- * a plain element rather than the native image.
- */
-body.is-dragging-item,
-body.is-dragging-item * {
-  cursor: grabbing !important;
-}
-
-:scope .tb-drag-chip::before {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  content: "";
-}
-
-.tb-group {
-  position: relative;
-  min-width: 0;
-  padding: 4px 0 6px;
-  border-radius: 8px;
-}
-
-.tb-group.is-group-insert-target::before {
-  position: absolute;
-  z-index: 2;
-  top: -1px;
-  right: 8px;
-  left: 8px;
-  height: 2px;
-  border-radius: 99px;
-  background: var(--tb-purple);
-  content: "";
-}
-
-/*
- * An empty group has no row to draw an insertion line against, so the area the
- * module would land in is outlined while a module is over it.
- *
- * The outline covers that area only, never the group heading: boxing the heading
- * runs the border along the group's name, which reads as if the name itself were
- * the drop target and crowds the text against the edge.
- */
-.tb-group.is-empty-drop-target .tb-module-list {
-  min-height: 36px;
-  border: 1px dashed var(--tb-purple);
-  border-radius: var(--tb-row-radius);
-  background: var(--tb-purple-tint, rgba(113, 96, 167, .08));
-}
-
-.tb-group-heading {
-  display: flex;
-  align-items: center;
-  min-width: 0;
-  cursor: grab;
-  user-select: none;
-}
-
-.tb-group-heading:active {
-  cursor: grabbing;
-}
-
-.tb-group-heading.is-dragging,
-.tb-module-row.is-dragging {
-  opacity: .35;
-}
-
-/*
- * The name is a heading and the chevron is its own button, because a collapsed
- * group must not be a link: sending the user to a row they cannot see is worse
- * than not being clickable. Both share one label ramp and one hover, so the
- * heading still reads as a single control.
- */
-:scope .tb-group-label,
-:scope .tb-group-toggle {
-  display: inline-flex;
-  width: auto;
-  min-width: 0;
-  height: 24px;
-  align-items: center;
-  gap: 4px;
-  padding: 0;
-  border-radius: 5px;
-  color: var(--tb-sidebar-foreground);
-  background: transparent;
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: .5px;
-  line-height: 15px;
-  text-transform: uppercase;
-  text-align: left;
-  text-decoration: none;
-}
-
-:scope .tb-group-label {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  opacity: .7;
-}
-
-.tb-group-toggle .tb-icon {
-  opacity: .7;
-  transition: transform .16s var(--tb-ease);
-}
-
-.tb-group-heading:hover .tb-group-label,
-.tb-group-heading:hover .tb-group-toggle .tb-icon {
-  opacity: 1;
-}
-
-/*
- * Opening and closing a group. The list stays mounted and the wrapper animates
- * from 0fr to 1fr, which is what makes the change gradual: a row that appeared
- * and vanished would jump the whole list under the pointer. `overflow: hidden`
- * on the inner box is what lets the row be clipped while the track shrinks.
- */
-.tb-module-collapse {
-  display: grid;
-  grid-template-rows: 1fr;
-  transition: grid-template-rows .22s var(--tb-ease);
-}
-
-.tb-module-collapse.is-collapsed {
-  grid-template-rows: 0fr;
-}
-
-.tb-module-clip {
-  min-height: 0;
-  overflow: hidden;
-}
-
-.tb-group-toggle[aria-expanded="false"] .tb-icon {
-  transform: rotate(-90deg);
-}
-
-/*
- * Rename reads as editing the label in place rather than as a control dropped on
- * top of the list. The field keeps the header's 24px box and uses an underline
- * to maintain separation from the selected row below it.
- */
-:scope .tb-group-rename {
-  width: 100%;
-  height: 24px;
-  /* Extra room below while editing: the field and the selected row underneath
-   * are both full-width bars, and at the normal row gap they read as colliding. */
-  margin: 0 0 12px;
-  padding: 0 6px;
-  border: 1px solid transparent;
-  border-radius: 6px;
-  color: var(--tb-ink);
-  /* No resting outline: the tint alone marks the field, so it does not compete
-   * with the selected row underneath. The border appears on focus only. */
-  background: var(--tb-sidebar-accent);
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: .5px;
-  line-height: 15px;
-  text-transform: uppercase;
-}
-
-:scope .tb-group-rename:focus-visible,
-:scope .tb-group-rename:focus {
-  outline: 0;
-  /* A soft hairline and a white field, not the dark primary border: the field is
-   * on screen for the whole edit, so a heavy outline would sit on the rows the
-   * entire time. */
-  border-color: var(--tb-line);
-  background: light-dark(#fff, var(--app-surface));
-}
-
-.tb-module-list {
-  position: relative;
-  display: grid;
-  gap: var(--tb-row-gap);
-  min-height: 4px;
-}
-
-/*
- * Group-end insertion line. Also absolutely positioned for the same reason as
- * the row line: an in-flow line would grow the group and push the rows below it.
- */
-.tb-group.is-module-end-target {
-  position: relative;
-}
-
-.tb-group.is-module-end-target::after {
-  position: absolute;
-  right: 0;
-  bottom: calc(var(--tb-row-gap) / -2 - 1px);
-  left: 0;
-  height: 2px;
-  border-radius: 99px;
-  background: var(--tb-purple);
-  content: "";
-}
-
-.tb-module-row {
-  position: relative;
-  display: flex;
-  height: var(--tb-row-height);
-  min-width: 0;
-  align-items: center;
-  gap: 12px;
-  padding: var(--tb-row-padding);
-  border-radius: var(--tb-row-radius);
-  /*
-   * Declared here rather than on the narrow-screen variant so it stays below
-   * .tb-module-row.is-active in specificity: a scoped override would win against
-   * the selected pill and blank out its fill. Needed because the narrow-screen
-   * nav renders these rows as <button>, which otherwise keeps the UA ButtonFace.
-   */
-  background: transparent;
-  color: var(--tb-sidebar-foreground);
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 20px;
-  cursor: grab;
-  user-select: none;
-  transition: background var(--tb-duration) var(--tb-ease), color var(--tb-duration) var(--tb-ease);
-}
-
-.tb-module-row:hover {
-  color: var(--tb-sidebar-accent-foreground);
-  background: var(--tb-sidebar-accent);
-}
-
-.tb-module-row:active {
-  cursor: grabbing;
-}
-
-.tb-module-row.is-active {
-  color: var(--tb-primary-foreground);
-  background: var(--tb-primary);
-  box-shadow: 0 1px 2px 0 #0000000d;
-}
-
-/*
- * Insertion line. Drawn as an absolutely positioned 2px bar that takes part in
- * no layout, in either direction: a line that changed row geometry would shift
- * the very rows it points between and make the list twitch under the pointer.
- */
-.tb-module-row.is-drop-target::before {
-  position: absolute;
-  z-index: 3;
-  right: 0;
-  left: 0;
-  height: 2px;
-  border-radius: 99px;
-  background: var(--tb-purple);
-  content: "";
-}
-
-.tb-module-row.is-drop-before::before {
-  top: calc(var(--tb-row-gap) / -2 - 1px);
-}
-
-.tb-module-row.is-drop-after::before {
-  bottom: calc(var(--tb-row-gap) / -2 - 1px);
-}
-
-/*
- * The end-of-group line and the "insert before the first row" line resolve to
- * the same physical position. The group-end line wins; the row line is
- * suppressed while its group is the end target.
- */
-.tb-group.is-module-end-target .tb-module-row.is-drop-before::before {
-  display: none;
-}
-
-.tb-module-row > span:last-child {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.tb-module-icon {
-  display: grid;
-  width: var(--tb-icon-size);
-  height: var(--tb-icon-size);
-  flex: none;
-  place-items: center;
-  color: inherit;
-  background: transparent;
-}
-
-.tb-module-icon .tb-icon {
-  width: var(--tb-icon-size);
-  height: var(--tb-icon-size);
-}
-
-.tb-module-row.is-active .tb-module-icon {
-  color: inherit;
-  background: transparent;
-}
-
-/*
- * Narrow-screen nav rows. They reuse the module-row geometry so the drawer keeps a
- * single vertical rhythm; only the cursor and the support sub-items differ.
- */
-/*
- * It sits outside .tb-module-nav, which is what carries the 12px inset for every
- * other drawer row, so it has to repeat that inset or its rows come out 24px
- * wider than the module rows directly below them.
- */
-.tb-mobile-nav {
-  display: grid;
-  gap: var(--tb-row-gap);
-  padding: 0 12px;
-  margin-bottom: 12px;
-}
-
-:scope .tb-mobile-nav .tb-module-row {
-  cursor: pointer;
-  text-decoration: none;
-}
-
-:scope .tb-mobile-nav .tb-module-row:focus-visible {
-  outline-offset: 0;
-}
-
-/*
- * A modest indent marks these as sub-items of the support row above them. It is
- * deliberately smaller than a full icon column, because these rows carry an
- * icon of their own and the larger inset would push their labels well past every
- * other row in the drawer.
- */
-:scope .tb-mobile-support-item {
-  padding-left: calc(var(--tb-row-padding) + 14px);
-  color: var(--tb-muted-foreground);
-  font-weight: 400;
-}
-
-.tb-trash-wrap {
-  position: relative;
-  margin-top: 4px;
-  padding-top: 12px;
-  border-top: 1px solid var(--tb-sidebar-border);
-}
-
-:scope .tb-trash-target {
-  display: flex;
-  width: var(--tb-row-width);
-  height: var(--tb-row-height);
-  align-items: center;
-  gap: 12px;
-  padding: 0 var(--tb-row-padding);
-  border: 1px solid transparent;
-  border-radius: var(--tb-row-radius);
-  color: var(--tb-muted-foreground-faint);
-  background: transparent;
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 20px;
-  text-align: left;
-  transition: background var(--tb-duration) var(--tb-ease), color var(--tb-duration) var(--tb-ease);
-}
-
-.tb-trash-target:hover,
-.tb-trash-target[aria-expanded="true"] {
-  color: var(--tb-sidebar-accent-foreground);
-  background: var(--tb-sidebar-accent);
-}
-
-.tb-trash-target > b {
-  display: grid;
-  min-width: 19px;
-  height: 19px;
-  margin-left: auto;
-  place-items: center;
-  border-radius: 999px;
-  color: #fff;
-  background: #777b84;
-  font-size: 10px;
-}
-/*
- * Trash as a drop target. The row, its label and the icon all turn red together,
- * and only the icon swells: the same confirmation the notification trash gives,
- * so a module dropped here reads as deleted at the moment of recognition rather
- * than after the drop lands.
- */
-.tb-trash-icon {
-  display: grid;
-  place-items: center;
-  transition: color .18s var(--tb-ease), transform .18s cubic-bezier(.2, .8, .3, 1.4);
-}
-
-.tb-trash-target.is-drop-target {
-  color: #d92d20;
-}
-
-.tb-trash-target.is-drop-target .tb-trash-icon {
-  color: #d92d20;
-  transform: scale(1.28);
-}
-
-.tb-trash-target.is-drop-target > b {
-  background: #d92d20;
-}
-
-.tb-hidden-panel {
-  position: fixed;
-  z-index: 70;
-  display: grid;
-  /* The panel has no padding of its own: it is exactly as wide as the trash row
-   * it belongs to, and each item inside fills the full panel so a dropped module
-   * is the same size as the row it came from. */
-  width: var(--tb-row-width);
-  max-height: min(340px, calc(100vh - 24px));
-  gap: 0;
-  padding: 0;
-  border: 0;
-  border-radius: var(--tb-row-radius);
-  overflow: hidden auto;
-  background: light-dark(#fff, var(--app-surface));
-  /* The hairline is drawn with an inset shadow rather than a border so it costs
-   * no layout: a 1px border would shrink the content box to 230px and every row
-   * inside would come up 2px short of the trash row it mirrors. */
-  box-shadow: inset 0 0 0 1px var(--tb-line), var(--tb-card-elevation);
-}
-
-.tb-hidden-panel > p {
-  margin: 0;
-  color: var(--tb-muted);
-  font-size: 11px;
-}
-
-.tb-hidden-panel > p {
-  padding: 13px 5px;
-  text-align: center;
-}
-
-:scope .tb-hidden-panel > button {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  height: var(--tb-row-height);
-  padding: 0 var(--tb-row-padding);
-  border-radius: 0;
-  color: var(--tb-sidebar-foreground);
-  background: transparent;
-  cursor: grab;
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 20px;
-  text-align: left;
-}
-
-.tb-hidden-panel > button:active {
-  cursor: grabbing;
-}
-
-.tb-hidden-panel > button > span:nth-child(2) {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.tb-hidden-panel > button > small {
-  color: var(--tb-muted);
-  font-size: 10px;
-}
-
-.tb-hidden-panel > button:hover {
-  background: light-dark(#f4f4f3, var(--app-soft));
-}
-
-.tb-sidebar-footer {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 8px;
-  padding: 9px 14px 11px;
-  border-top: 1px solid var(--tb-line);
-}
-
-:scope .tb-sidebar-footer button {
-  font-size: 12px;
-  padding: 5px 7px;
-  border-radius: 6px;
-  background: transparent;
-  font-size: 12px;
-}
-
-.tb-context-menu {
-  position: fixed;
-  z-index: 100;
-  display: grid;
-  width: 156px;
-  gap: 1px;
-  padding: 4px;
-  border: 1px solid var(--tb-line);
-  border-radius: 10px;
-  background: light-dark(#fff, var(--app-surface));
-  box-shadow: var(--tb-card-elevation);
-}
-
-:scope .tb-context-menu button {
-  display: flex;
-  width: 100%;
-  height: 30px;
-  align-items: center;
-  padding: 0 8px;
-  border-radius: 7px;
-  background: transparent;
-  font-size: 13px;
-  font-weight: 400;
-  line-height: 18px;
-  text-align: left;
-}
-
-.tb-context-menu button:hover,
-.tb-context-menu button:focus {
-  background: light-dark(#f3f3f2, var(--app-soft));
-  outline: 0;
-}
-
-.tb-context-menu button.is-danger {
-  color: #a74747;
-}
-
-.tb-main {
-  min-width: 0;
-  padding: 42px 48px 70px;
-  background-color: var(--tb-page);
-  background-image: linear-gradient(light-dark(#f1f1f1, var(--app-soft)) 1px, transparent 1px), linear-gradient(90deg, light-dark(#f1f1f1, var(--app-soft)) 1px, transparent 1px);
-  background-size: 28px 28px;
-}
-
-/*
- * A destination with no design yet, which is every destination for now. It keeps
- * the shell's 48px inset and 1440px measure so nothing shifts when the page body
- * changes, and centres its own content in the height it fills. Nothing here
- * implies a feature: a named marker, the title, one sentence.
- */
-.tb-main-empty {
-  display: grid;
-  place-items: center;
-}
-
-/*
- * Individually centred, not stretched. The page body is a wrapper that fills the
- * content column, so the empty state has to opt out of that fill itself:
- * `place-items` on the parent centres a stand-in that is already as wide as the
- * column, which leaves the text left-aligned in the middle of the page.
- */
-.tb-empty-page {
-  display: grid;
-  width: fit-content;
-  max-width: 1440px;
-  justify-items: center;
-  gap: 12px;
-  padding: 40px 0;
-  margin: 0 auto;
-  text-align: center;
-}
-
-.tb-empty-page-mark {
-  display: grid;
-  width: 44px;
-  height: 44px;
-  place-items: center;
-  border-radius: 9999px;
-  color: var(--tb-muted);
-  background: light-dark(#fff, var(--app-surface));
-  box-shadow: var(--tb-card-elevation);
-}
-
-:scope .tb-empty-page h1 {
-  margin: 0;
-  color: var(--tb-ink);
-  font-size: 20px;
-  font-weight: 600;
-  line-height: 28px;
-}
-
-:scope .tb-empty-page p {
-  margin: 0;
-  color: var(--tb-muted);
-  font-size: 14px;
-  line-height: 20px;
-}
-
-:scope .tb-empty-page code {
-  padding: 2px 6px;
-  border-radius: 6px;
-  background: light-dark(#fff, var(--app-surface));
-  font-family: inherit;
-  font-size: 13px;
-}
-
-.tb-announcer {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
-.tb-sidebar {
-  will-change: clip-path;
-}
-
-.tb-sidebar.is-rail-collapsed .tb-account-block,
-.tb-sidebar.is-rail-collapsed .tb-term-button,
-.tb-sidebar.is-rail-collapsed .tb-workspace-heading,
-.tb-sidebar.is-rail-collapsed .tb-new-group-form,
-.tb-sidebar.is-rail-collapsed .tb-group-heading,
-.tb-sidebar.is-rail-collapsed .tb-trash-wrap,
-.tb-sidebar.is-rail-collapsed .tb-sidebar-footer {
-  display: none;
-}
-
-/* The hidden children still count toward the sidebar gap, so it is dropped here
- * to keep the first rail icon off the top bar. */
-.tb-sidebar.is-rail-collapsed {
-  gap: 0;
-}
-
-.tb-sidebar.is-rail-collapsed .tb-module-nav {
-  padding: 8px 0 12px;
-}
-
-.tb-sidebar.is-rail-collapsed .tb-group {
-  padding: 0;
-}
-
-.tb-sidebar.is-rail-collapsed .tb-group + .tb-group {
-  margin-top: 18px;
-  padding-top: 18px;
-  border-top: 1px solid var(--tb-sidebar-border);
-}
-
-.tb-sidebar.is-rail-collapsed .tb-module-list {
-  gap: var(--tb-row-gap);
-}
-
-.tb-sidebar.is-rail-collapsed .tb-module-row {
-  width: 36px;
-  min-height: 36px;
-  margin: 0 auto;
-  padding: 8px;
-  justify-content: center;
-}
-
-.tb-sidebar.is-rail-collapsed .tb-module-row > span:last-child {
-  display: none;
-}
-
-/* Rail tooltip: 12px on #2d3037 with a 6px radius, anchored to the icon. */
-:scope .tb-rail-tooltip {
-  position: fixed;
-  z-index: 100;
-  padding: 6px 12px;
-  border-radius: 6px;
-  color: var(--tb-page);
-  background: var(--tb-ink);
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 1.35;
-  pointer-events: none;
-  transform: translateY(-50%);
-  animation: tb-rail-tooltip-in .14s ease both;
-  white-space: nowrap;
-}
-
-@keyframes tb-rail-tooltip-in {
-  from { opacity: 0; transform: translateY(-50%) scale(.96); }
-  to { opacity: 1; transform: translateY(-50%) scale(1); }
-}
-
-.tb-mobile-scrim {
-  display: none;
-}
-
-.tb-mobile-scrim[hidden] {
-  display: none;
-}
-
-@media (max-width: 1180px) {
-  .tb-main {
-    padding: 30px;
-  }
-
-}
-
-@media (max-width: 880px) {
-  :scope {
-    --tb-sidebar-width: 220px;
-    --tb-shell-brand-column: 220px;
-  }
-
-  :scope.is-sidebar-collapsed {
-    --tb-sidebar-width: 72px;
-  }
-
-  .tb-topbar {
-    padding-right: 32px;
-  }
-
-}
-
-@media (min-width: 701px) and (max-width: 880px) {
-  .tb-top-actions {
-    gap: 0;
-  }
-}
-
-/* Match the shell's drawer breakpoint inside this scope. An equally specific
- * unscoped rule loses to the scoped desktop default through scope proximity. */
-@media (max-width: 1080px) {
-  :scope .tb-mobile-menu {
-    display: grid;
-    width: 36px;
-    height: 36px;
-  }
-
-  :scope .tb-sidebar-toggle {
-    display: none;
-  }
-}
-
-@media (max-width: 700px) {
-  :scope,
-  :scope.is-sidebar-collapsed {
-    --tb-sidebar-width: 0px;
-  }
-
-  .tb-topbar {
-    grid-template-columns: auto minmax(0, 1fr);
-    height: 56px;
-    padding: 0 16px;
-  }
-
-  :scope .tb-brand {
-    display: none;
-  }
-
-  :scope .tb-mobile-menu {
-    display: grid;
-    width: 36px;
-    height: 36px;
-    border-radius: 8px;
-  }
-
-  :scope .tb-sidebar-toggle {
-    display: none;
-  }
-
-  .tb-global-nav {
-    display: none;
-  }
-
-  .tb-top-actions {
-    gap: 8px;
-  }
-
-  :scope .tb-entry {
-    width: 36px;
-    height: 36px;
-    border-radius: 8px;
-  }
-
-  :scope .tb-popover {
-    position: fixed;
-    top: 64px;
-    right: 12px;
-    max-width: calc(100vw - 24px);
-    max-height: calc(100dvh - 80px);
-    overflow-y: auto;
-  }
-
-  .tb-popover-feedback .tb-popover-head {
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .tb-shell {
-    display: block;
-    min-height: calc(100vh - 58px);
-  }
-
-  .tb-sidebar {
-    position: fixed;
-    z-index: 90;
-    top: 0;
-    bottom: 0;
+  .wb-shell.tb-prototype .tb-support-menu::before {
+    position: absolute;
+    bottom: 100%;
     left: 0;
-    width: min(326px, calc(100vw - 36px));
-    height: 100vh;
-    border-right: 1px solid var(--tb-line);
-    box-shadow: 16px 0 45px rgba(38, 40, 46, .2);
-    transform: translateX(-105%);
-    transition: transform .2s ease;
+    right: 0;
+    height: 8px;
+    content: "";
   }
-
-  .tb-sidebar.is-mobile-open {
-    transform: translateX(0);
+  .wb-shell.tb-prototype .tb-support-menu [role=menuitem]:hover {
+    background: var(--tb-fill);
   }
-
-  .tb-hidden-panel {
-    top: auto !important;
-    right: 12px;
-    bottom: 12px;
-    left: 12px !important;
-    width: auto;
-    max-height: 44vh;
+  .wb-shell.tb-prototype .tb-support-wrap .tb-nav-item > svg {
+    transition: transform .25s var(--tb-ease);
   }
-
-  .tb-sidebar-mobile-head {
+  .wb-shell.tb-prototype .tb-support-wrap:hover .tb-nav-item > svg,
+  .wb-shell.tb-prototype .tb-support-wrap .tb-nav-item.is-open > svg {
+    transform: rotate(-180deg);
+  }
+  .wb-shell.tb-prototype .tb-entry-wrap {
+    position: relative;
+    display: inline-flex;
+  }
+  .wb-shell.tb-prototype .tb-badge {
+    display: grid;
+    place-items: center;
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 1;
+  }
+  .wb-shell.tb-prototype .tb-badge.is-red {
+    background: var(--tb-badge-red);
+  }
+  .wb-shell.tb-prototype .tb-tooltip {
+    position: absolute;
+    z-index: 90;
+    top: calc(100% + 18px);
+    left: 50%;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-50%);
+    transition: opacity .08s ease;
+  }
+  .wb-shell.tb-prototype .tb-entry-wrap:hover .tb-tooltip,
+  .wb-shell.tb-prototype .tb-entry:focus-visible + .tb-tooltip {
+    opacity: 1;
+    transition-delay: .4s;
+  }
+  .wb-shell.tb-prototype .tb-top-actions .tb-entry-wrap:last-child .tb-tooltip {
+    left: auto;
+    right: 0;
+    transform: none;
+  }
+  .wb-shell.tb-prototype .tb-coach {
+    position: absolute;
+    z-index: 95;
+    top: calc(100% + 14px);
+    animation: tb-coach-rise .34s cubic-bezier(.2, .7, .3, 1) .3s both;
+    right: -8px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    transform-origin: top right;
+  }
+  @keyframes tb-coach-rise {
+    from {
+      opacity: 0;
+      transform: translateY(8px) scale(.96);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  .wb-shell.tb-prototype .tb-coach-caret {
+    position: absolute;
+    top: -5px;
+    right: 20px;
+    width: 8px;
+    height: 8px;
+    border-top: 1px solid var(--tb-line);
+    border-left: 1px solid var(--tb-line);
+    transform: rotate(45deg);
+  }
+  .wb-shell.tb-prototype .tb-coach p {
+    flex: 1 1 100%;
+    margin: 0;
+  }
+  .wb-shell.tb-prototype .tb-coach-dismiss {
+    margin-left: auto;
+    border-radius: 9999px;
+    font-size: 12px;
+    line-height: 16px;
+  }
+  .wb-shell.tb-prototype .tb-coach-scrim {
+    position: fixed;
+    z-index: 94;
+    inset: 0;
+    animation: tb-coach-dim .24s ease-out both;
+  }
+  @keyframes tb-coach-dim {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  .wb-shell.tb-prototype .tb-entry-wrap.is-coached {
+    z-index: 96;
+  }
+  .wb-shell.tb-prototype .tb-entry-wrap.is-coached .tb-entry {
+    color: var(--tb-ink);
+    background: light-dark(#fff, var(--app-surface));
+    animation: tb-coach-light .42s cubic-bezier(.2, .7, .3, 1) .06s both;
+  }
+  @keyframes tb-coach-light {
+    from {
+      transform: scale(.84);
+      box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+    }
+    to {
+      transform: scale(1);
+      box-shadow: 0 0 0 4px rgba(255, 255, 255, .55);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .wb-shell.tb-prototype .tb-coach-scrim,
+    .wb-shell.tb-prototype .tb-entry-wrap.is-coached .tb-entry,
+    .wb-shell.tb-prototype .tb-coach {
+      animation: none;
+    }
+    .wb-shell.tb-prototype .tb-popover,
+    .wb-shell.tb-prototype .tb-support-menu,
+    .wb-shell.tb-prototype .tb-search-panel,
+    .wb-shell.tb-prototype .tb-notification.is-read .tb-row-text::after,
+    .wb-shell.tb-prototype .tb-notification:not(.is-read) .tb-row-text::after {
+      animation: none;
+      transition: none;
+    }
+  }
+  .wb-shell.tb-prototype .tb-popover {
+    position: absolute;
+    z-index: 80;
+    top: calc(100% + 8px);
+    right: 0;
+    padding: 16px 20px;
+    border: 1px solid var(--tb-line);
+    border-radius: 14px;
+    background: light-dark(#fff, var(--app-surface));
+    box-shadow: var(--tb-shadow-2);
+    transform-origin: top right;
+    animation: tb-surface-in .18s var(--tb-ease) both;
+  }
+  @keyframes tb-surface-in {
+    from {
+      opacity: 0;
+      transform: scale(.96) translateY(-4px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  .wb-shell.tb-prototype .tb-popover h2 {
+    margin: 0;
+    color: var(--tb-ink);
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 24px;
+  }
+  .wb-shell.tb-prototype .tb-popover-head {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 52px;
-    padding: 0 14px;
-    border-bottom: 1px solid var(--tb-line);
+    gap: 12px;
   }
-
-  :scope .tb-sidebar-mobile-head button {
+  .wb-shell.tb-prototype .tb-popover-desc {
+    margin: 2px 0 0;
+    color: var(--tb-muted);
+    font-size: 12px;
+    line-height: 18px;
+  }
+  .wb-shell.tb-prototype .tb-popover-action {
+    flex: none;
+    padding: 0;
+    color: var(--tb-accent);
+    background: transparent;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 18px;
+    white-space: nowrap;
+  }
+  .wb-shell.tb-prototype .tb-popover-action:hover {
+    text-decoration: underline;
+  }
+  .wb-shell.tb-prototype .tb-popover-list {
     display: grid;
-    width: 32px;
-    height: 32px;
+    margin-top: 12px;
+  }
+  .wb-shell.tb-prototype .tb-row {
+    display: flex;
+    width: 100%;
+    height: 36px;
+    align-items: center;
+    padding: 0;
+    border-radius: 8px;
+    color: var(--tb-muted);
+    background: transparent;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 20px;
+    text-align: left;
+  }
+  .wb-shell.tb-prototype .tb-row:hover {
+    background: var(--tb-fill);
+  }
+  .wb-shell.tb-prototype .tb-row-check {
+    display: grid;
+    flex: none;
+    width: 18px;
+    height: 18px;
+    margin-right: 8px;
+    place-items: center;
+    border: 1px solid var(--tb-line);
+    border-radius: 7px;
+    color: #fff;
+  }
+  .wb-shell.tb-prototype .tb-row.is-done .tb-row-check {
+    border-color: transparent;
+    background: var(--tb-badge-amber);
+  }
+  .wb-shell.tb-prototype .tb-row-icon {
+    display: grid;
+    flex: none;
+    width: 24px;
+    height: 24px;
+    margin-right: 12px;
     place-items: center;
     border-radius: 8px;
+    background: var(--tb-fill);
+  }
+  .wb-shell.tb-prototype .tb-row-label {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .wb-shell.tb-prototype .tb-row-meta {
+    flex: none;
+    margin-left: 8px;
+    margin-right: 10px;
+    color: var(--tb-faint);
+    font-size: 12px;
+    line-height: 16px;
+  }
+  .wb-shell.tb-prototype .tb-row.is-unread .tb-row-label {
+    color: var(--tb-sidebar-accent-foreground);
+    font-weight: 500;
+  }
+  .wb-shell.tb-prototype .tb-notification {
+    cursor: pointer;
+  }
+  .wb-shell.tb-prototype .tb-notification:not(.is-read) .tb-row-label {
+    color: var(--tb-sidebar-accent-foreground);
+    font-weight: 500;
+  }
+  .wb-shell.tb-prototype .tb-notification.is-dragging {
+    background: var(--tb-fill);
+    cursor: grabbing;
+  }
+  .wb-shell.tb-prototype .tb-notification .tb-row-text {
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: bottom;
+  }
+  .wb-shell.tb-prototype .tb-notification .tb-row-text::after {
+    position: absolute;
+    top: calc(50% - .5px);
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: currentColor;
+    content: "";
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform .28s var(--tb-ease);
+  }
+  .wb-shell.tb-prototype .tb-notification.is-read .tb-row-label {
+    color: var(--tb-muted);
+  }
+  .wb-shell.tb-prototype .tb-notification.is-read .tb-row-text::after {
+    transform: scaleX(1);
+  }
+  .wb-shell.tb-prototype .tb-notification-trash {
+    display: flex;
+    height: 36px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 8px;
+    border-top: 1px solid var(--tb-line);
+    padding-top: 12px;
+    margin-bottom: -4px;
+    color: var(--tb-faint);
+    font-size: 12px;
+    line-height: 18px;
+    transition: color var(--tb-d2) var(--tb-ease);
+  }
+  .wb-shell.tb-prototype .tb-notification-trash-icon {
+    display: grid;
+    place-items: center;
+    transition: color .18s var(--tb-ease), transform .18s cubic-bezier(.2, .8, .3, 1.4);
+  }
+  .wb-shell.tb-prototype .tb-popover-notifications.is-over-trash .tb-notification-trash {
+    color: #d92d20;
+  }
+  .wb-shell.tb-prototype .tb-popover-notifications.is-over-trash .tb-notification-trash-icon {
+    color: #d92d20;
+    transform: scale(1.28);
+  }
+  .wb-shell.tb-prototype .tb-popover-tutorial,
+  .wb-shell.tb-prototype .tb-popover-notifications {
+    width: 320px;
+  }
+  .wb-shell.tb-prototype .tb-progress {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    margin-top: 8px;
+  }
+  .wb-shell.tb-prototype .tb-progress-track {
+    flex: 1;
+    min-width: 0;
+    height: 6px;
+    overflow: hidden;
+    border-radius: 9999px;
+    background: var(--tb-fill);
+  }
+  .wb-shell.tb-prototype .tb-progress-fill {
+    display: block;
+    height: 100%;
+    border-radius: 9999px;
+    background: var(--tb-badge-amber);
+    transition: width .3s var(--tb-ease);
+  }
+  .wb-shell.tb-prototype .tb-progress-label {
+    flex: none;
+    color: var(--tb-muted);
+    font-size: 12px;
+    line-height: 18px;
+  }
+  .wb-shell.tb-prototype .tb-popover-empty {
+    display: grid;
+    justify-items: center;
+    gap: 6px;
+    padding: 20px 0 8px;
+    color: var(--tb-faint);
+    text-align: center;
+  }
+  .wb-shell.tb-prototype .tb-popover-empty p {
+    margin: 0;
+    font-size: 12px;
+    line-height: 18px;
+  }
+  .wb-shell.tb-prototype .tb-popover-feedback {
+    width: 540px;
+  }
+  .wb-shell.tb-prototype .tb-feedback-types {
+    display: flex;
+    flex: none;
+    gap: 6px;
+  }
+  .wb-shell.tb-prototype .tb-chip {
+    height: 24px;
+    padding: 4px 10px;
+    border-radius: 9999px;
+    color: var(--tb-muted);
+    background: var(--tb-page);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 16px;
+    white-space: nowrap;
+  }
+  .wb-shell.tb-prototype .tb-chip.is-current {
+    color: var(--tb-chip-color, var(--tb-accent));
+    background: var(--tb-chip-tint, var(--tb-accent-soft));
+  }
+  .wb-shell.tb-prototype .tb-feedback-body {
+    display: block;
+    width: 100%;
+    height: 105px;
+    margin-top: 10px;
+    padding: 12px 16px;
+    border: 0;
+    border-radius: 10px;
+    color: var(--tb-sidebar-accent-foreground);
+    background: var(--tb-page);
+    font-family: inherit;
     font-size: 14px;
+    line-height: 20px;
+    resize: none;
+  }
+  .wb-shell.tb-prototype .tb-feedback-foot {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 14px;
+  }
+  .wb-shell.tb-prototype .tb-feedback-hint {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin: 0;
+    color: var(--tb-faint);
+    font-size: 11px;
+    line-height: 16px;
+  }
+  .wb-shell.tb-prototype .tb-feedback-hint kbd {
+    padding: 2px 4px;
+    border-radius: 4px;
+    background: var(--tb-fill);
+    font-family: inherit;
+    font-size: 10px;
+    line-height: 15px;
+  }
+  .wb-shell.tb-prototype .tb-button-primary {
+    height: 36px;
+    padding: 0 20px;
+    border-radius: 9999px;
+    font-size: 14px;
+    line-height: 20px;
+  }
+  .wb-shell.tb-prototype .tb-button-primary:disabled {
+    cursor: not-allowed;
+  }
+  .wb-shell.tb-prototype .tb-feedback-sent {
+    display: grid;
+    justify-items: center;
+    gap: 6px;
+    padding: 12px 20px 16px;
+    text-align: center;
+  }
+  .wb-shell.tb-prototype .tb-feedback-sent {
+    display: grid;
+    justify-items: center;
+    gap: 14px;
+    padding: 18px 20px 20px;
+    text-align: center;
+  }
+  .wb-shell.tb-prototype .tb-feedback-sent-mark {
+    display: grid;
+    width: 40px;
+    height: 40px;
+    place-items: center;
+    border-radius: 9999px;
+    color: #fff;
+    background: var(--tb-badge-amber);
+  }
+  .wb-shell.tb-prototype .tb-feedback-sent p {
+    margin: 0;
+    color: var(--tb-muted);
+    font-size: 12px;
+    line-height: 18px;
+  }
+  .wb-shell.tb-prototype .tb-feedback-sent h2 {
+    font-weight: 600;
+  }
+  .wb-shell.tb-prototype .tb-feedback-dismiss {
+    padding: 6px 14px;
+    border-radius: 9999px;
+    color: var(--tb-accent);
+    background: var(--tb-accent-soft);
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 18px;
+  }
+  .wb-shell.tb-prototype .tb-popover-privacy {
+    display: flex;
+    width: max-content;
+    align-items: center;
+    gap: 14px;
+    border-radius: 16px;
+  }
+  .wb-shell.tb-prototype .tb-popover-privacy h2 {
+    font-weight: 800;
+  }
+  .wb-shell.tb-prototype .tb-privacy-mark {
+    display: grid;
+    flex: none;
+    width: 28px;
+    height: 28px;
+    place-items: center;
+    border-radius: 9999px;
+    color: #0066cc;
+    background: light-dark(#eee9fb, var(--app-soft));
+  }
+  .wb-shell.tb-prototype .tb-search-layer {
+    position: fixed;
+    z-index: 200;
+    inset: 0;
+    display: grid;
+  }
+  .wb-shell.tb-prototype .tb-search-backdrop {
+    position: absolute;
+    inset: 0;
+  }
+  .wb-shell.tb-prototype .tb-search-panel {
+    position: relative;
+    max-width: calc(100vw - 32px);
+    animation: tb-surface-in .18s var(--tb-ease) both;
+  }
+  .wb-shell.tb-prototype .tb-search-input {
+    min-width: 0;
+    padding: 12px 0;
+    line-height: 20px;
+    outline: none;
+  }
+  .wb-shell.tb-prototype .tb-search-input:focus-visible {
+    outline: none;
+  }
+  .wb-shell.tb-prototype .tb-search-close {
+    flex: none;
+  }
+  .wb-shell.tb-prototype .tb-search-results {
+    max-height: 320px;
+    overflow-y: auto;
+  }
+  .wb-shell.tb-prototype .tb-search-group-label {
+    height: 28px;
+    line-height: 16px;
+  }
+  .wb-shell.tb-prototype .tb-search-item {
+    text-decoration: none;
+    width: 100%;
+    height: 36px;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 20px;
+    text-align: left;
+  }
+  .wb-shell.tb-prototype .tb-search-dot {
+    flex: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 9999px;
+  }
+  .wb-shell.tb-prototype .tb-search-item-name {
+    flex: none;
+  }
+  .wb-shell.tb-prototype .tb-search-item-hint {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    color: var(--tb-faint);
+    font-size: 12px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .wb-shell.tb-prototype .tb-search-empty {
+    display: grid;
+    justify-items: center;
+    gap: 4px;
+  }
+  .wb-shell.tb-prototype .tb-search-empty p {
+    margin: 0;
+    color: var(--tb-ink);
+    font-size: 14px;
+    line-height: 20px;
+  }
+  .wb-shell.tb-prototype .tb-search-empty span {
+    font-size: 12px;
+    line-height: 18px;
+  }
+  .wb-shell.tb-prototype .tb-account-block {
+    position: relative;
+    padding-top: 4px;
+  }
+  .wb-shell.tb-prototype .tb-account-row {
+    display: flex;
+    align-items: center;
+    color: inherit;
+    background: transparent;
+    text-align: left;
+    text-decoration: none;
+  }
+  .wb-shell.tb-prototype .tb-account-name {
+    margin: 0;
+    line-height: 20px;
+    text-overflow: ellipsis;
+  }
+  .wb-shell.tb-prototype .tb-language-row {
+    top: 8px;
+    right: 20px;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 0;
     background: transparent;
   }
-
-  .tb-mobile-scrim {
+  .wb-shell.tb-prototype .tb-language-menu {
+    position: absolute;
+    z-index: 60;
+    display: flex;
+    width: 100%;
+    max-height: 321px;
+    flex-direction: column;
+    overflow-y: auto;
+    border: 1px solid rgb(0 0 0 / .06);
+    border-radius: 14px;
+    background: light-dark(#fff, var(--app-surface));
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / .1), 0 4px 6px -4px rgb(0 0 0 / .1);
+  }
+  .wb-shell.tb-prototype .tb-language-option {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 12px 16px;
+    border: 0;
+    border-bottom: 1px solid rgb(0 0 0 / .06);
+    color: var(--tb-ink);
+    background: transparent;
+    cursor: pointer;
+    font-size: 14px;
+    text-align: left;
+    transition: background-color .15s var(--tb-ease);
+  }
+  .wb-shell.tb-prototype .tb-language-option:last-child {
+    border-bottom: 0;
+  }
+  .wb-shell.tb-prototype .tb-language-option:hover {
+    background: var(--tb-account-hover);
+  }
+  .wb-shell.tb-prototype .tb-language-option-flag {
+    width: 24px;
+    height: 24px;
+    flex: 0 0 auto;
+    border-radius: 50%;
+  }
+  .wb-shell.tb-prototype .tb-language-option-name {
+    display: flex;
+    flex: 1 1 auto;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px;
+    min-width: 0;
+  }
+  .wb-shell.tb-prototype .tb-language-native {
+    font-weight: 500;
+  }
+  .wb-shell.tb-prototype .tb-language-english {
+    color: var(--tb-muted);
+    font-weight: 400;
+  }
+  .wb-shell.tb-prototype .tb-language-check {
+    flex: 0 0 auto;
+    color: var(--tb-primary);
+  }
+  .wb-shell.tb-prototype .tb-term-button {
+    position: relative;
+    display: flex;
+    align-items: center;
+    border: 0;
+    cursor: pointer;
+    line-height: 20px;
+    text-align: left;
+  }
+  .wb-shell.tb-prototype .tb-term-name {
+    white-space: nowrap;
+  }
+  .wb-shell.tb-prototype .tb-term-tooltip {
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    z-index: 70;
+    padding: 6px 12px;
+    transform: translateX(-50%);
+    border-radius: 8px;
+    color: var(--tb-page);
+    background: var(--tb-ink);
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 14px;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+  .wb-shell.tb-prototype .tb-term-tooltip::after {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    width: 8px;
+    height: 4px;
+    transform: translateX(-50%);
+    background: var(--tb-ink);
+    clip-path: polygon(50% 100%, 0 0, 100% 0);
+    content: "";
+  }
+  .wb-shell.tb-prototype .tb-semester-popover {
+    max-width: calc(100vw - 24px);
+    max-height: calc(100dvh - 200px);
+    overflow-y: auto;
+    animation: tb-grow-in .18s var(--tb-ease) both;
+  }
+  .wb-shell.tb-prototype .tb-term-wrap {
+    display: block;
+  }
+  .wb-shell.tb-prototype .tb-semester-list {
+    display: grid;
+    gap: 2px;
+    padding: 8px;
+  }
+  .wb-shell.tb-prototype .tb-semester-option {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: background-color .15s var(--tb-ease);
+  }
+  .wb-shell.tb-prototype .tb-semester-option-body {
+    display: grid;
+    flex: 1 1 auto;
+    gap: 2px;
+    min-width: 0;
+  }
+  .wb-shell.tb-prototype .tb-semester-option-name {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--tb-ink);
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+  }
+  .wb-shell.tb-prototype .tb-semester-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .wb-shell.tb-prototype .tb-semester-range {
+    margin: 0;
+    color: var(--tb-muted);
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 18px;
+  }
+  .wb-shell.tb-prototype .tb-semester-edit {
+    display: flex;
+    width: 28px;
+    height: 28px;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 0;
+    border-radius: 8px;
+    opacity: 0;
+    color: var(--tb-ink);
+    background: var(--tb-fill);
+    cursor: pointer;
+    transition: opacity .15s var(--tb-ease);
+  }
+  .wb-shell.tb-prototype .tb-semester-option:hover .tb-semester-edit,
+  .wb-shell.tb-prototype .tb-semester-edit:focus-visible {
+    opacity: 1;
+    outline: 2px solid rgb(46 49 55 / .5);
+    outline-offset: 1px;
+  }
+  .wb-shell.tb-prototype .tb-semester-create-row {
+    display: block;
+  }
+  .wb-shell.tb-prototype .tb-semester-create {
+    display: flex;
+    align-items: center;
+    border: 0;
+    cursor: pointer;
+    font-size: 14px;
+    text-align: left;
+    transition: background-color .15s var(--tb-ease);
+  }
+  @keyframes tb-grow-in {
+    from {
+      opacity: 0;
+      transform: scale(.96) translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  .wb-shell.tb-prototype .tb-dialog-layer {
     position: fixed;
     z-index: 80;
     inset: 0;
-    display: block;
-    background: rgba(25, 27, 31, .34);
+    display: grid;
+    place-items: center;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    border: 0;
+    padding: 16px;
+    background: transparent;
+  }
+  .wb-shell.tb-prototype .tb-dialog-layer::backdrop {
+    background: rgb(0 0 0 / .5);
+    animation: tb-fade-in .18s var(--tb-ease) both;
+  }
+  .wb-shell.tb-prototype .tb-dialog {
+    position: relative;
+    display: grid;
+    width: 1000px;
+    max-width: calc(100vw - 32px);
+    height: 601px;
+    max-height: calc(100dvh - 32px);
+    grid-template-columns: 380px minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto;
+    overflow: hidden;
+    border-radius: 10px;
+    background: light-dark(#fff, var(--app-surface));
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / .1), 0 4px 6px -4px rgb(0 0 0 / .1);
+    animation: tb-grow-in .18s var(--tb-ease) both;
+  }
+  .wb-shell.tb-prototype .tb-dialog-form {
+    display: flex;
+    min-width: 0;
+    min-height: 0;
+    flex-direction: column;
+    grid-column: 1;
+    grid-row: 1;
+    background: rgb(246 246 246 / .3);
+  }
+  .wb-shell.tb-prototype .tb-dialog-head {
+    padding: 20px 28px;
+  }
+  .wb-shell.tb-prototype .tb-dialog-close {
+    display: flex;
+    width: 24px;
+    height: 24px;
+    margin-left: -4px;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    border: 0;
+    border-radius: 2px;
+    color: var(--tb-ink);
+    background: transparent;
+    cursor: pointer;
+  }
+  .wb-shell.tb-prototype .tb-dialog-title-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .wb-shell.tb-prototype .tb-dialog-more {
+    display: flex;
+    width: 32px;
+    height: 32px;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    margin: -2px -5px -2px auto;
+    padding: 0;
+    border: 0;
+    border-radius: 8px;
+    color: var(--tb-ink);
+    background: transparent;
+    cursor: pointer;
+  }
+  .wb-shell.tb-prototype .tb-dialog-more:hover {
+    background: var(--tb-fill);
+  }
+  .wb-shell.tb-prototype .tb-dialog-more-wrap {
+    position: relative;
+    margin: -2px -5px -2px auto;
+  }
+  .wb-shell.tb-prototype .tb-dialog-more-menu {
+    position: absolute;
+    z-index: 70;
+    top: calc(100% + 4px);
+    right: 0;
+    width: 122px;
+    padding: 4px;
+    border: 1px solid rgb(0 0 0 / .06);
+    border-radius: 8px;
+    background: light-dark(#fff, var(--app-surface));
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / .1), 0 4px 6px -4px rgb(0 0 0 / .1);
+    animation: tb-grow-in .18s var(--tb-ease) both;
+    transform-origin: 100% 0;
+  }
+  .wb-shell.tb-prototype .tb-dialog-more-item {
+    display: flex;
+    width: 100%;
+    height: 30px;
+    align-items: center;
+    padding: 6px 8px;
+    border: 0;
+    border-radius: 2px;
+    color: var(--tb-danger);
+    background: transparent;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 400;
+    text-align: left;
+  }
+  .wb-shell.tb-prototype .tb-dialog-more-item:hover {
+    background: var(--tb-account-hover);
+  }
+  .wb-shell.tb-prototype .tb-dialog-more-item:disabled {
+    color: var(--tb-muted);
+    cursor: default;
+  }
+  .wb-shell.tb-prototype .tb-dialog-title {
+    margin: 0;
+    color: var(--tb-ink);
+    font-size: 24px;
+    font-weight: 800;
+    line-height: 36px;
+  }
+  .wb-shell.tb-prototype .tb-dialog-desc {
+    margin: 4px 0 0;
+    color: var(--tb-muted);
+    font-size: 12px;
+    line-height: 18px;
+  }
+  .wb-shell.tb-prototype .tb-dialog-body {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: 16px;
+    padding: 0 28px 12px;
+  }
+  .wb-shell.tb-prototype .tb-field {
+    display: grid;
+    gap: 8px;
+  }
+  .wb-shell.tb-prototype .tb-field-label {
+    color: var(--tb-ink);
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 14px;
+  }
+  .wb-shell.tb-prototype .tb-field-input {
+    min-width: 0;
+    width: 100%;
+    height: 36px;
+    padding: 4px 12px;
+    border: 1px solid var(--tb-line);
+    border-radius: 8px;
+    color: var(--tb-ink);
+    background: light-dark(#fff, var(--app-surface));
+    font-size: 14px;
+    font-weight: 400;
+  }
+  .wb-shell.tb-prototype .tb-field-dates {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .wb-shell.tb-prototype .tb-field-mode {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 12px;
+  }
+  .wb-shell.tb-prototype .tb-mode-cards {
+    display: grid;
+    gap: 8px;
+  }
+  .wb-shell.tb-prototype .tb-mode-card {
+    display: flex;
+    min-height: 82px;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+    padding: 16px;
+    border: 1px solid var(--tb-line);
+    border-radius: 10px;
+    color: var(--tb-ink);
+    background: light-dark(#fff, var(--app-surface));
+    cursor: pointer;
+    text-align: left;
+  }
+  .wb-shell.tb-prototype .tb-mode-card.is-selected {
+    border-color: var(--tb-primary);
+    background: var(--tb-primary-tint);
+  }
+  .wb-shell.tb-prototype .tb-mode-card-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+  }
+  .wb-shell.tb-prototype .tb-mode-card-note {
+    margin: 0;
+    padding-left: 30px;
+    color: var(--tb-muted);
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 17px;
+  }
+  .wb-shell.tb-prototype .tb-dialog-foot {
+    display: grid;
+    grid-column: 1;
+    grid-row: 2;
+    gap: 8px;
+    padding: 12px 28px 20px;
+    background: light-dark(#fcfcfe, var(--app-surface));
+  }
+  .wb-shell.tb-prototype .tb-dialog-submit {
+    height: 36px;
+    padding: 8px 16px;
+    border: 0;
+    border-radius: 8px;
+    color: var(--tb-on-primary);
+    background: var(--tb-primary);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .wb-shell.tb-prototype .tb-dialog-cancel {
+    height: 28px;
+    padding: 4px 0;
+    border: 0;
+    color: var(--tb-muted);
+    background: transparent;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 400;
+  }
+  .wb-shell.tb-prototype .tb-dialog-preview {
+    display: flex;
+    min-width: 0;
+    min-height: 0;
+    flex-direction: column;
+    grid-column: 2;
+    grid-row: 1 / 3;
+  }
+  .wb-shell.tb-prototype .tb-dialog-preview-head {
+    padding: 20px 24px 16px;
+    background: var(--tb-page);
+  }
+  .wb-shell.tb-prototype .tb-dialog-preview-head h3 {
+    margin: 0;
+    color: var(--tb-ink);
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 27px;
+  }
+  .wb-shell.tb-prototype .tb-dialog-preview-body {
+    display: flex;
+    flex: 1 1 auto;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 24px;
+  }
+  .wb-shell.tb-prototype .tb-preview-card {
+    display: grid;
+    width: 384px;
+    max-width: 100%;
+    gap: 14px;
+    justify-items: center;
+    text-align: center;
+  }
+  .wb-shell.tb-prototype .tb-preview-mark {
+    display: flex;
+    width: 56px;
+    height: 56px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: var(--tb-primary);
+    background: rgb(46 49 55 / .1);
+  }
+  .wb-shell.tb-prototype .tb-preview-card p {
+    margin: 0;
+    color: var(--tb-muted);
+    font-size: 14px;
+    line-height: 20px;
+  }
+  .wb-shell.tb-prototype .tb-copy-panel {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .wb-shell.tb-prototype .tb-copy-source-block {
+    display: grid;
+    gap: 8px;
+    padding: 20px 24px 8px;
+  }
+  .wb-shell.tb-prototype .tb-copy-field {
+    display: grid;
+    gap: 8px;
+  }
+  .wb-shell.tb-prototype .tb-copy-source-wrap {
+    position: relative;
+  }
+  .wb-shell.tb-prototype .tb-copy-source-placeholder {
+    color: var(--tb-muted);
+  }
+  .wb-shell.tb-prototype .tb-copy-source-menu {
+    position: absolute;
+    z-index: 70;
+    top: calc(100% + 4px);
+    left: 0;
+    width: 100%;
+    max-height: 180px;
+    overflow-y: auto;
+    padding: 4px;
+    border: 1px solid rgb(0 0 0 / .06);
+    border-radius: 8px;
+    background: light-dark(#fff, var(--app-surface));
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / .1), 0 4px 6px -4px rgb(0 0 0 / .1);
+    animation: tb-grow-in .18s var(--tb-ease) both;
+  }
+  .wb-shell.tb-prototype .tb-copy-source-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    height: 36px;
+    padding: 8px 10px;
+    border: 0;
+    border-radius: 2px;
+    color: var(--tb-ink);
+    background: transparent;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 400;
+    text-align: left;
+  }
+  .wb-shell.tb-prototype .tb-copy-source-option > span:last-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .wb-shell.tb-prototype .tb-copy-source-option:hover {
+    background: var(--tb-account-hover);
+  }
+  .wb-shell.tb-prototype .tb-copy-source-mark {
+    display: flex;
+    width: 14px;
+    height: 14px;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+  }
+  .wb-shell.tb-prototype .tb-copy-list {
+    display: grid;
+    border: 1px solid var(--tb-line);
+    border-radius: 8px;
+  }
+  .wb-shell.tb-prototype .tb-copy-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 50px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--tb-line);
+  }
+  .wb-shell.tb-prototype .tb-copy-item:last-child {
+    border-bottom: 0;
+  }
+  .wb-shell.tb-prototype .tb-copy-item.is-disabled {
+    opacity: .55;
+  }
+  .wb-shell.tb-prototype .tb-checkbox {
+    display: flex;
+    width: 15px;
+    height: 15px;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid var(--tb-line);
+    border-radius: 4px;
+    color: #fff;
+    background: light-dark(#fff, var(--app-surface));
+    cursor: pointer;
+  }
+  .wb-shell.tb-prototype .tb-checkbox.is-checked {
+    border-color: var(--tb-primary);
+    background: var(--tb-primary);
+  }
+  .wb-shell.tb-prototype .tb-checkbox:disabled {
+    cursor: default;
+  }
+  .wb-shell.tb-prototype .tb-copy-item-icon {
+    display: flex;
+    width: 30px;
+    height: 30px;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    color: var(--tb-ink);
+    background: var(--tb-fill);
+  }
+  .wb-shell.tb-prototype .tb-copy-item-name {
+    flex: 1 1 auto;
+    color: var(--tb-ink);
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .wb-shell.tb-prototype .tb-copy-item-count {
+    flex: 0 0 auto;
+    padding: 2px 8px;
+    border-radius: 9999px;
+    color: var(--tb-ink);
+    background: var(--tb-fill);
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .wb-shell.tb-prototype .tb-copy-source {
+    display: flex;
+    width: 100%;
+    height: 40px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 12px;
+    border: 1px solid var(--tb-line);
+    border-radius: 8px;
+    color: var(--tb-muted);
+    background: light-dark(#fff, var(--app-surface));
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 400;
+    text-align: left;
+  }
+  .wb-shell.tb-prototype .tb-copy-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 0 24px;
+  }
+  .wb-shell.tb-prototype .tb-copy-empty {
+    padding: 32px 16px;
+    border: 1px dashed var(--tb-line);
+    border-radius: 8px;
+    background: rgb(246 246 246 / .2);
+  }
+  .wb-shell.tb-prototype .tb-copy-empty p {
+    margin: 0;
+    color: var(--tb-muted);
+    font-size: 14px;
+    line-height: 20px;
+  }
+  .wb-shell.tb-prototype .tb-copy-note-row {
+    margin-top: auto;
+    padding: 12px 24px 20px;
+  }
+  .wb-shell.tb-prototype .tb-copy-note {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    border-radius: 8px;
+  }
+  .wb-shell.tb-prototype .tb-copy-note .tb-icon {
+    flex: 0 0 auto;
+  }
+  .wb-shell.tb-prototype .tb-copy-note p {
+    margin: 0;
+    font-size: 12px;
+    line-height: 20px;
+  }
+  .wb-shell.tb-prototype .tb-copy-note.is-warn {
+    border: 1px solid #ffd230;
+    background: light-dark(#fffbeb, var(--app-soft));
+  }
+  .wb-shell.tb-prototype .tb-copy-note.is-warn .tb-icon {
+    color: #e17100;
+  }
+  .wb-shell.tb-prototype .tb-copy-note.is-warn p {
+    color: #461901;
+  }
+  .wb-shell.tb-prototype .tb-copy-note.is-info {
+    border: 1px solid #93c5fd;
+    background: light-dark(#eff6ff, var(--app-soft));
+  }
+  .wb-shell.tb-prototype .tb-copy-note.is-info .tb-icon {
+    color: #8ec5ff;
+  }
+  .wb-shell.tb-prototype .tb-copy-note.is-info p {
+    color: #0b2440;
+  }
+  @keyframes tb-fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @media (max-width: 700px) {
+    .wb-shell.tb-prototype .tb-dialog {
+      display: flex;
+      width: 100%;
+      height: auto;
+      flex-direction: column;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+    }
+    .wb-shell.tb-prototype .tb-dialog-form,
+    .wb-shell.tb-prototype .tb-dialog-preview,
+    .wb-shell.tb-prototype .tb-copy-panel {
+      flex: none;
+    }
+    .wb-shell.tb-prototype .tb-dialog-form {
+      display: contents;
+    }
+    .wb-shell.tb-prototype .tb-dialog-head {
+      order: 0;
+      padding: 20px 24px;
+    }
+    .wb-shell.tb-prototype .tb-dialog-body {
+      order: 1;
+      flex: none;
+      padding: 0 24px 20px;
+    }
+    .wb-shell.tb-prototype .tb-dialog-preview {
+      order: 2;
+      border-top: 1px solid var(--tb-line);
+    }
+    .wb-shell.tb-prototype .tb-dialog-foot {
+      position: sticky;
+      z-index: 1;
+      bottom: 0;
+      order: 3;
+      flex: none;
+      padding: 12px 24px 16px;
+      border-top: 1px solid var(--tb-line);
+      background: light-dark(#fff, var(--app-surface));
+    }
+    .wb-shell.tb-prototype .tb-copy-body {
+      flex: none;
+      overflow: visible;
+    }
+    .wb-shell.tb-prototype .tb-copy-item {
+      gap: 8px;
+      padding: 10px;
+    }
+    .wb-shell.tb-prototype .tb-semester-edit {
+      opacity: 1;
+    }
+    .wb-shell.tb-prototype .tb-language-menu {
+      max-height: min(321px, calc(100dvh - 140px));
+    }
+  }
+  .wb-shell.tb-prototype .tb-drag-chip {
+    position: fixed;
+    z-index: 9999;
+    top: 0;
+    left: 0;
+    display: grid;
+    width: var(--tb-chip-size);
+    height: var(--tb-chip-size);
+    place-items: center;
+    border: 1px solid var(--tb-chip-edge);
+    border-radius: 50%;
+    color: var(--tb-chip-ink);
+    background: var(--tb-chip-surface);
+    box-shadow: 0 2px 6px rgba(15, 18, 24, .22);
     opacity: 0;
     pointer-events: none;
-    transition: opacity .2s ease;
+    transform: translate(-50%, -50%);
+    transition: opacity .12s var(--tb-ease);
   }
-
-  .tb-mobile-scrim.is-visible {
+  .wb-shell.tb-prototype .tb-drag-chip.is-placed {
     opacity: 1;
-    pointer-events: auto;
   }
-
-  .tb-main {
-    padding: 18px 14px 70px;
+  .wb-shell.tb-prototype .tb-drag-chip::before {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    content: "";
   }
-
-  .tb-context-menu {
-    right: 10px !important;
-    bottom: 10px;
-    left: 10px !important;
-    top: auto !important;
-    width: auto;
-    border-radius: 14px;
+  @media (max-width: 700px) {
+    .wb-shell.tb-prototype .tb-entry {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+    }
+    .wb-shell.tb-prototype .tb-popover {
+      position: fixed;
+      top: 64px;
+      right: 12px;
+      max-width: calc(100vw - 24px);
+      max-height: calc(100dvh - 80px);
+      overflow-y: auto;
+    }
+    .wb-shell.tb-prototype .tb-popover-feedback .tb-popover-head {
+      flex-wrap: wrap;
+      gap: 8px;
+    }
   }
-
-}
-
-/* Keep the settled state authoritative after every animation declaration. */
-@media (prefers-reduced-motion: reduce) {
-  :scope *,
-  :scope *::before,
-  :scope *::after {
-    animation: none !important;
-    transition: none !important;
-    scroll-behavior: auto !important;
+  @media (prefers-reduced-motion: reduce) {
+    .wb-shell.tb-prototype .tb-dialog-layer::backdrop {
+      animation: none;
+    }
   }
-  :scope .tb-dialog-layer::backdrop { animation: none; }
-}
-
-}
-.tb-prototype.wb-shell {font-size:13px;line-height:1.65;min-height:0;}
-.tb-prototype > .tb-topbar {flex:none;}
-.tb-prototype .tb-sidebar {position:relative;top:auto;height:100%;flex:none;}
-.tb-prototype .wb-workspace {font-family:inherit;}
-.tb-prototype .tb-sidebar {width:var(--tb-sidebar-width);}
-.tb-prototype .tb-top-actions .wb-icon-button {border: 0;background: transparent;width:32px;height:32px;}
-.tb-prototype .tb-top-actions .wb-icon-button svg {width:22px;height:22px;}
-.restored-home {position:relative;width:100%;height:100%;min-height:0;overflow:auto;padding:12px 16px 16px 12px;background-color: light-dark(#fafafa, var(--app-soft));background-image: linear-gradient(light-dark(#f2f2f2, var(--app-soft)) 1px,transparent 1px),linear-gradient(90deg,light-dark(#f2f2f2, var(--app-soft)) 1px,transparent 1px);background-size:28px 28px;color: var(--tb-ink);}
-/* Home geometry follows prototype/workbench's full-size Agent layout. */
-.restored-home-frame {display:flex;flex-direction:column;height:100%;min-height:0;border: 1px solid transparent;border-radius:11px;}
-.restored-home.is-new .restored-home-frame {height:auto;min-height:100%;}
-.restored-home-top {display:flex;flex:none;align-items:center;justify-content:space-between;padding:8px 15px;color: light-dark(#93909e, var(--app-muted));font-size:11px;}
-.restored-home-top > span {display:flex;gap:7px;align-items:center;}
-.restored-home-top > span .tb-icon {color: #9c8ab9;}
-.tb-prototype .restored-return {display:inline-flex;align-items:center;gap:6px;height:auto;min-height:30px;padding:5px 10px;border: 1px solid light-dark(#e4e4e7, var(--app-line));border-radius:6px;background: light-dark(#fff, var(--app-surface));color: light-dark(#555862, var(--app-muted));font-size:12px;line-height:18px;}
-.restored-welcome {display:flex;flex:none;flex-direction:column;align-items:center;gap:12px;text-align:center;margin-top:clamp(40px,14vh,155px);padding:0 20px 32px;}
-.restored-mark {display:grid;place-items:center;width:55px;height:55px;margin-bottom:10px;border: 1px solid light-dark(#e9e4f1, var(--app-line));background: light-dark(#f4f0f9, var(--app-soft));border-radius:15px;color: #9b87bd;}
-.wb-shell .restored-welcome h1 {margin:0;font-size:28px;font-weight:500;line-height:1.5;letter-spacing:-.04em;}
-.restored-welcome p {margin:0;font-size:13px;line-height:1.9;color: light-dark(#a19ba9, var(--app-faint));}
-.restored-composer-area {flex:1;min-height:0;}
-.restored-home.is-new .restored-composer-area {flex:none;width:min(720px,100%);margin:0 auto;padding:18px 20px 30px;}
-.wb-shell[data-route='home'] .restored-home.is-new .agent-workspace {height:auto;flex:none;padding:0;}
-.restored-home.is-new .agent-thread {display:none!important;}
-.restored-home.is-new .agent-head {display:none;}
-.restored-home.is-new.has-history .agent-head {display:flex;position:absolute;right:28px;top:58px;padding:0;}
-.restored-home.is-new .agent-head > strong {display:none;}
-.restored-home.is-new .agent-head > .wb-button {display:none;}
-.restored-home.is-new .wb-ai-composer {gap:0;border: 1px solid light-dark(#e2dce9, var(--app-line));background: light-dark(white, var(--app-surface));border-radius:12px;padding:10px 13px;box-shadow: 0 3px 12px #4b365708;}
-.restored-home.is-new .wb-ai-composer:focus-within {border-color: light-dark(#bba8d4, var(--app-line));}
-.restored-home.is-new .agent-references:empty {display:none;}
-.restored-home.is-new .wb-ai-input {display:block;padding:4px 0;border: 0;background: transparent;min-height:80px;resize:none;}
-.restored-home.is-new .wb-ai-input:focus {outline: none;box-shadow: none;}
-.restored-home.is-new .wb-ai-actions {padding-top:5px;}
-.restored-home .wb-ai-actions button[type='submit'] {width:29px;height:29px;flex:none;padding:0;border: 0;border-radius:7px;background: #35313d;color: #fff;font-size:0;}
-.restored-home .wb-ai-actions button[type='submit']::before {content:'';width:18px;height:18px;background: currentColor;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 20V4m-6 6 6-6 6 6'/%3E%3C/svg%3E") center/contain no-repeat;}
-.restored-suggestions {display:flex;justify-content:center;gap:9px;margin-top:17px;flex-wrap:wrap;}
-.restored-suggestions .wb-button {height:auto;padding:6px 10px;border: 1px solid light-dark(#e8e4ed, var(--app-line));border-radius:6px;background: light-dark(#ffffff9c, var(--app-surface));color: light-dark(#968d9e, var(--app-muted));font-size:11px;}
-.wb-shell[data-route='home'] .wb-main {padding:0;}
-.tb-prototype .restored-start {display:block;text-align:left;width:100%;margin:0;padding:10px 13px;border: 1px solid light-dark(#e2dce9, var(--app-line));border-radius:12px;background: light-dark(white, var(--app-surface));box-shadow: 0 3px 12px #4b365708;color: light-dark(#757575, var(--app-muted));font:inherit;cursor:text;}
-.restored-placeholder {display:block;min-height:80px;padding:4px 0;}
-.restored-composer-bottom {display:flex;align-items:center;justify-content:space-between;padding-top:5px;font-size:10px;color: light-dark(#aaa5b0, var(--app-faint));}
-.restored-send {display:grid;place-items:center;width:29px;height:29px;border-radius:7px;background: #35313d;color: white;opacity:.38;}
-.tb-prototype.wb-shell {font-size:16px;line-height:24px;}
-.tb-prototype .wb-workspace {font-size:13px;line-height:1.65;}
-.tb-prototype .tb-top-actions .wb-notifications {font-size:13px;}
-
-/* Keep the drawer above its scrim at every shell breakpoint. */
-@media (max-width:1080px) {
-  .tb-prototype .tb-sidebar { position:fixed; top:0; bottom:0; left:0; z-index:90; width:min(326px,calc(100vw - 36px)); height:100dvh; }
-  .tb-prototype .tb-sidebar:not(.is-mobile-open) { display:none; }
-  .tb-prototype .tb-sidebar-mobile-head { display:flex; align-items:center; justify-content:space-between; height:52px; padding:0 14px; border-bottom: 1px solid var(--tb-line); }
-  .tb-prototype .tb-mobile-scrim.is-visible { position:fixed; inset:0; z-index:80; display:block; background: #191b1f57; }
-}
-@media (max-width:700px) {
-  .tb-prototype .tb-top-actions { gap:8px; }
-  .restored-home { padding:8px; }
-  .restored-welcome { margin-top:50px; }
-  .wb-shell .restored-welcome h1 { font-size:23px; }
-  .restored-welcome p { max-width:270px; font-size:12px; }
-  .restored-home.is-new .restored-composer-area { padding:10px; }
-}
-.tb-prototype .tb-notification-problem { display:flex; flex-direction:column; align-items:flex-start; gap:8px; margin:8px 12px; padding:12px; background: light-dark(#fff5f5, var(--app-soft)); color: light-dark(#9b3030, #ff7b83); border-radius:10px; font-size:13px; line-height:1.5; overflow-wrap:anywhere; }
-.tb-prototype .tb-notification-problem > button { padding:5px 10px; border:1px solid var(--app-line); border-radius:6px; background:var(--app-surface); color:var(--app-ink); font:inherit; cursor:pointer; }
-.restored-home.is-new .agent-workspace { position:static; }
-.restored-home.is-new .agent-head .wb-button { font-size:11px; }
-.restored-home.is-new .agent-head .wb-popover { z-index:5; }
-.restored-home.is-new .agent-workspace:has(+ .restored-start) { padding:0; }
-.restored-home .wb-ai-input::placeholder { color: light-dark(#929098, var(--app-muted)); }
-.restored-home.is-new .agent-workspace[data-variant='home'] .wb-ai-composer { margin:0; }
-.tb-search-state {padding:12px 16px;color: var(--tb-muted);font-size:13px;}
-
-.tb-navigation-status {
+  .wb-shell.tb-prototype .tb-notification-problem {
   display: flex;
-  flex-wrap: wrap;
-  gap: 4px 8px;
-  margin: 0 10px 8px;
-  font-size: 12px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 8px 12px;
+  padding: 12px;
+  background: light-dark(#f8f8fa, var(--app-soft));
+  color: light-dark(#9b3030, #ff7b83);
+  border-radius: 12px;
+  font-size: 13px;
   line-height: 1.5;
-  color: var(--wb-muted);
   overflow-wrap: anywhere;
 }
-.tb-navigation-status > span { width: 100%; }
-.tb-navigation-status button { padding: 0; border: 0; background: transparent; color: var(--wb-ink); text-decoration: underline; font: inherit; cursor: pointer; }
-
-.tb-navigation-rail-status { display: flex; justify-content: center; padding-top: 8px; }
-.tb-navigation-rail-status button {
-  display: grid; place-items: center; width: 36px; height: 36px; padding: 0;
-  border: 1px solid var(--tb-sidebar-border); border-radius: 6px;
-  background: var(--tb-sidebar-accent); color: var(--tb-sidebar-foreground); cursor: pointer;
+  .wb-shell.tb-prototype .tb-notification-problem > button {
+  padding: 5px 10px;
+  border: 1px solid var(--app-line);
+  border-radius: 8px;
+  background: var(--app-surface);
+  color: var(--tb-ink);
+  font: inherit;
+  cursor: pointer;
 }
-.tb-navigation-rail-status button:hover { border-color: var(--tb-muted); }
-.tb-navigation-rail-status button:focus-visible { outline: 2px solid var(--tb-accent); outline-offset: 2px; }
+  .wb-shell.tb-prototype .tb-search-state {
+  padding: 12px 16px;
+  color: var(--tb-muted);
+  font-size: 13px;
+}
+  .wb-shell.tb-prototype .tb-popover-notifications .tb-popover-list {
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
+}
+  .wb-shell.tb-prototype .tb-popover-notifications .tb-notification {
+  min-width: 0;
+  max-width: 100%;
+}
+  /* App shell: a floating white navigation panel beside an airy sky canvas. */
+  /* ---------- legacy tokens point at the new ones ---------- */
+  :root,
+:root[data-workbench-theme=light],
+:root[data-workbench-theme=dark] {
+  --app-surface: var(--tb-surface);
+  --app-canvas: var(--tb-canvas);
+  --app-soft: var(--tb-fill);
+  --app-hover: var(--tb-fill-hover);
+  --app-text: var(--tb-ink);
+  --app-muted: var(--tb-muted);
+  --app-faint: var(--tb-faint);
+  --app-line: var(--tb-line);
+  --app-line-soft: var(--tb-line-soft);
+  --app-primary: var(--tb-primary);
+  --app-on-primary: var(--tb-on-primary);
+  --app-accent: var(--tb-accent);
+  --app-accent-soft: var(--tb-accent-soft);
+  --app-grid-line: color-mix(in oklab, var(--tb-ink) 5%, transparent);
+}
+  .wb-shell.tb-prototype {
+  --tbx-side: 248px;
+  --tbx-gap: 10px;
+  --tbx-bar: 64px;
+  --wb-ink: var(--tb-ink);
+  --wb-muted: var(--tb-muted);
+  --wb-line: var(--tb-line);
+  --wb-line-soft: var(--tb-line-soft);
+  --wb-purple: var(--tb-accent);
+  --wb-purple-soft: var(--tb-accent-soft);
+  --wb-bg: var(--tb-canvas);
+  --wb-surface: var(--tb-surface);
+  --wb-panel: var(--tb-surface);
+  --wb-danger: var(--tb-danger);
+  --wb-ease: var(--tb-ease);
+  --wb-shadow: var(--tb-shadow-1);
+  --tb-page: var(--tb-canvas);
+  --tb-soft: var(--tb-fill);
+  --tb-purple: var(--tb-accent);
+  --tb-accent-tint: var(--tb-accent-soft);
+  --tb-primary-tint: color-mix(in oklab, var(--tb-primary) 8%, transparent);
+  --tb-card-elevation: var(--tb-shadow-2);
+  --tb-row-radius: 12px;
+  --tb-badge-amber: var(--tb-yellow);
+  --tb-brand-mark: var(--tb-brand);
+  --app-workspace-padding: 8px 24px 24px 20px;
+  background: var(--tb-canvas);
+  color: var(--tb-ink);
+  font-family: var(--tb-font);
+  font-size: 14px;
+  line-height: 1.6;
+}
+  .wb-shell.tb-prototype[data-sidebar=rail] {
+  --tbx-side: 64px;
+}
+  /* ---------- top bar ---------- */
+  .wb-shell.tb-prototype .tb-topbar.tbx-topbar {
+  position: relative;
+  z-index: 60;
+  display: flex;
+  align-items: stretch;
+  height: var(--tbx-bar);
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+  .wb-shell.tb-prototype .tbx-brand-slot {
+  position: relative;
+  flex: none;
+  display: flex;
+  align-items: center;
+  width: var(--tbx-side);
+  margin: var(--tbx-gap) 0 0 var(--tbx-gap);
+  padding: 0 17px;
+  border-radius: 22px 22px 0 0;
+  background: var(--tb-surface);
+  box-shadow: 0 -1px 0 rgb(0 0 0 / 0.035), 1px 0 0 rgb(0 0 0 / 0.035), -1px 0 0 rgb(0 0 0 / 0.035);
+  overflow: hidden;
+  transition: width 420ms var(--tb-ease);
+}
+  .wb-shell.tb-prototype .tbx-brand {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+  color: var(--tb-ink);
+  text-decoration: none;
+}
+  .wb-shell.tb-prototype .tbx-brand .tbx-wordmark {
+  color: var(--tb-ink);
+  font-size: 17px;
+  white-space: nowrap;
+  transition: opacity 260ms var(--tb-ease) 140ms;
+}
+  .wb-shell.tb-prototype[data-sidebar=rail] .tbx-brand .tbx-wordmark {
+  opacity: 0;
+  transition: opacity 140ms var(--tb-ease);
+}
+  .wb-shell.tb-prototype .tbx-brand-slot .tb-mobile-menu {
+  display: none;
+}
+  .wb-shell.tb-prototype .tbx-bar {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: var(--tbx-gap) 18px 0 14px;
+}
+  .wb-shell.tb-prototype .tb-sidebar-toggle.tbx-sidebar-toggle {
+  position: static;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  color: var(--tb-muted);
+  background: transparent;
+  opacity: 1;
+  pointer-events: auto;
+  transform: none;
+  transition: background var(--tb-d1), color var(--tb-d1);
+}
+  .wb-shell.tb-prototype .tbx-sidebar-toggle:hover {
+  color: var(--tb-ink);
+  background: var(--tb-fill-hover);
+}
+  /* segmented navigation with a sliding thumb */
+  .wb-shell.tb-prototype .tb-global-nav.tbx-segmented {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 40px;
+  padding: 4px;
+  margin-left: 4px;
+  border-radius: var(--tb-r-pill);
+  background: var(--tb-fill);
+  box-shadow: inset 0 0 0 1px var(--tb-line-soft);
+}
+  .tbx-segmented-thumb {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 0;
+  border-radius: var(--tb-r-pill);
+  background: var(--tb-surface);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.1), 0 4px 12px -4px rgb(0 0 0 / 0.14);
+  transition: transform 460ms var(--tb-ease), width 460ms var(--tb-ease), opacity var(--tb-d2);
+  pointer-events: none;
+}
+  .tbx-segmented-thumb.is-hidden {
+  opacity: 0;
+}
+  .wb-shell.tb-prototype .tbx-segmented .tb-nav-item {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 32px;
+  padding: 0 16px;
+  border-radius: var(--tb-r-pill);
+  color: var(--tb-muted);
+  background: transparent !important;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  transition: color var(--tb-d2) var(--tb-ease);
+}
+  .wb-shell.tb-prototype .tbx-segmented .tb-nav-item:hover {
+  color: var(--tb-ink);
+}
+  .wb-shell.tb-prototype .tbx-segmented .tb-nav-item.is-current,
+.wb-shell.tb-prototype .tbx-segmented .tb-nav-item[aria-expanded=true] {
+  color: var(--tb-ink);
+}
+  .wb-shell.tb-prototype .tbx-segmented .tb-nav-item::after {
+  display: none;
+}
+  .wb-shell.tb-prototype .tbx-segmented .tb-support-wrap {
+  position: relative;
+  z-index: 1;
+}
+  .wb-shell.tb-prototype .tb-top-actions.tbx-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+  .wb-shell.tb-prototype .tbx-search-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  min-width: 240px;
+  margin-right: 8px;
+  padding: 0 8px 0 14px;
+  border-radius: var(--tb-r-pill);
+  color: var(--tb-muted);
+  background: var(--tb-surface);
+  box-shadow: var(--tb-shadow-1);
+  font-size: 13.5px;
+  transition: box-shadow var(--tb-d2) var(--tb-ease), color var(--tb-d2);
+}
+  .wb-shell.tb-prototype .tbx-search-pill:hover {
+  color: var(--tb-ink);
+  box-shadow: var(--tb-shadow-2);
+}
+  .tbx-search-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+  .tbx-search-pill kbd {
+  flex: none;
+  white-space: nowrap;
+  padding: 2px 7px;
+  border-radius: 7px;
+  background: var(--tb-fill);
+  color: var(--tb-muted);
+  font: 600 11px/1.5 var(--tb-font);
+}
+  .wb-shell.tb-prototype .tbx-actions .tb-entry {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  color: var(--tb-ink-2);
+  background: transparent;
+  transition: background var(--tb-d1) var(--tb-ease), color var(--tb-d1), transform var(--tb-d2) var(--tb-spring);
+}
+  .wb-shell.tb-prototype .tbx-actions .tb-entry:hover,
+.wb-shell.tb-prototype .tbx-actions .tb-entry[aria-expanded=true] {
+  color: var(--tb-ink);
+  background: var(--tb-fill-hover);
+}
+  .wb-shell.tb-prototype .tbx-actions .tb-entry:active {
+  transform: scale(0.92);
+}
+  .wb-shell.tb-prototype .tbx-actions .tbx-panel-wrap { margin-left: 4px; padding-left: 8px; border-left: 1px solid var(--tb-line); }
+  .wb-shell.tb-prototype .tbx-actions .tbx-panel-toggle.is-on {
+  color: var(--tb-accent);
+  background: var(--tb-accent-soft);
+}
+  .wb-shell.tb-prototype .tb-badge {
+  position: absolute;
+  top: 1px;
+  right: -1px;
+  min-width: 14px;
+  height: 14px;
+  padding: 0 3.5px;
+  border: 2px solid var(--tb-canvas);
+  border-radius: 999px;
+  background: var(--tb-alert);
+  color: #fff;
+  font: 700 9.5px/14px var(--tb-font);
+  text-align: center;
+  box-sizing: content-box;
+  pointer-events: none;
+}
+  .wb-shell.tb-prototype .tb-badge.is-amber {
+  background: var(--tb-yellow);
+  color: #1d1d1f;
+}
+  .wb-shell.tb-prototype .tb-tooltip,
+.wb-shell.tb-prototype .tb-rail-tooltip {
+  padding: 5px 9px;
+  border-radius: 8px;
+  background: rgb(29 29 31 / 0.92);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.3;
+  box-shadow: var(--tb-shadow-2);
+}
+  /* first-run coach: a note pinned to the tutorial button */
+  .wb-shell.tb-prototype .tb-coach-scrim {
+  background: rgb(0 0 0 / 0.14);
+}
+  .wb-shell.tb-prototype .tb-coach {
+  width: 260px;
+  padding: 14px 16px;
+  border: 0;
+  border-radius: 16px;
+  background: var(--tb-brand);
+  box-shadow: var(--tb-shadow-3);
+}
+  .wb-shell.tb-prototype .tb-coach-caret {
+  border: 0;
+  background: var(--tb-brand);
+}
+  .wb-shell.tb-prototype .tb-coach p {
+  color: var(--tb-on-brand);
+  font-size: 14px;
+  line-height: 1.55;
+}
+  .wb-shell.tb-prototype .tb-coach-dismiss {
+  padding: 5px 12px;
+  color: var(--tb-brand);
+  background: #fff;
+  font-weight: 650;
+}
+  /* ---------- sidebar: the white navigation panel ---------- */
+  .wb-shell.tb-prototype .tb-sidebar.tbx-side {
+  --side-ink: var(--tb-ink);
+  --side-text: var(--tb-ink-2);
+  --side-muted: var(--tb-muted);
+  --side-hover: var(--tb-fill);
+  --side-active: var(--tb-fill-hover);
+  --fold: 420ms var(--tb-ease);
+  --tb-sidebar-foreground: var(--side-text);
+  --tb-sidebar-accent: var(--side-hover);
+  --tb-sidebar-accent-foreground: var(--side-ink);
+  --tb-account-hover: var(--side-hover);
+  --tb-muted-foreground: var(--side-muted);
+  --tb-muted-foreground-faint: var(--side-muted);
+  position: relative;
+  z-index: 30;
+  top: 0;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  width: var(--tbx-side);
+  height: auto;
+  margin: 0 0 var(--tbx-gap) var(--tbx-gap);
+  padding: 2px 10px 10px;
+  border: 0;
+  border-radius: 0 0 22px 22px;
+  background: var(--tb-surface);
+  box-shadow: 0 1px 0 rgb(0 0 0 / 0.035), 1px 0 0 rgb(0 0 0 / 0.035), -1px 0 0 rgb(0 0 0 / 0.035);
+  color: var(--side-text);
+  overflow: visible;
+  transition: width var(--fold);
+}
+  .wb-shell.tb-prototype .tbx-side > * { position: relative; }
+  /* folding: a section closes its own height while it fades and lifts away */
+  .tbx-fold {
+  display: grid;
+  grid-template-rows: 1fr;
+  opacity: 1;
+  transform: none;
+  transition: grid-template-rows var(--fold), opacity 260ms var(--tb-ease) 120ms, transform var(--fold);
+}
+  .tbx-fold > * { min-height: 0; overflow: hidden; }
+  .tbx-side.is-rail-collapsed .tbx-fold {
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: grid-template-rows var(--fold), opacity 160ms var(--tb-ease), transform var(--fold);
+  pointer-events: none;
+}
+  /* account */
+  /* one row, as wide as the semester button below: the hover highlight covers the
+   name and the globe sits inside it on the right, on the same line */
+  .wb-shell.tb-prototype .tbx-side .tb-account-block {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 46px;
+  margin: 8px 0 4px;
+  padding: 0 6px 0 0;
+  border-radius: 14px;
+  transition: background var(--tb-d1);
+}
+  .wb-shell.tb-prototype .tbx-side .tb-account-block:has(.tb-account-row:hover) { background: var(--side-hover); }
+  .wb-shell.tb-prototype .tbx-side .tb-account-row {
+  flex: 1;
+  min-width: 0;
+  width: auto;
+  height: 46px;
+  margin: 0;
+  padding: 6px 5px;
+  border-radius: 14px;
+  gap: 10px;
+  transition: background var(--tb-d1);
+}
+  .wb-shell.tb-prototype .tbx-side .tb-account-row:hover { background: transparent; }
+  .wb-shell.tb-prototype .tbx-side .tb-account-row .tb-avatar {
+  flex: 0 0 34px;
+  width: 34px;
+  height: 34px;
+  background: linear-gradient(180deg, #a1a1a6, #86868b);
+  color: #fff;
+  font-weight: 650;
+  font-size: 15px;
+  box-shadow: none;
+}
+  .wb-shell.tb-prototype .tbx-side .tb-account-name {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  color: var(--side-ink);
+  font-size: 14.5px;
+  font-weight: 650;
+  transition: opacity 260ms var(--tb-ease) 140ms;
+}
+  .wb-shell.tb-prototype .tbx-side .tb-language-row {
+  inset: auto;
+  margin: 0;
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  color: var(--side-muted);
+  overflow: hidden;
+  transition: width var(--fold), opacity 260ms var(--tb-ease) 140ms, background var(--tb-d1);
+}
+  .wb-shell.tb-prototype .tbx-side .tb-language-row:hover { color: var(--side-ink); background: var(--side-hover); }
+  .wb-shell.tb-prototype .tbx-side .tb-language-menu {
+  top: 0;
+  left: calc(100% + 18px);
+  right: auto;
+  transform-origin: 0 0;
+  animation: tbx-pop-in 260ms var(--tb-ease);
+}
+  .wb-shell.tb-prototype .tbx-side.is-rail-collapsed .tb-account-name { opacity: 0; transition: opacity 140ms var(--tb-ease); }
+  .wb-shell.tb-prototype .tbx-side.is-rail-collapsed .tb-language-row { width: 0; opacity: 0; transition: width var(--fold), opacity 140ms var(--tb-ease); }
+  /* semester: folds up with the rest, opens to the right of the panel */
+  .wb-shell.tb-prototype .tbx-side .tb-term-wrap {
+  position: relative;
+  max-height: 64px;
+  margin: 2px 0 6px;
+  padding: 0 0 12px;
+  border-bottom: 1px solid var(--tb-line-soft);
+  overflow: visible;
+  transition: max-height var(--fold), opacity 260ms var(--tb-ease) 120ms, transform var(--fold), margin var(--fold), padding var(--fold), border-color var(--fold);
+}
+  .wb-shell.tb-prototype .tbx-side.is-rail-collapsed .tb-term-wrap {
+  max-height: 0;
+  margin: 0;
+  padding: 0;
+  opacity: 0;
+  overflow: hidden;
+  border-color: transparent;
+  transform: translateY(-8px);
+  transition: max-height var(--fold), opacity 140ms var(--tb-ease), transform var(--fold), margin var(--fold), padding var(--fold), border-color var(--fold);
+}
+  .wb-shell.tb-prototype .tbx-side .tb-term-button {
+  width: 100%;
+  height: 40px;
+  margin: 0;
+  padding: 0 12px;
+  gap: 10px;
+  border-radius: 12px;
+  background: var(--tb-fill);
+  color: var(--side-ink);
+  box-shadow: none;
+  font-size: 13.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: background var(--tb-d1);
+}
+  .wb-shell.tb-prototype .tbx-side .tb-term-button:hover { background: var(--tb-fill-hover); }
+  .wb-shell.tb-prototype .tbx-side .tb-term-name { flex: 1; min-width: 0; text-align: left; overflow: hidden; text-overflow: ellipsis; }
+  .wb-shell.tb-prototype .tbx-side .tb-semester-popover {
+  position: absolute;
+  z-index: 50;
+  top: -6px;
+  left: calc(100% + 20px);
+  right: auto;
+  width: 300px;
+  padding: 6px;
+  border: 0;
+  border-radius: 16px;
+  background: var(--tb-surface);
+  box-shadow: var(--tb-shadow-3);
+  transform-origin: 0 20px;
+}
+  .wb-shell.tb-prototype .tbx-side .tb-semester-list:empty { display: none; }
+  .wb-shell.tb-prototype .tbx-side .tb-semester-list:empty + .tb-semester-create-row { border-top: 0; margin-top: 0; padding-top: 0; }
+  .wb-shell.tb-prototype .tbx-side .tb-semester-popover::before {
+  content: attr(aria-label);
+  display: block;
+  padding: 8px 12px 6px;
+  color: var(--tb-muted);
+  font-size: 12px;
+  font-weight: 650;
+  animation: tbx-pop-in 280ms var(--tb-ease);
+}
+  .wb-shell.tb-prototype .tbx-side .tb-semester-option {
+  border-radius: 11px;
+  padding: 10px 12px;
+}
+  .wb-shell.tb-prototype .tbx-side .tb-semester-option:hover,
+.wb-shell.tb-prototype .tbx-side .tb-semester-option[aria-selected=true] { background: var(--tb-fill); }
+  .wb-shell.tb-prototype .tbx-side .tb-semester-create-row { padding: 4px 0 0; border-top: 1px solid var(--tb-line-soft); margin-top: 4px; }
+  .wb-shell.tb-prototype .tbx-side .tb-semester-create {
+  width: 100%;
+  height: 38px;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 0 12px;
+  border-radius: 11px;
+  color: var(--tb-accent);
+  background: transparent;
+  font-weight: 600;
+}
+  .wb-shell.tb-prototype .tbx-side .tb-semester-create:hover { background: var(--tb-accent-soft); }
+  .wb-shell.tb-prototype .tbx-side .tb-term-tooltip { display: none; }
+  .wb-shell.tb-prototype .tbx-side.is-rail-collapsed .tb-term-button { display: flex; }
+  /* the globe carries the current language's flag as a small badge, like a status dot */
+  .wb-shell.tb-prototype .tbx-side .tb-language-row { position: relative; display: grid; place-items: center; }
+  .wb-shell.tb-prototype .tbx-side .tb-language-flag {
+  position: absolute;
+  right: 3px;
+  bottom: 3px;
+  display: block;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 0 0 2px var(--tb-surface), 0 1px 3px rgb(0 0 0 / 0.18);
+  transition: transform var(--tb-d2) var(--tb-spring);
+}
+  .wb-shell.tb-prototype .tbx-side .tb-language-row:hover .tb-language-flag { box-shadow: 0 0 0 2px var(--side-hover), 0 1px 3px rgb(0 0 0 / 0.18); }
+  @keyframes tbx-pop-in {
+  from { opacity: 0; transform: translateX(-6px) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+  /* rows: modules, mobile links, the bin */
+  .tbx-row.tbx-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  height: 40px;
+  margin: 1px 0;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--side-text);
+  font-size: 14.5px;
+  font-weight: 550;
+  text-align: left;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-drag: none;
+  touch-action: pan-y;
+  transition: background var(--tb-d1) var(--tb-ease), color var(--tb-d1), transform var(--tb-d2) var(--tb-spring), box-shadow var(--tb-d2);
+}
+  .tbx-row.tbx-row:hover { color: var(--side-ink); background: var(--side-hover); }
+  .tbx-row.tbx-row:active { transform: scale(0.98); }
+  .tbx-row.tbx-row.is-active { color: var(--tb-ink); background: var(--side-active); font-weight: 650; }
+  .tbx-row.tbx-row.is-active:hover { background: var(--side-active); }
+  .tbx-row-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  color: var(--side-muted);
+  transition: color var(--tb-d2);
+}
+  .tbx-row.tbx-row:hover .tbx-row-icon { color: var(--side-ink); }
+  .tbx-row.tbx-row.is-active .tbx-row-icon { color: var(--module-hue, var(--tb-brand)); }
+  .tbx-row-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: clip;
+  transition: opacity 260ms var(--tb-ease) 140ms, transform 260ms var(--tb-ease) 140ms;
+}
+  .tbx-row.tbx-row.is-sub { padding-left: 20px; font-size: 13.5px; }
+  .tbx-chevron {
+  display: grid;
+  place-items: center;
+  color: var(--side-muted);
+  transition: transform 320ms var(--tb-ease), opacity 200ms;
+}
+  .tbx-chevron.is-open { transform: rotate(180deg); }
+  .tbx-side.is-rail-collapsed :is(.tbx-row-label, .tbx-count, .tbx-chevron) {
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity 140ms var(--tb-ease), transform 140ms var(--tb-ease);
+}
+  @keyframes tbx-pop {
+  0% { transform: scale(0); }
+  100% { transform: scale(1); }
+}
+  /* the module list */
+  .tbx-side-nav {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  margin: 2px -10px 0;
+  padding: 0 10px 8px;
+  overflow: hidden auto;
+  scrollbar-width: none;
+}
+  .tbx-group { position: relative; }
+  .tbx-group + .tbx-group { margin-top: 4px; transition: margin var(--fold); }
+  /* on the rail, group headings fold away completely: icons sit evenly, with no
+   gaps where headings, hints or the "new group" row used to be */
+  .tbx-side.is-rail-collapsed .tbx-group + .tbx-group { margin-top: 0; }
+  .tbx-side.is-rail-collapsed .tbx-new-group-fold { margin-top: 0; }
+  .tbx-group-head {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 32px;
+  margin: 1px 0;
+  padding: 0 3px 0 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  user-select: none;
+  touch-action: pan-y;
+  outline: none;
+  transition: background var(--tb-d1) var(--tb-ease);
+}
+  /* the whole heading row folds the group, and highlights like a module row */
+  .tbx-group-head:hover:not(.is-editing) { background: var(--side-hover); }
+  .tbx-group-head:focus-visible { box-shadow: inset 0 0 0 2px var(--tb-focus); }
+  .tbx-group-head:active:not(.is-editing) { transform: scale(0.99); }
+  .tbx-group-head.is-editing { cursor: default; }
+  .tbx-name-error {
+  margin: 9px 4px 6px 12px;
+  color: var(--tb-danger);
+  font-size: 12px;
+  line-height: 1.4;
+  animation: tbx-rise 260ms var(--tb-ease);
+}
+  .tbx-group-title.tbx-group-title {
+  display: inline-flex;
+  flex: 1;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--side-muted);
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  pointer-events: none;
+}
+  .tbx-group-title.tbx-group-title span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tbx-group-title.tbx-group-title .tbx-chevron { opacity: 0; }
+  .tbx-group-head:hover .tbx-group-title.tbx-group-title .tbx-chevron,
+.tbx-group.is-collapsed .tbx-group-title.tbx-group-title .tbx-chevron { opacity: 1; }
+  .tbx-group.is-collapsed .tbx-group-title.tbx-group-title .tbx-chevron { transform: rotate(-90deg); }
+  .tbx-group-head:hover .tbx-group-title.tbx-group-title { color: var(--side-ink); }
+  .tbx-group-more.tbx-group-more {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  margin-left: auto;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--side-muted);
+  opacity: 0;
+  transition: opacity var(--tb-d1), background var(--tb-d1);
+  cursor: pointer;
+}
+  .tbx-group-head:hover .tbx-group-more.tbx-group-more,
+.tbx-group-more.tbx-group-more:focus-visible { opacity: 1; }
+  .tbx-group-more.tbx-group-more:hover { background: var(--side-hover); color: var(--side-ink); }
+  .tbx-group-rename {
+  flex: 1;
+  height: 28px;
+  margin-left: -6px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 8px;
+  outline: none;
+  background: var(--tb-surface);
+  box-shadow: inset 0 0 0 1.5px var(--tb-accent);
+  color: var(--side-ink);
+  font: 600 13px/1 var(--tb-font);
+}
+  .tbx-group-body {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 380ms var(--tb-ease);
+}
+  .tbx-group-rows { min-height: 0; overflow: hidden; transition: opacity 300ms var(--tb-ease); }
+  .tbx-group.is-collapsed .tbx-group-rows { opacity: 0; transition: opacity 200ms var(--tb-ease); }
+  .tbx-side.is-rail-collapsed .tbx-group.is-collapsed .tbx-group-rows { opacity: 1; }
+  .tbx-group.is-collapsed .tbx-group-body { grid-template-rows: 0fr; }
+  .tbx-side.is-rail-collapsed .tbx-group.is-collapsed .tbx-group-body { grid-template-rows: 1fr; }
+  .tbx-group.is-target .tbx-group-title.tbx-group-title { color: var(--tb-accent); }
+  .tbx-drop-hint {
+  display: grid;
+  place-items: center;
+  height: 38px;
+  margin: 2px 0;
+  border: 1.5px dashed color-mix(in oklab, var(--tb-accent) 45%, transparent);
+  border-radius: 12px;
+  color: var(--tb-accent);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+  .tbx-drop-hint.is-on {
+  background: color-mix(in oklab, var(--tb-accent) 9%, transparent);
+  border-style: solid;
+}
+  .tbx-hint-fold { display: grid; }
+  .tbx-drop-hint.is-idle {
+  height: 34px;
+  border-color: var(--tb-line);
+  color: var(--side-muted);
+  font-weight: 500;
+  opacity: 0.8;
+}
+  /* new group */
+  .tbx-new-group-fold { margin-top: 6px; transition: margin var(--fold), grid-template-rows var(--fold), opacity 260ms var(--tb-ease) 120ms, transform var(--fold); }
+  .tbx-new-group-button.tbx-new-group-button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  height: 34px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 11px;
+  background: transparent;
+  color: var(--side-muted);
+  font-size: 13px;
+  font-weight: 550;
+  opacity: 0.75;
+  cursor: pointer;
+  transition: opacity var(--tb-d1), background var(--tb-d1), color var(--tb-d1);
+}
+  .tbx-new-group-button.tbx-new-group-button > :first-child { width: 20px; display: grid; place-items: center; }
+  .tbx-side-nav:hover .tbx-new-group-button.tbx-new-group-button { opacity: 1; }
+  .tbx-new-group-button.tbx-new-group-button:hover { background: var(--side-hover); color: var(--side-ink); }
+  .tbx-new-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 38px;
+  padding: 0 6px 0 12px;
+  border-radius: 12px;
+  background: var(--tb-surface);
+  /* only the capsule's own ring: a soft outer halo would be clipped square by the fold */
+  box-shadow: inset 0 0 0 1.5px var(--tb-accent);
+  color: var(--tb-accent);
+  animation: tbx-rise 320ms var(--tb-ease);
+}
+  .tbx-new-group input {
+  flex: 1;
+  min-width: 0;
+  height: 30px;
+  padding: 0;
+  border: 0 !important;
+  border-radius: 0 !important;
+  outline: none;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--side-ink);
+  font: 600 13.5px/1 var(--tb-font);
+}
+  /* dragging: nothing moves while you drag. The row you picked up dims in place,
+   a compact translucent copy follows the pointer, and a blue line with a ring
+   at its start shows where it will land. Rows glide only after the drop. */
+  html.tbx-dragging, html.tbx-dragging * { cursor: grabbing !important; user-select: none; }
+  .tbx-row.tbx-row.is-origin { opacity: 0.35; background: transparent; }
+  .tbx-group.is-lifted { opacity: 0.4; }
+  .tbx-side.is-dragging .tbx-row.tbx-row:hover:not(.is-active),
+.tbx-side.is-dragging .tbx-group-head:hover { background: transparent; }
+  /* the drop line and the floating copy are shared: see kit.css */
+  @keyframes tbx-lift {
+  from { opacity: 0; scale: 0.96; }
+}
+  /* the bin: a full row at the foot that opens downward */
+  .tbx-side-foot {
+  margin-top: 6px;
+  padding-top: 8px;
+  border-top: 1px solid var(--tb-line-soft);
+}
+  .tbx-trash { color: var(--side-muted); }
+  .tbx-trash .tbx-chevron { margin-left: auto; opacity: 0; }
+  .tbx-trash:hover .tbx-chevron,
+.tbx-side-foot.is-open .tbx-trash .tbx-chevron { opacity: 1; }
+  .tbx-side-foot.is-open .tbx-trash .tbx-chevron { transform: rotate(180deg); }
+  .tbx-count {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--tb-fill);
+  color: var(--side-muted);
+  font: 650 11.5px/20px var(--tb-font);
+  text-align: center;
+  transition: opacity 200ms;
+}
+  .tbx-trash.is-armed { box-shadow: inset 0 0 0 1.5px var(--tb-line); }
+  .tbx-trash.is-drop {
+  color: var(--tb-danger);
+  background: var(--tb-danger-soft);
+  box-shadow: inset 0 0 0 1.5px color-mix(in oklab, var(--tb-danger) 35%, transparent);
+  transform: scale(1.02);
+}
+  .tbx-trash.is-drop .tbx-row-icon { color: var(--tb-danger); animation: tbx-wiggle 420ms var(--tb-ease); }
+  @keyframes tbx-wiggle { 0%, 100% { transform: rotate(0); } 30% { transform: rotate(-12deg); } 60% { transform: rotate(8deg); } }
+  .tbx-trash-drawer {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 380ms var(--tb-ease);
+}
+  .tbx-side-foot.is-open .tbx-trash-drawer { grid-template-rows: 1fr; }
+  .tbx-side.is-rail-collapsed .tbx-trash-drawer { grid-template-rows: 0fr; }
+  .tbx-trash-list { min-height: 0; overflow: hidden; }
+  .tbx-side-foot.is-open .tbx-trash-list { padding: 4px 0 2px; }
+  .tbx-trash-item.tbx-trash-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 38px;
+  padding: 0 6px 0 12px;
+  border-radius: 11px;
+  color: var(--side-text);
+  font-size: 13.5px;
+  cursor: grab;
+  transition: background var(--tb-d1), opacity var(--tb-d2);
+  touch-action: pan-y;
+}
+  .tbx-trash-item.tbx-trash-item:hover { background: var(--side-hover); }
+  .tbx-trash-item.tbx-trash-item.is-lifted { opacity: 0.35; }
+  .tbx-trash-item.tbx-trash-item .tbx-row-icon { width: 20px; color: var(--side-muted); }
+  .tbx-trash-restore.tbx-trash-restore {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 26px;
+  padding: 0 9px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--tb-surface);
+  box-shadow: inset 0 0 0 1px var(--tb-line);
+  color: var(--tb-accent);
+  font-size: 12px;
+  font-weight: 600;
+  opacity: 0;
+  transition: opacity var(--tb-d1), background var(--tb-d1);
+  cursor: pointer;
+}
+  .tbx-trash-item.tbx-trash-item:hover .tbx-trash-restore.tbx-trash-restore,
+.tbx-trash-restore.tbx-trash-restore:focus-visible { opacity: 1; }
+  .tbx-trash-restore.tbx-trash-restore:hover { background: var(--tb-accent-soft); box-shadow: none; }
+  .tbx-trash-empty {
+  margin: 4px 12px 6px;
+  color: var(--side-muted);
+  font-size: 12.5px;
+  line-height: 1.55;
+  white-space: normal;
+}
+  /* group menu and rail tooltip */
+  .tbx-side-menu {
+  position: fixed;
+  z-index: 1000;
+  display: grid;
+  min-width: 168px;
+  padding: 5px;
+  border-radius: 14px;
+  background: var(--tb-surface);
+  box-shadow: var(--tb-shadow-3);
+  animation: tbx-pop-in 220ms var(--tb-ease);
+}
+  .tbx-side-menu button.tbx-mi {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 34px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 9px;
+  background: none;
+  color: var(--tb-ink);
+  font-size: 13.5px;
+  text-align: left;
+  cursor: pointer;
+}
+  .tbx-side-menu button.tbx-mi:hover, .tbx-side-menu button.tbx-mi:focus-visible { background: var(--tb-fill); outline: none; }
+  .tbx-side-menu .is-danger { color: var(--tb-danger); }
+  .wb-shell.tb-prototype .tbx-tip {
+  position: fixed;
+  z-index: 1000;
+  transform: translateY(-50%);
+  pointer-events: none;
+  animation: tbx-pop-in 180ms var(--tb-ease);
+}
+  /* mobile drawer head and links */
+  .tbx-side-mobile-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 48px;
+  padding: 0 4px 0 6px;
+  font-size: 15px;
+}
+  .tbx-side-mobile-head button {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--tb-fill);
+  color: var(--tb-ink);
+}
+  .tbx-side-mobile-nav { padding: 2px 0 6px; margin-bottom: 4px; border-bottom: 1px solid var(--tb-line-soft); }
+  /* ---------- workspace ---------- */
+  .wb-shell.tb-prototype .wb-body {
+  min-height: 0;
+}
+  .wb-shell.tb-prototype .wb-workspace {
+  background-color: transparent;
+  background-image: none;
+}
+  .wb-shell.tb-prototype[data-background=grid] {
+  background-image:
+    radial-gradient(circle at 1px 1px, color-mix(in oklab, var(--tb-ink) 7%, transparent) 1px, transparent 1.2px);
+  background-size: 22px 22px;
+  background-position: 11px 11px;
+}
+  .wb-shell.tb-prototype[data-background=parchment] {
+  background-color: #f7f1e3;
+  background-image: radial-gradient(rgb(150 120 80 / 0.16) 0.8px, transparent 1px);
+  background-size: 12px 12px;
+}
+  .wb-shell.tb-prototype[data-background=circles] {
+  background-color: #e9f3fc;
+  background-image:
+    radial-gradient(circle at 70px 90px, rgb(255 255 255 / 0.7) 56px, transparent 57px),
+    radial-gradient(circle at 300px 260px, rgb(255 255 255 / 0.55) 84px, transparent 85px);
+  background-size: 420px 360px;
+}
+  :root[data-workbench-theme="dark"] .wb-shell.tb-prototype[data-background=parchment] {
+  background-color: #17140f;
+  background-image: radial-gradient(rgb(214 180 130 / 0.1) 0.8px, transparent 1px);
+}
+  :root[data-workbench-theme="dark"] .wb-shell.tb-prototype[data-background=circles] {
+  background-color: #0b141c;
+  background-image:
+    radial-gradient(circle at 70px 90px, rgb(255 255 255 / 0.035) 56px, transparent 57px),
+    radial-gradient(circle at 300px 260px, rgb(255 255 255 / 0.03) 84px, transparent 85px);
+}
+  /* backgrounds sit behind the whole window (top bar included), like a desktop picture;
+   your own picture gets a light veil so text stays readable */
+  .wb-shell.tb-prototype[data-background=custom] {
+  background-color: var(--tb-canvas);
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--tb-canvas) 38%, transparent), color-mix(in srgb, var(--tb-canvas) 38%, transparent)),
+    var(--tbx-bg-image);
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
+  .wb-shell.tb-prototype .wb-main {
+  /* backwards, not both: a held transform would turn .wb-main into the containing
+     block for every position:fixed child (calendar drag mirrors, menus). */
+  animation: tbx-page-in 520ms var(--tb-ease) backwards;
+}
+  @keyframes tbx-page-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+  .wb-shell.tb-prototype :is(.q-finder, .q-main, .q-copy-source, .res-library, .res-detail, .math-main, .help-directory, .help-body) {
+  border-radius: var(--tb-r-lg);
+  box-shadow: var(--tb-shadow-1);
+}
+  /* ---------- narrow: the navigation panel becomes a drawer ---------- */
+  @media (max-width: 1080px) {
+  .wb-shell.tb-prototype {
+    --tbx-side: 64px;
+  }
+  .wb-shell.tb-prototype .tbx-brand-slot {
+    width: auto;
+    padding: 0 10px 0 6px;
+    border-radius: 18px;
+    margin-bottom: 0;
+  }
+  .wb-shell.tb-prototype .tbx-brand-slot .tb-mobile-menu {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    color: var(--tb-ink);
+  }
+  .wb-shell.tb-prototype .tbx-brand .tbx-wordmark {
+    opacity: 1 !important;
+  }
+  .wb-shell.tb-prototype .tbx-sidebar-toggle,
+  .tbx-search-label,
+  .tbx-search-pill kbd {
+    display: none !important;
+  }
+  .wb-shell.tb-prototype .tbx-search-pill {
+    min-width: 0;
+    width: 38px;
+    padding: 0;
+    justify-content: center;
+    margin-right: 2px;
+  }
+  .wb-shell.tb-prototype .tb-sidebar.tbx-side {
+    position: fixed;
+    z-index: 90;
+    top: var(--tbx-gap);
+    bottom: var(--tbx-gap);
+    left: var(--tbx-gap);
+    display: flex;
+    width: min(300px, calc(100vw - 2 * var(--tbx-gap) - 40px));
+    height: auto;
+    margin: 0;
+    padding: 6px 10px 10px;
+    border-radius: 22px;
+    box-shadow: var(--tb-shadow-3);
+    transform: translateX(calc(-100% - 2 * var(--tbx-gap)));
+    visibility: hidden;
+    transition: transform 420ms var(--tb-ease), visibility 0s linear 420ms;
+  }
+  .wb-shell.tb-prototype .tb-sidebar.tbx-side.is-mobile-open {
+    transform: none;
+    visibility: visible;
+    transition: transform 460ms cubic-bezier(0.2, 0.9, 0.25, 1);
+  }
+  .wb-shell.tb-prototype .tb-mobile-scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    background: rgb(10 10 14 / 0.28);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 320ms var(--tb-ease);
+  }
+  .wb-shell.tb-prototype .tb-mobile-scrim.is-visible { opacity: 1; pointer-events: auto; }
+}
+  @media (max-width: 760px) {
+  .wb-shell.tb-prototype .tbx-brand .tbx-wordmark,
+  .wb-shell.tb-prototype .tb-global-nav.tbx-segmented {
+    display: none;
+  }
+  .wb-shell.tb-prototype .tbx-bar {
+    padding-right: 10px;
+  }
+  .wb-shell.tb-prototype .tbx-actions .tb-entry-wrap:has([aria-label="使用教程"]) {
+    display: none;
+  }
+  .wb-shell.tb-prototype .tbx-actions .tb-entry-wrap:has([aria-label="发送反馈"], [aria-label="隐私与数据保护"]) {
+    display: none;
+  }
+}
+  /* each module carries one colour: question bank orange, math lavender, resources blue */
+  .tbx-row.tbx-row[data-module="questions"] { --module-hue: var(--tb-orange); }
+  .tbx-row.tbx-row[data-module="math"] { --module-hue: var(--tb-lavender-deep); }
+  .tbx-row.tbx-row[data-module="resources"] { --module-hue: var(--tb-accent); }
+  .tbx-row.tbx-row[data-module="classroom"] { --module-hue: #30b14c; }
+  /* ---------- the right-hand panel ----------
+ * One width everywhere, the same as the calendar's right column, so the page
+ * never jumps. The frame grows from the right edge; its content is fixed-width
+ * and pinned right, so it slides into view instead of reflowing. */
+  .wb-shell.tb-prototype {
+  --tbx-aux-w: 340px;
+  --tbx-aux-ease: 460ms var(--tb-ease);
+}
+  @media (max-width: 1400px) { .wb-shell.tb-prototype { --tbx-aux-w: 320px; } }
+  @media (max-width: 1150px) { .wb-shell.tb-prototype { --tbx-aux-w: 300px; } }
+  .wb-shell.tb-prototype .wb-workspace { position: relative; }
+  .wb-shell.tb-prototype.has-panel .wb-workspace { gap: 16px; }
+  .wb-shell.tb-prototype .wb-aux.tbx-aux.tbx-aux.tbx-aux {
+  position: relative;
+  inset: auto;
+  z-index: 8;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  flex: none;
+  width: 0;
+  min-width: 0;
+  margin: 0 0 0 -16px;
+  padding: 0;
+  border: 0;
+  border-radius: 22px;
+  background: var(--tb-surface);
+  box-shadow: none;
+  opacity: 0;
+  overflow: hidden;
+  transition: width var(--tbx-aux-ease), margin var(--tbx-aux-ease), opacity 220ms var(--tb-ease) 200ms, box-shadow var(--tbx-aux-ease);
+}
+  .wb-shell.tb-prototype .wb-aux.tbx-aux.tbx-aux.tbx-aux.is-open {
+  width: var(--tbx-aux-w);
+  margin-left: 0;
+  opacity: 1;
+  box-shadow: var(--tb-shadow-1);
+  transition: width var(--tbx-aux-ease), margin var(--tbx-aux-ease), opacity 160ms var(--tb-ease), box-shadow var(--tbx-aux-ease);
+}
+  .tbx-aux-inner {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  width: var(--tbx-aux-w);
+  min-height: 0;
+  height: 100%;
+  transform: translateX(28px);
+  opacity: 0;
+  transition: transform var(--tbx-aux-ease), opacity 200ms var(--tb-ease);
+}
+  .tbx-aux.is-open .tbx-aux-inner {
+  transform: none;
+  opacity: 1;
+  transition: transform var(--tbx-aux-ease), opacity 320ms var(--tb-ease) 90ms;
+}
+  /* on the calendar the panel lands exactly on the right column and covers it */
+  @media (min-width: 951px) {
+  .wb-shell.tb-prototype .wb-workspace:has(.cal-page:not([data-focus=tasks][data-editing=false])) > .wb-aux.tbx-aux.tbx-aux.tbx-aux,
+  .wb-shell.tb-prototype .wb-workspace:has(.tbx-rail) > .wb-aux.tbx-aux.tbx-aux.tbx-aux {
+    position: absolute;
+    top: 8px;
+    right: 24px;
+    bottom: 24px;
+    margin: 0;
+  }
+  .wb-shell .cal-page.has-ai:not([data-focus=tasks][data-editing=false]) {
+    grid-template-columns: minmax(0, 1fr) var(--tbx-aux-w);
+  }
+  .wb-shell .cal-page.has-ai:not([data-focus=tasks][data-editing=false]) .cal-sidebar {
+    display: flex;
+    opacity: 0;
+    transform: scale(0.985) translateX(-10px);
+    filter: blur(2px);
+    pointer-events: none;
+  }
+  .wb-shell .cal-page:not([data-focus=tasks]) .cal-sidebar {
+    transform-origin: 100% 50%;
+    transition: opacity 240ms var(--tb-ease), transform var(--tbx-aux-ease), filter 240ms var(--tb-ease);
+  }
+  .wb-shell .cal-page.has-ai:not([data-focus=tasks][data-editing=false]) .cal-sidebar {
+    transition: opacity 200ms var(--tb-ease) 300ms, transform var(--tbx-aux-ease), filter 200ms var(--tb-ease) 300ms;
+  }
+  /* the module rails (kit/rail.jsx) step back the same way under the panel */
+  .wb-shell .tbx-rail {
+    transform-origin: 100% 50%;
+    transition: opacity 240ms var(--tb-ease), transform var(--tbx-aux-ease), filter 240ms var(--tb-ease);
+  }
+  .wb-shell .wb-workspace:has(> .wb-aux.is-open) .tbx-rail {
+    opacity: 0;
+    transform: scale(0.985) translateX(-10px);
+    filter: blur(2px);
+    pointer-events: none;
+    transition: opacity 200ms var(--tb-ease) 300ms, transform var(--tbx-aux-ease), filter 200ms var(--tb-ease) 300ms;
+  }
+}
+  /* panel head: content tabs on the left, close on the right */
+  .tbx-aux-head.tbx-aux-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 56px;
+  min-height: 56px;
+  padding: 0 12px 0 14px;
+  border: 0;
+  background: transparent;
+}
+  .tbx-aux-tabs.tbx-aux-tabs {
+  display: inline-flex;
+  gap: 2px;
+  min-width: 0;
+  padding: 3px;
+  border: 0;
+  border-radius: 11px;
+  background: var(--tb-fill);
+  overflow: auto hidden;
+  scrollbar-width: none;
+}
+  .tbx-aux-tabs .wb-tab.wb-tab {
+  flex: none;
+  height: 28px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  box-shadow: none;
+  color: var(--tb-muted);
+  font: 600 12.5px/28px var(--tb-font);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background var(--tb-d1), color var(--tb-d1), box-shadow var(--tb-d1);
+}
+  .tbx-aux-tabs .wb-tab.wb-tab:hover { color: var(--tb-ink); }
+  .tbx-aux-tabs .wb-tab.wb-tab.is-active {
+  background: var(--tb-surface);
+  color: var(--tb-ink);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.08), 0 0 0 0.5px rgb(0 0 0 / 0.04);
+}
+  .tbx-aux-close.tbx-aux-close {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  margin-left: auto;
+  border: 0;
+  border-radius: 50%;
+  background: var(--tb-fill);
+  color: var(--tb-muted);
+  cursor: pointer;
+  transition: background var(--tb-d1), color var(--tb-d1), transform var(--tb-d2) var(--tb-spring);
+}
+  .tbx-aux-close.tbx-aux-close:hover { background: var(--tb-fill-hover); color: var(--tb-ink); }
+  .tbx-aux-close.tbx-aux-close:active { transform: scale(0.92); }
+  .tbx-aux-body.tbx-aux-body { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden auto; }
+  /* narrow screens: the panel floats over the page from the right */
+  @media (max-width: 1080px) {
+  .wb-shell.tb-prototype { --tbx-aux-w: min(360px, calc(100vw - 24px)); }
+  .wb-shell.tb-prototype .wb-aux.tbx-aux.tbx-aux.tbx-aux,
+  .wb-shell.tb-prototype .wb-workspace > .wb-aux.tbx-aux.tbx-aux.tbx-aux {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    bottom: 12px;
+    z-index: 40;
+    margin: 0;
+  }
+  .wb-shell.tb-prototype .wb-aux.tbx-aux.tbx-aux.tbx-aux.is-open { box-shadow: var(--tb-shadow-3); }
+}
+  /* ---------- top bar: counts sit on the corner, clear of the glyph ---------- */
+  .wb-shell.tb-prototype .tbx-actions .tb-entry { position: relative; overflow: visible; }
+  .wb-shell.tb-prototype .tbx-actions .tb-badge.tb-badge {
+  top: 2px;
+  right: -3px;
+  min-width: 7px;
+  height: 13px;
+  padding: 0 3px;
+  border-width: 2px;
+  font-size: 9px;
+  line-height: 13px;
+  letter-spacing: 0;
+  transform: none;
+}
+  .wb-shell.tb-prototype .tbx-actions .tb-badge.is-amber { background: var(--tb-orange, #ff9500); }
+  /* ---------- primary buttons in the shell's popovers are blue, never black ---------- */
+  .wb-shell.tb-prototype .tb-button-primary {
+  background: var(--tb-accent);
+  color: #fff;
+  font-weight: 600;
+  transition: background var(--tb-d1), transform var(--tb-d2) var(--tb-spring), opacity var(--tb-d1);
+}
+  .wb-shell.tb-prototype .tb-button-primary:hover:not(:disabled) { background: color-mix(in oklab, var(--tb-accent) 88%, black); }
+  .wb-shell.tb-prototype .tb-button-primary:active:not(:disabled) { transform: scale(0.96); }
+  .wb-shell.tb-prototype .tb-button-primary:disabled { background: var(--tb-fill-hover); color: var(--tb-muted); }
+  /* ---------- feedback: a reply for each kind ---------- */
+  .tbx-feedback-note {
+  margin: 4px 0 0;
+  color: var(--tb-muted);
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: center;
+}
+  /* ---------- tutorial complete ---------- */
+  .tbx-celebrate {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: grid;
+  place-items: center;
+}
+  .tbx-celebrate-scrim {
+  position: absolute;
+  inset: 0;
+  background: rgb(6 8 16 / 0.6);
+  backdrop-filter: blur(10px) saturate(1.2);
+  -webkit-backdrop-filter: blur(10px) saturate(1.2);
+  animation: tbx-fade 420ms var(--tb-ease) both;
+}
+  .tbx-celebrate-sky {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+  .tbx-celebrate-card {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  width: min(360px, calc(100vw - 40px));
+  padding: 34px 30px 26px;
+  border-radius: 28px;
+  background: color-mix(in oklab, var(--tb-surface) 92%, transparent);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  box-shadow: 0 40px 90px -30px rgb(0 0 0 / 0.5), 0 0 0 0.5px rgb(255 255 255 / 0.2) inset;
+  text-align: center;
+  animation: tbx-card-in 720ms var(--tb-spring) 180ms both;
+}
+  .tbx-celebrate-mark {
+  display: grid;
+  place-items: center;
+  width: 60px;
+  height: 60px;
+  margin-bottom: 10px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #34c759, #28a745);
+  color: #fff;
+  box-shadow: 0 10px 26px -8px rgb(52 199 89 / 0.7);
+  animation: tbx-mark-in 640ms var(--tb-spring) 420ms both;
+}
+  .tbx-celebrate-mark path { stroke-dasharray: 24; stroke-dashoffset: 24; animation: tbx-draw 420ms var(--tb-ease) 720ms forwards; }
+  .tbx-celebrate-card h2 {
+  margin: 0;
+  color: var(--tb-ink);
+  font: 700 24px/1.2 var(--tb-font);
+  letter-spacing: -0.01em;
+}
+  .tbx-celebrate-card p {
+  margin: 0 0 18px;
+  color: var(--tb-muted);
+  font-size: 14.5px;
+  line-height: 1.5;
+}
+  .tbx-celebrate-card .tbx-celebrate-go {
+  min-width: 140px;
+  height: 44px;
+  padding: 0 26px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--tb-accent);
+  color: #fff;
+  font: 600 15px/44px var(--tb-font);
+  cursor: pointer;
+  transition: transform var(--tb-d2) var(--tb-spring), filter var(--tb-d1);
+}
+  .tbx-celebrate-card .tbx-celebrate-go:hover { filter: brightness(1.08); }
+  .tbx-celebrate-card .tbx-celebrate-go:active { transform: scale(0.96); }
+  .tbx-celebrate-card .tbx-celebrate-go:focus-visible { outline: none; box-shadow: 0 0 0 4px color-mix(in oklab, var(--tb-accent) 30%, transparent); }
+  @keyframes tbx-fade { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes tbx-card-in { from { opacity: 0; transform: translateY(18px) scale(0.92); } to { opacity: 1; transform: none; } }
+  @keyframes tbx-mark-in { from { transform: scale(0); } to { transform: scale(1); } }
+  @keyframes tbx-draw { to { stroke-dashoffset: 0; } }
+  @keyframes tbx-rise { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) {
+  .tbx-celebrate-card, .tbx-celebrate-mark, .tbx-celebrate-mark path { animation-duration: 1ms; animation-delay: 0ms; }
+}
+  /* ---------- global search (⌘K): the same Spotlight sheet as help search ---------- */
+  .wb-shell.tb-prototype .tb-search-backdrop {
+  background: rgb(0 0 0 / 0.22) !important;
+  backdrop-filter: blur(8px);
+}
+  /* Spotlight sits in the upper third and never moves as results change */
+  .wb-shell.tb-prototype .tb-search-layer { place-items: start center; padding-top: 16vh; }
+  .wb-shell.tb-prototype .tb-search-panel {
+  top: auto !important;
+  width: min(560px, calc(100vw - 32px)) !important;
+  max-height: min(460px, 68vh);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 22px !important;
+  background: color-mix(in srgb, var(--tb-surface) 94%, transparent) !important;
+  backdrop-filter: blur(30px) saturate(1.8);
+  box-shadow: var(--tb-shadow-3) !important;
+}
+  :root[data-workbench-theme="dark"] .wb-shell.tb-prototype .tb-search-panel { box-shadow: var(--tb-shadow-3), inset 0 0 0 1px rgb(255 255 255 / 0.08) !important; }
+  .wb-shell.tb-prototype .tb-search-input-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: none;
+  height: 54px;
+  padding: 0 12px 0 18px !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--tb-line-soft) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--tb-muted);
+}
+  .wb-shell.tb-prototype .tb-search-input {
+  flex: 1;
+  height: 100%;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--tb-ink);
+  font-size: 16px !important;
+}
+  .wb-shell.tb-prototype .tb-search-input::placeholder { color: var(--tb-faint); }
+  .wb-shell.tb-prototype .tb-search-input::-webkit-search-cancel-button { display: none; }
+  .wb-shell.tb-prototype .tb-search-close {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50% !important;
+  background: var(--tb-fill) !important;
+  color: var(--tb-muted);
+}
+  .wb-shell.tb-prototype .tb-search-close:hover { background: var(--tb-fill-hover) !important; color: var(--tb-ink); }
+  .wb-shell.tb-prototype .tb-search-results { flex: 1; min-height: 0; padding: 4px 6px 6px !important; overflow: auto; }
+  .wb-shell.tb-prototype .tb-search-group-label {
+  padding: 10px 10px 4px !important;
+  background: transparent !important;
+  color: var(--tb-faint) !important;
+  font-size: 12px !important;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+}
+  .wb-shell.tb-prototype .tb-search-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  padding: 6px 10px !important;
+  border-radius: 10px !important;
+  background: transparent !important;
+  color: var(--tb-ink);
+}
+  .wb-shell.tb-prototype .tb-search-item > .tb-icon {
+  box-sizing: content-box;
+  padding: 5px;
+  border-radius: 8px;
+  background: var(--tb-fill);
+  color: var(--tb-ink-2);
+}
+  .wb-shell.tb-prototype .tb-search-item.is-active { background: var(--tb-accent-soft) !important; }
+  .wb-shell.tb-prototype .tb-search-item.is-active > .tb-icon { background: var(--tb-accent); color: #fff; }
+  .wb-shell.tb-prototype .tb-search-item-name { font-size: 14px; font-weight: 600; }
+  .wb-shell.tb-prototype .tb-search-empty { padding: 26px 20px !important; color: var(--tb-muted); text-align: center; }
+  /* notifications: the row toggles read; the arrow opens the reminder; the bin asks once more */
+  .wb-shell .tb-popover-notifications .tb-notification { position: relative; }
+  .wb-shell .tb-popover-notifications .tb-notification-open {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  margin-left: 2px;
+  border-radius: 50%;
+  color: var(--tb-muted);
+  opacity: 0;
+  transition: opacity var(--tb-d1), background var(--tb-d1), color var(--tb-d1);
+}
+  .wb-shell .tb-popover-notifications .tb-notification:is(:hover, :focus-within) .tb-notification-open { opacity: 1; }
+  .wb-shell .tb-popover-notifications .tb-notification-open:hover { background: var(--tb-fill-hover); color: var(--tb-ink); }
+  .wb-shell .tb-popover-notifications .tb-notification-open svg { transform: rotate(-90deg); }
+  .wb-shell .tb-popover-notifications .tb-notification-trash { transition: color var(--tb-d2), background var(--tb-d2), border-radius var(--tb-d2); }
+  .wb-shell .tb-popover-notifications .tb-notification-trash.is-armed {
+  justify-content: center;
+  margin: 8px -4px -4px;
+  padding: 8px 12px;
+  border-top-color: transparent;
+  border-radius: 999px;
+  background: var(--tb-danger-fill);
+  color: #fff;
+  font-weight: 650;
+  cursor: pointer;
+  animation: tbx-arm 260ms var(--tb-ease);
+}
+  .wb-shell .tb-popover-notifications .tb-notification-trash.is-armed .tb-notification-trash-icon { color: #fff; }
+  /* feedback: attach screenshots or files; chips show what is attached */
+  .wb-shell.tb-prototype .tb-feedback-foot { align-items: flex-start; gap: 10px; }
+  .wb-shell.tb-prototype .tb-feedback-attach { display: flex; flex: 1; flex-wrap: wrap; align-items: center; gap: 6px; min-width: 0; }
+  .wb-shell.tb-prototype .tb-feedback-clip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 11px 0 9px;
+  border-radius: 999px;
+  color: var(--tb-muted);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--tb-d1), color var(--tb-d1);
+}
+  .wb-shell.tb-prototype .tb-feedback-clip:hover { background: var(--tb-fill); color: var(--tb-ink); }
+  .wb-shell.tb-prototype .tb-feedback-clip:focus-within { box-shadow: 0 0 0 2px var(--tb-focus); }
+  .wb-shell.tb-prototype .tb-feedback-file {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 150px;
+  height: 26px;
+  padding: 0 4px 0 10px;
+  border-radius: 999px;
+  background: var(--tb-fill);
+  color: var(--tb-ink-2);
+  font-size: 12px;
+  font-weight: 550;
+  animation: tbx-rise 220ms var(--tb-ease);
+}
+  .wb-shell.tb-prototype .tb-feedback-file > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .wb-shell.tb-prototype .tb-feedback-file button {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--tb-muted);
+  cursor: pointer;
+}
+  .wb-shell.tb-prototype .tb-feedback-file button:hover { background: var(--tb-fill-hover); color: var(--tb-ink); }
+  /* calendar "还有 N 项": opens from its own day instead of the middle of the page
+   (portalled to <body>, so this lives in a global sheet) */
+  .cal-month-more-popover.is-anchored {
+  transform: none;
+  transform-origin: var(--tbx-origin, 50% 0);
+  width: min(280px, calc(100vw - 24px));
+  border: 0;
+  border-radius: 16px;
+  box-shadow: var(--tb-shadow-3);
+  transition: opacity 180ms ease, transform 260ms var(--tb-spring);
+}
+  .wb-module-presence[data-state=closed] > .cal-month-more-popover.is-anchored { transform: scale(0.92); }
+  .cal-month-more-popover.is-anchored > header { border-bottom: 0; padding: 12px 12px 4px 14px; font-weight: 600; }
+  .cal-month-more-popover.is-anchored .cal-month-more-body { padding: 4px 8px 8px; }
+  .cal-month-more-popover.is-anchored .cal-month-more-event { border-radius: 10px; }
+  /* ---------- dialog overlays: the blur is there from the first frame ----------
+   A parent that is fading (opacity < 1) cuts its children off from what is behind
+   it, so a backdrop blur inside it only appears once the fade ends - the page
+   showed sharp, then snapped to blurred. The overlay itself never fades; its scrim
+   (colour + blur) and the dialog do. Same for every dialog opened through
+   CalendarOverlay: schedule dialogs and the resource tag dialog. */
+  .cal-overlay-presence,
+.cal-overlay-presence[data-state=closed] { opacity: 1; transition: none; }
+  .cal-overlay-presence .cal-dialog-backdrop { transition: background-color 140ms ease; }
+  .cal-overlay-presence[data-state=closed] .cal-dialog-backdrop { background-color: transparent; backdrop-filter: blur(0); -webkit-backdrop-filter: blur(0); }
+  .cal-overlay-presence .cal-dialog { transition: transform 180ms cubic-bezier(.2, .8, .2, 1), opacity 180ms ease; }
+  .cal-overlay-presence[data-state=closed] .cal-dialog { opacity: 0; }
 
-.tb-navigation-busy { margin-left: auto; margin-right: 8px; font-size: 11px; font-weight: 400; letter-spacing: 0; color: var(--wb-muted); text-transform: none; }
-
-.wb-dialog.tb-navigation-comparison { width: min(640px, calc(100vw - 32px)); }
-.tb-navigation-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
-.tb-navigation-columns section { min-width: 0; }
-.tb-navigation-columns h3 { font-size: 13px; font-weight: 600; margin-bottom: 12px; }
-.tb-navigation-columns dl { margin: 0; font-size: 13px; overflow-wrap: anywhere; }
-.tb-navigation-columns dl > div { margin-bottom: 12px; }
-.tb-navigation-columns dt { font-weight: 500; }
-.tb-navigation-columns dd { color: var(--wb-muted); margin: 4px 0 0; line-height: 1.6; }
-@media (max-width: 500px) { .tb-navigation-columns { grid-template-columns: minmax(0, 1fr); gap: 8px; } }
-
-.tb-popover-notifications .tb-popover-list { grid-template-columns: minmax(0, 1fr); min-width: 0; }
-.tb-popover-notifications .tb-notification { min-width: 0; max-width: 100%; }
+@keyframes tbx-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

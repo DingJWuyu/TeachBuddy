@@ -6,7 +6,7 @@ import { supportedDocument } from '@teachbuddy/shared';
 import { parseInlineRuns, serializeInlineRuns } from './documents.js';
 import { DocumentView, Formula, ControlledImage } from './DocumentView.jsx';
 import { Icon } from '../icons.jsx';
-import { Popover, MenuItem } from '../interaction/ModuleOverlays.jsx';
+import { Menu as Popover, MenuItem } from '../ui/menu.jsx';
 
 const paragraph = () => ({ type: 'paragraph', runs: [] });
 const kinds = {

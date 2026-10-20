@@ -43,7 +43,7 @@ export const moduleCatalog = Object.freeze([
     "path": "/classroom",
     "navigation": "sidebar",
     "auxiliaryPanel": true,
-    "webEnabled": false,
+    "webEnabled": true,
     "requires": []
   }
 ].map(entry => Object.freeze({...entry, requires: Object.freeze(entry.requires)})));

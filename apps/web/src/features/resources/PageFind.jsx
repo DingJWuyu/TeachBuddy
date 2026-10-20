@@ -7,7 +7,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { Icon } from "../workbench/chrome/icons.jsx";
+import { Icon } from "../../components/icons.jsx";
 import { ModulePresence } from "../../components/interaction/ModuleMotion.jsx";
 
 // Match the rendered text itself. RegExp keeps offsets in the original UTF-16

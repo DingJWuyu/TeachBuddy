@@ -13,6 +13,7 @@ import LegacyWorkspace from './LegacyWorkspace.jsx';
 import WorkHistory from './WorkHistory.jsx';
 import './math.css';
 import './workspace.css';
+import './presentation.css';
 export function MathWorkbench({ transport, route } = {}) {
   return transport ? (
     <MathSession transport={transport} route={route} />

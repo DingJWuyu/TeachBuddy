@@ -7,6 +7,7 @@ const stores = [
   ["teachbuddy-resources-pending", "requests", "pending:resources"],
   ["teachbuddy.math.uploads", "pending", "pending:math-upload"],
   ["teachbuddy.questions.uploads", "pending", "pending:questions-upload"],
+  ["teachbuddy-classroom-pending", "requests", "pending:classroom-upload"],
 ];
 function database(name, store) {
   return new Promise((resolve, reject) => {
