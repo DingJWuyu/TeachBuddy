@@ -2892,6 +2892,20 @@ components:
       - id
       - name
       additionalProperties: false
+    ResourceTag:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        color:
+          type: string
+          enum: ['#ff6b75', '#3edc81', '#5b9cf5', '#a78bfa', '#ffb454', '#f27ab8', '#43c6c6', '#9ba0aa']
+      required: [id, name]
+      additionalProperties: false
     Folder:
       type: object
       properties:
@@ -2967,7 +2981,7 @@ components:
         tags:
           type: array
           items:
-            $ref: '#/components/schemas/Term'
+            $ref: '#/components/schemas/ResourceTag'
           minItems: 0
           maxItems: 1000
       required:
@@ -2988,7 +3002,7 @@ components:
         tags:
           type: array
           items:
-            $ref: '#/components/schemas/Term'
+            $ref: '#/components/schemas/ResourceTag'
           minItems: 0
           maxItems: 1000
       required:

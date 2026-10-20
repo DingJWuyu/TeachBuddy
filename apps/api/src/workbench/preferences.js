@@ -10,7 +10,7 @@ export const preferenceMigrations = [{ moduleId: 'reliability-preferences', migr
   )`); }
 }] }];
 
-const defaults = { readingSize: 'standard', motion: 'system', externalAi: 'deepseek', theme: 'light', background: 'grid', avatar: '', locale: 'zh-CN' };
+const defaults = { readingSize: 'standard', motion: 'system', externalAi: 'deepseek', theme: 'light', background: 'grid', backgroundImage: '', avatar: '', locale: 'zh-CN' };
 function validate(body, request) {
   if (Object.keys(request.query).length) throw invalidInput('/query', 'unknown-field');
   if (!body || typeof body !== 'object' || Array.isArray(body)) throw invalidInput('/', 'invalid-type');
@@ -22,7 +22,7 @@ function validate(body, request) {
   for (const [name, choices] of Object.entries({ readingSize: ['standard', 'large'], motion: ['system', 'reduce'], externalAi: ['deepseek', 'doubao'] })) {
     if (!choices.includes(values[name])) throw invalidInput(`/values/${name}`, 'out-of-range');
   }
-  for (const [name, choices] of Object.entries({ theme: ['light', 'dark'], background: ['grid', 'parchment', 'circles', 'stripes'], locale: ['zh-CN', 'en'] })) {
+  for (const [name, choices] of Object.entries({ theme: ['light', 'dark'], background: ['grid', 'parchment', 'circles', 'stripes', 'custom'], locale: ['zh-CN', 'en'] })) {
     if (Object.hasOwn(values, name) && !choices.includes(values[name])) throw invalidInput(`/values/${name}`, 'out-of-range');
   }
   if (Object.hasOwn(values, 'avatar') && (typeof values.avatar !== 'string' || values.avatar.length > 131072)) throw invalidInput('/values/avatar', 'out-of-range');
@@ -41,6 +41,20 @@ async function validateAvatar(avatar) {
   }
 }
 
+async function validateBackground(image) {
+  if (image === undefined || image === '') return;
+  const match = typeof image === 'string' && image.length <= 3145728 && image.match(/^data:image\/(webp|jpeg);base64,([A-Za-z0-9+/]+={0,2})$/);
+  if (!match) throw invalidInput('/values/backgroundImage', 'out-of-range');
+  try {
+    const bytes = Buffer.from(match[2], 'base64');
+    const metadata = await sharp(bytes, { limitInputPixels: 4096 * 4096, animated: true }).metadata();
+    if (metadata.format !== match[1] || (metadata.pages || 1) !== 1) throw new Error('Invalid background');
+    await sharp(bytes, { limitInputPixels: 4096 * 4096 }).stats();
+  } catch {
+    throw invalidInput('/values/backgroundImage', 'out-of-range');
+  }
+}
+
 export function createPreferencesRouter({ db, mutations, identity, trustedOrigins, ready, logger, clock = () => new Date() }) {
   const router = express.Router();
   const guards = createGuards({ identity, trustedOrigins });
@@ -56,7 +70,7 @@ export function createPreferencesRouter({ db, mutations, identity, trustedOrigin
     res.json(read(req.workbenchPrincipal));
   }));
   router.put('/preferences', guards.originGuard, guards.protectionGuard, guards.identityGuard,
-    express.json({ limit: '144kb' }), asyncHandler(async (req, res, next) => { await ready(); await validateAvatar(req.body?.values?.avatar); next(); }),
+    express.json({ limit: '3400kb' }), asyncHandler(async (req, res, next) => { await ready(); await validateAvatar(req.body?.values?.avatar); await validateBackground(req.body?.values?.backgroundImage); next(); }),
     createMutationHandler({ mutations, method: 'PUT', validate, write({ principal, body }) {
       const current = read(principal);
       if (body.baseVersion !== current.version) throw contractError(problems.versionConflict(current.version));

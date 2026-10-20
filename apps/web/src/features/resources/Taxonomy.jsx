@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Icon } from "../../components/icons.jsx";
+import { colorOf } from "../../components/ui/colors.js";
 import { ResourceDialog } from "./ResourceDialog.jsx";
 
 export function TaxonomyDialog({
@@ -27,9 +28,10 @@ export function TaxonomyDialog({
   async function save(event) {
     event.preventDefault();
     const item = {
+      ...edit.item,
       id: edit.item?.id ?? crypto.randomUUID(),
       name: name.trim(),
-      ...(folder ? { parentId: parentId || null } : {}),
+      ...(folder ? { parentId: parentId || null } : { color: colorOf(edit.item, edit.item ? value.tags.findIndex(tag => tag.id === edit.item.id) : value.tags.length) }),
     };
     const next = remove
       ? value[group].filter((entry) => entry.id !== edit.item.id)
@@ -68,7 +70,7 @@ export function TaxonomyDialog({
                   : item.tagIds.includes(edit.item.id),
               ).length
             }{" "} {t("份资料")} {folder
-              ? t("及直接子文件夹会移到上级，资料不会被删除。")
+              ? t("资料会移到未分组，子文件夹会移到上级。")
               : t("会移除此标签，资料仍然保留。")}
           </p>
         ) : (

@@ -6,7 +6,7 @@
 
 [createResourcesModule](../../apps/api/src/modules/resources/index.js) 接收 `db/mutations/files/jobs/recognition/now`，返回 `router` 与 `port`。资源库拥有条目、分类、文件版本关联和正文缓存；原件、补充预览及识别任务归公共 files/jobs。条目版本不是 File ID。
 
-业务 definitions 与 `port.operations` 由 [service](../../apps/api/src/modules/resources/service.js) 聚合，模块 [index](../../apps/api/src/modules/resources/index.js) 负责 HTTP 装配与返回公开 port：查询与收录、修改/替换文件、文件历史读取与恢复、批量整理、分类维护、补充预览、正文重试、归档/恢复及彻底删除。精确操作名与输入看 service 的 definitions 和材料 schema 的资源 operationId；没有另一个顶层 operations。`port.readForExport(principal)` 同步读取 resources、stored taxonomy 和 fileRevisions；导出的 `deleteAccountData` 由账户生命周期事务调用。目前 Agent adapter 没有接通全部资源操作，不能把进程内可调用等同模型工具已开放。
+业务 definitions 与 `port.operations` 由 [service](../../apps/api/src/modules/resources/service.js) 聚合，模块 [index](../../apps/api/src/modules/resources/index.js) 负责 HTTP 装配与返回公开 port：查询与收录、修改/替换文件、文件历史读取与恢复、批量整理、分类维护、补充预览、正文重试、归档/恢复及彻底删除。精确操作名与输入看 service 的 definitions 和材料 schema 的资源 operationId；没有另一个顶层 operations。`port.readForExport(principal)` 同步读取 resources、stored taxonomy 和 fileRevisions；导出的 `deleteAccountData` 由账户生命周期事务调用。`port.readReference(principal, id)` 同步返回与资源 GET 相同的完整 Resource，供引用快照在调用方事务内捕获；校验 ID 与账户归属，不存在或外账户抛 404，已归档资料保留 `deletedAt` 返回，由消费方决定是否接受。端口不读取文件字节，也不保证原件当前可读取。目前 Agent adapter 没有接通全部资源操作，不能把进程内可调用等同模型工具已开放。
 
 ## 可信调用与提交
 
@@ -39,9 +39,9 @@ Web 的 PDF.js worker、CMap 和标准字体随本机构建提供，不依赖外
 
 ## 新版列表与设备呈现
 
-新版资源列表、文件夹树、标签、选择与批量动作消费现有真实 client/resourceOperations；资料信息、预览、查找、识别及文件历史保留真实读取与写入，不以原型的内存数据替代。标签名称与顺序真实保存；颜色仅在账户隔离的 resources 设备现场保存，发送 taxonomy 时剥离非契约字段。
+新版资源列表、文件夹树、标签、选择与批量动作消费现有真实 client/resourceOperations；资料信息、预览、查找、识别及文件历史保留真实读取与写入，不以原型的内存数据替代。标签名称、顺序和八色选择通过资源专属 ResourceTag schema 保存至账户 taxonomy，题库共用 Term 不变。Web 读取成功且无未确认操作时，以版本化 taxonomy 写入补迁旧设备标签颜色，仅补服务端缺值；服务器已有颜色优先。保存未确认沿现有 pendingRequests 原键接续，失败保留设备值；确认服务器已有颜色后清除本现场旧值。无颜色的历史标签仍按八色顺序显示，排序时固化当前颜色。
 
-移除文件夹树通过真实 taxonomy 更新执行；树内资料按后端规则移到最近保留祖先，原型要求全部归未分组的差异见 [buffer](../../buffer.md#当前发现)。拖动文件夹归档按现有 organize 每批最多 100 条顺序提交，全部确认成功后才删树；失败或未知保留树与原请求，成功批次不回滚。
+移除文件夹树通过真实 taxonomy 更新执行；活动与归档资料只要所属文件夹被移除就归未分组；显式保留的文件夹仍按原父链移到最近保留祖先。拖动文件夹归档按现有 organize 每批最多 100 条顺序提交，全部确认成功后才删树；失败或未知保留树与原请求，成功批次不回滚。
 
 ## 验证入口
 

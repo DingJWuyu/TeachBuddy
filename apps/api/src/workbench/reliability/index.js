@@ -9,6 +9,8 @@ import {
   createWorkbenchErrorHandler,
   asyncHandler,
   isWriteMethod,
+  readIdempotencyKey,
+  canonicalRequestPath,
 } from "../http.js";
 import {
   contractError,
@@ -40,6 +42,7 @@ export function createReliability({
   const router = express.Router(),
     guards = createGuards({ identity, trustedOrigins });
   const running = new Map();
+  const downloads = new Map();
   const controller = new AbortController();
   let closed = false;
   const save = (record) =>
@@ -187,6 +190,32 @@ export function createReliability({
       },
     }),
   );
+  router.post('/exports/:id/deletion',
+    asyncHandler(async (req, res, next) => {
+      validateIdPath(req.params.id);
+      if (!req.body || typeof req.body !== 'object' || Array.isArray(req.body) || Object.keys(req.body).length)
+        throw invalidInput('/', 'unknown-field');
+      const replay = mutations.peek({ principal: req.workbenchPrincipal, key: readIdempotencyKey(req), method: 'POST', path: canonicalRequestPath(req), body: req.body });
+      if (replay) return res.status(replay.status).json(replay.body);
+      const row = db.prepare('SELECT accountKey FROM reliability_exports WHERE id=?').get(req.params.id);
+      if (row && row.accountKey !== req.workbenchPrincipal.accountKey) throw contractError(problems.notFound());
+      if (row) {
+        const handle = running.get(req.params.id);
+        handle?.abort.abort();
+        if (handle) await handle.done;
+      }
+      next();
+    }),
+    createMutationHandler({ mutations, method: 'POST', validate: body => body,
+      write({ principal, request }) {
+        read(principal, request.params.id);
+        for (const stream of downloads.get(request.params.id) || []) stream.destroy();
+        removeExportFiles(principal.accountKey, [request.params.id]);
+        db.prepare('DELETE FROM reliability_exports WHERE id=? AND accountKey=?').run(request.params.id, principal.accountKey);
+        return { status: 200, body: { id: request.params.id, deleted: true } };
+      }
+    })
+  );
   router.get("/exports/:id", (req, res) => {
     validateIdPath(req.params.id);
     res.json(JSON.parse(read(req.workbenchPrincipal, req.params.id).value));
@@ -210,7 +239,15 @@ export function createReliability({
         "Content-Disposition": `attachment; filename="teachbuddy-${record.id}.zip"`,
         "Content-Length": String(stat.size),
       });
-      await pipeline(fs.createReadStream(file), res);
+      const stream = fs.createReadStream(file);
+      const active = downloads.get(record.id) || new Set();
+      active.add(stream);
+      downloads.set(record.id, active);
+      try { await pipeline(stream, res); }
+      finally {
+        active.delete(stream);
+        if (!active.size) downloads.delete(record.id);
+      }
     }),
   );
   router.use((error, req, res, next) => {
@@ -224,7 +261,10 @@ export function createReliability({
   router.use(createWorkbenchErrorHandler({ logger }));
   const agentRecoveryGuard = express.Router();
   agentRecoveryGuard.post(
-    "/conversations/:conversationId/operations/:operationId/reconcile",
+    [
+      "/conversations/:conversationId/operations/:operationId/reconcile",
+      "/conversations/:conversationId/proposals/:proposalId/execute",
+    ],
     (req, res, next) => {
       res.set("Cache-Control", "no-store");
       next();
@@ -232,14 +272,24 @@ export function createReliability({
     guards.originGuard,
     guards.protectionGuard,
     guards.identityGuard,
+    express.json({ limit: "2mb" }),
     asyncHandler(async (req, res, next) => {
       await ready();
+      let operationId = req.params.operationId;
+      if (req.params.proposalId) {
+        const row = db.prepare("SELECT document FROM agent_conversations WHERE id=? AND accountKey=?")
+          .get(req.params.conversationId, req.workbenchPrincipal.accountKey);
+        const operation = row && JSON.parse(row.document).snapshot.operations.find(item =>
+          item.proposalSource?.proposalId === req.params.proposalId && item.proposalSource.slot === req.body?.slot);
+        operationId = operation?.id;
+      }
+      if (!operationId) return next();
       const frozen = db
         .prepare(
           "SELECT 1 FROM reliability_frozen_operations WHERE id=? AND conversationId=? AND accountKey=?",
         )
         .get(
-          req.params.operationId,
+          operationId,
           req.params.conversationId,
           req.workbenchPrincipal.accountKey,
         );
@@ -253,6 +303,18 @@ export function createReliability({
     }),
   );
   agentRecoveryGuard.use(createWorkbenchErrorHandler({ logger }));
+  function removeExportFiles(accountKey, ids) {
+    for (const id of ids) {
+      validateIdPath(id);
+      if (db.prepare('SELECT 1 FROM reliability_exports WHERE id=? AND accountKey<>?').get(id, accountKey))
+        throw new Error('Export belongs to another account');
+      for (const suffix of ['.zip', '.zip.part']) fs.rmSync(path.join(directory, id + suffix), { force: true });
+    }
+    if (fs.existsSync(directory)) {
+      const fd = fs.openSync(directory, 'r');
+      try { fs.fsyncSync(fd); } finally { fs.closeSync(fd); }
+    }
+  }
   return {
     async cancelAccountAndWait(accountKey) {
       const handles = db.prepare('SELECT id FROM reliability_exports WHERE accountKey=?').all(accountKey)
@@ -263,18 +325,7 @@ export function createReliability({
     accountExportIds(accountKey) {
       return db.prepare('SELECT id FROM reliability_exports WHERE accountKey=?').all(accountKey).map(row => row.id);
     },
-    removeAccountExports(accountKey, ids) {
-      for (const id of ids) {
-        validateIdPath(id);
-        if (db.prepare('SELECT 1 FROM reliability_exports WHERE id=? AND accountKey<>?').get(id, accountKey))
-          throw new Error('Export belongs to another account');
-        for (const suffix of ['.zip', '.zip.part']) fs.rmSync(path.join(directory, id + suffix), { force: true });
-      }
-      if (fs.existsSync(directory)) {
-        const fd = fs.openSync(directory, 'r');
-        try { fs.fsyncSync(fd); } finally { fs.closeSync(fd); }
-      }
-    },
+    removeAccountExports: removeExportFiles,
     router,
     agentRecoveryGuard,
     initialize() {

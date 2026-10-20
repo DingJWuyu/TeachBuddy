@@ -175,3 +175,49 @@ test('classroom SQLite restart preserves IDs, versions and confirmed request rec
     }
   }
 });
+
+test('classroom archive: account lists include deleted children of deleted subjects', async () => {
+  const world = await createClassroomWorld();
+  let passed = false;
+  try {
+    const a = await teacher(world), b = await teacher(world, 'archive-other@example.test');
+    const cls = await a.call('POST', C + '/classes', { name: '归档父班级' }, 201);
+    const student = await a.call('POST', C + '/students', studentBody(cls.id), 201);
+    const activeStudent = await a.call('POST', C + '/students', studentBody(cls.id, '活动学生'), 201);
+    const records = [];
+    for (const [scope, subjectId] of [['class', cls.id], ['student', student.id], ['student', activeStudent.id]]) {
+      const record = await a.call('POST', C + '/records', { scope, subjectId, occurredOn: '2026-01-02', text: scope + '归档记录' }, 201);
+      records.push(await a.call('PUT', C + '/records/' + record.id + '/deletion', { baseVersion: record.version, deleted: true }));
+    }
+    const deletedStudent = await a.call('PUT', C + '/students/' + student.id + '/deletion', { baseVersion: student.version, deleted: true });
+    const currentClass = await a.call('GET', C + '/classes/' + cls.id);
+    const deletedClass = await a.call('PUT', C + '/classes/' + cls.id + '/deletion', { baseVersion: currentClass.version, deleted: true });
+    assert.deepEqual((await a.call('GET', C + '/students?deleted=deleted')).items.map(s => s.id), [student.id]);
+    assert.deepEqual(new Set((await a.call('GET', C + '/records?deleted=deleted')).items.map(r => r.id)), new Set(records.map(r => r.id)));
+    assert.equal((await a.call('GET', C + '/students?deleted=deleted&classId=' + cls.id)).items[0].id, student.id);
+    assert.equal((await a.call('GET', C + '/records?deleted=deleted&scope=student&subjectId=' + student.id)).items[0].id, records[1].id);
+    assert.deepEqual((await b.call('GET', C + '/students?deleted=deleted')).items, []);
+    assert.deepEqual((await b.call('GET', C + '/records?deleted=deleted')).items, []);
+    await b.call('GET', C + '/students?deleted=deleted&classId=' + cls.id, undefined, 404);
+    await b.call('GET', C + '/records?deleted=deleted&scope=student&subjectId=' + student.id, undefined, 404);
+    await a.call('GET', C + '/records?deleted=deleted&scope=student', undefined, 422);
+    for (const [kind, item] of [['students', deletedStudent], ...records.map(record => ['records', record])]) {
+      const rejection = await a.call('PUT', C + '/' + kind + '/' + item.id + '/deletion', { baseVersion: item.version, deleted: false }, 409);
+      assert.equal(rejection.type, '/problems/workbench/classroom-restore-class-required');
+      assert.ok((await a.call('GET', C + '/' + kind + '/' + item.id)).deletedAt);
+    }
+    await a.call('PUT', C + '/classes/' + cls.id + '/deletion', { baseVersion: deletedClass.version, deleted: false });
+    assert.ok((await a.call('GET', C + '/students/' + student.id)).deletedAt);
+    const blockedRecord = await a.call('PUT', C + '/records/' + records[1].id + '/deletion', { baseVersion: records[1].version, deleted: false }, 409);
+    assert.equal(blockedRecord.type, '/problems/workbench/classroom-restore-student-required');
+    await a.call('PUT', C + '/students/' + student.id + '/deletion', { baseVersion: deletedStudent.version, deleted: false });
+    for (const record of records) {
+      assert.ok((await a.call('GET', C + '/records/' + record.id)).deletedAt);
+      const restored = await a.call('PUT', C + '/records/' + record.id + '/deletion', { baseVersion: record.version, deleted: false });
+      assert.equal(restored.deletedAt, null);
+    }
+    await a.call('GET', C + '/students', undefined, 422);
+    await a.call('GET', C + '/records', undefined, 422);
+    passed = true;
+  } finally { await world.close(passed); }
+});

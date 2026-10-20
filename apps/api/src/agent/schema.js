@@ -66,6 +66,6 @@ export const toolDefinitions = agent['x-agent-tools'].map(tool => ({ ...tool,
 export function agentProblem(code, extra = {}) {
   const status = ['draft-conflict', 'reference-conflict', 'turn-active', 'pending-operation', 'cursor-ahead'].includes(code) ? 409
     : code === 'model-not-allowed' ? 422 : code === 'tool-failed' ? 500 : 503;
-  return { type: `/problems/agent/${code}`, status, title: ({ 'tool-failed': '读取未能完成', 'operation-unconfirmed': '写入结果待确认', 'draft-conflict': '草稿已在其他设备修改', 'reference-conflict': '引用内容已变更', 'model-unavailable': 'AI 暂不可用' })[code] ?? '暂时无法完成操作', ...extra };
+  return { type: `/problems/agent/${code}`, status, title: ({ 'tool-failed': '读取未能完成', 'operation-unconfirmed': '写入结果待确认', 'draft-conflict': '草稿已在其他设备修改', 'reference-conflict': '引用内容已变更', 'model-unavailable': 'AI 暂不可用', 'turn-active': '对话正在生成，请等待完成或先停止', 'pending-operation': '请先确认待核实的写入结果' })[code] ?? '暂时无法完成操作', ...extra };
 }
 export function agentError(code, extra) { const problem = agentProblem(code, extra); return Object.assign(new Error(problem.title), { status: problem.status, problem }); }

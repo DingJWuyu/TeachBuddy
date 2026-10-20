@@ -77,6 +77,7 @@ test('WB-AG-005/010/016: 草稿冲突、发送同键重放、白名单和缺配�
  assert.deepEqual((await write(c,'POST',path+'/turns',body,sendKey)).json,sent.json);
  assert.equal((await c.request('GET',path)).json.draft.text,'下一条');
  assert.equal((await write(c,'POST',path+'/turns',{...body,draftVersion:4})).json.type,'/problems/agent/turn-active');
+ assert.equal((await write(c,'DELETE',path,{})).json.type,'/problems/agent/turn-active');
  release();const s=await finished(c,path);assert.equal(s.messages.filter(m=>m.role==='user').length,1);assert.equal(p.requests(),1);
  }finally{release();await w.close();}
 });
@@ -104,6 +105,7 @@ test('WB-AG-012/023: 业务提交后journal失败，原题更新后核实仍是�
   w.workbench.db.exec(`CREATE TRIGGER c26_lose_confirmation BEFORE UPDATE ON agent_conversations WHEN NEW.document LIKE '%"state":"confirmed"%' BEGIN SELECT RAISE(ABORT,'injected journal failure'); END;`);
   const path=await start(c,'复制这道题');const s=await finished(c,path);
   assert.equal(s.operations[0].state,'unconfirmed',JSON.stringify(s));assert.equal(s.toolCalls[0].state,'unconfirmed');
+  assert.equal((await write(c,'DELETE',path,{})).json.type,'/problems/agent/pending-operation');
   w.workbench.db.exec('DROP TRIGGER c26_lose_confirmation');
   const edit={...manualQuestionSample(),baseVersion:1,title:'老师已修改原题'};delete edit.source;
   assert.equal((await write(c,'PUT','/api/modules/questions/items/'+source.id,edit)).status,200);
@@ -400,4 +402,257 @@ test('WB-AG-008/019: v2 copies preserve active/deleted queries and missing-sourc
     assert.throws(() => operation({ principal, id: randomUUID(), query: { unknown: true } }), error => error.status === 404);
     assert.throws(() => operation({ principal, id: source.id, query: { unknown: true } }), error => error.problem.field === '/query/unknown');
   } finally { await w.close(); }
+});
+
+
+const capabilityDirectories = new Set();
+let capabilityFailure = false;
+async function createCapabilitiesIntegration(options) {
+ const world = await createIntegration(options);
+ capabilityDirectories.add(world.directory);
+ return world;
+}
+test.afterEach(context => { capabilityFailure ||= !context.passed; });
+test.after(() => {
+ if (!capabilityFailure) for (const directory of capabilityDirectories) fs.rmSync(directory, { recursive: true, force: true });
+ else console.error('保留助理能力验证现场：' + [...capabilityDirectories].join(', '));
+});
+
+test('WB-AG-024: 会话管理真实保存、账户隔离、删除及原键重放', async () => {
+ const model = await provider([[{ type: 'text', text: '已回答明确命名的对话。' }], [{ type: 'text', text: '已回答自动命名的对话。' }]]);
+ const w = await createCapabilitiesIntegration({ agent: model.config });
+ try {
+  const c = await register(w);
+  const created = await write(c, 'POST', '/api/agent/conversations', {});
+  const path = '/api/agent/conversations/' + created.json.conversation.id;
+  assert.equal(Object.hasOwn(created.json.conversation, 'titleEdited'), false);
+  const legacy = (await c.request('GET', path)).json;
+  assert.equal(Object.hasOwn(legacy.conversation, 'titleEdited'), false);
+  assert.equal(valid('Snapshot', legacy), true);
+  const pinOnly = await write(c, 'PATCH', path, { pinned: false });
+  assert.equal(Object.hasOwn(pinOnly.json, 'titleEdited'), false);
+  const key = randomUUID();
+  const patch = await write(c, 'PATCH', path, { title: '  新标题  ', pinned: true }, key);
+  assert.equal(patch.status, 200, patch.text);
+  assert.equal(patch.json.titleEdited, true);
+  assert.equal(patch.json.title, '新标题'); assert.equal(patch.json.pinned, true);
+  assert.equal(valid('Conversation', patch.json), true);
+  assert.equal((await c.request('GET', path)).json.conversation.title, '新标题');
+  assert.equal(patch.json.updatedAt, created.json.conversation.updatedAt);
+  assert.equal((await c.request('GET', '/api/agent/conversations')).json.items[0].pinned, true);
+  assert.equal((await write(c, 'PATCH', path, { title: '   ' })).status, 422);
+  assert.equal((await write(c, 'PATCH', path, { title: '字'.repeat(81) })).status, 422);
+  await write(c, 'PATCH', path, { title: '后来标题', pinned: false });
+  assert.deepEqual((await write(c, 'PATCH', path, { title: '  新标题  ', pinned: true }, key)).json, patch.json);
+  assert.equal((await c.request('GET', path)).json.conversation.title, '后来标题');
+  const savedDraft = await write(c, 'PUT', path + '/draft', { baseVersion: 1, text: '这条消息不能覆盖明确标题', references: [] });
+  assert.equal(savedDraft.status, 200);
+  assert.equal((await write(c, 'POST', path + '/turns', { draftVersion: 2, modelId: 'deepseek/deepseek-v4.1-flash' })).status, 202);
+  const named = await finished(c, path);
+  assert.equal(named.conversation.title, '后来标题');
+  assert.equal(named.conversation.titleEdited, true);
+  const automaticPath = await start(c, '自动命名应来自首条消息');
+  const automatic = await finished(c, automaticPath);
+  assert.equal(automatic.conversation.title, '自动命名应来自首条消息');
+  assert.equal(Object.hasOwn(automatic.conversation, 'titleEdited'), false);
+  await write(c, 'DELETE', automaticPath, {});
+  assert.equal(model.requests(), 2);
+  const other = await register(w, 'other-management@example.test');
+  assert.equal((await write(other, 'PATCH', path, { pinned: true })).status, 404);
+  assert.equal((await write(other, 'DELETE', path, {})).status, 404);
+  const deleteKey = randomUUID();
+  const question = (await write(c, 'POST', '/api/modules/questions/items', manualQuestionSample())).json;
+  const removed = await write(c, 'DELETE', path, {}, deleteKey);
+  assert.equal(removed.status, 200, removed.text);
+  assert.deepEqual(removed.json, { deleted: created.json.conversation.id });
+  assert.equal((await c.request('GET', path)).status, 404);
+  assert.deepEqual((await c.request('GET', '/api/agent/conversations')).json.items, []);
+  assert.equal((await c.request('GET', '/api/modules/questions/items/' + question.id)).status, 200);
+  const account = (await c.request('GET', '/api/workbench/context')).json.accountKey;
+  assert.equal(w.workbench.db.prepare('SELECT count(*) AS n FROM agent_events WHERE conversationId=?').get(created.json.conversation.id).n, 0);
+  assert.throws(() => w.workbench.agent.store.read(account, created.json.conversation.id));
+  assert.deepEqual((await write(c, 'DELETE', path, {}, deleteKey)).json, removed.json);
+ } finally { await w.close(); }
+});
+
+const teachingQuestion = title => ({ title, body: '计算 $1+1$。', solution: '$2$' });
+async function proposal(c, w, card) {
+ const path = await start(c, '请提出教学准备建议，先不要保存');
+ const snapshot = await finished(c, path);
+ assert.equal(snapshot.turns[0].state, 'completed', JSON.stringify(snapshot));
+ assert.equal(snapshot.toolCalls[0].name, 'wb_propose_teaching_card');
+ assert.equal(snapshot.toolCalls[0].state, 'read');
+ assert.equal(snapshot.operations.length, 0);
+ assert.equal(valid('Snapshot', snapshot), true);
+ assert.deepEqual(snapshot.toolCalls[0].result.card, card);
+ return { path, proposalId: snapshot.toolCalls[0].result.proposalId };
+}
+test('WB-AG-025: 真实runtime提案不落库，逐槽存题与新建未排期安排可刷新核实', async () => {
+ const practice = { kind: 'practice', title: '分层练习', items: [teachingQuestion('基础'), teachingQuestion('提高')] };
+ const plan = { kind: 'plan', title: '讲解顺序', entryTitle: '备课：二次函数', steps: ['图像观察（5分钟）', '变式练习（10分钟）'] };
+ const p = await provider([
+  [{ type: 'toolCall', id: 'practice', name: 'wb_propose_teaching_card', arguments: { card: practice } }], [{ type: 'text', text: '请先查看练习，再决定保存。' }],
+  [{ type: 'toolCall', id: 'plan', name: 'wb_propose_teaching_card', arguments: { card: plan } }], [{ type: 'text', text: '讲解顺序已提出。' }]
+ ]);
+ const w = await createCapabilitiesIntegration({ agent: p.config });
+ try {
+  const c = await register(w); const q = await proposal(c, w, practice);
+  assert.equal((await c.request('GET', '/api/modules/questions/v2/items')).json.items.length, 0);
+  const execute = q.path + '/proposals/' + q.proposalId + '/execute';
+  assert.equal((await write(c, 'POST', execute, { slot: 1 })).status, 422);
+  assert.equal((await write(c, 'POST', execute, { slot: 0, card: practice })).status, 422);
+  const first = await write(c, 'POST', execute, { slot: 0 }); assert.equal(first.status, 200, first.text);
+  let snapshot = (await c.request('GET', q.path)).json;
+  assert.equal(snapshot.operations[0].state, 'confirmed', JSON.stringify(snapshot));
+  assert.equal(valid('Snapshot', snapshot), true);
+  assert.equal(snapshot.operations[0].request.operationId, 'createQuestionV2');
+  assert.equal(snapshot.operations[0].result.title, '基础');
+  assert.equal((await write(c, 'POST', execute, { slot: 0 })).json.id, first.json.id);
+  assert.equal((await write(c, 'POST', execute, { slot: 1 })).status, 200);
+  snapshot = (await c.request('GET', q.path)).json;
+  assert.deepEqual(snapshot.operations.map(o => o.state), ['confirmed', 'confirmed']);
+  assert.equal((await c.request('GET', '/api/modules/questions/v2/items')).json.items.length, 2);
+  const other = await register(w, 'proposal-other@example.test');
+  assert.equal((await write(other, 'POST', execute, { slot: 0 })).status, 404);
+  const l = await proposal(c, w, plan);
+  const accepted = await write(c, 'POST', l.path + '/proposals/' + l.proposalId + '/execute', { slot: 0 });
+  assert.equal(accepted.status, 200, accepted.text);
+  const result = (await c.request('GET', l.path)).json;
+  assert.equal(result.operations[0].state, 'confirmed', JSON.stringify(result));
+  assert.equal(valid('Snapshot', result), true);
+  const entry = (await c.request('GET', '/api/modules/schedule/entries')).json.items[0];
+  assert.equal(entry.title, plan.entryTitle); assert.equal(entry.time, null);
+  assert.deepEqual(entry.items.map(item => item.text), plan.steps);
+  assert.equal(p.requests(), 4);
+  assert.equal(result.conversation.preview, '讲解顺序已提出。');
+  assert.equal((await c.request('GET', '/api/agent/conversations')).json.items.find(item => item.id === result.conversation.id).preview, '讲解顺序已提出。');
+  const account = (await c.request('GET', '/api/workbench/context')).json.accountKey;
+  const stored = w.workbench.agent.store.read(account, result.conversation.id);
+  delete stored.snapshot.conversation.preview;
+  w.workbench.db.prepare('UPDATE agent_conversations SET document=? WHERE id=?').run(JSON.stringify(stored), result.conversation.id);
+  assert.equal((await c.request('GET', '/api/agent/conversations')).json.items.find(item => item.id === result.conversation.id).preview, '讲解顺序已提出。');
+ } finally { await w.close(); }
+});
+
+test('WB-AG-026: 资源和日程引用真实版本、快照及账户隔离', async () => {
+ let modelInput;
+ const p = await provider([context => { modelInput = JSON.stringify(context.messages); return [{ type: 'text', text: '已读取保存的资料条目与安排。' }]; }]);
+ const w = await createCapabilitiesIntegration({ agent: p.config });
+ try {
+  const c = await register(w);
+  const boundary = 'agent-reference-upload';
+  const pdf = fs.readFileSync(new URL('../../../test/fixtures/materials/c22.pdf', import.meta.url));
+  const uploaded = await c.request('POST', '/api/workbench/files', { rawBody: Buffer.concat([Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="lesson.pdf"\r\nContent-Type: application/pdf\r\n\r\n`), pdf, Buffer.from(`\r\n--${boundary}--\r\n`)]), contentType: 'multipart/form-data; boundary=' + boundary, headers: { 'Idempotency-Key': randomUUID() } });
+  assert.equal(uploaded.status, 201, uploaded.text);
+  const resource = (await write(c, 'POST', '/api/modules/resources/items', { title: '课堂课件', fileId: uploaded.json.id, folderId: null, tagIds: [], note: '课堂备注' })).json;
+  const entry = (await write(c, 'POST', '/api/modules/schedule/entries', { title: '周三数学课', items: [], time: null, repeat: null, reminder: null })).json;
+  const created = await write(c, 'POST', '/api/agent/conversations', {});
+  const path = '/api/agent/conversations/' + created.json.conversation.id;
+  const refs = [{ kind: 'resource', id: resource.id, version: resource.version }, { kind: 'entry', id: entry.id, version: entry.version }];
+  const input = { baseVersion: 1, text: '根据这些资料和日程备课', references: refs };
+  assert.equal((await write(c, 'PUT', path + '/draft', input)).status, 200);
+  assert.equal((await write(c, 'POST', path + '/turns', { draftVersion: 2, modelId: 'deepseek/deepseek-v4.1-flash' })).status, 202);
+  const snapshot = await finished(c, path);
+  assert.equal(valid('Snapshot', snapshot), true);
+  assert.deepEqual(snapshot.messages[0].references[0].snapshot, resource);
+  assert.deepEqual(snapshot.messages[0].references[1].snapshot, { entry, occurrence: null });
+  assert.ok(modelInput.includes('课堂备注')); assert.ok(modelInput.includes('周三数学课'));
+  const other = await register(w, 'reference-other@example.test');
+  const foreign = await write(other, 'POST', '/api/agent/conversations', {});
+  assert.equal((await write(other, 'PUT', '/api/agent/conversations/' + foreign.json.conversation.id + '/draft', input)).status, 404);
+  const invalid = await write(c, 'POST', '/api/agent/conversations', {});
+  const invalidPath = '/api/agent/conversations/' + invalid.json.conversation.id;
+  assert.equal((await write(c, 'PUT', invalidPath + '/draft', { ...input, references: [{ ...refs[1], version: 999 }] })).status, 200);
+  assert.equal((await write(c, 'POST', invalidPath + '/turns', { draftVersion: 2, modelId: 'deepseek/deepseek-v4.1-flash' })).json.type, '/problems/agent/reference-conflict');
+  assert.equal(p.requests(), 1);
+ } finally { await w.close(); }
+});
+
+test('WB-AG-027: 提案部分完成后未知结果不重复，结束回合的执行状态跨重启仍可核实', async () => {
+ const card = { kind: 'practice', title: '逐题练习', items: ['第一题', '第二题', '第三题'].map(teachingQuestion) };
+ const p = await provider([[{ type: 'toolCall', id: 'partial-practice', name: 'wb_propose_teaching_card', arguments: { card } }], [{ type: 'text', text: '请检查后保存。' }]]);
+ let w = await createCapabilitiesIntegration({ agent: p.config });
+ try {
+  let c = await register(w); const proposed = await proposal(c, w, card);
+  const execute = proposed.path + '/proposals/' + proposed.proposalId + '/execute';
+  await write(c, 'POST', execute, { slot: 0 });
+  w.workbench.db.exec(`CREATE TRIGGER proposal_lose_result BEFORE UPDATE ON agent_conversations WHEN json_extract(NEW.document,'$.snapshot.operations[1].state')='confirmed' BEGIN SELECT RAISE(ABORT,'injected proposal journal failure'); END;`);
+  assert.equal((await write(c, 'POST', execute, { slot: 1 })).status, 200);
+  let snapshot = (await c.request('GET', proposed.path)).json;
+  assert.deepEqual(snapshot.operations.map(o => o.state), ['confirmed', 'unconfirmed']);
+  assert.equal(valid('Snapshot', snapshot), true);
+  const unknown = snapshot.operations[1];
+  assert.equal((await write(c, 'POST', execute, { slot: 1 })).json.state, 'unconfirmed');
+  assert.equal((await write(c, 'POST', execute, { slot: 2 })).json.type, '/problems/agent/pending-operation');
+  assert.equal((await write(c, 'DELETE', proposed.path, {})).json.type, '/problems/agent/pending-operation');
+  assert.equal((await c.request('GET', '/api/modules/questions/v2/items')).json.items.length, 2);
+  w.workbench.db.exec('DROP TRIGGER proposal_lose_result');
+  assert.equal((await write(c, 'POST', proposed.path + '/operations/' + unknown.id + '/reconcile', {})).json.state, 'confirmed');
+  assert.equal((await write(c, 'POST', execute, { slot: 2 })).status, 200);
+  snapshot = (await c.request('GET', proposed.path)).json;
+  const account = (await c.request('GET', '/api/workbench/context')).json.accountKey;
+  const last = snapshot.operations[2];
+  w.workbench.agent.store.update(account, snapshot.conversation.id, doc => {
+    Object.assign(doc.snapshot.operations[2], { state: 'executing', result: null });
+  });
+  const directory = w.directory; await w.close(); w = await createCapabilitiesIntegration({ directory });
+  c = w.client(); await c.request('POST', '/api/auth/session', { body: { action: 'bootstrap' } });
+  const login = await c.request('POST', '/api/auth/login', { body: { email: 'agent@example.test', password: 'password-c26', rememberMe: true } });
+  await c.request('POST', '/api/auth/session', { body: { action: 'activate', sessionId: login.json.id, rememberMe: true } });
+  snapshot = (await c.request('GET', proposed.path)).json;
+  assert.equal(snapshot.turns[0].state, 'completed');
+  assert.equal(snapshot.operations[2].state, 'unconfirmed');
+  assert.equal(valid('Snapshot', snapshot), true);
+  assert.equal((await write(c, 'POST', proposed.path + '/operations/' + last.id + '/reconcile', {})).json.state, 'confirmed');
+  assert.equal((await c.request('GET', '/api/modules/questions/v2/items')).json.items.length, 3);
+  assert.equal(p.requests(), 2);
+ } finally { await w.close(); }
+});
+
+test('WB-AG-028: 不合法提案参数拒绝且不产生业务操作或暴露任意字段', async () => {
+ const card = { kind: 'variant', title: '变式', item: { ...teachingQuestion('变式'), path: '/api/任意写入' } };
+ const p = await provider([[{ type: 'toolCall', id: 'invalid-proposal', name: 'wb_propose_teaching_card', arguments: { card } }]]);
+ const w = await createCapabilitiesIntegration({ agent: p.config });
+ try {
+  const c = await register(w); const path = await start(c); const snapshot = await finished(c, path);
+  assert.equal(snapshot.toolCalls[0].state, 'rejected');
+  assert.equal(snapshot.toolCalls[0].arguments, null);
+  assert.equal(snapshot.operations.length, 0);
+  assert.equal(valid('Snapshot', snapshot), true);
+  assert.equal((await c.request('GET', '/api/modules/questions/v2/items')).json.items.length, 0);
+  assert.equal(p.requests(), 1);
+ } finally { await w.close(); }
+});
+
+test('WB-AG-029: 日程实例引用保留原始定位与历史，取消后不得发送', async () => {
+ const p = await provider([[{ type: 'text', text: '已读取这一节课。' }]]);
+ const w = await createCapabilitiesIntegration({ agent: p.config });
+ try {
+  const c = await register(w);
+  const made = await write(c, 'POST', '/api/modules/schedule/entries', {
+   title: '每周数学课', items: [],
+   time: { date: '2026-10-20', startTime: '09:00', timeZone: 'Asia/Shanghai', durationMinutes: 40 },
+   repeat: { until: '2026-11-10' }, reminder: null
+  });
+  assert.equal(made.status, 201, made.text);
+  const entry = made.json;
+  const conversation = await write(c, 'POST', '/api/agent/conversations', {});
+  const path = '/api/agent/conversations/' + conversation.json.conversation.id;
+  const reference = { kind: 'entry', id: entry.id, version: entry.version, originDate: '2026-10-27' };
+  assert.equal((await write(c, 'PUT', path + '/draft', { baseVersion: 1, text: '备这一次课', references: [reference] })).status, 200);
+  assert.equal((await write(c, 'POST', path + '/turns', { draftVersion: 2, modelId: 'deepseek/deepseek-v4.1-flash' })).status, 202);
+  const snapshot = await finished(c, path);
+  const captured = snapshot.messages[0].references[0];
+  assert.equal(captured.snapshot.entry.time.date, '2026-10-20');
+  assert.equal(captured.snapshot.occurrence.time.date, '2026-10-27');
+  assert.equal(captured.snapshot.occurrence.key.originDate, '2026-10-27');
+  assert.equal(valid('Snapshot', snapshot), true);
+  const cancelled = await write(c, 'PUT', '/api/modules/schedule/entries/' + entry.id + '/exceptions/2026-10-27', { expectedVersion: entry.version, mode: 'cancelled' });
+  assert.equal(cancelled.status, 200, cancelled.text);
+  const current = (await c.request('GET', '/api/modules/schedule/entries/' + entry.id)).json;
+  assert.equal((await write(c, 'PUT', path + '/draft', { baseVersion: 3, text: '再次备课', references: [{ ...reference, version: current.version }] })).status, 200);
+  assert.equal((await write(c, 'POST', path + '/turns', { draftVersion: 4, modelId: 'deepseek/deepseek-v4.1-flash' })).json.type, '/problems/agent/reference-conflict');
+  assert.deepEqual((await c.request('GET', path)).json.messages[0].references[0], captured);
+  assert.equal(p.requests(), 1);
+ } finally { await w.close(); }
 });

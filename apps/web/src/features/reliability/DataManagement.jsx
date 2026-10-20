@@ -9,7 +9,6 @@ import {
 } from "../../platform/http/apiClient.js";
 import { useIdempotentSubmit } from "../../platform/saving/useIdempotentSubmit.js";
 import { useWorkbenchShell } from "../workbench/shellContext.js";
-import { useScene } from '../../platform/device/useScene.js';
 import "./reliability.css";
 const base = "/api/reliability/v1";
 const states = {
@@ -27,11 +26,14 @@ export function DataManagement({ accountActions, dangerActions }) {
     [message, setMessage] = useState(""),
     [busy, setBusy] = useState("");
   const { accountKey } = useWorkbenchShell();
-  // The prototype's package removal has no server endpoint. Keep its view state
-  // separate from real export records and isolate it using the account scene.
-  const [scene, patchScene] = useScene(accountKey, 'export-packages', { hidden: [] });
-  const visibleExports = exports.filter(item => !scene.hidden.includes(item.id));
-  const remove = item => patchScene(current => ({ hidden: [...current.hidden, item.id] }));
+  async function remove(item) {
+    setBusy(item.id);
+    setError('');
+    try {
+      if (await submit(`${base}/exports/${item.id}/deletion`, {})) await refresh();
+    } catch (e) { setError(e.message); }
+    finally { setBusy(''); }
+  }
   const [exportOpen, setExportOpen] = useState(false);
   const [resetOpen, setResetOpen] = useState(false);
   const action = useIdempotentSubmit({
@@ -43,7 +45,7 @@ export function DataManagement({ accountActions, dangerActions }) {
     const allowed =
       /^\/api\/modules\/(questions\/v2\/(items|imports)|resources\/items|math\/v1\/works|schedule\/entries)\/[0-9a-f-]{36}\/deletion$/.test(
         payload.path,
-      ) || payload.path === `${base}/exports`;
+      ) || payload.path === `${base}/exports` || /^\/api\/reliability\/v1\/exports\/[0-9a-f-]{36}\/deletion$/.test(payload.path);
     if (!allowed) throw new Error(t("无法识别待确认请求，原始内容仍保留。"));
     const current = (await workbenchGet(`${base}/context`)).body;
     if (current.recoveryId !== payload.recoveryId)
@@ -144,7 +146,7 @@ export function DataManagement({ accountActions, dangerActions }) {
       <p className="wb-note">{t("文件可重新上传，正文与公式可复制；资料包不能覆盖账户或恢复原关联。")}</p>
       {busy === 'export' && <p role="status">{t("正在生成资料包…")}</p>}
       {visibleError && !action.pending && <button className="wb-button" disabled={!!busy} onClick={createExport}>{t("重试生成")}</button>}
-      {visibleExports.length > 0 && <ul className="reliability-list" aria-label={t("个人资料导出记录")}>{visibleExports.map(item => <ExportItem key={item.id} item={item} date={date(item.snapshotAt)} state={t(states[item.state])} busy={!!busy} working={busy === item.id} onDownload={() => download(item)} onDelete={() => remove(item)} />)}</ul>}
+      {exports.length > 0 && <ul className="reliability-list" aria-label={t("个人资料导出记录")}>{exports.map(item => <ExportItem key={item.id} item={item} date={date(item.snapshotAt)} state={t(states[item.state])} busy={!!busy || !!action.pending} working={busy === item.id} onDownload={() => download(item)} onDelete={() => remove(item)} />)}</ul>}
       {(visibleError || action.problem) && <p role="alert">{visibleError || action.problem.message}</p>}
       {action.pending && <div className="reliability-pending"><button className="wb-button" disabled={!!busy} onClick={retry}>{t("重试确认操作")}</button><SettingsDisclosure title={t("查看待确认请求")}><pre>{JSON.stringify(action.pending, null, 2)}</pre><button className="wb-button" onClick={() => setResetOpen(true)}>{t("放弃重试")}</button></SettingsDisclosure></div>}
     </SettingsConfirm>

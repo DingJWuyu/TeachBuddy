@@ -11,7 +11,11 @@ export function Archive({ ctx }) {
   const [error, setError] = useState(null);
   const load = async () => {
     const [c, s, e, r] = await Promise.all(['classes', 'students', 'exams', 'records'].map((n) => ctx.api.get(`/${n}`, { state: 'deleted' })));
-    setItems({ classes: c.items, students: s.items, exams: e.items, records: r.items });
+    const recordStudents = new Map([...ctx.data.students, ...s.items].map(student => [student.id, student]));
+    const missing = [...new Set(r.items.filter(record => record.scope === 'student' && !recordStudents.has(record.subjectId)).map(record => record.subjectId))];
+    const parents = await Promise.all(missing.map(id => ctx.api.get(`/students/${id}`)));
+    for (const student of parents) recordStudents.set(student.id, student);
+    setItems({ classes: c.items, students: s.items, exams: e.items, records: r.items, recordStudents });
   };
   useEffect(() => { load().catch(setError); }, []);
   const restore = async (collection, item) => {
@@ -19,9 +23,19 @@ export function Archive({ ctx }) {
       await ctx.api.remove(collection, item, false);
       await Promise.all([load(), ctx.reload()]);
       ctx.toast(tx('已恢复'));
-    } catch (err) { ctx.toast(err.message, 'error'); }
+    } catch (err) {
+      ctx.toast(err.message, 'error');
+      await load().catch(setError);
+    }
   };
   const className = (id) => ctx.data.classes.find((c) => c.id === id)?.name || items?.classes.find((c) => c.id === id)?.name || '';
+  const restoreReason = (collection, item) => {
+    const student = collection === 'students' ? item : collection === 'records' && item.scope === 'student' ? items.recordStudents.get(item.subjectId) : null;
+    const classId = student?.classId || (collection === 'records' && item.scope === 'class' ? item.subjectId : null);
+    if (classId && items.classes.some(cls => cls.id === classId)) return tx('请先恢复所属班级');
+    if (collection === 'records' && student?.deletedAt) return tx('请先恢复所属学生');
+    return '';
+  };
   const empty = items && !items.classes.length && !items.students.length && !items.exams.length && !items.records.length;
   const section = (title, collection, list, render) => list.length > 0 && (
     <section className="cr-panel">
@@ -30,7 +44,7 @@ export function Archive({ ctx }) {
         {list.map((item) => (
           <li key={item.id}>
             {render(item)}
-            <button type="button" className="cr-btn is-small" onClick={() => restore(collection, item)}><Icon name="restore" size={13} stroke={2} />{tx('恢复')}</button>
+            <button type="button" className="cr-btn is-small" disabled={Boolean(restoreReason(collection, item))} onClick={() => restore(collection, item)}><Icon name="restore" size={13} stroke={2} />{tx('恢复')}</button>
           </li>
         ))}
       </ul>
@@ -52,9 +66,9 @@ export function Archive({ ctx }) {
         ) : (
           <>
             {section(tx('班级'), 'classes', items.classes, (c) => <span className="cr-archive-text"><strong>{c.name}</strong><small>{c.term}</small></span>)}
-            {section(tx('学生'), 'students', items.students, (s) => <><Avatar name={s.name} id={s.id} size="sm" /><span className="cr-archive-text"><strong>{s.name}</strong><small>{className(s.classId)}</small></span></>)}
+            {section(tx('学生'), 'students', items.students, (s) => <><Avatar name={s.name} id={s.id} size="sm" /><span className="cr-archive-text"><strong>{s.name}</strong><small>{className(s.classId)}</small>{restoreReason('students', s) && <small>{restoreReason('students', s)}</small>}</span></>)}
             {section(tx('考试'), 'exams', items.exams, (e) => <span className="cr-archive-text"><strong>{e.name}</strong><small>{longDate(e.date)}</small></span>)}
-            {section(tx('记录'), 'records', items.records, (r) => <span className="cr-archive-text"><strong className="is-clamp">{r.body}</strong><small>{longDate(r.date)}</small></span>)}
+            {section(tx('记录'), 'records', items.records, (r) => <span className="cr-archive-text"><strong className="is-clamp">{r.body}</strong><small>{longDate(r.date)}</small>{restoreReason('records', r) && <small>{restoreReason('records', r)}</small>}</span>)}
           </>
         )}
       </div>

@@ -17,6 +17,7 @@ import { ResourceInfo } from "./ResourceInfo.jsx";
 import { Icon } from "../../components/icons.jsx";
 import { TaxonomyDialog } from "./Taxonomy.jsx";
 import { Rail } from "../../components/ui/rail.jsx";
+import { LABEL_COLORS } from "../../components/ui/colors.js";
 import { Menu as Popover } from "../../components/ui/menu.jsx";
 import "./resources.css";
 import { ResourceDialog } from "./ResourceDialog.jsx";
@@ -93,10 +94,11 @@ function ResourceWorkspace({
     [searchInfo, setSearchInfo] = useState(null),
     [allItems, setAllItems] = useState([]),
     [storedTax, setTax] = useState({ version: 1, folders: [], tags: [] }),
+    [taxonomyLoaded, setTaxonomyLoaded] = useState(false),
     [files, setFiles] = useState({}),
     [fileErrors, setFileErrors] = useState({}),
     [previews, setPreviews] = useState({});
-  const tax = { ...storedTax, tags: storedTax.tags.map(tag => ({ ...tag, ...(scene.tagColors?.[tag.id] ? { color: scene.tagColors[tag.id] } : {}) })) };
+  const tax = { ...storedTax, tags: storedTax.tags.map(tag => ({ ...tag, ...(!tag.color && LABEL_COLORS.includes(scene.tagColors?.[tag.id]) ? { color: scene.tagColors[tag.id] } : {}) })) };
   const [listLoading, setListLoading] = useState(true);
   const [revision, setRevision] = useState(0);
   const [historyOpen, setHistoryOpen] = useState(false);
@@ -128,6 +130,21 @@ function ResourceWorkspace({
   const { pending, busy, loaded, error, message, conflict,
     confirmation: dialog, write, upload, requestPreview,
     skipPending: skipDuplicate, reportError } = operations;
+  const colorMigrationVersion = useRef(null);
+  useEffect(() => {
+    if (!taxonomyLoaded || !loaded || busy || pending || !Object.keys(scene.tagColors ?? {}).length) return;
+    // A server color wins over an older device. Versioned writes cannot replace
+    // another device's newer taxonomy; unknown results retain the original key.
+    const tags = storedTax.tags.map(tag => !tag.color && LABEL_COLORS.includes(scene.tagColors[tag.id])
+      ? { ...tag, color: scene.tagColors[tag.id] } : tag);
+    if (tags.every((tag, index) => tag === storedTax.tags[index])) {
+      patchScene({ tagColors: {} });
+      return;
+    }
+    if (colorMigrationVersion.current === storedTax.version) return;
+    colorMigrationVersion.current = storedTax.version;
+    write(`${root}/taxonomy`, { baseVersion: storedTax.version, folders: storedTax.folders, tags }, "taxonomy");
+  }, [taxonomyLoaded, loaded, busy, pending, storedTax, scene.tagColors]);
   // Persist the field on every keystroke; debounce only the HTTP query.
   const [searchQuery, setSearchQuery] = useState(scene.q);
   useEffect(() => {
@@ -184,6 +201,7 @@ function ResourceWorkspace({
         receiveSearch(list);
         setAllItems([...activeItems.items, ...deleted.items]);
         setTax(taxonomy);
+        setTaxonomyLoaded(true);
         const ids = [
           ...new Set(
             [...activeItems.items, ...deleted.items].map((i) => i.fileId),
@@ -349,7 +367,7 @@ function ResourceWorkspace({
   }
   async function saveTaxonomy(input, created) {
     const before = scene.taxonomyDraft;
-    if (!(await writeLibrary(`${root}/taxonomy`, input, "taxonomy"))) return;
+    if (!(await write(`${root}/taxonomy`, input, "taxonomy"))) return;
     if (created && before.attachTo && !before.edit.item) {
       const currentItem = allItems.find(
         (entry) => entry.id === before.attachTo,
@@ -374,13 +392,6 @@ function ResourceWorkspace({
   }
   // Information now occupies the module rail; the shell's auxiliary panel is reserved for the assistant.
   useEffect(() => { shell.registerTools([]); }, [shell.registerTools]);
-  async function writeLibrary(path, input, purpose, method) {
-    if (purpose !== "taxonomy") return write(path, input, purpose, method);
-    const colors = Object.fromEntries(input.tags.filter(tag => tag.color).map(tag => [tag.id, tag.color]));
-    const saved = await write(path, { ...input, tags: input.tags.map(({ id, name }) => ({ id, name })) }, purpose, method);
-    if (saved) patchScene({ tagColors: colors });
-    return saved;
-  }
   const breadcrumbs = [];
   let folder = tax.folders.find((f) => f.id === scene.folderId);
   while (folder) {
@@ -430,7 +441,7 @@ function ResourceWorkspace({
         breadcrumbs={breadcrumbs}
         onOpen={open}
         onUpload={upload}
-        onWrite={writeLibrary}
+        onWrite={write}
         onError={reportError}
         onSearch={setSearchQuery}
         onOrganize={(action) =>

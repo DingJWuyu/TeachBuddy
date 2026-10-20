@@ -6,7 +6,7 @@ import * as XLSX from 'xlsx';
 import fs from 'node:fs';
 import path from 'node:path';
 import { C, createClassroomWorld, teacher, upload, studentBody } from './classroom-http-fixture.js';
-async function setup(a) {
+async function setup(a, { withPaper = true } = {}) {
   const cls = await a.call('POST', C + '/classes', {
     name: '一班'
   }, 201);
@@ -14,16 +14,16 @@ async function setup(a) {
   for (const [name, num] of [['同名', '001'], ['同名', '002'], ['乙', '003'], ['丙', '004']]) {
     students.push(await a.call('POST', C + '/students', studentBody(cls.id, name, num), 201));
   }
-  const paper = await upload(a.client, 'paper.png', fs.readFileSync(new URL('../../../test/fixtures/questions/figure.png', import.meta.url)));
+  const paper = withPaper ? await upload(a.client, 'paper.png', fs.readFileSync(new URL('../../../test/fixtures/questions/figure.png', import.meta.url))) : null;
   const exam = await a.call('POST', C + '/exams', {
     name: '第一次正式考试',
     subject: '数学',
     occurredOn: '2026-01-05',
     totalMax: 20,
-    source: [{
+    source: paper ? [{
       fileId: paper.id,
       renditionFileId: null
-    }],
+    }] : [],
     questions: [{
       label: '1',
       groupLabel: null,
@@ -512,4 +512,64 @@ test('classroom backup rejects foreign import rows including ignored rows and ba
       console.error('Classroom backup failure evidence retained at ' + root);
     }
   }
+});
+
+test('classroom prototype admission: an exam without a paper confirms total-only scores', async () => {
+  const world = await createClassroomWorld();
+  let passed = false;
+  try {
+    const a = await teacher(world), s = await setup(a, { withPaper: false });
+    const mapped = await a.call('PUT', C + '/imports/' + s.imp.id, {
+      baseVersion: s.imp.version, mapping: { ...s.mapping, nameColumn: null, questionColumns: [] }, rows: null,
+    });
+    const confirmed = await a.call('POST', C + '/imports/' + mapped.id + '/confirmation', { baseVersion: mapped.version });
+    assert.deepEqual((await a.call('GET', C + '/exams/' + s.exam.id)).source, []);
+    const first = confirmed.result.rows.find(row => row.studentId === s.students[0].id);
+    assert.equal(first.totalScore, 18);
+    assert.deepEqual(Object.values(first.scores), [null, null]);
+    const saved = await a.call('GET', C + '/results/' + confirmed.result.id);
+    assert.deepEqual(saved.rows, confirmed.result.rows);
+    const stats = await a.call('GET', C + '/classes/' + s.cls.id + '/statistics');
+    assert.equal(stats.points[0].overall.mean, 18);
+    assert.equal(stats.points[0].questions[0].rate, null);
+    assert.equal(stats.points[0].questions[0].observedCells, 0);
+    validateStoredData(world.workbench.db, { readFile: world.workbench.files.read, readRendition: world.workbench.files.readRendition });
+    passed = true;
+  } finally { await world.close(passed); }
+});
+
+test('classroom prototype admission: number-only matching and missing totals preserve known question scores', async () => {
+  const world = await createClassroomWorld();
+  let passed = false;
+  try {
+    const a = await teacher(world), b = await teacher(world, 'classroom-other@example.test'), s = await setup(a, { withPaper: false });
+    const mapping = { ...s.mapping, nameColumn: null, totalColumn: null };
+    await a.call('PUT', C + '/imports/' + s.imp.id, {
+      baseVersion: s.imp.version, mapping: { ...mapping, studentNumberColumn: null }, rows: null,
+    }, 422);
+    const mapped = await a.call('PUT', C + '/imports/' + s.imp.id, { baseVersion: s.imp.version, mapping, rows: null });
+    assert.equal(mapped.rows[0].studentId, s.students[0].id);
+    assert.equal(mapped.rows[1].studentId, s.students[1].id);
+    assert.equal(mapped.rows[0].totalScore, null);
+    assert.equal(mapped.rows[1].scores[s.exam.questions[1].id], null);
+    assert.ok(mapped.issues.some(i => i.code === 'missing-total' && i.severity === 'warning' && i.sourceRow === 2));
+    await b.call('GET', C + '/imports/' + mapped.id, undefined, 404);
+    await b.call('POST', C + '/imports/' + mapped.id + '/confirmation', { baseVersion: mapped.version }, 404);
+    const confirmed = await a.call('POST', C + '/imports/' + mapped.id + '/confirmation', { baseVersion: mapped.version });
+    const saved = await a.call('GET', C + '/results/' + confirmed.result.id);
+    const rows = new Map(saved.rows.map(row => [row.studentId, row]));
+    assert.equal(rows.get(s.students[0].id).totalScore, null);
+    assert.equal(rows.get(s.students[1].id).scores[s.exam.questions[1].id], null);
+    assert.equal(rows.get(s.students[2].id).status, 'absent');
+    assert.equal(rows.get(s.students[3].id).status, 'unrecorded');
+    const stats = (await a.call('GET', C + '/classes/' + s.cls.id + '/statistics')).points[0];
+    assert.equal(stats.overall.mean, null);
+    assert.equal(stats.overall.rankedCount, 0);
+    assert.equal(stats.overall.missingTotalCount, 2);
+    assert.equal(stats.overall.distribution.reduce((sum, bin) => sum + bin.count, 0), 0);
+    assert.equal(stats.questions[1].observedCells, 1);
+    assert.equal(stats.questions[1].rate, 1);
+    validateStoredData(world.workbench.db, { readFile: world.workbench.files.read, readRendition: world.workbench.files.readRendition });
+    passed = true;
+  } finally { await world.close(passed); }
 });

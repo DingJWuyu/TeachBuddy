@@ -8,8 +8,8 @@ import { isDeletedAccount, readLocal } from '../../platform/device/storage.js';
 import { navigate } from '../workbench/routes.js';
 import { usePresentationAgent as useAgent } from './AgentPresentation.jsx';
 import { Prose, Inline } from './Prose.jsx';
-import { whenLabel } from './demoScript.js';
 import { ToolCard } from './ToolCard.jsx';
+import { useLegacyCardAction } from './useLegacyCardAction.js';
 import { useAuth } from '../auth/index.jsx';
 import { seedSampleWeek } from '../workbench/demo/seed.js';
 import './agent.css';
@@ -48,17 +48,14 @@ export function Glyph({ name, size = 18, stroke = 1.75 }) { return <Icon name={n
 /* ---------- small helpers ---------- */
 const uuid = () => crypto.randomUUID();
 const call = async (method, path, body) => (method === 'GET' ? await workbenchGet(path) : await workbenchPost(path, body, uuid())).body;
-const toDoc = (text) => ({ version: 2, blocks: String(text).split('\n').filter(Boolean).map((line) => {
-  const runs = [];
-  let end = 0;
-  for (const m of line.matchAll(/\$([^$]+)\$/g)) {
-    if (m.index > end) runs.push({ type: 'text', text: line.slice(end, m.index) });
-    runs.push({ type: 'math', latex: m[1] });
-    end = m.index + m[0].length;
-  }
-  if (end < line.length) runs.push({ type: 'text', text: line.slice(end) });
-  return { type: 'paragraph', runs };
-}) });
+function whenLabel(entry) {
+  if (!entry?.date) return tx('待安排');
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const offset = Math.round((new Date(`${entry.date}T00:00`) - today) / 86400000);
+  const day = offset === 0 ? tx('今天') : offset === 1 ? tx('明天') : offset === 2 ? tx('后天') : monthDay(entry.date);
+  return entry.start ? `${day} ${entry.start}` : day;
+}
 
 function relativeTime(iso) {
   const diff = (Date.now() - new Date(iso).getTime()) / 1000;
@@ -117,7 +114,7 @@ async function loadLessons(read = path => call('GET', path)) {
     const now = `${key(today)} ${today.toTimeString().slice(0, 5)}`;
     return items
       .filter((e) => e.time?.date && /数学|课/.test(e.title) && `${e.time.date} ${e.time.startTime}` >= now)
-      .map((e) => ({ id: e.id, title: e.title, date: e.time.date, start: e.time.startTime, todo: (e.items ?? []).map((i) => i.text) }))
+      .map((e) => ({ id: e.id, version: e.version, title: e.title, date: e.time.date, start: e.time.startTime, todo: (e.items ?? []).map((i) => i.text) }))
       .sort((a, b) => `${a.date}${a.start}`.localeCompare(`${b.date}${b.start}`))
       .slice(0, 6);
   } catch {
@@ -184,7 +181,7 @@ function useCurrentContext(enabled, accountKey) {
         } catch { if (live) setCtx({ area: target.area }); }
       } else if (path.startsWith('/calendar')) {
         const [next] = await loadLessons();
-        if (live) setCtx(next ? { kind: 'entry', id: next.id, title: next.title, note: whenLabel(next), area: 'calendar' } : { area: 'calendar' });
+        if (live) setCtx(next ? { kind: 'entry', id: next.id, version: next.version, title: next.title, note: whenLabel(next), area: 'calendar' } : { area: 'calendar' });
       } else if (live) setCtx({ area: path.split('/')[1] || 'home' });
     })();
     return () => { live = false; };
@@ -200,7 +197,7 @@ function ThreadMenu({ item, agent, onRename, onClose }) {
   useOutside(true, ref, onClose);
   return (
     <div className="tbx-menu is-thread" ref={ref} role="menu" onClick={(e) => e.stopPropagation()}>
-      <button role="menuitem" onClick={async () => { onClose(); await agent.patchThread(item.id, { pinned: !item.pinned }); await agent.retry(); }}>
+      <button role="menuitem" onClick={async () => { onClose(); try { await agent.patchThread(item.id, { pinned: !item.pinned }); } catch { /* Provider retains the failed action. */ } }}>
         <Glyph name="pin" size={16} />{item.pinned ? tx('取消置顶') : tx('置顶')}
       </button>
       <button role="menuitem" onClick={() => { onClose(); onRename(); }}><Glyph name="pencil" size={16} />{tx('重命名')}</button>
@@ -212,7 +209,7 @@ function ThreadMenu({ item, agent, onRename, onClose }) {
           try {
             await agent.deleteThread(item.id);
             await agent.retry();
-            if (agent.id === item.id) {
+            if (agent.isDemo && agent.id === item.id) {
               const next = agent.list.find((x) => x.id !== item.id);
               if (next) agent.select(next.id); else void agent.create();
             }
@@ -250,7 +247,7 @@ export function ThreadList({ onPick, listRef }) {
   async function commitRename(item) {
     const title = draftTitle.trim();
     setRenaming(null);
-    if (title && title !== item.title) { await agent.patchThread(item.id, { title }); await agent.retry(); }
+    if (title && title !== item.title) { try { await agent.patchThread(item.id, { title }); } catch { setDraftTitle(title); setRenaming(item.id); } }
   }
 
   return (
@@ -336,7 +333,7 @@ function Shimmer({ children }) {
   return <span className="tbx-shine" data-text={typeof children === 'string' ? children : undefined}>{children}</span>;
 }
 function WorkRow({ call }) {
-  const tool = TOOL[call.name] ?? { glyph: 'spark', verb: call.name };
+  const tool = TOOL[call.name] ?? ({ wb_list_questions: { glyph: 'search', verb: '在题库里找', live: '正在题库里找' }, wb_get_question: { glyph: 'book', verb: '读了题目', live: '正在读题目' }, wb_propose_teaching_card: { glyph: 'layers', verb: '正在整理' } })[call.name] ?? { glyph: 'spark', verb: call.name };
   const live = call.state === 'executing';
   const failed = call.state === 'failed';
   const verb = tx(live ? tool.live ?? tool.verb : failed ? '没有读到' : tool.verb);
@@ -370,34 +367,31 @@ function WorkLog({ calls, turn, answered }) {
 }
 
 /* ---------- result cards ---------- */
-function useCardAction(agent, cardKey) {
-  const storageKey = agent.prefix + 'card-action:' + cardKey;
-  const record = useRef(null);
-  if (!record.current) {
-    try { record.current = JSON.parse(localStorage.getItem(storageKey)); } catch { /* A new card starts without an action. */ }
-    record.current ??= { state: 'idle', requests: {} };
+function useCardAction(agent, proposalId, size) {
+  const [busy, setBusy] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const latest = useRef(agent);
+  latest.current = agent;
+  const operations = (agent.snapshot?.operations ?? []).filter(operation => operation.proposalSource?.proposalId === proposalId);
+  const confirmed = operations.filter(operation => operation.state === 'confirmed').length;
+  const unconfirmed = operations.find(operation => operation.state === 'unconfirmed');
+  const pending = operations.some(operation => ['prepared', 'executing'].includes(operation.state));
+  const rejected = operations.find(operation => operation.state === 'rejected');
+  const state = !proposalId ? 'readonly' : confirmed === size ? 'done' : busy || pending ? 'busy' : unconfirmed ? 'unconfirmed' : failed || rejected ? 'error' : 'idle';
+  async function run() {
+    if (busy || !proposalId) return;
+    setBusy(true); setFailed(false);
+    try {
+      for (let slot = 0; slot < size; slot++) {
+        const previous = latest.current.snapshot?.operations.find(operation => operation.proposalSource?.proposalId === proposalId && operation.proposalSource.slot === slot);
+        if (previous?.state === 'confirmed') continue;
+        const result = await agent.executeProposal(proposalId, slot);
+        if (result.state !== 'confirmed') { setFailed(result.state !== 'unconfirmed'); break; }
+      }
+    } catch { setFailed(true); }
+    finally { setBusy(false); }
   }
-  const [state, setState] = useState(record.current.state);
-  function persist(next) {
-    if (isDeletedAccount(agent.accountKey)) throw new Error('Account unavailable');
-    localStorage.setItem(storageKey, JSON.stringify(next));
-    record.current = next;
-  }
-  async function write(slot, path, body) {
-    let pending = record.current.requests[slot];
-    if (!pending) {
-      pending = { key: uuid(), path, body };
-      persist({ ...record.current, requests: { ...record.current.requests, [slot]: pending } });
-    }
-    return (await workbenchPost(pending.path, pending.body, pending.key)).body;
-  }
-  async function run(task) {
-    if (state === 'busy' || state === 'done') return;
-    setState('busy');
-    try { await task(write); persist({ ...record.current, state: 'done' }); setState('done'); }
-    catch { setState('error'); }
-  }
-  return [state, run];
+  return { state, run, operations, unconfirmed, problem: rejected?.problem };
 }
 function CardHead({ glyph, hue, title, meta, children }) {
   return (
@@ -417,7 +411,7 @@ function ActionButton({ state, onRun, idle, doneLabel, doneTo }) {
     );
   }
   return (
-    <button className="tbx-pill" disabled={state === 'busy'} onClick={onRun}>
+    <button className="tbx-pill" disabled={state === 'busy' || state === 'readonly' || state === 'unconfirmed'} onClick={onRun}>
       {state === 'busy' ? <span className="tbx-spinner is-small" /> : null}{state === 'error' ? tx('没成功，再试一次') : idle}
     </button>
   );
@@ -432,14 +426,17 @@ function QuestionRows({ items, agent }) {
             {q.excerpt && <span className="tbx-card-row-text"><Inline text={q.excerpt} /></span>}
           </button>
           <span className="tbx-card-row-tags">{(q.tags ?? []).map((tag) => <span key={tag}>{tag}</span>)}</span>
-          <button className="tbx-row-act" title={tx('引用到对话')} aria-label={tx('引用到对话')} onClick={() => agent.isDemo ? agent.edit({ references: [...agent.draft.references.filter(r => r.id !== q.id), { kind: 'question', id: q.id, version: q.version ?? 1 }] }) : agent.addReference?.('question', q.id)}><Glyph name="quote" size={15} /></button>
+          <button className="tbx-row-act" title={tx('引用到对话')} aria-label={tx('引用到对话')} disabled={agent.isDemo} onClick={() => agent.addReference?.('question', q.id)}><Glyph name="quote" size={15} /></button>
         </div>
       ))}
     </div>
   );
 }
-function ResultCard({ card, cardKey, agent }) {
-  const [state, run] = useCardAction(agent, cardKey);
+function ResultCard({ card, cardKey, proposalId, agent }) {
+  const proposalAction = useCardAction(agent, proposalId, card.kind === 'practice' ? card.items.length : 1);
+  const legacyAction = useLegacyCardAction(agent, cardKey, card, !proposalId);
+  const action = proposalId ? proposalAction : legacyAction;
+  const { state, run } = action;
   const [expanded, setExpanded] = useState(false);
 
   if (card.kind === 'questions') {
@@ -454,13 +451,9 @@ function ResultCard({ card, cardKey, agent }) {
     return (
       <div className="tbx-card">
         <CardHead glyph="list" hue="indigo" title={card.title} meta={card.meta}>
-          <ActionButton state={state} idle={tx('加到日程')} doneLabel={tx('已加到待安排')} doneTo="/calendar" onRun={() => run(write => write('plan', '/api/modules/schedule/entries', {
-            title: card.entryTitle,
-            items: card.steps.map((text) => ({ id: uuid(), text, priority: 'normal', completed: false })),
-            time: null, repeat: null, reminder: null,
-            calendar: { allDay: false, notes: '', tags: [] },
-          }))} />
+          <ActionButton state={state} idle={tx('加到日程')} doneLabel={tx('已加到待安排')} doneTo="/calendar" onRun={run} />
         </CardHead>
+        <ProposalStatus action={action} agent={agent} />
         <ol className="tbx-card-steps">{card.steps.map((s, i) => <li key={i} style={{ '--i': i }}><span><Inline text={s} /></span></li>)}</ol>
       </div>
     );
@@ -471,18 +464,16 @@ function ResultCard({ card, cardKey, agent }) {
     return (
       <div className="tbx-card">
         <CardHead glyph="layers" hue="orange" title={card.title} meta={card.meta}>
-          <ActionButton state={state} idle={card.kind === 'variant' ? tx('存进题库') : tx('存进题库 · {{n}} 道', { n: items.length })} doneLabel={tx('已存进题库')} doneTo="/questions" onRun={() => run(async write => {
-            for (const [index, q] of items.entries()) {
-              await write(`question:${index}`, '/api/modules/questions/v2/items', { title: q.title, body: toDoc(q.body), solution: toDoc(q.solution), answerStatus: 'present', note: '', starred: false, source: { kind: 'manual' }, typeId: q.typeId ?? null, tagIds: q.tagIds ?? [] });
-            }
-          })} />
+          <ActionButton state={state} idle={card.kind === 'variant' ? tx('存进题库') : tx('存进题库 · {{n}} 道', { n: items.length })} doneLabel={tx('已存进题库')} doneTo="/questions" onRun={run} />
         </CardHead>
+        <ProposalStatus action={action} agent={agent} />
         <div className="tbx-card-rows">
           {shown.map((q, i) => (
             <div className="tbx-card-row is-static is-problem" key={i} style={{ '--i': i }}>
               {q.tier && <span className="tbx-card-tier">{q.tier.split(' · ')[0]}</span>}
               <span className="tbx-card-row-title"><Inline text={q.body} /></span>
               <span className="tbx-card-answer"><Inline text={q.solution} /></span>
+              <ProposalSlot operations={action.operations} slot={i} />
             </div>
           ))}
         </div>
@@ -523,8 +514,22 @@ function ResultCard({ card, cardKey, agent }) {
 }
 
 /* ---------- messages ---------- */
+function ProposalSlot({ operations, slot }) {
+  const operation = operations.find(value => value.proposalSource.slot === slot);
+  if (!operation) return null;
+  const label = { prepared: '待执行', executing: '进行中', confirmed: '已保存', unconfirmed: '结果待确认', rejected: '操作被拒绝', cancelled: '未执行' }[operation.state];
+  return label ? <span className="tbx-card-row-tags"><span>{tx(label)}</span></span> : null;
+}
+
+function ProposalStatus({ action, agent }) {
+  return <>
+    {action.problem && <p className="tbx-composer-note" role="status">{action.problem.title || tx('操作未完成，请查看结果')}</p>}
+    {action.legacyPending && <p className="tbx-composer-note" role="status">{tx('结果待确认')} <button className="tbx-pill" disabled={action.confirming} onClick={action.confirm}>{tx('确认结果')}</button></p>}
+    {action.unconfirmed && <p className="tbx-composer-note" role="status">{tx('结果待确认')} <button className="tbx-pill" onClick={() => agent.reconcile(action.unconfirmed.id)}>{tx('确认结果')}</button></p>}
+  </>;
+}
+
 function RefChip({ r, onRemove, suggest, onAdd }) {
-  const agent = useAgent();
   const kind = KIND[r.kind] ?? KIND.question;
   const open = () => {
     if (r.kind === 'question') navigate(`/questions/${r.id}`);
@@ -648,8 +653,8 @@ function MentionMenu({ query, onPick, onClose, agent }) {
       const match = (s) => !q || String(s).toLowerCase().includes(q.toLowerCase());
       const out = [
         ...questions.slice(0, 5).map((x) => ({ kind: 'question', id: x.id, version: x.version, title: x.title || tx('未命名题目') })),
-        ...lessons.filter((x) => match(x.title)).slice(0, 4).map((x) => ({ kind: 'entry', id: x.id, title: x.title, note: whenLabel(x) })),
-        ...(Array.isArray(resources) ? resources : []).filter((x) => match(x.title)).slice(0, 4).map((x) => ({ kind: 'resource', id: x.id, title: x.title || tx('资料') })),
+        ...lessons.filter((x) => match(x.title)).slice(0, 4).map((x) => ({ kind: 'entry', id: x.id, version: x.version, title: x.title, note: whenLabel(x) })),
+        ...(Array.isArray(resources) ? resources : []).filter((x) => match(x.title)).slice(0, 4).map((x) => ({ kind: 'resource', id: x.id, version: x.version, title: x.title || tx('资料') })),
       ];
       if (live) { setRows(out); setActive(0); }
     })();
@@ -706,18 +711,13 @@ function Composer({ agent, running, ready, variant, autoFocus, focusKey, context
   const suggest = context?.id && !refs.some((r) => r.kind === context.kind && r.id === context.id) ? context : null;
 
   function addRef(r) {
-    const input = r.kind === 'question' ? { kind: r.kind, id: r.id, version: r.version } : { kind: r.kind, id: r.id };
-    if (r.kind !== 'question' && !agent.isDemo) { agent.startDemo(draft.text, [...refs.filter(x => !(x.kind === input.kind && x.id === input.id)), input]); return; }
-    agent.edit({ references: [...refs.filter((x) => !(x.kind === r.kind && x.id === r.id)), input] });
+    const input = { kind: r.kind, id: r.id, version: r.version, ...(r.originDate ? { originDate: r.originDate } : {}) };
+    agent.edit({ references: [...refs.filter(x => !(x.kind === r.kind && x.id === r.id)), input] });
   }
   function pick(r) {
     const text = draft.text.replace(/@([^\s@]*)$/, '');
-    if (r && r.kind !== 'question' && !agent.isDemo) {
-      void agent.startDemo(text, [...refs.filter(x => !(x.kind === r.kind && x.id === r.id)), { kind: r.kind, id: r.id }]);
-    } else {
-      if (r) addRef(r);
-      if (text !== draft.text) agent.edit({ text });
-    }
+    if (r) addRef(r);
+    if (text !== draft.text) agent.edit({ text });
     setMention(null);
     area.current?.focus();
   }
@@ -998,12 +998,11 @@ export function AgentWorkspace({ variant = 'panel' }) {
   const empty = !snapshot?.messages?.length;
   const modelName = (id) => MODELS.find((m) => m.id === id)?.name;
 
-  const lessonRef = lesson && agent.isDemo ? { kind: 'entry', id: lesson.id } : null;
+  const lessonRef = lesson ? { kind: 'entry', id: lesson.id, version: lesson.version } : null;
 
   function prompt(text, ctx) {
-    const refFrom = (c) => (c.kind === 'question' ? { kind: 'question', id: c.id, version: c.version } : { kind: c.kind, id: c.id });
+    const refFrom = c => ({ kind: c.kind, id: c.id, version: c.version, ...(c.originDate ? { originDate: c.originDate } : {}) });
     const extra = ctx ? refFrom(ctx) : lessonRef;
-    if (extra && extra.kind !== 'question' && !agent.isDemo) { agent.startDemo(text, [...(agent.draft?.references ?? []).filter(r => !(r.kind === extra.kind && r.id === extra.id)), extra]); return; }
     if (agent.draft) {
       const refs = agent.draft.references.filter((r) => !(extra && r.kind === extra.kind && r.id === extra.id));
       agent.edit({ text, references: extra ? [...refs, extra] : refs });
@@ -1021,7 +1020,7 @@ export function AgentWorkspace({ variant = 'panel' }) {
   }
   // A lesson picked on the home page rides along with the first message.
   useEffect(() => {
-    if (!lesson || !agent.isDemo || !agent.draft || !empty) return;
+    if (!lesson || agent.isDemo || !agent.draft || !empty) return;
     if (agent.draft.references.some((r) => r.kind === 'entry' && r.id === lesson.id)) return;
     agent.edit({ references: [...agent.draft.references.filter((r) => r.kind !== 'entry'), lessonRef] });
   }, [lesson?.id, Boolean(agent.draft), agent.id]);
@@ -1046,7 +1045,7 @@ export function AgentWorkspace({ variant = 'panel' }) {
           </div>
         </div>
       )}
-      {draft ? (
+      {agent.isDemo ? <p className="tbx-composer-note" role="status">{tx('示例')} · {tx('仅保留在此设备')}</p> : draft ? (
         <Composer agent={agent} running={running} ready={ready} variant={variant} autoFocus={variant === 'home'} focusKey={focusComposer} context={context} />
       ) : (
         <div className="tbx-composer-shell">
@@ -1067,7 +1066,7 @@ export function AgentWorkspace({ variant = 'panel' }) {
 
       {empty && variant === 'home' ? (
         <div className="tbx-empty-stage">
-          <Hero lessons={lessons} lesson={lesson} setLesson={next => { setLesson(next); if (next && !agent.isDemo) void agent.startDemo(agent.draft?.text ?? '', [...(agent.draft?.references ?? []).filter(r => r.kind !== 'entry'), { kind: 'entry', id: next.id }]); }} />
+          <Hero lessons={lessons} lesson={lesson} setLesson={setLesson} />
           {dock}
           <Suggestions items={heroSuggestions} busy={agent.busy} onPrompt={(text) => prompt(text)} />
           <DemoSeed onSeeded={refreshLessons} />
@@ -1097,13 +1096,15 @@ export function AgentWorkspace({ variant = 'panel' }) {
                 return (
                   <section className="tbx-turn" key={turn.id}>
                     {snapshot.messages.filter((m) => m.turnId === turn.id && m.role === 'user').map((m) => <UserMessage key={m.id} m={m} />)}
-                    <WorkLog calls={calls} turn={turn} answered={answered} />
-                    {!agent.isDemo && calls.map(call => <ToolCard key={call.toolCallId} call={call} calls={snapshot.toolCalls} reconcile={agent.reconcile} />)}
+                    <WorkLog calls={calls.filter(call => call.name !== 'wb_propose_teaching_card')} turn={turn} answered={answered} />
+                    {!agent.isDemo && calls.map(call => call.name === 'wb_propose_teaching_card' && call.state === 'read' && call.result?.proposalId
+                      ? <div className="tbx-cards" key={call.toolCallId}><ResultCard card={call.result.card} proposalId={call.result.proposalId} agent={agent} /></div>
+                      : <ToolCard key={call.toolCallId} call={call} calls={snapshot.toolCalls} reconcile={agent.reconcile} />)}
                     {working && (
                       <div className="tbx-working"><Shimmer>{calls.length ? tx('正在整理') : tx('正在思考')}</Shimmer><span className="tbx-working-time">· <Elapsed from={turn.createdAt} /></span></div>
                     )}
                     {assistant.filter((m) => m.text || m.state !== 'streaming').map((m) => (
-                      <AssistantMessage key={m.id} m={m} agent={agent} model={modelName(turn.modelId)} last={turn === lastTurn && !running} onRegenerate={() => regenerate(turn)} />
+                      <AssistantMessage key={m.id} m={m} agent={agent} model={modelName(turn.modelId)} last={turn === lastTurn && !running} onRegenerate={agent.isDemo ? undefined : () => regenerate(turn)} />
                     ))}
                     {!agent.isDemo && turn.usage && <details className="tbx-turn-usage"><summary>{tx('用量')}</summary><p>{turn.usage.totalTokens ?? tx('未知')} tokens · {tx(turn.usage.complete ? '用量已报告' : '用量不完整')} · {tx('实际费用未知')}</p></details>}
                     {turn.state !== 'running' && turn.state !== 'completed' && (

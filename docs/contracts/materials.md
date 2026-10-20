@@ -116,7 +116,7 @@ saveImportReview 全量原子保存当前草稿/片段数组，baseVersion 与 i
 
 重试结束后新机器结果只补充候选，已有人工校对或已入库对象保持。重复机器片段按输入单元与原稿定位关联，不靠重复题号覆盖；老师合并/忽略重复候选。补充原稿操作只追加 fileIds，新照片不能替换旧原稿；该操作在材料终态时受理，为新增文件自动建立新的提取 Job、更新 import.jobId 并增加版本，已有候选保持。运行中补充返回 import-not-editable，先停止或等待。
 
-QuestionTaxonomy/ResourceTaxonomy 是各模块内部一个版本化集合，不建立共享分类平台。老师创建的 term/folder ID 是稳定 UUID；名称服务端 trim 后非空，同类名称按 Unicode NFC + casefold 唯一（文件夹仅同父级唯一）。自动模型只可建议集合已有 ID，不能偷偷增改集合。改名保留 ID；删除项原子移除全部 active/deleted 对象关联并增加受影响对象版本，不更改引用快照。文件夹删除将直接资源/子文件夹移到删除前最近的保留祖先，避免循环；树深≤10。taxonomy 全量 PUT 中省略项表示删除，客户端先显示受影响数量；可由现有全量对象列表计算，不另建统计端口。题型单选、标签多选，查询 tagIds 为全部匹配，空查询等于不过滤。
+QuestionTaxonomy/ResourceTaxonomy 是各模块内部一个版本化集合，不建立共享分类平台。老师创建的 term/folder ID 是稳定 UUID；名称服务端 trim 后非空，同类名称按 Unicode NFC + casefold 唯一（文件夹仅同父级唯一）。自动模型只可建议集合已有 ID，不能偷偷增改集合。改名保留 ID；删除项原子移除全部 active/deleted 对象关联并增加受影响对象版本，不更改引用快照。资源所属文件夹在新集合中被删除时，活动及归档资料归未分组；显式保留的子文件夹仍移到删除前最近的保留祖先，避免循环。新版浏览器删除整棵文件夹树，资料均保留。资源标签使用独立 ResourceTag，可选 color 为原型八色，旧无颜色标签仍可读写；题库 Term 不接受该字段。树深≤10。taxonomy 全量 PUT 中省略项表示删除，浏览器沿当前入口先确认删除。题型单选、标签多选，查询 tagIds 为全部匹配，空查询等于不过滤。
 
 题库 `GET /api/modules/questions/v2/items` 的 `q` 默认搜索标题、题干（包括公式源）和长期笔记；显式 `searchAnswers=true` 时同时搜索答案与解析，省略或 `false` 均排除答案。该参数只接受单个布尔值，非法值或重复参数返回 422 `invalid-input`，字段为 `/query/searchAnswers`、原因 `invalid-type`。原始材料不参与题目搜索。
 

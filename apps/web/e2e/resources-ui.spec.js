@@ -488,7 +488,7 @@ test("保存响应丢失后保留原请求及后续草稿，返回列表和刷�
   await expect(page.getByLabel("资源笔记")).toHaveValue("继续写下的草稿");
 });
 
-test("类型筛选与标签对话框可连续开闭，焦点和减少动态效果可用", async ({page}) => {
+test("类型筛选与标签对话框可连续开闭，焦点和减少动态效果可用", async ({page, browser}, info) => {
   await page.emulateMedia({reducedMotion:'no-preference'});
   await upload(page);
   await page.getByRole('button',{name:'返回资源库',exact:true}).click();
@@ -519,6 +519,9 @@ test("类型筛选与标签对话框可连续开闭，焦点和减少动态效�
   }
   await createTag('复习','#3edc81');
   await createTag('作业','#a78bfa');
+  await expect.poll(async () => (await api.request('GET', '/api/modules/resources/taxonomy')).json.tags.map(({name, color}) => ({name, color}))).toEqual([
+    {name:'复习', color:'#3edc81'}, {name:'作业', color:'#a78bfa'},
+  ]);
   const tag = page.locator('.tbx-rail-drag').filter({has:page.locator('.tbx-rail-label',{hasText:'复习'})});
   await expect(tag.locator('.tbx-rail-dot')).toHaveCSS('background-color','rgb(62, 220, 129)');
   const from = await tag.boundingBox();
@@ -530,6 +533,86 @@ test("类型筛选与标签对话框可连续开闭，焦点和减少动态效�
   await expect.poll(async () => (await api.request('GET','/api/modules/resources/taxonomy')).json.tags.map(tag=>tag.name)).toEqual(['作业','复习']);
   await page.reload();
   await expect(tag.locator('.tbx-rail-dot')).toHaveCSS('background-color','rgb(62, 220, 129)');
+  // A legacy device may supply a missing color, but cannot replace a server color.
+  const taxonomy = (await api.request('GET', '/api/modules/resources/taxonomy')).json;
+  const legacy = taxonomy.tags.find(t => t.name === '作业');
+  const server = taxonomy.tags.find(t => t.name === '复习');
+  const reset = await api.request('PUT', '/api/modules/resources/taxonomy', {
+    headers:{'Idempotency-Key':randomUUID()},
+    body:{baseVersion:taxonomy.version, folders:taxonomy.folders,
+      tags:taxonomy.tags.map(({color, ...rest}) => rest.id === legacy.id ? rest : {...rest, color})},
+  });
+  expect(reset.status).toBe(200);
+  await page.evaluate(({legacy, server}) => {
+    for (const key of Object.keys(localStorage)) {
+      if (!key.endsWith(':scene:resources')) continue;
+      const record = JSON.parse(localStorage.getItem(key));
+      if (!record || typeof record !== 'object') continue;
+      const value = record.formatVersion === 2 ? record.value : record;
+      value.tagColors = {[legacy]:'#ffb454', [server]:'#ff6b75'};
+      localStorage.setItem(key, JSON.stringify(record));
+    }
+  }, {legacy:legacy.id, server:server.id});
+  await page.reload();
+  await expect.poll(async () => (await api.request('GET', '/api/modules/resources/taxonomy')).json.tags.map(({name, color}) => ({name, color}))).toEqual([
+    {name:'作业', color:'#ffb454'}, {name:'复习', color:'#3edc81'},
+  ]);
+  await expect(tag.locator('.tbx-rail-dot')).toHaveCSS('background-color','rgb(62, 220, 129)');
+  await expect.poll(() => page.evaluate(() => {
+    const head = Object.keys(localStorage).find(key => key.endsWith(':head:scene:resources'));
+    const selected = JSON.parse(localStorage.getItem(head));
+    return JSON.parse(localStorage.getItem(selected)).value.tagColors;
+  })).toEqual({});
+  const context = await browser.newContext({ignoreHTTPSErrors:true, viewport:{width:1440, height:1000}});
+  try {
+    await context.addCookies(await page.context().cookies());
+    const remote = await context.newPage();
+    await remote.goto(world.origin + '/resources');
+    const dot = name => remote.locator('.tbx-rail-drag').filter({has:remote.locator('.tbx-rail-label', {hasText:name})}).locator('.tbx-rail-dot');
+    await expect(dot('复习')).toBeVisible();
+    await expect(dot('复习')).toHaveCSS('background-color', 'rgb(62, 220, 129)');
+    await expect(dot('作业')).toHaveCSS('background-color', 'rgb(255, 180, 84)');
+    const hint = remote.getByRole('button', {name:'知道了', exact:true});
+    if (await hint.isVisible()) {
+      await hint.click();
+      await expect(hint).toHaveCount(0);
+    }
+    await screenshot(remote, info, 'server-tag-colors-new-device');
+  } finally { await context.close(); }
+});
+
+
+test("删除嵌套文件夹树后，资料在未分组且刷新仍保留", async ({page}, info) => {
+  await upload(page);
+  await page.getByRole('button', {name:'返回资源库', exact:true}).click();
+  const root = randomUUID(), child = randomUUID(), leaf = randomUUID();
+  const item = (await api.request('GET', '/api/modules/resources/items')).json.items[0];
+  const taxonomy = await api.request('PUT', '/api/modules/resources/taxonomy', {
+    headers:{'Idempotency-Key':randomUUID()},
+    body:{baseVersion:1,
+      folders:[{id:root, name:'高一', parentId:null}, {id:child, name:'函数', parentId:root}, {id:leaf, name:'图像', parentId:child}],
+      tags:[]},
+  });
+  expect(taxonomy.status).toBe(200);
+  const moved = await api.request('PUT', `/api/modules/resources/items/${item.id}`, {
+    headers:{'Idempotency-Key':randomUUID()},
+    body:{baseVersion:item.version, title:item.title, note:'保留的备注', tagIds:[], folderId:leaf},
+  });
+  expect(moved.status).toBe(200);
+  await page.reload();
+  const folder = page.locator('.tbx-rail-drag').filter({has:page.locator('.tbx-rail-label', {hasText:'函数'})});
+  await folder.getByRole('button', {name:'文件夹选项', exact:true}).click();
+  await page.getByRole('menuitem', {name:'删除文件夹', exact:true}).click();
+  await page.getByRole('menuitem', {name:'确认删除', exact:true}).click();
+  await expect.poll(async () => (await api.request('GET', `/api/modules/resources/items/${item.id}`)).json.folderId).toBe(null);
+  await page.locator('.tbx-rail').getByRole('button', {name:/^未分组/}).click();
+  await expect(page.locator('.tbx-res-open')).toHaveCount(1);
+  await page.reload();
+  await expect(page.locator('.tbx-res-open')).toHaveCount(1);
+  const saved = (await api.request('GET', `/api/modules/resources/items/${item.id}`)).json;
+  expect(saved.fileId).toBe(item.fileId);
+  expect(saved.note).toBe('保留的备注');
+  await screenshot(page, info, 'deleted-folder-ungrouped');
 });
 
 test("PDF 预览不依赖 Office 安装目录", async ({ page }) => {

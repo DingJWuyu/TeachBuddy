@@ -45,6 +45,8 @@ F62 每次恢复生成新的非秘密 `recoveryId`，记录在恢复库和 `GET 
 
 同账户登录后若 recoveryId 改变，冻结旧未确认请求的执行资格，显示“工作台已从备份恢复，请核对这份草稿”。旧请求下载/查看可用，不自动重放、不把数字相同的 version 当同一基线。老师读取恢复后内容，对照后才以新键提交草稿。新恢复点中 Agent 写操作 executing 转 unconfirmed，但只能核对该备份内成功账本：有匹配回执则确认，无则保持未确认并告知需基于当前内容另发明确请求；不能把恢复前操作再次执行。普通进程重启不改变 recoveryId，仍沿 C25 原键核实。这是恢复语义的新增保护，不改原业务接口。
 
+提案卡的点击执行与原操作核实使用同一恢复冻结判据；同一提案槽已关联冻结 Operation 时，重新点击也返回 recovery-review-required，不建立替代请求绕过冻结。
+
 恢复点核实遇无匹配成功账本返回 409 `recovery-review-required`，保留旧操作而不执行。老师阅读该操作后可显式放弃这个待确认意图，状态变 cancelled，保留原请求/理由，不删事实；随后才能以新回合基于当前内容重新请求。普通 unconfirmed 仍必须先原键核实，不能利用此动作绕过活跃请求。
 
 该动作仅在 `abandon-after-recovery` 入口接受当前 recoveryId，要求无运行中 turn、目标是恢复隔离的 unconfirmed 且恢复库无成功账本；否则 409 `recovery-review-required`，不改变状态。来源/身份/幂等顺序沿共同约定；取消、关联工具卡/事件与原生结果同事务保存，重复成功原键返回原结果。它只取消旧执行意图，不声称恢复前没有发生过写入。
@@ -57,6 +59,8 @@ v2 Operation 的 recoveryDisposition 在普通流程为 null，恢复隔离为 r
 `POST /api/reliability/v1/exports` 受理本账户一次逻辑导出并返回 202 Export；GET 只查询，下载仅成功后可用。创建时以 SQLite 一致读事务固定 snapshot；之后复制不可变文件，生成 ZIP，全部文件长度与 SHA-256 核对后标 ready。并发编辑不进入该快照，缺文件/磁盘不足/进程中断标失败或 interrupted，保留原业务；同键重放原记录，新键重试建立新快照。导出制品与临时目录不进入下一次个人导出或部署业务文件清单。
 
 原键重放仍返回原受理结果，当前状态由 GET 获取。下载未 ready 返回 409 archive-not-ready，不存在/外账户为原 404；下载过程中 I/O 失败中止响应，浏览器不得标完整下载。终态 completedAt 非空，failed/interrupted 提供 Problem；列表按 createdAt 降序、id 升序。运行时导出记录与 manifest 的 schema 由 [archive.schema.json](../../apps/api/src/workbench/reliability/archive.schema.json)维护。
+
+`POST /api/reliability/v1/exports/:id/deletion` 接受空 JSON 对象与幂等键，成功返回 `200 {id, deleted: true}`。只允许当前账户删除该次生成包：生成中先取消并等待真实任务结束，再清理 ZIP/临时包并删除导出记录；正在传输的下载中止，后续读取及下载返回 404。物理清理失败不返回成功，原键可继续确认；成功原键重放原回执，新键删除未知或已删除 ID 为 404。教学原件、业务记录与已下载副本不受影响，不构成通用文件回收。
 
 ZIP 根含 `manifest.json`、`index.html`（纯静态、无脚本）、`data/` JSON、`readable/` Markdown/转义 HTML、`files/` 原字节。manifest 的 path/长度/摘要、对象 kind/id/version/状态和关系清单按 schema。完整包含：
 

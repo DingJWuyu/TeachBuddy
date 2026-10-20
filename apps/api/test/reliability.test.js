@@ -68,8 +68,9 @@ test("account appearance persists, isolates accounts, validates avatars and pres
     assert.equal(initial.values.theme, "light");
     const bytes = await sharp(randomBytes(256 * 256 * 3), { raw: { width: 256, height: 256, channels: 3 } }).webp({ quality: 90 }).toBuffer();
     const avatar = `data:image/webp;base64,${bytes.toString("base64")}`;
+    const backgroundImage = `data:image/jpeg;base64,${(await sharp(randomBytes(900 * 600 * 3), { raw: { width: 900, height: 600, channels: 3 } }).jpeg({ quality: 90 }).toBuffer()).toString("base64")}`;
     assert(avatar.length > 16384);
-    const body = { baseVersion: initial.version, values: { ...initial.values, theme: "dark", background: "stripes", avatar, locale: "en" } };
+    const body = { baseVersion: initial.version, values: { ...initial.values, theme: "dark", background: "custom", backgroundImage, avatar, locale: "en" } };
     const key = randomUUID();
     const put = (body, requestKey = randomUUID()) => a.client.request("PUT", url, { body, headers: { "Idempotency-Key": requestKey } });
     const unprotected = await a.client.request("PUT", url, { body, protect: false, origin: null });
@@ -85,6 +86,8 @@ test("account appearance persists, isolates accounts, validates avatars and pres
     const changedReplay = await put({ ...body, baseVersion: saved.json.version }, key);
     assert.equal(changedReplay.status, 409, changedReplay.text);
     assert.equal((await a.client.request("GET", url)).json.values.avatar, avatar);
+    assert.equal((await a.client.request("GET", url)).json.values.backgroundImage, backgroundImage);
+    assert.equal((await b.client.request("GET", url)).json.values.backgroundImage, "");
     assert.equal((await b.client.request("GET", url)).json.values.avatar, "");
     assert.equal((await b.client.request("GET", url)).json.values.theme, "light");
     await world.close();
@@ -106,7 +109,7 @@ test("account appearance persists, isolates accounts, validates avatars and pres
     assert.deepEqual(persisted.json, saved.json);
     a.client = reopened;
     assert.equal((await put(body)).status, 409);
-    for (const invalid of [{ locale: "fr" }, { theme: "unknown" }, { background: "unknown" }, { avatar: "data:image/svg+xml,<svg/>" }, { avatar: "data:image/webp;base64,AAAA" }]) {
+    for (const invalid of [{ backgroundImage: "data:image/jpeg;base64,AAAA" }, { backgroundImage: "x".repeat(3145729) }, { locale: "fr" }, { theme: "unknown" }, { background: "unknown" }, { avatar: "data:image/svg+xml,<svg/>" }, { avatar: "data:image/webp;base64,AAAA" }]) {
       const result = await put({ baseVersion: saved.json.version, values: { ...saved.json.values, ...invalid } });
       assert(result.status >= 400 && result.status < 500, result.text);
       assert.equal((await a.client.request("GET", url)).json.version, saved.json.version);
@@ -116,6 +119,7 @@ test("account appearance persists, isolates accounts, validates avatars and pres
     assert.equal(legacy.json.values.theme, "dark");
     assert.equal(legacy.json.values.locale, "en");
     assert.equal(legacy.json.values.avatar, avatar);
+    assert.equal(legacy.json.values.backgroundImage, backgroundImage);
     const removed = await put({ baseVersion: legacy.json.version, values: { ...legacy.json.values, avatar: "" } });
     assert.equal(removed.status, 200, removed.text);
     assert.equal((await a.client.request("GET", url)).json.values.avatar, "");
@@ -269,13 +273,13 @@ test("offline backup lock, isolated restore, persistent auth cleanup, activation
     { key: randomUUID(), method: "POST", path: "/api/workbench/files" },
   );
   const conversation = world.workbench.agent.store.create(a.accountKey);
-  const operationId = randomUUID();
+  const operationId = randomUUID(), proposalId = randomUUID();
   const native = JSON.parse(
     world.workbench.db
       .prepare("SELECT document FROM agent_conversations WHERE id=?")
       .get(conversation.conversation.id).document,
   );
-  native.snapshot.operations.push({ id: operationId, state: "unconfirmed" });
+  native.snapshot.operations.push({ id: operationId, state: "unconfirmed", proposalSource: { proposalId, slot: 0 } });
   native.entries.push({ opaqueVersion: 47, raw: "原字节保留" });
   const nativeBytes = JSON.stringify(native, null, 2);
   world.workbench.db
@@ -383,6 +387,13 @@ test("offline backup lock, isolated restore, persistent auth cleanup, activation
       guarded.json.type,
       "/problems/reliability/recovery-review-required",
     );
+    const guardedProposal = await write(
+      client,
+      `/api/agent/conversations/${conversation.conversation.id}/proposals/${proposalId}/execute`,
+      { slot: 0 },
+    );
+    assert.equal(guardedProposal.status, 409, guardedProposal.text);
+    assert.equal(guardedProposal.json.type, "/problems/reliability/recovery-review-required");
     const cookie = client.jar.header(),
       pageId = client.pageId;
     await world.close();
@@ -688,4 +699,50 @@ test("CLI executes legacy manual backup upgrade; missing files, tampering and un
       path.join(directory + "-rejected", "recovery-prepared.json"),
     ),
   );
+});
+
+
+test('personal export deletion revokes archives, preserves originals and confirms retries', async () => {
+  const directory = fs.mkdtempSync(path.join(root, 'export-deletion-'));
+  const world = await createIntegration({ directory });
+  try {
+    const a = await account(world), b = await account(world, 'export-other@example.test');
+    const question = await write(a.client, '/api/modules/questions/items', manualQuestionSample());
+    assert.equal(question.status, 201, question.text);
+    const originals = randomBytes(2 * 1024 * 1024);
+    await world.workbench.files.store({ accountKey: a.accountKey }, { name: '原件.txt', bytes: originals }, { key: randomUUID(), method: 'POST', path: '/api/workbench/files' });
+    const blobsBefore = fs.readdirSync(path.join(directory, 'files', 'blobs'));
+    for (const wait of [false, true]) {
+      const creationKey = randomUUID();
+      const accepted = await write(a.client, '/api/reliability/v1/exports', {}, creationKey);
+      assert.equal(accepted.status, 202, accepted.text);
+      const id = accepted.json.id, url = `/api/reliability/v1/exports/${id}/deletion`, key = randomUUID();
+      if (wait) assert.equal((await untilReady(a.client, id)).state, 'ready');
+      else assert(['queued', 'running'].includes((await a.client.request('GET', `/api/reliability/v1/exports/${id}`)).json.state));
+      assert.equal((await write(a.client, url, {}, creationKey)).status, 409);
+      assert.equal((await a.client.request('POST', url, { body: {}, headers: { 'Idempotency-Key': key }, origin: null, protect: false })).status, 403);
+      assert.equal((await write(b.client, url, {})).status, 404);
+      const before = world.workbench.db.prepare('SELECT count(*) n FROM auth_accounts').get().n;
+      if (wait) {
+        const blocker = path.join(directory, 'personal-exports', `${id}.zip.part`);
+        fs.mkdirSync(blocker);
+        assert.equal((await write(a.client, url, {}, key)).status, 503);
+        assert.equal((await a.client.request('GET', `/api/reliability/v1/exports/${id}`)).status, 200);
+        fs.rmdirSync(blocker);
+      }
+      const result = await write(a.client, url, {}, key);
+      assert.equal(result.status, 200, result.text);
+      assert.deepEqual(result.json, { id, deleted: true });
+      assert.deepEqual((await write(a.client, url, {}, key)).json, result.json);
+      assert.equal((await write(a.client, url, {})).status, 404);
+      assert.equal((await a.client.request('GET', `/api/reliability/v1/exports/${id}/content`)).status, 404);
+      assert.equal((await a.client.request('GET', '/api/reliability/v1/exports')).json.items.length, 0);
+      assert.equal(fs.existsSync(path.join(directory, 'personal-exports', `${id}.zip`)), false);
+      assert.equal(fs.existsSync(path.join(directory, 'personal-exports', `${id}.zip.part`)), false);
+      assert.equal(world.workbench.db.prepare('SELECT count(*) n FROM auth_accounts').get().n, before);
+      assert.equal((await a.client.request('GET', `/api/modules/questions/items/${question.json.id}`)).status, 200);
+      assert.deepEqual(fs.readdirSync(path.join(directory, 'files', 'blobs')), blobsBefore);
+      assert.deepEqual(fs.readFileSync(path.join(directory, 'files', 'blobs', blobsBefore[0])), originals);
+    }
+  } finally { await world.close(); }
 });

@@ -204,9 +204,6 @@ export function createAssessment({
         throw conflict('import-source-changed');
       }
       validateExamFiles(files, p, exam);
-      if (!exam.source.length || !exam.questions.length) {
-        throw conflict('exam-material-required');
-      }
       const issues = imports.review(p, imp);
       if (issues.some(i => i.severity === 'error')) {
         throw conflict('import-review-required', {
