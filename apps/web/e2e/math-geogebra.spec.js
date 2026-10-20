@@ -28,7 +28,6 @@ test('即时返回、切模块、刷新和正常关闭保留统一作品，已�
   expect(await coords(page,'B')).toEqual([5,7]);
   await enterMath(page,'C=(9,10)','C'); await page.reload(); expect(await coords(page,'C')).toEqual([9,10]);
   const beforeClose = await savedMath(page);
-  const originalPage = page;
   const committed = Promise.withResolvers();
   const releaseResponse = Promise.withResolvers();
   let originalRequest;
@@ -78,7 +77,6 @@ test('即时返回、切模块、刷新和正常关闭保留统一作品，已�
     await page.getByRole('button', { name: '返回工坊', exact: true }).click();
     await expect(page.locator('.tbx-mw-card')).toHaveCount(1);
   } finally {
-    await originalPage.close();
     releaseResponse.resolve();
     await context.unrouteAll({ behavior: 'wait' });
     await responseHandling;
