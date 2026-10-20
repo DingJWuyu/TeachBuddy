@@ -84,4 +84,13 @@
 
 首个组合候选为 `c9982a93376461050fe950c13a03219df83b6e52`，只读产物 `test-results/prototype-parity/candidate-web/`；第二候选为 `3f7ea427d114a07443900af5b00ea1971a82f976`，产物 `candidate-v2-web/`。日程箭头与数学课堂两层内距已收口，最新产品提交为 `a99e93f9891546306fbab960d7e11538848bfc58`，产物 `candidate-reviewed-web/`。后续任务记录提交不改变已验产品文件；完整审查固定到实际 HEAD。未受增量影响的通过证据复用，不要求七个分区全部重跑。
 
-下一步：对同一固定完整 diff 集中执行独立 Standards/Spec 审查并交 PR CI，随后集成 preview、核对实际入口并清理现场。没有真实证据的状态仍保留为未验。
+### 集中审查与当前返工
+
+[PR #49](https://github.com/DingJWuyu/TeachBuddy/pull/49) 候选 `195217097b72c853cd97a8af4636f096197027fc` 已由 fresh-context `parity_standards_review`、`parity_spec_review`（均 `gpt-6.1-sol / xhigh`）核对完整54文件。Standards 两项 P2，Spec 一项 P2，两轴合并后是以下两个实际问题，均在本任务内收口：
+
+| 问题 | 依据及修复安排 |
+| --- | --- |
+| 资源列表读到旧 pending 预览及已成功 Job 后停止轮询；单轮读取失败也无声停止 | 真实 PDF 上传和受控响应时序已复现，服务端预览 ready 而列表无缩略图。资源作者复用详情已有终态重读语义；失败沿已有卡片错误及详情“重新读取文件”恢复，不加新控件或重试框架。增强已有上传回归，定点验证 |
+| 历史菜单 portal 化后键盘留在触发器，Tab 跳到下一会话 | 独立实页及旧内联 DOM 顺序单变量对照确认。首页作者改用已有共享 Menu，保留视觉、置顶/改名/删除确认和浮层定位，增强已有底部菜单用例 |
+
+旧 [CI](https://github.com/DingJWuyu/TeachBuddy/actions/runs/39489284343) 的 HTTP/SQLite 通过，其他执行已由总控取消，避免旧候选继续耗费；取消不算完整 CI 通过。作者先完成这两项红绿，统一固定修复候选后只补审增量及影响范围，再一次推送同一 PR，完成 CI、preview 核对和现场清理。回执在 `test-results/prototype-parity/review/`，没有真实证据的状态仍保留为未验。

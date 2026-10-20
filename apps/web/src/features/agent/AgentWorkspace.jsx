@@ -1,6 +1,7 @@
 import { Fragment, useEffect, useLayoutEffect, useRef, useState, useMemo } from 'react';
 import { ConfirmMenuItem } from '../../components/ui/confirm.jsx';
 import { Popover } from '../../components/ui/popover.jsx';
+import { Menu } from '../../components/ui/menu.jsx';
 import { Icon } from '../../components/icons.jsx';
 import { cx } from '../../components/ui/classNames.js';
 import { tx, useLocale, isEnglish, monthDay } from '../../i18n/presentation.js';
@@ -194,31 +195,31 @@ function useCurrentContext(enabled, accountKey) {
 /* ---------- conversations: rename, pin, delete ---------- */
 
 
-function ThreadMenu({ item, agent, onRename, onClose, anchor }) {
+function ThreadMenu({ item, agent, onRename }) {
   return (
-    <Popover anchor={anchor} open onClose={onClose} className="tbx-agent-popover tbx-agent-thread-popover" role="menu" align="end">
-    <div className="tbx-menu" onClick={(e) => e.stopPropagation()}>
-      <button role="menuitem" onClick={async () => { onClose(); try { await agent.patchThread(item.id, { pinned: !item.pinned }); } catch { /* Provider retains the failed action. */ } }}>
-        <Glyph name="pin" size={16} />{item.pinned ? tx('取消置顶') : tx('置顶')}
-      </button>
-      <button role="menuitem" onClick={() => { onClose(); onRename(); }}><Glyph name="pencil" size={16} />{tx('重命名')}</button>
-      <ConfirmMenuItem
-        icon={<Glyph name="trash" size={16} />}
-        label={tx('删除')}
-        onConfirm={async () => {
-          onClose();
-          try {
-            await agent.deleteThread(item.id);
-            await agent.retry();
-            if (agent.isDemo && agent.id === item.id) {
-              const next = agent.list.find((x) => x.id !== item.id);
-              if (next) agent.select(next.id); else void agent.create();
-            }
-          } catch { /* a running thread can't be deleted */ }
-        }}
-      />
-    </div>
-    </Popover>
+    <Menu label={tx('对话选项')} icon={<Glyph name="more" size={15} />} className="tbx-thread-options" buttonClassName="tbx-thread-more" menuClassName="tbx-menu tbx-agent-thread-popover">
+      {({ close }) => <Fragment>
+        <button role="menuitem" onClick={async () => { close(); try { await agent.patchThread(item.id, { pinned: !item.pinned }); } catch { /* Provider retains the failed action. */ } }}>
+          <Glyph name="pin" size={16} />{item.pinned ? tx('取消置顶') : tx('置顶')}
+        </button>
+        <button role="menuitem" onClick={() => { close(); onRename(); }}><Glyph name="pencil" size={16} />{tx('重命名')}</button>
+        <ConfirmMenuItem
+          icon={<Glyph name="trash" size={16} />}
+          label={tx('删除')}
+          onConfirm={async () => {
+            close();
+            try {
+              await agent.deleteThread(item.id);
+              await agent.retry();
+              if (agent.isDemo && agent.id === item.id) {
+                const next = agent.list.find((x) => x.id !== item.id);
+                if (next) agent.select(next.id); else void agent.create();
+              }
+            } catch { /* a running thread can't be deleted */ }
+          }}
+        />
+      </Fragment>}
+    </Menu>
   );
 }
 
@@ -227,8 +228,6 @@ export function ThreadList({ onPick, listRef }) {
   useLocale();
   const agent = useAgent();
   const [query, setQuery] = useState('');
-  const [menu, setMenu] = useState(null);
-  const menuAnchor = useRef(null);
   const [renaming, setRenaming] = useState(null);
   const [draftTitle, setDraftTitle] = useState('');
   const running = agent.configuration?.activeTurn?.conversationId;
@@ -276,8 +275,8 @@ export function ThreadList({ onPick, listRef }) {
                 role="button"
                 tabIndex={0}
                 style={{ '--i': i }}
-                className={cx('tbx-thread', item.id === agent.id && 'is-active', menu?.id === item.id && 'is-menu')}
-                onClick={() => { if (renaming !== item.id) { agent.select(item.id); onPick?.(); } }}
+                className={cx('tbx-thread', item.id === agent.id && 'is-active')}
+                onClick={(event) => { if (event.target.closest('.tbx-thread-options, .tbx-agent-thread-popover')) return; if (renaming !== item.id) { agent.select(item.id); onPick?.(); } }}
                 onKeyDown={(e) => { if (e.key === 'Enter' && e.target === e.currentTarget && renaming !== item.id) { agent.select(item.id); onPick?.(); } }}
                 aria-current={item.id === agent.id ? 'true' : undefined}
               >
@@ -299,14 +298,7 @@ export function ThreadList({ onPick, listRef }) {
                     : <span className="tbx-thread-time">{item.pinned && <Glyph name="pin" size={12} />}{relativeTime(item.updatedAt)}</span>}
                 </span>
                 <span className="tbx-thread-preview">{running === item.id ? tx('正在回答…') : item.preview || tx('还没有回答')}</span>
-                <button
-                  className="tbx-thread-more"
-                  aria-label={tx('对话选项')}
-                  onClick={(e) => { e.stopPropagation(); menuAnchor.current = e.currentTarget; setMenu(menu?.id === item.id ? null : { id: item.id }); }}
-                ><Glyph name="more" size={15} /></button>
-                {menu?.id === item.id && (
-                  <ThreadMenu anchor={menuAnchor} item={item} agent={agent} onClose={(event) => { setMenu(null); if (event?.type === 'keydown') menuAnchor.current?.focus(); }} onRename={() => { setDraftTitle(item.title); setRenaming(item.id); }} />
-                )}
+                <ThreadMenu item={item} agent={agent} onRename={() => { setDraftTitle(item.title); setRenaming(item.id); }} />
               </div>
             ))}
           </section>

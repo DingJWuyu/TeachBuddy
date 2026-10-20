@@ -683,13 +683,30 @@ test('原型对照：历史底部会话菜单可完整点击，删除保留就�
   await page.reload();
   const last = page.locator('.tbx-thread').last();
   const menu = page.getByRole('menu');
+  const keyboardTrigger = page.locator('.tbx-thread').first().getByRole('button', { name: '对话选项', exact: true });
+  await keyboardTrigger.focus();
+  await keyboardTrigger.press('Enter');
+  await expect(menu.getByRole('menuitem', { name: '置顶', exact: true })).toBeFocused();
+  await page.keyboard.press('ArrowDown');
+  await expect(menu.getByRole('menuitem', { name: '重命名', exact: true })).toBeFocused();
+  await page.keyboard.press('End');
+  await expect(menu.getByRole('menuitem', { name: '删除', exact: true })).toBeFocused();
+  await page.keyboard.press('Home');
+  await expect(menu.getByRole('menuitem', { name: '置顶', exact: true })).toBeFocused();
+  await page.keyboard.press('ArrowUp');
+  await expect(menu.getByRole('menuitem', { name: '删除', exact: true })).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(menu).toHaveCount(0);
+  await expect(keyboardTrigger).toBeFocused();
   for (const viewport of [{ width: 1440, height: 900 }, { width: 820, height: 1180 }, { width: 390, height: 844 }]) {
     await page.setViewportSize(viewport);
     const toggle = page.getByRole('button', { name: '对话列表', exact: true });
     if (await toggle.isVisible() && await toggle.getAttribute('aria-expanded') === 'false') await toggle.click();
     await last.scrollIntoViewIfNeeded();
     const trigger = last.getByRole('button', { name: '对话选项', exact: true });
+    const selectedIndex = await page.locator('.tbx-thread').evaluateAll(rows => rows.findIndex(row => row.getAttribute('aria-current') === 'true'));
     await trigger.click();
+    await expect.poll(() => page.locator('.tbx-thread').evaluateAll(rows => rows.findIndex(row => row.getAttribute('aria-current') === 'true'))).toBe(selectedIndex);
     await expect.poll(() => menu.evaluate(element => {
       const bounds = element.getBoundingClientRect();
       const remove = element.querySelector('[role="menuitem"]:last-child');

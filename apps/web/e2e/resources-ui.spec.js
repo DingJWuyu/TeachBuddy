@@ -2450,10 +2450,73 @@ test('已加载缩略图在视图切换和筛选返回后立即复用', async ({
 });
 
 test('上传后的预览完成会自动更新列表缩略图', async ({ page }) => {
+  let pendingPreview;
+  let activeJob;
+  let retriedActiveJob = false;
+  let phase = 'upload';
+  let failedJobRead = false;
+  let failedDetailRead = false;
+  let committedRead = false;
+  await page.route('**/api/workbench/files/*/preview', async route => {
+    if (route.request().method() === 'POST') {
+      const response = await route.fetch();
+      const job = await response.json();
+      // Capture the real pending response, then hold delivery until the real
+      // conversion finishes. Its earlier snapshot can arrive beside success.
+      pendingPreview = (await api.request('GET', `/api/workbench/files/${job.target.id}/preview`)).json;
+      expect(pendingPreview.state).toBe('pending');
+      expect(pendingPreview.jobId).toBe(job.id);
+      activeJob = job;
+      expect(activeJob.state).toMatch(/^(queued|running)$/);
+      await expect.poll(async () => (await api.request('GET', `/api/workbench/jobs/${job.id}`)).json.state)
+        .toMatch(/^(succeeded|partial)$/);
+      await route.fulfill({ response });
+      return;
+    }
+    if (phase === 'failed') {
+      await route.abort('connectionreset');
+      failedDetailRead = true;
+      return;
+    }
+    if (pendingPreview && !committedRead) {
+      await route.fulfill({ json: pendingPreview });
+      return;
+    }
+    await route.continue();
+  });
+  await page.route('**/api/workbench/jobs/*', async route => {
+    if (!failedJobRead) {
+      failedJobRead = true;
+      phase = 'failed';
+      await route.abort('connectionreset');
+      return;
+    }
+    if (!retriedActiveJob) {
+      // An explicit read must restart polling even when it still sees the
+      // same pending preview and the accepted task has not finished yet.
+      retriedActiveJob = true;
+      await route.fulfill({ json: activeJob });
+      return;
+    }
+    const response = await route.fetch();
+    expect((await response.json()).state).toMatch(/^(succeeded|partial)$/);
+    committedRead = true;
+    await route.fulfill({ response });
+  });
   await page.getByLabel('上传资料', { exact: true }).setInputFiles(pdf);
   await expect(page.locator('.res-status')).toContainText('文件已保存');
   await expect(page.locator('.res-detail')).toHaveCount(0);
+  await expect(page.locator('.tbx-res-thumb-error')).toHaveText('文件读取失败');
+  await openUploaded(page, 'c22.pdf');
+  await expect(page.getByRole('button', { name: '重新读取文件', exact: true })).toBeVisible();
+  await expect.poll(() => failedDetailRead).toBe(true);
+  phase = 'retry';
+  await page.getByRole('button', { name: '重新读取文件', exact: true }).click();
+  await page.getByRole('button', { name: '返回资源库', exact: true }).click();
+  await expect.poll(() => retriedActiveJob).toBe(true);
   const thumbnail = page.locator('.tbx-res-thumb img');
   await expect(thumbnail).toBeVisible();
   await expect.poll(() => thumbnail.evaluate(image => image.naturalWidth)).toBeGreaterThan(100);
+  await expect(page.locator('.tbx-res-thumb-error')).toHaveCount(0);
+  expect(committedRead).toBe(true);
 });

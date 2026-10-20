@@ -116,7 +116,7 @@
   animation: tbx-rise 360ms var(--tb-ease) calc(var(--i, 0) * 24ms) both;
 }
 :is(.wb-shell, .tbx-portal-host) .tbx-thread:hover { background: var(--tb-fill); }
-:is(.wb-shell, .tbx-portal-host) .tbx-thread.is-menu { z-index: 5; }
+:is(.wb-shell, .tbx-portal-host) .tbx-thread:has(.tbx-thread-more[aria-expanded="true"]) { z-index: 5; }
 :is(.wb-shell, .tbx-portal-host) .tbx-thread:focus-visible { box-shadow: inset 0 0 0 2px var(--tb-accent-line); }
 :is(.wb-shell, .tbx-portal-host) .tbx-thread.is-active {
   background: var(--tb-surface);
@@ -170,10 +170,12 @@
   color: var(--tb-ink);
   font: 600 13.5px/24px var(--tb-font);
 }
-:is(.wb-shell, .tbx-portal-host) .tbx-thread-more {
+:is(.wb-shell, .tbx-portal-host) .tbx-thread-options {
   position: absolute;
   top: 7px;
   right: 6px;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-thread-more {
   display: grid;
   place-items: center;
   width: 26px;
@@ -188,8 +190,8 @@
   cursor: pointer;
   transition: opacity var(--tb-d1), color var(--tb-d1);
 }
-:is(.wb-shell, .tbx-portal-host) .tbx-thread:is(:hover, .is-menu) .tbx-thread-more { opacity: 1; }
-:is(.wb-shell, .tbx-portal-host) .tbx-thread:is(:hover, .is-menu) .tbx-thread-time { opacity: 0; }
+:is(.wb-shell, .tbx-portal-host) .tbx-thread:is(:hover, :has(.tbx-thread-more[aria-expanded="true"])) .tbx-thread-more { opacity: 1; }
+:is(.wb-shell, .tbx-portal-host) .tbx-thread:is(:hover, :has(.tbx-thread-more[aria-expanded="true"])) .tbx-thread-time { opacity: 0; }
 :is(.wb-shell, .tbx-portal-host) .tbx-thread-more:hover { color: var(--tb-ink); }
 
 :is(.wb-shell, .tbx-portal-host) .tbx-menu,
@@ -208,7 +210,6 @@
   min-width: 190px;
   transform-origin: 100% 0;
 }
-:is(.wb-shell, .tbx-portal-host) .tbx-menu.is-thread { position: absolute; top: 32px; right: 6px; }
 :is(.wb-shell, .tbx-portal-host) .tbx-menu button {
   display: flex;
   align-items: center;
@@ -1542,8 +1543,4 @@
   animation: none;
 }
 
-:is(.wb-shell, .tbx-portal-host) .tbx-agent-thread-popover { width: 190px; }
-:is(.wb-shell, .tbx-portal-host) .tbx-agent-popover .tbx-menu {
-  box-shadow: none;
-  animation: none;
-}
+:is(.wb-shell, .tbx-portal-host) .tbx-agent-thread-popover { width: 190px; z-index: 1250; }
