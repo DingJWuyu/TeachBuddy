@@ -93,13 +93,21 @@ function TagPicker({ ctx, value, onChange }) {
     e.preventDefault();
     const n = name.trim();
     if (!n) return;
+    const menu = surface.current;
+    const form = e.currentTarget;
+    const submit = form.querySelector('button[type=submit]');
+    let added = false;
     try {
       const tag = await ctx.api.post('/tags', { name: n });
       await ctx.reload();
       onChange([...value, tag.id]);
+      added = true;
     } catch (err) {
-      if (err.problem?.tagId) onChange([...new Set([...value, err.problem.tagId])]);
+      if (err.problem?.tagId) { onChange([...new Set([...value, err.problem.tagId])]); added = true; }
       else ctx.toast(err.message, 'error');
+    }
+    if (added && surface.current === menu && document.activeElement === submit) {
+      form.querySelector('input')?.focus({ preventScroll: true });
     }
     setName('');
   };

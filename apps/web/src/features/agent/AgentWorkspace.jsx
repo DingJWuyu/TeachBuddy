@@ -278,7 +278,7 @@ export function ThreadList({ onPick, listRef }) {
                 style={{ '--i': i }}
                 className={cx('tbx-thread', item.id === agent.id && 'is-active', menu?.id === item.id && 'is-menu')}
                 onClick={() => { if (renaming !== item.id) { agent.select(item.id); onPick?.(); } }}
-                onKeyDown={(e) => { if (e.key === 'Enter' && renaming !== item.id) agent.select(item.id); }}
+                onKeyDown={(e) => { if (e.key === 'Enter' && e.target === e.currentTarget && renaming !== item.id) { agent.select(item.id); onPick?.(); } }}
                 aria-current={item.id === agent.id ? 'true' : undefined}
               >
                 <span className="tbx-thread-line">

@@ -119,6 +119,8 @@ test('班级真实保存：座位、记录、Excel校对和成绩观察在刷新
     const box = element.getBoundingClientRect();
     return document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2) === element;
   }), '新增标签后变高的菜单仍不应被对话框页脚遮挡').toBe(true);
+  await page.keyboard.press('Tab');
+  expect(await tagMenu.evaluate(element => element.contains(document.activeElement)), '新增标签成功后继续按Tab，焦点应保留在标签菜单内').toBe(true);
   await page.keyboard.press('Escape');
   await expect(tagMenu).toHaveCount(0);
   await expect(questionTags).toBeFocused();
