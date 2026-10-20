@@ -72,13 +72,12 @@ test('设置外观、占位边界、真实导出和退出', async ({ page }, tes
   await expect(page.getByRole('list', { name: '个人资料导出记录' }).locator('li')).toHaveCount(1);
   await page.getByRole('button', { name: '确认删除', exact: true }).click();
   await expect(page.getByRole('list', { name: '个人资料导出记录' })).toHaveCount(0);
-  // The reference's removal is a local view simulation; real archives remain.
-  expect(await records()).toHaveLength(1);
+  expect(await records()).toHaveLength(0);
   await page.reload();
   await settings.getByRole('button', { name: '导出数据', exact: true }).click();
   await expect(page.getByRole('button', { name: '下载', exact: true })).toBeVisible({ timeout: 30000 });
   await expect(page.getByRole('list', { name: '个人资料导出记录' }).locator('li')).toHaveCount(1);
-  expect(await records()).toHaveLength(2);
+  expect(await records()).toHaveLength(1);
   await page.keyboard.press('Escape');
   await settings.getByRole('button', { name: '退出登录', exact: true }).click();
   await confirmLogout(page);
@@ -135,27 +134,29 @@ test('外观和背景覆盖外壳与全部页面并在刷新后保留', async ({
   await page.getByRole('button', { name: '浅色', exact: true }).click();
   await expect(page.locator('.wb-shell')).toHaveAttribute('data-theme', 'light');
 });
-test('头像上传删除同步侧栏、自定义背景本地保留，弹层退出连续', async ({ page, browser }) => {
+test('头像上传删除同步侧栏、自定义背景按账户跨设备保存，弹层退出连续', async ({ page, browser }, info) => {
   const settings = page.locator('[data-region="settings"]');
   const avatar = await sharp({ create: { width: 48, height: 64, channels: 3, background: '#927acb' } }).png().toBuffer();
   await settings.locator('.settings-avatar input[type="file"]').setInputFiles({ name: 'avatar.png', mimeType: 'image/png', buffer: avatar });
   await expect(settings.getByAltText('账户头像')).toBeVisible();
   await expect(page.locator('.tb-account-row img')).toHaveAttribute('src', await settings.getByAltText('账户头像').getAttribute('src'));
   await expect(page.locator('.settings-save-status')).toHaveText('已保存');
-  const preferences = await (await page.request.get(world.origin + '/api/reliability/v1/preferences', { headers: headers(page) })).json();
   await settings.locator('.tbx-bg-options input[type="file"]').setInputFiles({ name: 'background.png', mimeType: 'image/png', buffer: avatar });
   await expect(page.locator('.wb-shell')).toHaveAttribute('data-background', 'custom');
   await expect.poll(() => page.locator('.wb-shell').evaluate(el => el.style.getPropertyValue('--tbx-bg-image'))).toContain('data:image/jpeg');
+  await expect(page.locator('.settings-save-status')).toHaveText('已保存');
   const afterBackground = await (await page.request.get(world.origin + '/api/reliability/v1/preferences', { headers: headers(page) })).json();
-  expect(afterBackground.values.background).toBe(preferences.values.background);
-  expect(afterBackground.values).not.toHaveProperty('backgroundImage');
+  expect(afterBackground.values.background).toBe('custom');
+  expect(afterBackground.values.backgroundImage).toMatch(/^data:image\/jpeg;base64,/);
+  await page.screenshot({ path: info.outputPath('custom-background-saved.png'), animations: 'disabled' });
   const other = await browser.newContext({ ignoreHTTPSErrors: true });
   try {
     const secondPage = await other.newPage();
     await secondPage.goto(world.origin);
     await login(secondPage);
     await expect(secondPage.locator('.tb-account-row img')).toHaveAttribute('src', await settings.getByAltText('账户头像').getAttribute('src'));
-    await expect(secondPage.locator('.wb-shell')).toHaveAttribute('data-background', preferences.values.background);
+    await expect(secondPage.locator('.wb-shell')).toHaveAttribute('data-background', 'custom');
+    await expect.poll(() => secondPage.locator('.wb-shell').evaluate(el => el.style.getPropertyValue('--tbx-bg-image'))).toContain(afterBackground.values.backgroundImage);
   } finally { await other.close(); }
   await page.reload();
   await expect(page.locator('.wb-shell')).toHaveAttribute('data-background', 'custom');
@@ -244,4 +245,69 @@ test('导出回执丢失后刷新可确认并下载同一资料包', async ({ pa
   expect(keys[0]).toBeTruthy();
   expect(keys[1]).toBe(keys[0]);
   await expect(page.getByRole('list', { name: '个人资料导出记录' }).locator('li')).toHaveCount(1);
+});
+
+
+test('删除资料包丢失回执后刷新用原键确认，下载权限已撤销', async ({ page }) => {
+  await page.getByRole('button', { name: '导出数据', exact: true }).click();
+  await expect(page.getByRole('button', { name: '下载', exact: true })).toBeVisible({ timeout: 30000 });
+  const record = (await (await page.request.get(world.origin + '/api/reliability/v1/exports', { headers: headers(page) })).json()).items[0];
+  const keys = [];
+  await page.route('**/api/reliability/v1/exports/*/deletion', async route => {
+    keys.push(route.request().headers()['idempotency-key']);
+    await route.fetch(); await route.abort('failed');
+  });
+  await page.getByRole('button', { name: '删除资料包', exact: true }).click();
+  await page.getByRole('button', { name: '确认删除', exact: true }).click();
+  await expect(page.getByRole('button', { name: '重试确认操作', exact: true })).toBeVisible();
+  expect((await page.request.get(world.origin + record.downloadPath, { headers: headers(page) })).status()).toBe(404);
+  await page.unroute('**/api/reliability/v1/exports/*/deletion');
+  await page.reload();
+  page.on('request', request => { if (request.url().endsWith('/deletion')) keys.push(request.headers()['idempotency-key']); });
+  await page.getByRole('button', { name: '重试确认操作', exact: true }).click();
+  await expect(page.getByRole('button', { name: '重试确认操作', exact: true })).toHaveCount(0);
+  expect(keys).toHaveLength(2);
+  expect(keys[1]).toBe(keys[0]);
+  expect((await (await page.request.get(world.origin + '/api/reliability/v1/exports', { headers: headers(page) })).json()).items).toHaveLength(0);
+});
+
+
+test('旧设备自定义背景保留供选择且不覆盖服务器较新偏好', async ({ page }) => {
+  await page.getByRole('button', { name: '羊皮纸', exact: true }).click();
+  await expect(page.locator('.settings-save-status')).toHaveText('已保存');
+  const before = await (await page.request.get(world.origin + '/api/reliability/v1/preferences', { headers: headers(page) })).json();
+  const accountKey = world.workbench.db.prepare('SELECT accountKey FROM auth_accounts').get().accountKey;
+  const bytes = await sharp({ create: { width: 32, height: 32, channels: 3, background: '#927acb' } }).jpeg().toBuffer();
+  const image = `data:image/jpeg;base64,${bytes.toString('base64')}`;
+  await page.evaluate(({ accountKey, image }) => {
+    localStorage.setItem(`tb.workbench.v1:${accountKey}:scene:custom-appearance`, JSON.stringify({ customBackground: true, backgroundImage: image }));
+    sessionStorage.removeItem(`tb.workbench.v1:continue:${accountKey}:scene:custom-appearance`);
+  }, { accountKey, image });
+  await page.reload();
+  await expect(page.locator('.wb-shell')).toHaveAttribute('data-background', 'parchment');
+  await expect(page.getByRole('button', { name: '自定义背景', exact: true })).toBeVisible();
+  const unchanged = await (await page.request.get(world.origin + '/api/reliability/v1/preferences', { headers: headers(page) })).json();
+  expect(unchanged).toEqual(before);
+  await page.getByRole('button', { name: '自定义背景', exact: true }).click();
+  await expect(page.locator('.settings-save-status')).toHaveText('已保存');
+  const after = await (await page.request.get(world.origin + '/api/reliability/v1/preferences', { headers: headers(page) })).json();
+  expect(after.values.background).toBe('custom');
+  expect(after.values.backgroundImage).toBe(image);
+});
+
+
+test('未设置服务器偏好的账户采用旧设备自定义背景并真实保存', async ({ page }) => {
+  const accountKey = world.workbench.db.prepare('SELECT accountKey FROM auth_accounts').get().accountKey;
+  const bytes = await sharp({ create: { width: 32, height: 32, channels: 3, background: '#927acb' } }).webp().toBuffer();
+  const image = `data:image/webp;base64,${bytes.toString('base64')}`;
+  await page.evaluate(({ accountKey, image }) => {
+    localStorage.setItem(`tb.workbench.v1:${accountKey}:scene:custom-appearance`, JSON.stringify({ customBackground: true, backgroundImage: image }));
+    sessionStorage.removeItem(`tb.workbench.v1:continue:${accountKey}:scene:custom-appearance`);
+  }, { accountKey, image });
+  await page.reload();
+  await expect(page.locator('.wb-shell')).toHaveAttribute('data-background', 'custom');
+  await expect(page.locator('.settings-save-status')).toHaveText('已保存');
+  const after = await (await page.request.get(world.origin + '/api/reliability/v1/preferences', { headers: headers(page) })).json();
+  expect(after.values.background).toBe('custom');
+  expect(after.values.backgroundImage).toBe(image);
 });

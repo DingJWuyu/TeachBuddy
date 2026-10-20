@@ -1,7 +1,6 @@
 import data from './classroom-data.json';
 
 const C = '/api/modules/classroom';
-const papers = [new URL('./assets/exam-0.pdf', import.meta.url), new URL('./assets/exam-1.pdf', import.meta.url), new URL('./assets/exam-2.pdf', import.meta.url)];
 const scores = [
   [0, 0, new URL('./assets/scores-0.xlsx', import.meta.url)],
   [0, 1, new URL('./assets/scores-1.xlsx', import.meta.url)],
@@ -24,10 +23,9 @@ export async function seedClassroom(job) {
   }
   const exams = [];
   for (const [index, exam] of data.exams.entries()) {
-    const source = await upload(job, `classroom:exam-paper:${index}`, papers[index], `${exam.name}原卷.pdf`, 'application/pdf');
     exams.push(await job.write(`classroom:exam:${index}`, 'POST', `${C}/exams`, {
       name: exam.name, subject: exam.subject, occurredOn: exam.date, totalMax: exam.fullScore,
-      source: [{ fileId: source.id, renditionFileId: null }],
+      source: [],
       questions: exam.questions.map(q => ({ label: q.label, groupLabel: q.group || null, maxScore: q.fullScore, tagIds: q.tagIds.map(id => tags.get(id)), locations: [] })),
     }));
   }

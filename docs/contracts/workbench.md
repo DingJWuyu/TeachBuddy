@@ -61,8 +61,8 @@
 
 ## 账户偏好兼容
 
-`GET/PUT /api/reliability/v1/preferences` 的 `values` 拥有 `theme`（`light` / `dark`）、`background`（`grid` / `parchment` / `circles` / `stripes`）、`avatar`（WebP data URL，空字符串表示删除）和 `locale`（`zh-CN` / `en`）。默认浅色、网格、无头像、简体中文；旧账户读取补默认值，旧客户端省略新字段时保留已存值。精确输入校验与默认值由现行偏好接口定义。该接口还保留 `readingSize`、`motion`、`externalAi` 兼容字段；它们不构成当前设置 UI，也不扩大上文范围。
+`GET/PUT /api/reliability/v1/preferences` 的 `values` 拥有 `theme`（`light` / `dark`）、`background`（`grid` / `parchment` / `circles` / `stripes` / `custom`）、`backgroundImage`（JPEG / WebP data URL，空字符串表示未设置）、`avatar`（WebP data URL，空字符串表示删除）和 `locale`（`zh-CN` / `en`）。默认浅色、网格、无头像、简体中文；旧账户读取补默认值，旧客户端省略新字段时保留已存值。精确输入校验与默认值由现行偏好接口定义。该接口还保留 `readingSize`、`motion`、`externalAi` 兼容字段；它们不构成当前设置 UI，也不扩大上文范围。
 
-客户端居中裁剪头像为 256 × 256 WebP；服务端校验实际格式、尺寸和单帧，限制 data URL 为 128 KiB、请求体为 144 KiB。头像与其他偏好沿现有账户版本、幂等键和身份隔离保存，不另建上传文件或数据库迁移。
+客户端居中裁剪头像为 256 × 256 WebP；服务端校验实际格式、尺寸和单帧，限制头像 data URL 为 128 KiB。自定义背景 data URL 最多 3145728 字符，服务端校验实际 JPEG / WebP 格式、单帧、最多 4096 × 4096 输入像素，并解码验证；偏好请求体上限为 3400 KiB。头像与其他偏好沿现有账户版本、幂等键和身份隔离保存，不另建上传文件或数据库迁移。
 
-偏好保存沿本页版本、原键核实和身份规则。界面入口与行为见[账户外观](../features/workbench.md#账户外观与共享呈现)，具体实现见[公共底座](../subsystems/foundation.md#工作台外壳偏好与支持页)。
+旧设备自定义图片仍保留供明确重新选择；仅服务端尚无任何偏好写入且无本地偏好草稿时自动采用旧选择，使用读回版本保存，不能覆盖服务器已有偏好。偏好保存沿本页版本、原键核实和身份规则。界面入口与行为见[账户外观](../features/workbench.md#账户外观与共享呈现)，具体实现见[公共底座](../subsystems/foundation.md#工作台外壳偏好与支持页)。

@@ -66,10 +66,10 @@ export function createClassroomOperations({
       }
       query(q, allowedQuery);
       if (action === 'list') {
-        if (kind === 'students' && !q.classId) {
+        if (kind === 'students' && !q.classId && q.deleted !== 'deleted') {
           fail('/query/classId', 'required');
         }
-        if (kind === 'records') {
+        if (kind === 'records' && (q.deleted !== 'deleted' || q.scope || q.subjectId)) {
           if (!q.scope) {
             fail('/query/scope', 'required');
           }

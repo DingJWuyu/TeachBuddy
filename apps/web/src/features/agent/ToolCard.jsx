@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { tx as t } from '../../i18n/presentation.js';
 import { workbenchGet } from '../../platform/http/apiClient.js';
 import { navigate } from '../workbench/routes.js';
-const labels = { get wb_list_questions() { return t("查找题目"); }, get wb_get_question() { return t("读取题目"); }, get wb_list_derivatives() { return t("查找衍生题"); }, get wb_create_question() { return t("创建题目"); }, get wb_update_question() { return t("修改题目"); }, get wb_copy_question() { return t("复制改编"); }, get wb_set_question_deletion() { return t("删除或恢复题目"); }, };
+const labels = { get wb_propose_teaching_card() { return t("正在整理"); }, get wb_list_questions() { return t("查找题目"); }, get wb_get_question() { return t("读取题目"); }, get wb_list_derivatives() { return t("查找衍生题"); }, get wb_create_question() { return t("创建题目"); }, get wb_update_question() { return t("修改题目"); }, get wb_copy_question() { return t("复制改编"); }, get wb_set_question_deletion() { return t("删除或恢复题目"); }, };
 const states = { get prepared() { return t("待执行"); }, get executing() { return t("进行中"); }, get read() { return t("已读取"); }, get confirmed() { return t("已保存"); }, get rejected() { return t("操作被拒绝"); }, get failed() { return t("读取失败"); }, get unconfirmed() { return t("结果待确认"); }, get cancelled() { return t("未执行"); }, get interrupted() { return t("读取已中断，未保存结果"); } };
 const toolProblemKeys = {
   '/problems/agent/tool-failed': 'problem.readFailed',

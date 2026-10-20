@@ -127,13 +127,13 @@ export function mapping(v, p = '/mapping') {
   for (const k of ['headerRow', 'firstDataRow', 'lastDataRow']) {
     integer(v[k], p + '/' + k, 1, 2000);
   }
-  for (const k of ['nameColumn', 'totalColumn']) {
-    integer(v[k], p + '/' + k, 1, 256);
-  }
-  for (const k of ['studentNumberColumn', 'attendanceColumn']) {
+  for (const k of ['nameColumn', 'totalColumn', 'studentNumberColumn', 'attendanceColumn']) {
     if (v[k] !== null) {
       integer(v[k], p + '/' + k, 1, 256);
     }
+  }
+  if (v.nameColumn === null && v.studentNumberColumn === null) {
+    fail(p + '/nameColumn', 'required');
   }
   array(v.questionColumns, p + '/questionColumns', 300).forEach((x, i) => {
     object(x, ['column', 'questionId'], undefined, p + '/questionColumns/' + i);

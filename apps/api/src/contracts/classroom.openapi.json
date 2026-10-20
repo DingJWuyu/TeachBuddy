@@ -415,7 +415,7 @@
           {
             "name": "classId",
             "in": "query",
-            "required": true,
+            "required": false,
             "schema": {
               "type": "string",
               "format": "uuid"
@@ -509,7 +509,8 @@
           {
             "session": []
           }
-        ]
+        ],
+        "description": "归档查询 deleted=deleted 可省略主体筛选，返回本账户全部归档项，包括已归档父主体下的条目；其他查询仍须指定主体。"
       },
       "post": {
         "operationId": "createStudent",
@@ -824,7 +825,7 @@
           {
             "name": "scope",
             "in": "query",
-            "required": true,
+            "required": false,
             "schema": {
               "type": "string",
               "enum": [
@@ -836,7 +837,7 @@
           {
             "name": "subjectId",
             "in": "query",
-            "required": true,
+            "required": false,
             "schema": {
               "type": "string",
               "format": "uuid"
@@ -948,7 +949,8 @@
           {
             "session": []
           }
-        ]
+        ],
+        "description": "归档查询 deleted=deleted 可省略主体筛选，返回本账户全部归档项，包括已归档父主体下的条目；其他查询仍须指定主体。"
       },
       "post": {
         "operationId": "createRecord",
@@ -3666,9 +3668,16 @@
             "maximum": 2000
           },
           "nameColumn": {
-            "type": "integer",
-            "minimum": 1,
-            "maximum": 256
+            "oneOf": [
+              {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 256
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "studentNumberColumn": {
             "oneOf": [
@@ -3683,9 +3692,16 @@
             ]
           },
           "totalColumn": {
-            "type": "integer",
-            "minimum": 1,
-            "maximum": 256
+            "oneOf": [
+              {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 256
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "attendanceColumn": {
             "oneOf": [
@@ -3744,7 +3760,24 @@
           "questionColumns",
           "ignoredRows"
         ],
-        "additionalProperties": false
+        "additionalProperties": false,
+        "description": "姓名列或学号列至少一个非空；总分列可空，缺失总分不由逐题加总推算。",
+        "anyOf": [
+          {
+            "properties": {
+              "nameColumn": {
+                "type": "integer"
+              }
+            }
+          },
+          {
+            "properties": {
+              "studentNumberColumn": {
+                "type": "integer"
+              }
+            }
+          }
+        ]
       },
       "Issue": {
         "type": "object",

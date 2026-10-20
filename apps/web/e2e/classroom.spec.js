@@ -360,3 +360,111 @@ test('逐题得分越界可在Excel校对表中改正，确认后刷新读回实
   expect(saved.scores[exam.questions[0].id]).toBe(7);
   expect(errors).toEqual([]);
 });
+
+test('原型成绩准入：无原卷按学号导入、缺总分保持未知，归档父对象下的子项仍可见', async ({ page }, info) => {
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await register(page, world, 'classroom-prototype@example.test');
+  const coach = page.getByRole('button', { name: /知道了/ });
+  if (await coach.count()) await coach.first().click();
+  const write = async (method, suffix, data) => {
+    const response = await page.request[method](`${world.origin}/api/modules/classroom/${suffix}`, {
+      headers: { ...headers(page), Origin: world.origin, 'X-TeachBuddy-Request': '1', 'Idempotency-Key': crypto.randomUUID() }, data,
+    });
+    expect(response.status()).toBe(method === 'post' ? 201 : 200);
+    return response.json();
+  };
+  const cls = await write('post', 'classes', { name: '原型准入班' });
+  const students = [];
+  for (const number of ['001', '002']) students.push(await write('post', 'students', {
+    classId: cls.id, name: '同名学生', studentNumber: number, birthday: null, interests: '', description: '',
+  }));
+  const exam = await write('post', 'exams', { name: '没有原卷的考试', subject: '数学', occurredOn: '2026-10-20', totalMax: 10, source: [],
+    questions: ['1', '2'].map(label => ({ label, groupLabel: null, maxScore: 5, tagIds: [], locations: [] })),
+  });
+  await page.goto(world.origin + '/classroom');
+  await expect(page.getByRole('heading', { name: '原型准入班', exact: true })).toBeVisible();
+  const importSheet = async rows => {
+    await page.getByRole('button', { name: '班级操作', exact: true }).click();
+    await page.getByRole('menuitem', { name: '导入成绩', exact: true }).click();
+    const dialog = page.getByRole('dialog', { name: '导入成绩', exact: true });
+    const book = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(book, XLSX.utils.aoa_to_sheet(rows), '成绩');
+    await dialog.locator('input[type=file]').setInputFiles({ name: 'scores.xlsx', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', buffer: XLSX.write(book, { type: 'buffer', bookType: 'xlsx' }) });
+    await expect(dialog.getByRole('combobox', { name: /^姓名/ })).toHaveValue('');
+    await expect(dialog.getByRole('combobox', { name: /^学号/ })).toHaveValue('1');
+    await dialog.getByRole('button', { name: '生成校对表', exact: true }).click();
+    await expect(dialog.locator('.cr-review')).toBeVisible();
+    await expect(dialog.getByRole('button', { name: '确认入库', exact: true })).toBeEnabled();
+    return dialog;
+  };
+  let dialog = await importSheet([['学号', '总分'], ['001', 0], ['002', 7]]);
+  await dialog.getByRole('button', { name: '确认入库', exact: true }).click();
+  await expect(dialog.getByRole('heading', { name: '成绩已保存', exact: true })).toBeVisible();
+  await dialog.getByRole('button', { name: '看看成绩', exact: true }).click();
+  await page.reload();
+  await expect(page.locator('.cr-stats').first()).toContainText('3.5');
+  let result = (await read(page, `results?classId=${cls.id}`)).items[0];
+  expect(result.rows.find(row => row.studentId === students[0].id).totalScore).toBe(0);
+  expect(Object.values(result.rows[0].scores)).toEqual([null, null]);
+  dialog = await importSheet([['学号', '1', '2'], ['001', 0, null], ['002', null, 5]]);
+  await expect(dialog.locator('.cr-issues')).toContainText(['没有总分，这次不参与排名']);
+  await page.reload();
+  dialog = page.getByRole('dialog', { name: '导入成绩', exact: true });
+  await expect(dialog.locator('.cr-issues')).toContainText(['没有总分，这次不参与排名']);
+  await dialog.getByRole('button', { name: '确认入库', exact: true }).click();
+  await expect(dialog.getByRole('heading', { name: '成绩已保存', exact: true })).toBeVisible();
+  await dialog.getByRole('button', { name: '看看成绩', exact: true }).click();
+  await page.reload();
+  await expect(page.getByRole('heading', { name: '全班的变化', exact: true })).toBeVisible();
+  await expect(page.locator('.cr-stats')).toContainText('无总分 2');
+  expect(await page.locator('.cr-chart .cr-dot').count(), '缺失总分不能在趋势图中画成零分').toBe(0);
+  result = (await read(page, `results?classId=${cls.id}`)).items[0];
+  expect(result.rows.every(row => row.totalScore === null)).toBe(true);
+  const stats = (await read(page, `classes/${cls.id}/statistics`)).points[0];
+  expect(stats.overall.mean).toBeNull();
+  expect(stats.overall.rankedCount).toBe(0);
+  expect(stats.questions.map(q => [q.rate, q.observedCells, q.missingCount])).toEqual([[0, 1, 1], [1, 1, 1]]);
+  expect((await read(page, `exams/${exam.id}`)).source).toEqual([]);
+  await page.screenshot({ path: info.outputPath('missing-totals-and-known-scores.png'), animations: 'disabled' });
+  for (const [scope, subjectId] of [['class', cls.id], ['student', students[0].id], ['student', students[1].id]]) {
+    const record = await write('post', 'records', { scope, subjectId, occurredOn: '2026-10-20', text: (subjectId === students[1].id ? '活动学生' : scope) + '父对象下的归档记录' });
+    await write('put', `records/${record.id}/deletion`, { baseVersion: record.version, deleted: true });
+  }
+  await write('put', `students/${students[0].id}/deletion`, { baseVersion: students[0].version, deleted: true });
+  const currentClass = await read(page, `classes/${cls.id}`);
+  await write('put', `classes/${cls.id}/deletion`, { baseVersion: currentClass.version, deleted: true });
+  await page.reload();
+  await page.locator('.tbx-rail').getByRole('button', { name: '已归档', exact: true }).click();
+  for (const text of ['原型准入班', '同名学生', 'class父对象下的归档记录', 'student父对象下的归档记录']) {
+    await expect(page.locator('.cr-archive strong').filter({ hasText: new RegExp('^' + text + '$') })).toBeVisible();
+  }
+  await page.reload();
+  for (const text of ['class父对象下的归档记录', 'student父对象下的归档记录']) {
+    await expect(page.locator('.cr-archive strong').filter({ hasText: new RegExp('^' + text + '$') })).toBeVisible();
+  }
+  await page.screenshot({ path: info.outputPath('archived-parent-children.png'), animations: 'disabled' });
+  const archivedStudent = page.locator('.cr-archive li').filter({ hasText: '同名学生' });
+  const archivedClassRecord = page.locator('.cr-archive li').filter({ hasText: 'class父对象下的归档记录' });
+  const activeStudentRecord = page.locator('.cr-archive li').filter({ hasText: '活动学生父对象下的归档记录' });
+  const archivedStudentRecord = page.locator('.cr-archive li').filter({ hasText: 'student父对象下的归档记录' });
+  for (const row of [archivedStudent, archivedClassRecord, archivedStudentRecord, activeStudentRecord]) {
+    await expect(row).toContainText('请先恢复所属班级');
+    await expect(row.getByRole('button', { name: '恢复', exact: true })).toBeDisabled();
+  }
+  await page.locator('.cr-archive li').filter({ has: page.locator('strong', { hasText: /^原型准入班$/ }) }).getByRole('button', { name: '恢复', exact: true }).click();
+  await expect(archivedStudent.getByRole('button', { name: '恢复', exact: true })).toBeEnabled();
+  await expect(activeStudentRecord.getByRole('button', { name: '恢复', exact: true })).toBeEnabled();
+  await expect(archivedStudentRecord).toContainText('请先恢复所属学生');
+  await expect(archivedStudentRecord.getByRole('button', { name: '恢复', exact: true })).toBeDisabled();
+  expect((await read(page, `students/${students[0].id}`)).deletedAt).not.toBeNull();
+  await archivedStudent.getByRole('button', { name: '恢复', exact: true }).click();
+  await expect(archivedStudentRecord.getByRole('button', { name: '恢复', exact: true })).toBeEnabled();
+  await archivedStudentRecord.getByRole('button', { name: '恢复', exact: true }).click();
+  await expect(archivedStudentRecord).toHaveCount(0);
+  await expect(archivedClassRecord).toBeVisible();
+  await archivedClassRecord.getByRole('button', { name: '恢复', exact: true }).click();
+  await activeStudentRecord.getByRole('button', { name: '恢复', exact: true }).click();
+  await expect(page.getByRole('heading', { name: '没有归档的内容', exact: true })).toBeVisible();
+  expect(errors).toEqual([]);
+});

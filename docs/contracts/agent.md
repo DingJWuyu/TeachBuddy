@@ -1,6 +1,6 @@
-# AI 助理契约：首批工具与四模块扩展
+# AI 助理契约：对话、引用与教学提案
 
-首批 Agent 契约，设计已采用；开发暂停和实现边界见[当前状态](../plans/run-state.md)。精确 HTTP、请求/响应、工具参数和错误对照唯一归 [agent.openapi.json](../../apps/api/src/contracts/agent.openapi.json)，有效交换样本见 [agent-examples.json](../../apps/api/test/fixtures/contracts/agent-examples.json)。本页定义请求之间的不变量，不是另一份字段 schema。
+Agent 当前契约，开发暂停和实现边界见[当前状态](../plans/run-state.md)。精确 HTTP、请求/响应、工具参数和错误对照唯一归 [agent.openapi.json](../../apps/api/src/contracts/agent.openapi.json)，有效交换样本见 [agent-examples.json](../../apps/api/test/fixtures/contracts/agent-examples.json)。本页定义请求之间的不变量，不是另一份字段 schema。
 
 输入版本、实验裁决与下游条件见[助理实现](../subsystems/agent.md#装配与持久化)。已有业务字段继续引用工作台 `0.1.0-candidate.2`，业务语义源为 B11 `9aee091a34ba2eb311b51299d9beed78a032d026`；真实认证源为 `6f3003250d170b44e89f6ac9b0a74f91d658a357`、冻结 `63bfe8f7900b4a2bb7fc9ab5a4145f1c89a6f73b`。Agent 只新增 `/api/agent`，复用现有题库操作、认证操作、Cookie 和页面上下文语义。
 
@@ -12,15 +12,19 @@
 
 ## 对话、草稿和消息
 
-创建对话返回持久 snapshot，初始草稿 version=1、空文字/引用、空消息/turn/工具调用/操作、lastEventSeq=0。列表返回本账户全部对话，updatedAt 降序、id 升序；当前设备优先恢复其本地 active conversationId，否则选择列表首项，空列表提供新对话入口。选择或浏览不更新活动排序。草稿保存、发送与新增消息/工具状态更新对话 updatedAt。
+创建对话返回持久 snapshot，初始草稿 version=1、空文字/引用、空消息/turn/工具调用/操作、lastEventSeq=0。列表返回本账户全部对话，updatedAt 降序、id 升序；当前设备优先恢复其本地 active conversationId，否则选择列表首项，空列表提供新对话入口。列表、snapshot 与 conversation 事件的 preview 均从最近一条非空助理消息派生，去除 Markdown 标记后取首个非空段的前 60 字符；旧会话无需打开即可恢复摘要，不另存设备摘要。选择、浏览、重命名和置顶不更新活动排序。草稿保存、发送与新增消息/工具状态更新对话 updatedAt。
+
+PATCH 会话只接受 title 或 pinned，标题 trim 后非空且最多 80 字符；写入经账户幂等事务并发布 conversation 事件。DELETE 经同一身份与幂等保护移除会话及所属事件，成功返回 deleted ID；同键重放保留原成功结果。running turn 拒绝为 turn-active，prepared/executing/unconfirmed Operation 拒绝为 pending-operation，保留原 journal 核实入口。删除不撤销已经保存的业务对象。
 
 草稿是服务器上每对话一份的版本对象。PUT 是整份替换，成功 version+1；同键重放不再增加版本。两设备旧版写入返回 draft-conflict，含服务器 currentVersion。客户端必须保留本地输入和请求快照，读取最新后让老师选择，不自动覆盖。未上传草稿和 UI 现场按可信 accountKey 留本设备；换设备只恢复已确认持久内容。对话滚动锚点、活动对话、右栏模式/宽度在同一设备跨刷新保存，其他设备按其屏幕使用默认布局；不承诺把桌面像素坐标复制到 Pad。业务模块现场仍按原首流策略维护。
 
-首批引用仅接受题目。输入引用按 kind/id 去重，重复为 invalid-input。保存草稿核对对象归属，但允许保留已经过期或已删除的本账户版本以便恢复；发送时要求对象仍 active 且版本完全匹配。发送引用失效返回 reference-conflict（field 指向引用，currentVersion 为该对象现版本），不生成消息、不清空草稿、不请求模型。外账户引用 404，不返回版本。
+当前引用接受 question、resource、entry，均携带明确 version；entry 可选 originDate。输入引用按 kind/id/originDate 去重，重复为 invalid-input。保存草稿核对对象归属，但允许保留已经过期或已删除的本账户版本以便恢复；发送时要求对象仍 active 且版本完全匹配。发送引用失效返回 reference-conflict（field 指向引用，currentVersion 为该对象现版本），不生成消息、不清空草稿、不请求模型。外账户引用 404，不返回版本。
 
-发送读取指定 draftVersion 的已保存草稿，trim 后文字必须非空；原文字仍逐字保存，不做隐式改写。单次事务完成：确认无账户运行中 turn/未决操作，核对引用并捕获本账户对象的完整快照，创建 user message、turn，清空这一版草稿并 version+1，记录成功 202。事务成功之后才开始 pi。迟到重放返回原 202，不清空新草稿，不重复运行；客户端 GET snapshot 取得当前状态。新文字输入在提交版本之外保留，不能被旧回执清空。
+发送读取指定 draftVersion 的已保存草稿，trim 后文字必须非空；原文字仍逐字保存，不做隐式改写。单次事务完成：确认无账户运行中 turn/未决操作，核对引用并捕获本账户对象的完整公开快照，创建 user message、turn，清空这一版草稿并 version+1，记录成功 202。事务成功之后才开始 pi。迟到重放返回原 202，不清空新草稿，不重复运行；客户端 GET snapshot 取得当前状态。新文字输入在提交版本之外保留，不能被旧回执清空。
 
-历史引用是发送时快照。它不锁定活对象，也不把对话内容放入业务库。模型可读取所引用的内容，修改前仍读真实业务对象并带版本。消息、引用快照与已完成工具结果不会因源内容更新/软删除而改变；源不存在时打开动作显示不可用。Agent 没有直接修改既有聊天消息或永久删除数据的入口。
+资源引用捕获公开 Resource 元数据，不传附件正文或下载凭据。entry 快照为 `{entry, occurrence}`，未选 originDate 时 occurrence=null；选择实例时捕获实际调课结果。发送要求聚合版本一致且该实例 active，取消、删除或超出系列范围不得发送。捕获与接受发送处在同一 SQLite 事务。
+
+历史引用是发送时快照。它不锁定活对象，也不把对话内容放入业务库。模型可读取所引用的内容，修改前仍读真实业务对象并带版本。消息、引用快照与已完成工具结果不会因源内容更新/软删除而改变；源不存在时打开动作显示不可用。Agent 模型工具没有直接修改既有聊天消息或永久删除数据的入口；老师可通过会话管理删除聊天记录。
 
 ## 流与运行状态
 
@@ -75,6 +79,18 @@ reconcile 是受当前身份保护的零模型操作：读取原 operation 及�
 
 业务 409 不自动刷新版本覆盖。对照由当前业务编辑器承担，操作卡保存原提案和失败；老师手工整合后沿原手工业务流程新键提交，或明确要求 Agent 基于最新内容重做。首批多步骤任务逐操作提交；复制成功后后续修改失败时保留副本，显示部分完成，不自建跨操作回滚事务。
 
+## 教学提案与点击执行
+
+模型工具 `wb_propose_teaching_card` 接受严格的 plan/practice/variant union。合法参数还须能转换为所属业务请求；不接受任意路径、账户或幂等键。工具只持久保存 `read` 结果 `{proposalId, card}`，operationId=null，不创建业务数据。提案属于原 ToolCall，刷新不重新生成；历史旧工具仍可读取和核实。
+
+老师显式 POST `/conversations/{conversationId}/proposals/{proposalId}/execute`，body 只含整数 slot。服务器按当前账户、会话和 proposalId 找持久提案，从卡片构造完整业务 body；不信任客户端重发卡片。plan/variant 只接受 slot=0，practice 按数组索引保存，前槽 confirmed 才能开始下一槽。plan 新建 time/repeat/reminder=null 的未排期 Entry，steps 转事项；练习和变式使用现行题库 createQuestionV2 新建题，不修改原题。
+
+每槽创建原 Operation/journal，并带 `proposalSource:{proposalId,slot}`。该 Operation 的 toolCallId 指向原提案调用，但提案 ToolCall 始终保持 read 和 null operationId，执行进度只由 Operation 表达，不覆写提案原生 toolResult。内部 request.operationId 为 createEntry 或 createQuestionV2，沿真实模块公开 operations、规范业务路径及同键回执执行，不把内部创建日程操作作为模型开放工具。
+
+HTTP 接受事务只创建或复用 prepared Operation，200 表示已接受，不能据此显示已保存；事务提交后才进入 executing 并调用业务，随后持久 confirmed/rejected/unconfirmed 和 SSE。相同槽重试复用原 operation/key/body；confirmed/rejected 保持原终态，unconfirmed 只提供现有 reconcile。重启后的 cancelled 表示从未开始，老师再次点击可重新启用同一槽和原键原体。业务已提交而结果记录失败时保留 unconfirmed，禁止继续下一槽；多题已成功部分保留，不回滚。
+
+正常启动恢复同时处理已结束 turn 的提案操作：prepared 转 cancelled，executing 转 unconfirmed；不自动执行模型或业务。备份冻结与恢复隔离由数据管理底座处理，不能用正常启动自动裁决代替冻结。后续新 turn 将已确认的提案执行结果作为数据加入模型上下文，不伪造新的工具调用或宣称未执行的内容已保存。
+
 ## pi 错误映射、用量与失败边界
 
 采用 pi 0.85.1 SDK，关闭默认内建工具、项目/用户自动扩展、skills、prompt 模板和上下文文件发现。配置只注册白名单模型，HTTP 接受前、创建/重开 session 后、每次 provider 请求前均严格比较 provider+精确 ID；禁止调用 CLI 的未知 ID fallback。SDK 返回 unknown 或 modelFallbackMessage 时停止新生成，历史照常可读。不自动 compaction、summarize、后台命名或恢复请求；上下文超限保留全部历史，提示新对话。
@@ -91,37 +107,11 @@ reconcile 是受当前身份保护的零模型操作：读取原 operation 及�
 
 认证恢复采用[当前认证恢复契约](auth.md#部署恢复的认证撤销)的 `auth-recovery/2`，按现有实现及恢复测试处理账户删除与清理计数。
 
-### 版本与调用
+### 当前实现与未来范围
 
-C25 的 pi runtime、模型白名单、用量/次数上界、工具 journal、SSE 游标、停止与 reconcile 语义原样继承。新增 `/api/agent/v2` 与 v2 snapshot/schema，以便接纳四模块对象和工具；原 `/api/agent` 保留只处理原可表示历史。旧路径读到新工具/丰富引用时整体拒绝 `unsupported-agent-version`，不能丢卡或降级源；旧路径未知写入仍在原路径原键确认。v2 可读取旧历史且不改写其消息/工具/幂等原件，旧未决操作在 v2 核实也执行原 journal 路径。
+现有 `/api/agent` 向后兼容扩展了 resource/entry 引用和教学提案。保留既有七个题库工具及历史 journal；不另建 v2 路径，也不对本轮有限新增能力套用尚未实现的全模块工具协议。身份、模型白名单、次数上界、journal、SSE、停止和核实保证继续有效。
 
-旧写路径先按原顺序重放已成功请求，再拒绝不可表示的新写入；不能清草稿或开始模型后才报版本不支持。旧 SSE 已连接时，在首个不可表示事件前关闭流，不发送畸形 v1 帧；重读 snapshot 得到版本错误并引导刷新升级，旧游标不伪进位。新 v2 对话和原历史共用同一账户运行锁，不出现两个并行 turn。
-
-新回合仅给模型 schema 中的当前工具清单。旧工具名只用于读取/核实既存历史，不作为新回合的可选操作。工具名固定为 `wb_` 加原 operationId，参数为严格 `{path, query, body}` 组合：仅操作确有的部分可出现，path/query 字段逐项外引原参数定义，body 外引原请求体，必填性保持。没有任意 URL、SQL、shell、本机路径、账户、幂等键或运行时注册字段。新工具绑定沿各模块当前公开调用面设计；日程尚无公共幂等写 operations，扩展接入需先补齐可信写入口，文件/Job 用其原公共端口适配；同一业务验证只有一个写者。
-
-参数转为原 HTTP 表示时按原参数 style/explode 编码数组，路径逐段编码；journal 保存真实方法、规范路径、解析后的原业务 body 与完整参数，不能把工具包装 `{path,query,body}` 当成业务 body。Job/query/通知等原接口明确的读取副作用仍按原业务规则，工具 `read` 只表示该次查询结果，不改通知结算语义。v2 ToolOutcome 使用 schema 的完整四字段投影，历史 C25 原生结果字节不重写。
-
-Agent v2 引用允许 question、resource、math、entry、import、file。业务对象带明确当前版本，file 使用不可变 ID；entry 可定位 originDate。引用只用于捕获上下文，不是修改权限。捕获完整公开对象及当前引用版本，文件仅捕获元数据与已授权内容投影，不把凭据下载地址传给模型。未知类型拒绝，外账户统一 404。旧引用规则扩展到这些类型：保存输入可保留本账户失效引用，发送要求当前活动版和目标存在；文件须完整可读。当前对象更新不能改变历史快照。
-
-entry 引用快照同时保存 Entry 和选定 Occurrence：有 originDate 时按原实例端口读取真实调课结果，取消/超范围实例拒绝发送；未指定则 occurrence=null，表示整组或非重复 Entry。基线始终是原聚合 version，不能把例外时间当模板内容。去重键为 kind/id 与该类型允许的 originDate，文件按 id；捕获与发送接受仍在同一一致事务中。
-
-<a id="tool-classification"></a>
-### 工具卡读写分类与传递
-
-
-未来扩展 schema 应用 `x-tool-bindings.mutation` 明确读写分类。`AgentToolCall` 新版分支的只读名称枚举必须精确对应其中 `mutation=false` 名称；其余为写工具。修改绑定时同时核对名称集合，旧 snake_case 名称只用于已有历史分支，不进入新回合工具集合。
-
-| 当前分类 | 允许状态 | operationId |
-| --- | --- | --- |
-| 只读 | prepared、executing、read、rejected、failed、cancelled、interrupted | 始终 null |
-| 写入，参数校验通过 | prepared、executing、confirmed、rejected、unconfirmed、cancelled | 必须为 Operation UUID |
-| 参数校验未通过，读写均适用 | arguments=null，仅 rejected，Problem 为 invalid-input | null，不建立 Operation |
-
-状态不能取代参数和结果校验：read/confirmed 必须有该工具原成功响应形状且 problem=null；其他状态 result=null。rejected/failed/unconfirmed 必须有相应 Problem，failed 使用原 tool-failed 类型；其余状态 problem=null。状态间转换继续沿 C25 与 WB-F008，表格不授权任意跳转，也不改变读取端口的既有通知/Job 语义。
-
-`AgentSnapshot.toolCalls`、`AgentEvent(type=toolCall).value` 和 `PortableData(kind=conversation).value.toolCalls` 均递归消费同一个 `AgentToolCall`，保留名称、参数、顺序、结果及 null operationId。消费者不得按旧名称重新猜测分类、伪造 Operation、丢卡或跳过校验。v2 ToolOutcome 沿既定四字段投影，终态须与对应卡一致。正常重启或部署恢复的只读 executing 标 interrupted、未开始调用标 cancelled；只有执行中的写操作进入 unconfirmed 及原有核实/恢复隔离路径。
-
-实现状态与后续验证见[项目状态](../plans/run-state.md)；产品运行仍需覆盖四模块业务一致性，静态检查不代替运行证据。
+本轮没有开放任意资源、数学、文件、导入或班级工具。下表为将来能力覆盖设计；其中未在当前机器 schema 开放的操作不能视为模型可调用。进一步扩展时先核对模块现行公开操作，再形成版本及兼容方案。引用不授予修改权限，题面与文件内容不能当作新的教师指令；异步操作继续遵守本页末尾的受理与失败边界。
 
 ### 手工能力对应表
 

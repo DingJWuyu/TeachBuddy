@@ -229,6 +229,166 @@
             "$ref": "#/components/responses/Problem"
           }
         }
+      },
+      "patch": {
+        "operationId": "updateAgentConversation",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageContext"
+          },
+          {
+            "$ref": "#/components/parameters/conversationId"
+          },
+          {
+            "$ref": "#/components/parameters/Protection"
+          },
+          {
+            "$ref": "#/components/parameters/Origin"
+          },
+          {
+            "$ref": "#/components/parameters/Referer"
+          },
+          {
+            "$ref": "#/components/parameters/Key"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "持久结果；重复键保持首次状态码和结果。",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Conversation"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "415": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "503": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConversationPatch"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteAgentConversation",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageContext"
+          },
+          {
+            "$ref": "#/components/parameters/conversationId"
+          },
+          {
+            "$ref": "#/components/parameters/Protection"
+          },
+          {
+            "$ref": "#/components/parameters/Origin"
+          },
+          {
+            "$ref": "#/components/parameters/Referer"
+          },
+          {
+            "$ref": "#/components/parameters/Key"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "持久结果；重复键保持首次状态码和结果。",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationDeleted"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "415": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "503": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmptyCommand"
+              }
+            }
+          }
+        }
       }
     },
     "/api/agent/conversations/{conversationId}/draft": {
@@ -626,6 +786,97 @@
         },
         "description": "SSE 只读流。event: change；id 为 seq 十进制；data 为 Event JSON。持久后发布，至少一次投递，客户端按 seq 去重。after 默认 0，心跳为注释，断线不停止 turn。"
       }
+    },
+    "/api/agent/conversations/{conversationId}/proposals/{proposalId}/execute": {
+      "post": {
+        "operationId": "executeAgentProposal",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PageContext"
+          },
+          {
+            "$ref": "#/components/parameters/conversationId"
+          },
+          {
+            "$ref": "#/components/parameters/Protection"
+          },
+          {
+            "$ref": "#/components/parameters/Origin"
+          },
+          {
+            "$ref": "#/components/parameters/Referer"
+          },
+          {
+            "$ref": "#/components/parameters/Key"
+          },
+          {
+            "in": "path",
+            "name": "proposalId",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "原键原请求核实，无模型请求；200 的 Operation.state 仍可能 unconfirmed，不等于写成功。",
+            "headers": {
+              "Cache-Control": {
+                "required": true,
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Operation"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "401": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "403": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "404": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "409": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "413": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "415": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "422": {
+            "$ref": "#/components/responses/Problem"
+          },
+          "503": {
+            "$ref": "#/components/responses/Problem"
+          }
+        },
+        "description": "原键原请求核实，无模型请求；200 的 Operation.state 仍可能 unconfirmed，不等于写成功。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExecuteProposal"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -741,6 +992,50 @@
               "version"
             ],
             "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "const": "resource"
+              },
+              "id": {
+                "$ref": "#/components/schemas/Id"
+              },
+              "version": {
+                "$ref": "#/components/schemas/Version"
+              }
+            },
+            "required": [
+              "kind",
+              "id",
+              "version"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "const": "entry"
+              },
+              "id": {
+                "$ref": "#/components/schemas/Id"
+              },
+              "version": {
+                "$ref": "#/components/schemas/Version"
+              },
+              "originDate": {
+                "type": "string",
+                "format": "date"
+              }
+            },
+            "required": [
+              "kind",
+              "id",
+              "version"
+            ],
+            "additionalProperties": false
           }
         ]
       },
@@ -780,6 +1075,98 @@
               "snapshot",
               "capturedAt"
             ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "input": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ReferenceInput"
+                  },
+                  {
+                    "properties": {
+                      "kind": {
+                        "const": "resource"
+                      }
+                    }
+                  }
+                ]
+              },
+              "title": {
+                "type": "string"
+              },
+              "snapshot": {
+                "$ref": "materials.openapi.yaml#/components/schemas/Resource"
+              },
+              "capturedAt": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "input",
+              "title",
+              "snapshot",
+              "capturedAt"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "input": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ReferenceInput"
+                  },
+                  {
+                    "properties": {
+                      "kind": {
+                        "const": "entry"
+                      }
+                    }
+                  }
+                ]
+              },
+              "title": {
+                "type": "string"
+              },
+              "snapshot": {
+                "type": "object",
+                "properties": {
+                  "entry": {
+                    "$ref": "schedule-v2.openapi.json#/components/schemas/Entry"
+                  },
+                  "occurrence": {
+                    "anyOf": [
+                      {
+                        "$ref": "schedule-v2.openapi.json#/components/schemas/Occurrence"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "entry",
+                  "occurrence"
+                ],
+                "additionalProperties": false
+              },
+              "capturedAt": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "input",
+              "title",
+              "snapshot",
+              "capturedAt"
+            ],
+            "additionalProperties": false
           }
         ]
       },
@@ -854,7 +1241,7 @@
           },
           "title": {
             "type": "string",
-            "maxLength": 32
+            "maxLength": 80
           },
           "createdAt": {
             "type": "string",
@@ -863,6 +1250,13 @@
           "updatedAt": {
             "type": "string",
             "format": "date-time"
+          },
+          "pinned": {
+            "type": "boolean"
+          },
+          "preview": {
+            "type": "string",
+            "maxLength": 60
           }
         },
         "required": [
@@ -1445,6 +1839,38 @@
               "arguments"
             ],
             "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "operationId": {
+                "const": "createEntry"
+              },
+              "arguments": {
+                "$ref": "#/components/schemas/Tool_createEntry"
+              }
+            },
+            "required": [
+              "operationId",
+              "arguments"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "operationId": {
+                "const": "createQuestionV2"
+              },
+              "arguments": {
+                "$ref": "#/components/schemas/Tool_createQuestionV2"
+              }
+            },
+            "required": [
+              "operationId",
+              "arguments"
+            ],
+            "additionalProperties": false
           }
         ]
       },
@@ -1480,6 +1906,9 @@
           "result": {
             "anyOf": [
               {
+                "$ref": "schedule-v2.openapi.json#/components/schemas/Entry"
+              },
+              {
                 "oneOf": [
                   {
                     "$ref": "workbench.openapi.yaml#/components/schemas/Question"
@@ -1508,6 +1937,24 @@
           "updatedAt": {
             "type": "string",
             "format": "date-time"
+          },
+          "proposalSource": {
+            "type": "object",
+            "properties": {
+              "proposalId": {
+                "$ref": "#/components/schemas/Id"
+              },
+              "slot": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 199
+              }
+            },
+            "required": [
+              "proposalId",
+              "slot"
+            ],
+            "additionalProperties": false
           }
         },
         "required": [
@@ -1595,6 +2042,9 @@
                   },
                   {
                     "$ref": "workbench.openapi.yaml#/components/schemas/QuestionList"
+                  },
+                  {
+                    "$ref": "#/components/schemas/TeachingProposal"
                   }
                 ]
               }
@@ -1619,6 +2069,9 @@
                 "oneOf": [
                   {
                     "$ref": "workbench.openapi.yaml#/components/schemas/Question"
+                  },
+                  {
+                    "$ref": "schedule-v2.openapi.json#/components/schemas/Entry"
                   }
                 ]
               }
@@ -2371,7 +2824,8 @@
               "wb_create_question",
               "wb_update_question",
               "wb_copy_question",
-              "wb_set_question_deletion"
+              "wb_set_question_deletion",
+              "wb_propose_teaching_card"
             ]
           },
           "arguments": {
@@ -2412,6 +2866,9 @@
               },
               {
                 "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/TeachingProposal"
               }
             ]
           },
@@ -2714,6 +3171,33 @@
                     ]
                   }
                 }
+              },
+              {
+                "properties": {
+                  "name": {
+                    "const": "wb_propose_teaching_card"
+                  },
+                  "arguments": {
+                    "anyOf": [
+                      {
+                        "$ref": "#/components/schemas/Tool_proposeTeachingCard"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "result": {
+                    "anyOf": [
+                      {
+                        "$ref": "#/components/schemas/TeachingProposal"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                }
               }
             ]
           },
@@ -2724,7 +3208,8 @@
                   "enum": [
                     "wb_list_questions",
                     "wb_get_question",
-                    "wb_list_derivatives"
+                    "wb_list_derivatives",
+                    "wb_propose_teaching_card"
                   ]
                 }
               }
@@ -2800,6 +3285,255 @@
             }
           }
         ]
+      },
+      "ConversationPatch": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "pattern": "\\S"
+          },
+          "pinned": {
+            "type": "boolean"
+          }
+        },
+        "minProperties": 1,
+        "additionalProperties": false
+      },
+      "ConversationDeleted": {
+        "type": "object",
+        "properties": {
+          "deleted": {
+            "$ref": "#/components/schemas/Id"
+          }
+        },
+        "required": [
+          "deleted"
+        ],
+        "additionalProperties": false
+      },
+      "TeachingQuestion": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "body": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 20000
+          },
+          "solution": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 20000
+          },
+          "tier": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "typeId": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Id"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "tagIds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Id"
+            },
+            "maxItems": 100,
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "title",
+          "body",
+          "solution"
+        ],
+        "additionalProperties": false
+      },
+      "TeachingCard": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "const": "plan"
+              },
+              "title": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              },
+              "meta": {
+                "type": "string",
+                "maxLength": 500
+              },
+              "entryTitle": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              },
+              "steps": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2000
+                },
+                "minItems": 1,
+                "maxItems": 200
+              }
+            },
+            "required": [
+              "kind",
+              "title",
+              "entryTitle",
+              "steps"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "const": "practice"
+              },
+              "title": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              },
+              "meta": {
+                "type": "string",
+                "maxLength": 500
+              },
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/TeachingQuestion"
+                },
+                "minItems": 1,
+                "maxItems": 24
+              }
+            },
+            "required": [
+              "kind",
+              "title",
+              "items"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "const": "variant"
+              },
+              "title": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              },
+              "meta": {
+                "type": "string",
+                "maxLength": 500
+              },
+              "item": {
+                "$ref": "#/components/schemas/TeachingQuestion"
+              }
+            },
+            "required": [
+              "kind",
+              "title",
+              "item"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      },
+      "Tool_proposeTeachingCard": {
+        "type": "object",
+        "properties": {
+          "card": {
+            "$ref": "#/components/schemas/TeachingCard"
+          }
+        },
+        "required": [
+          "card"
+        ],
+        "additionalProperties": false
+      },
+      "TeachingProposal": {
+        "type": "object",
+        "properties": {
+          "proposalId": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "card": {
+            "$ref": "#/components/schemas/TeachingCard"
+          }
+        },
+        "required": [
+          "proposalId",
+          "card"
+        ],
+        "additionalProperties": false
+      },
+      "ExecuteProposal": {
+        "type": "object",
+        "properties": {
+          "slot": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 199
+          }
+        },
+        "required": [
+          "slot"
+        ],
+        "additionalProperties": false
+      },
+      "Tool_createEntry": {
+        "type": "object",
+        "properties": {
+          "body": {
+            "$ref": "schedule-v2.openapi.json#/components/schemas/EntryInput"
+          }
+        },
+        "required": [
+          "body"
+        ],
+        "additionalProperties": false
+      },
+      "Tool_createQuestionV2": {
+        "type": "object",
+        "properties": {
+          "body": {
+            "$ref": "materials.openapi.yaml#/components/schemas/CreateQuestion"
+          }
+        },
+        "required": [
+          "body"
+        ],
+        "additionalProperties": false
+      },
+      "ProposalEntryResult": {
+        "$ref": "schedule-v2.openapi.json#/components/schemas/Entry"
+      },
+      "ProposalQuestionResult": {
+        "$ref": "materials.openapi.yaml#/components/schemas/Question"
       }
     }
   },
@@ -2894,6 +3628,19 @@
         "$ref": "workbench.openapi.yaml#/components/schemas/Question"
       },
       "mutation": true
+    },
+    {
+      "name": "wb_propose_teaching_card",
+      "operationId": "proposeTeachingCard",
+      "method": "POST",
+      "path": "/api/agent/teaching-proposals",
+      "parameters": {
+        "$ref": "#/components/schemas/Tool_proposeTeachingCard"
+      },
+      "response": {
+        "$ref": "#/components/schemas/TeachingProposal"
+      },
+      "mutation": false
     }
   ],
   "x-agent-errors": {

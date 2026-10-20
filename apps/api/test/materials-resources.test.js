@@ -148,6 +148,71 @@ test("MC02 上传后真实收录，重启仍可读取同一资源和原文件", 
   }
 });
 
+test("资源标签颜色持久、旧标签兼容及删除嵌套树资料归未分组", async () => {
+  const directory = path.join(runDirectory, 'taxonomy-colors');
+  fixture = await startResourcesFixture({ dataDir: directory, port: 0 });
+  try {
+    const root = randomUUID(), child = randomUUID(), leaf = randomUUID();
+    const tag = randomUUID(), legacy = randomUUID();
+    const folders = [
+      {id:root, name:'高一', parentId:null},
+      {id:child, name:'函数', parentId:root},
+      {id:leaf, name:'图像', parentId:child},
+    ];
+    const tags = [{id:tag, name:'复习', color:'#3edc81'}, {id:legacy, name:'旧标签'}];
+    const key = randomUUID();
+    const saved = await request('PUT', '/api/modules/resources/taxonomy', {baseVersion:1, folders, tags}, {key});
+    assert.equal(saved.status, 200, JSON.stringify(saved));
+    assert.deepEqual(saved.body.tags, tags);
+    assert.deepEqual((await request('PUT', '/api/modules/resources/taxonomy', {baseVersion:1, folders, tags}, {key})).body, saved.body);
+    const file = await upload();
+    async function create(folderId, title) {
+      const result = await request('POST', '/api/modules/resources/items', {title, fileId:file.id, folderId, tagIds:[tag], note:'保留备注'});
+      assert.equal(result.status, 201, JSON.stringify(result));
+      return result.body;
+    }
+    const retained = await create(root, '上级资料');
+    const direct = await create(child, '直接资料');
+    const nested = await create(leaf, '嵌套资料');
+    const archived = await create(leaf, '归档资料');
+    const archive = await request('POST', `/api/modules/resources/items/${archived.id}/deletion`, {baseVersion:archived.version, deleted:true});
+    assert.equal(archive.status, 200, JSON.stringify(archive));
+    assert.deepEqual(fixture.resources.port.readReference({accountKey:'r32-a'}, direct.id), direct);
+    assert.deepEqual(fixture.resources.port.readReference({accountKey:'r32-a'}, archived.id), archive.body);
+    assert.throws(() => fixture.resources.port.readReference({accountKey:'r32-b'}, direct.id), error => error.status === 404);
+    assert.throws(() => fixture.resources.port.readReference({accountKey:'r32-a'}, randomUUID()), error => error.status === 404);
+    assert.throws(() => fixture.resources.port.readReference({accountKey:'r32-a'}, 'bad-id'), error => error.status === 422);
+    await fixture.close();
+    fixture = await startResourcesFixture({dataDir:directory, port:0});
+    assert.deepEqual((await request('GET', '/api/modules/resources/taxonomy')).body.tags, tags);
+    assert.deepEqual((await request('GET', '/api/modules/resources/taxonomy', undefined, {account:'r32-b'})).body.tags, []);
+    const invalid = await request('PUT', '/api/modules/resources/taxonomy', {baseVersion:2, folders, tags:[{id:tag, name:'复习', color:'red'}]});
+    assert.equal(invalid.status, 422);
+    const removed = await request('PUT', '/api/modules/resources/taxonomy', {baseVersion:2, folders:[folders[0]], tags});
+    assert.equal(removed.status, 200, JSON.stringify(removed));
+    for (const item of [direct, nested, archived]) {
+      const current = (await request('GET', `/api/modules/resources/items/${item.id}`)).body;
+      assert.equal(current.folderId, null, item.title);
+      assert.equal(current.fileId, file.id);
+      assert.equal(current.note, '保留备注');
+      assert.deepEqual(current.tagIds, [tag]);
+      assert.equal(current.version, item.version + (item === archived ? 2 : 1));
+    }
+    assert.deepEqual((await request('GET', `/api/modules/resources/items/${retained.id}`)).body, retained);
+    const archivedCurrent = (await request('GET', `/api/modules/resources/items/${archived.id}`)).body;
+    const restored = await request('POST', `/api/modules/resources/items/${archived.id}/deletion`, {baseVersion:archivedCurrent.version, deleted:false});
+    assert.equal(restored.status, 200);
+    assert.equal(restored.body.folderId, null);
+    assert.equal(restored.body.deletedAt, null);
+    const stale = await request('PUT', '/api/modules/resources/taxonomy', {baseVersion:2, folders, tags:[]});
+    assert.equal(stale.status, 409);
+    assert.deepEqual((await request('GET', '/api/modules/resources/taxonomy')).body, removed.body);
+    await fixture.close();
+    fixture = await startResourcesFixture({dataDir:directory, port:0});
+    assert.equal((await request('GET', `/api/modules/resources/items/${nested.id}`)).body.folderId, null);
+  } finally { await fixture.close(); }
+});
+
 test("MC12 分类移动删除、组合检索及跨账户隔离", async () => {
   fixture = await startResourcesFixture({ dataDir, port: 0 });
   try {

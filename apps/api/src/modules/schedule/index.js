@@ -1,6 +1,8 @@
 import { createScheduleRepository } from './repository.js';
 import { createScheduleRouter } from './router.js';
 import { createScheduleService } from './service.js';
+import { validateCreateEntry } from './schema.js';
+import { validateIdPath } from '../../workbench/schema.js';
 import { migrations as scheduleMigrations } from './migrations/index.js';
 import { createReminders, migrations as reminderMigrations } from './reminders/index.js';
 // Schedule owns reminder settlement and preserves their existing migration order.
@@ -31,6 +33,21 @@ export function createScheduleModule({ db, mutations, beforeChange, clock } = {}
   return {
     router,
     port: {
+      readReference(principal, { id, originDate = null }) {
+        validateIdPath(id);
+        return {
+          entry: service.getEntry(principal, id),
+          occurrence: originDate === null ? null : service.readOccurrence(principal, { entryId: id, originDate })
+        };
+      },
+      operations: {
+        createEntry({ principal, key, input }) {
+          const body = validateCreateEntry(input);
+          return mutations.execute({
+            principal, key, method: 'POST', path: '/api/modules/schedule/entries', body
+          }, () => ({ status: 201, body: service.createEntry(principal, body) }));
+        }
+      },
       readForExport: principal => ({ ...service.readForExport(principal), notifications: reminders.readForExport(principal) }),
       readOccurrence: (principal, key) => service.readOccurrence(principal, key),
       listReminderCandidates: (principal, now) => service.listReminderCandidates(principal, now)
@@ -39,8 +56,7 @@ export function createScheduleModule({ db, mutations, beforeChange, clock } = {}
 }
 
 export { migrations };
-// Callable business surface for future agent adapters; no HTTP dependency, so a
-// caller can invoke the same operations the API uses.
+// Construction seam; assembled callers use port.operations for validated writes.
 export { createScheduleService } from './service.js';
 // One title projection for reminder candidates and notifications; T53 imports
 // this exact function so both sides stay byte-identical.

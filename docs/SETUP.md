@@ -151,7 +151,7 @@ python3 scripts/recognition/install.py "$ocrHome"
 
 具体测试选择和数据隔离见[验证指南](acceptance/README.md)。全量命令不能替代当前功能的实际操作，也不要在在线实例旁盲目运行会覆盖 `dist` 或写证据的旧脚本。
 
-界面参考从[设计输入](design-system/README.md)进入，完整应用为 [teachbuddy-app](design-system/teachbuddy-app/index.html)。在仓库根目录执行 `npm run prototype` 可启动此参考。参考文件保持只读，不作为产品构建或运行依赖；原型中的模拟账户、资料和回复不能用于验证真实保存；产品里显式载入示例会调用真实 API 保存到当前账户。维护内置示例数据及重建原卷/成绩资产见[示例准备入口](subsystems/foundation.md#显式载入示例)。
+界面参考从[设计输入](design-system/README.md)进入，完整应用为 [teachbuddy-app](design-system/teachbuddy-app/index.html)。在仓库根目录执行 `npm run prototype` 可启动此参考。参考文件保持只读，不作为产品构建或运行依赖；原型中的模拟账户、资料和回复不能用于验证真实保存；产品里显式载入示例会调用真实 API 保存到当前账户。维护内置示例数据及重建成绩资产见[示例准备入口](subsystems/foundation.md#显式载入示例)。
 
 ## 正式部署
 

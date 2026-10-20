@@ -122,6 +122,14 @@ export function workbenchPut(path, body, idempotencyKey) {
   return request('PUT', path, { body, idempotencyKey, write: true });
 }
 
+export function workbenchPatch(path, body, idempotencyKey) {
+  return request('PATCH', path, { body, idempotencyKey, write: true });
+}
+
+export function workbenchDelete(path, body, idempotencyKey) {
+  return request('DELETE', path, { body, idempotencyKey, write: true });
+}
+
 export function buildQuery(params) {
   const search = new URLSearchParams();
   Object.entries(params).forEach(([name, value]) => {

@@ -81,7 +81,7 @@ export function createTaxonomy({ db, all, save, now }) {
     }
     const tagIds = new Set(tags.map((t) => t.id));
     for (const item of all(principal)) {
-      const folderId = ancestor(item.folderId, "/folders");
+      const folderId = item.folderId && !byId.has(item.folderId) ? null : item.folderId;
       const nextTags = item.tagIds.filter((id) => tagIds.has(id));
       if (folderId !== item.folderId || nextTags.length !== item.tagIds.length)
         save(principal, {

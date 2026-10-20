@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { isDeletedAccount } from '../../platform/device/storage.js';
-import { workbenchGet, workbenchPost, workbenchPut, workbenchEvents } from '../../platform/http/apiClient.js';
+import { workbenchGet, workbenchPost, workbenchPut, workbenchPatch, workbenchDelete, workbenchEvents } from '../../platform/http/apiClient.js';
 const Context = createContext(null);
 export const useAgent = () => useContext(Context);
 const base = '/api/agent/conversations';
@@ -27,7 +27,10 @@ export function AgentProvider({ accountKey, children }) {
     const [history, config] = await Promise.all([workbenchGet(base), workbenchGet('/api/agent/configuration')]);
     if (!live.current) return;
     setList(history.body.items); setConfiguration(config.body);
-    if (!current.current.id && history.body.items.length) setId(history.body.items[0].id);
+    if (!history.body.items.some(item => item.id === current.current.id)) {
+      setId(history.body.items[0]?.id ?? null);
+      if (!history.body.items.length) { setSnapshot(null); setDraft(null); persist('active', null); }
+    }
   }
   useEffect(() => { live.current = true; refreshList().catch(() => setError(t("无法读取对话，请重试"))); return () => { live.current = false; }; }, []);
   useEffect(() => {
@@ -68,6 +71,7 @@ export function AgentProvider({ accountKey, children }) {
             const next = { ...event.value, dirty: false }; setDraft(next); persist(id, next);
           }
           if (event.type === 'operation' && event.value.state === 'confirmed') setBusinessRevision(value => value + 1);
+          if (event.type === 'conversation') setList(previous => previous.map(item => item.id === event.value.id ? event.value : item).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt) || a.id.localeCompare(b.id)));
           if (event.type === 'turn') void refreshList();
         });
       } catch { if (!disposed) setError("连接中断，正在恢复已保存内容"); }
@@ -123,6 +127,43 @@ export function AgentProvider({ accountKey, children }) {
       persist('create', null); setId(body.conversation.id); await refreshList();
     } catch { setError(t("无法创建对话，请重试")); } finally { if (live.current) setBusy(false); }
   }
+  async function manageThread(cid, method, body) {
+    const storageKey = cid + ':management:' + method;
+    const saved = read(prefix + storageKey, null);
+    const pending = saved ?? { key: uuid(), body };
+    persist(storageKey, pending);
+    try {
+      const request = method === 'PATCH' ? workbenchPatch : workbenchDelete;
+      const result = await request(`${base}/${cid}`, pending.body, pending.key);
+      if (!live.current) return;
+      persist(storageKey, null);
+      // An unknown earlier result is settled before accepting a different edit.
+      if (JSON.stringify(pending.body) !== JSON.stringify(body)) return manageThread(cid, method, body);
+      setError('');
+      return result.body;
+    } catch (err) {
+      if (err.problem?.status >= 400 && err.problem.status < 500) persist(storageKey, null);
+      setError(err.problem?.title ?? err.problem?.message ?? '操作未完成，请查看结果');
+      throw err;
+    }
+  }
+  async function patchThread(cid, patch) {
+    await manageThread(cid, 'PATCH', patch);
+    if (live.current) await refreshList();
+  }
+  async function deleteThread(cid) {
+    await manageThread(cid, 'DELETE', {});
+    if (!live.current) return;
+    for (const suffix of ['', ':send']) localStorage.removeItem(prefix + cid + suffix);
+    if (current.current.id === cid) {
+      const history = (await workbenchGet(base)).body.items;
+      if (!live.current) return;
+      setList(history);
+      if (history.length) setId(history[0].id);
+      else { setId(null); setSnapshot(null); setDraft(null); await create(); }
+    }
+    await refreshList();
+  }
   async function send() {
     if (busy) return; setBusy(true); setError('');
     try {
@@ -158,11 +199,24 @@ export function AgentProvider({ accountKey, children }) {
   }
   async function stop(turn) { try { await workbenchPost(`${base}/${turn.conversationId}/turns/${turn.id}/stop`, {}, uuid()); } catch { setError(t("停止尚未确认，请重试")); } }
   async function reconcile(operationId) { try { await workbenchPost(`${base}/${id}/operations/${operationId}/reconcile`, {}, uuid()); } catch { setError(t("暂时无法确认结果，请重试")); } }
+  async function executeProposal(proposalId, slot) {
+    const conversationId = id;
+    let { body: operation } = await workbenchPost(`${base}/${conversationId}/proposals/${proposalId}/execute`, { slot }, uuid());
+    // Acceptance only prepares the operation. Await its persisted business result.
+    for (let attempt = 0; ['prepared', 'executing'].includes(operation.state); attempt++) {
+      if (attempt >= 60 || !live.current) throw new Error('Operation pending');
+      await new Promise(resolve => setTimeout(resolve, 500));
+      const { body } = await workbenchGet(`${base}/${conversationId}`);
+      operation = body.operations.find(value => value.id === operation.id) ?? operation;
+    }
+    return operation;
+  }
   async function addReference(kind, objectId) {
-    if (kind !== 'question') return;
+    const paths = { question: '/api/modules/questions/v2/items/', resource: '/api/modules/resources/items/', entry: '/api/modules/schedule/entries/' };
+    if (!paths[kind]) return;
     if (!id) { setError(t("请先新建对话")); return; }
     try {
-      const { body } = await workbenchGet(`/api/modules/questions/v2/items/${objectId}`);
+      const { body } = await workbenchGet(paths[kind] + encodeURIComponent(objectId));
       const input = { kind, id: objectId, version: body.version };
       const refs = draftRef.current?.references ?? [];
       edit({ references: [...refs.filter(r => !(r.kind === kind && r.id === objectId)), input] });
@@ -172,7 +226,7 @@ export function AgentProvider({ accountKey, children }) {
     status: ({ '仅保留在此设备': t('仅保留在此设备'), '草稿已保存': t('草稿已保存'), '保存中': t('保存中') })[status] ?? status,
     error: error === '连接中断，正在恢复已保存内容' ? t('连接中断，正在恢复已保存内容') : error,
     conflict, busy, model, setModel, configuration,
-    edit, save, create, send, stop, reconcile, chooseDraft, addReference, retry: refreshList, prefix }}><AgentPresentationProvider key={accountKey}>{children}</AgentPresentationProvider></Context.Provider>;
+    edit, save, create, send, stop, reconcile, executeProposal, chooseDraft, addReference, patchThread, deleteThread, retry: refreshList, prefix }}><AgentPresentationProvider key={accountKey}>{children}</AgentPresentationProvider></Context.Provider>;
 }
 
 export function clearAgentDeviceData(account) {

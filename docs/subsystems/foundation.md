@@ -85,7 +85,9 @@ Job 内部 Interface：`jobs.enqueue({principal, kind, target}, mutation)` 在�
 
 [apps/api/src/workbench/reliability/](../../apps/api/src/workbench/reliability) 拥有个人资料包、维护锁、停服备份与恢复，制品格式归同目录 `archive.schema.json`，装配在 `schema.js`。个人导出受理事务同步调用各模块 `port.readForExport(principal)`，读取业务值、历史和专属证据，不补写默认设置或结算提醒；`portable.js` 组装关系与附件，异步打包在受理提交后执行。模块存储改变时同步其只读导出端口。
 
-维护入口为 `node apps/api/src/scripts/reliability.js --help`；backup/restore/activate 的停服、独占目录及物理隔离要求见[恢复契约](../contracts/data.md#部署备份与还原)。认证清理调用[认证恢复端口](identity.md#恢复与账户生命周期)，外层不拼认证表 SQL。Web `features/reliability/DataManagement.jsx` 被设置的真实导出调用；导出列表移除只写账户设备现场 `export-packages.hidden`，不调用不存在的服务端删除；主应用没有设备草稿查看、下载或清理管理入口；已移除旧 RecoveryDrafts 与 workbench/deviceData，隔离 archive/恢复底座继续按数据契约保护既有内容。
+维护入口为 `node apps/api/src/scripts/reliability.js --help`；backup/restore/activate 的停服、独占目录及物理隔离要求见[恢复契约](../contracts/data.md#部署备份与还原)。认证清理调用[认证恢复端口](identity.md#恢复与账户生命周期)，外层不拼认证表 SQL。Web `features/reliability/DataManagement.jsx` 被设置的真实导出调用；列表删除通过 `POST /exports/:id/deletion` 取消并等待生成任务、撤销下载、移除 ZIP 与临时包，保留业务原件，未确认结果沿原键核实。主应用没有设备草稿查看、下载或清理管理入口；隔离 archive/恢复底座继续按数据契约保护既有内容。
+
+`agentRecoveryGuard` 同时保护恢复前操作的 reconcile 和提案卡 execute 入口。提案槽定位到既存 Operation 后仍核对恢复冻结表，不能借再次点击绕过时间点恢复保护；正常进程重启按助理 journal 接续。个人资料包完整保留 conversation snapshot 中的标题、置顶、引用、提案与执行记录，正文及关系投影沿 `portable.js`。
 
 ## 工作台外壳、偏好与支持页
 
@@ -93,7 +95,7 @@ Job 内部 Interface：`jobs.enqueue({principal, kind, target}, mutation)` 在�
 
 `chrome/` 拥有侧栏、顶栏、品牌、搜索、通知、引导及相关外壳组件；`useLayoutModel.js` 消费真实导航保存、重试与冲突状态。模块右轨持续挂载，`AuxiliaryPanel.jsx` 的助理栏通过开闭状态覆盖右轨；具体尺寸与过渡只由共享样式和设计输入维护。
 
-`styles/` 持有公共 tokens、字体、共享控件与界面呈现样式，`chrome/chrome.css` 拥有外壳组合，`appearance.css` 保留偏好应用所需适配。WorkbenchApp 将同一账户偏好传给顶栏、侧栏、模块、菜单与弹层。`useScene(accountKey, 'custom-appearance')` 单独拥有设备内自定义背景图，不发送到服务端 preferences；主题、既有背景、语言和头像继续使用真实偏好接口。学期组织和反馈记录同样是账户隔离的设备现场，不能按导航与通知的真实接口推定为服务端数据。
+`styles/` 持有公共 tokens、字体、共享控件与界面呈现样式，`chrome/chrome.css` 拥有外壳组合，`appearance.css` 保留偏好应用所需适配。WorkbenchApp 将同一账户偏好传给顶栏、侧栏、模块、菜单与弹层。自定义背景 `custom/backgroundImage` 与主题、预设背景、语言和头像通过同一版本化 preferences 保存；图片由服务端校验格式和实际解码。原设备 `custom-appearance` 只供旧选择迁移和明确重选，不覆盖已保存的服务器偏好。学期组织和反馈记录仍为账户隔离的设备现场，用户已暂缓其真实接线。
 
 语言词库在 [i18n/locales/](../../apps/web/src/i18n/locales)，界面迁移文案在 [presentationResources.js](../../apps/web/src/i18n/presentationResources.js)，均由 i18next/react-i18next 消费。[presentation.js](../../apps/web/src/i18n/presentation.js) 提供 `tx`、语言与日期 helpers；教师正文及导出内容不参与翻译。
 
@@ -101,9 +103,9 @@ Job 内部 Interface：`jobs.enqueue({principal, kind, target}, mutation)` 在�
 
 工作台的“载入一周的示例数据”由用户明确触发。[seedSampleWeek](../../apps/web/src/features/workbench/demo/seed.js) 顺序调用 [workspace](../../apps/web/src/features/workbench/demo/workspace.js) 的题目、资源、日程与数学准备及 [classroom](../../apps/web/src/features/workbench/demo/classroom.js) 的班级、考试、Excel 校对确认。示例 JSON、xlsx 与 PDF 资产归该源码目录，通过正常模块及资产导入构建，不从 docs 或 E2E fixture 加载运行代码。
 
-示例内容的权威输入为 [question-data.js](../../apps/web/src/features/workbench/demo/question-data.js) 与 [classroom-data.json](../../apps/web/src/features/workbench/demo/classroom-data.json)。修改这些内容后，从仓库根目录运行 `node scripts/demo/generate-sample-assets.mjs`，由[生成器](../../scripts/demo/generate-sample-assets.mjs)通过已安装的 xlsx、KaTeX 与 Playwright Chromium 重建三份原卷 PDF 和五份成绩 xlsx；随代码保留这些可重建资产，正常启动不执行生成器。
+示例题目输入为 [question-data.js](../../apps/web/src/features/workbench/demo/question-data.js)，班级、考试和成绩输入为 [classroom-data.json](../../apps/web/src/features/workbench/demo/classroom-data.json)。修改成绩内容后，从仓库根目录运行 `node scripts/demo/generate-sample-assets.mjs`，由[生成器](../../scripts/demo/generate-sample-assets.mjs)通过 xlsx 重建五份成绩表；随代码保留这些可重建资产，正常启动不执行生成器。示例考试按原型不附原卷，不再生成或上传替代原卷。
 
-每步保留账户范围的原请求体、幂等键与已确认对象 ID，失败接续继续原步骤；上传字节独立保留在 `teachbuddy-sample-week` IndexedDB，删号确认后由 `accountDeviceData` 调用 `clearSampleWeekDeviceData` 清理；时间点恢复由 `deviceRecovery` 按 `pending:sample-week:*` 指针转入原有恢复隔离，不自动重发。已确认步骤不因重复点击或恢复而新建。业务记录通过普通真实 API 保存，既有账户内容继续保留。它与助理脚本回答的本地模拟是两种职责，不能将示例数据标为仅存在于内存，也不能以示例回答证明真实模型能力。当前候选的完整载入与恢复验证查任务记录。
+每步保留账户范围的原请求体、幂等键与已确认对象 ID，失败接续继续原步骤；上传字节独立保留在 `teachbuddy-sample-week` IndexedDB，删号确认后由 `accountDeviceData` 调用 `clearSampleWeekDeviceData` 清理；时间点恢复由 `deviceRecovery` 按 `pending:sample-week:*` 指针转入原有恢复隔离，不自动重发。已确认步骤不因重复点击或恢复而新建。业务记录通过普通真实 API 保存，既有账户内容继续保留。载入示例不创建模拟助理会话，也不证明真实模型效果。当前候选的完整载入与恢复验证查任务记录。
 
 ## 验证入口
 

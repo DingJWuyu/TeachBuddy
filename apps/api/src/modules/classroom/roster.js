@@ -55,16 +55,17 @@ export function createRoster({
       return get(kind, p, id);
     },
     list(kind, p, q = {}) {
-      if (kind === 'students') {
-        active(get('classes', p, q.classId));
+      if (kind === 'students' && q.classId) {
+        const cls = get('classes', p, q.classId);
+        if (q.deleted !== 'deleted') active(cls);
       }
-      if (kind === 'records') {
+      if (kind === 'records' && q.subjectId) {
         subject(p, {
           scope: q.scope,
           subjectId: q.subjectId
-        });
+        }, q.deleted !== 'deleted');
       }
-      const values = r.list(kind, account(p)).filter(v => kind !== 'students' || v.classId === q.classId).filter(v => kind !== 'records' || v.scope === q.scope && v.subjectId === q.subjectId);
+      const values = r.list(kind, account(p)).filter(v => kind !== 'students' || !q.classId || v.classId === q.classId).filter(v => kind !== 'records' || !q.subjectId || v.scope === q.scope && v.subjectId === q.subjectId);
       return listed(values, q, kind === 'records');
     },
     create(kind, p, body) {
@@ -141,8 +142,16 @@ export function createRoster({
     deletion(kind, p, id, body) {
       const old = get(kind, p, id);
       version(old, body.baseVersion);
-      if (!body.deleted && kind === 'students') {
-        checkStudent(p, old, id);
+      if (!body.deleted && ['students', 'records'].includes(kind)) {
+        const student = kind === 'students' ? old : old.scope === 'student' ? get('students', p, old.subjectId) : null;
+        const cls = get('classes', p, student ? student.classId : old.subjectId);
+        if (cls.deletedAt) {
+          throw conflict('restore-class-required');
+        }
+        if (kind === 'records' && student?.deletedAt) {
+          throw conflict('restore-student-required');
+        }
+        if (kind === 'students') checkStudent(p, old, id);
       }
       if (kind === 'students' && body.deleted) {
         removeSeat(p, old);

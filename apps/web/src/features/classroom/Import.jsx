@@ -228,9 +228,9 @@ export function ImportDialog({ ctx, examId: givenExam, classId: givenClass, onCl
           <Field label={tx('到第几行')}><input inputMode="numeric" value={mapping.lastRow ?? ''} onChange={(e) => setMapping({ ...mapping, lastRow: Number(e.target.value) || null })} /></Field>
         </div>
         <div className="cr-form-row is-4">
-          <ColSelect label={tx('姓名')} value={mapping.nameCol} onChange={(v) => setMapping({ ...mapping, nameCol: v })} />
+          <ColSelect label={tx('姓名')} optional value={mapping.nameCol} onChange={(v) => setMapping({ ...mapping, nameCol: v })} />
           <ColSelect label={tx('学号')} optional value={mapping.numberCol} onChange={(v) => setMapping({ ...mapping, numberCol: v })} />
-          <ColSelect label={tx('总分')} value={mapping.totalCol} onChange={(v) => setMapping({ ...mapping, totalCol: v })} />
+          <ColSelect label={tx('总分')} optional value={mapping.totalCol} onChange={(v) => setMapping({ ...mapping, totalCol: v })} />
           <ColSelect label={tx('缺考')} optional value={mapping.absentCol} onChange={(v) => setMapping({ ...mapping, absentCol: v })} />
         </div>
         <details className="cr-import-questions" open={Object.keys(mapping.questionCols).length > 0 && Object.keys(mapping.questionCols).length < exam.questions.length}>

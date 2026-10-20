@@ -27,14 +27,14 @@ export function createAgent({ db, mutations, identity, trustedOrigins, operation
   function references(principal, refs, sending) {
     const seen = new Set();
     return refs.map((ref, index) => {
-      const key = `${ref.kind}:${ref.id}:${ref.sectionId ?? ''}`;
+      const key = `${ref.kind}:${ref.id}:${ref.kind === 'question' ? ref.sectionId ?? '' : ref.originDate ?? ''}`;
       if (seen.has(key)) throw contractError(problems.invalidInput(`/body/references/${index}`, 'invalid-type'));
       seen.add(key);
-      const object = operations['getQuestion']({ principal, arguments: { id: ref.id } }).body;
-      if (sending && (object.version !== ref.version || object.deletedAt !== null || (ref.sectionId && !object.sections.some(s => s.id === ref.sectionId)))) {
+      const { object, snapshot = object } = operations.readReference(principal, ref);
+      if (sending && (object.version !== ref.version || object.deletedAt !== null || (ref.kind === 'question' && ref.sectionId && !object.sections?.some(section => section.id === ref.sectionId)) || (ref.kind === 'entry' && snapshot.occurrence && snapshot.occurrence.state !== 'active'))) {
         throw agentError('reference-conflict', { field: `/body/references/${index}`, currentVersion: object.version });
       }
-      return { input: ref, title: object.title, snapshot: object, capturedAt: timestamp() };
+      return { input: ref, title: object.title, snapshot, capturedAt: timestamp() };
     });
   }
   function write(schema, handler, after) {
@@ -64,6 +64,19 @@ export function createAgent({ db, mutations, identity, trustedOrigins, operation
     validateIdPath(req.params.conversationId); validateNoQuery(req.query);
     res.json(store.snapshot(account(req), req.params.conversationId));
   });
+  router.patch('/conversations/:conversationId', write('ConversationPatch', req => ({ status: 200,
+    body: store.update(account(req), req.params.conversationId, d => {
+      if (req.body.title !== undefined) d.snapshot.conversation.title = req.body.title.trim();
+      if (req.body.pinned !== undefined) d.snapshot.conversation.pinned = req.body.pinned;
+      return d.snapshot.conversation;
+    }, { touch: false })
+  })));
+  router.delete('/conversations/:conversationId', write('EmptyCommand', req => {
+    const doc = store.snapshot(account(req), req.params.conversationId);
+    if (doc.turns.some(t => t.state === 'running')) throw agentError('turn-active');
+    if (doc.operations.some(o => ['prepared', 'executing', 'unconfirmed'].includes(o.state))) throw agentError('pending-operation');
+    return { status: 200, body: store.remove(account(req), req.params.conversationId) };
+  }));
   router.put('/conversations/:conversationId/draft', write('DraftInput', req => ({ status: 200,
     body: store.update(account(req), req.params.conversationId, (d, emit) => {
       if (d.snapshot.draft.version !== req.body.baseVersion) throw agentError('draft-conflict', { currentVersion: d.snapshot.draft.version });
@@ -98,6 +111,14 @@ export function createAgent({ db, mutations, identity, trustedOrigins, operation
       return turn;
     })
   }), (req) => runtime.stop(req.params.turnId)));
+  router.post('/conversations/:conversationId/proposals/:proposalId/execute', write('ExecuteProposal', req => {
+    const key = account(req);
+    store.read(key, req.params.conversationId);
+    if (active(key)) throw agentError('turn-active');
+    return { status: 200, body: executor.prepareProposal(key, req.params.conversationId, req.params.proposalId, req.body.slot) };
+  }, (req, operation) => {
+    try { executor.executeOperation(account(req), req.params.conversationId, operation.id, req.workbenchPrincipal); } catch { /* Persisted journal supplies recovery. */ }
+  }));
   router.post('/conversations/:conversationId/operations/:operationId/reconcile', write('EmptyCommand', req => {
     const d = store.read(account(req), req.params.conversationId);
     if (!d.snapshot.operations.some(o => o.id === req.params.operationId)) throw contractError(problems.notFound());

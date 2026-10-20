@@ -4,7 +4,7 @@
 
 ## 装配与持久化
 
-[AgentProvider](../../apps/web/src/features/agent/AgentProvider.jsx) 的 `useAgent` 仍是会话、草稿、发送、SSE、停止及真实工具结果的业务入口；点击发送时固定文字、引用与模型，再等待草稿持久化并提交固定版本。等待期间的新输入独立保留，发送未决期间暂停自动上传，不禁止编辑。[AgentPresentation](../../apps/web/src/features/agent/AgentPresentation.jsx) 只叠加账户设备内的会话重命名、置顶、隐藏及显式选择的示例对话。仅脚本生成回答与会话呈现状态留在本设备，真实对话不经示例脚本；“载入一周的示例数据”与结果卡存题/添加日程经现有 API 真实写入，业务记录由各模块保存，接线见[外壳示例入口](foundation.md#显式载入示例)。新增引用及结构化结果卡缺少真实协议的范围见 [buffer](../../buffer.md#当前发现)。
+[AgentProvider](../../apps/web/src/features/agent/AgentProvider.jsx) 的 `useAgent` 仍是会话、草稿、发送、SSE、停止及真实工具结果的业务入口；点击发送时固定文字、引用与模型，再等待草稿持久化并提交固定版本。等待期间的新输入独立保留，发送未决期间暂停自动上传，不禁止编辑。[AgentPresentation](../../apps/web/src/features/agent/AgentPresentation.jsx) 只叠加显式选择的设备示例对话；真实会话管理由 AgentProvider 调用 PATCH/DELETE，状态保存到会话 store，删除前保护生成与未决 journal。旧设备示例仅保留历史查看，不再生成脚本回答或执行其卡片；“载入一周的示例数据”仍经真实 API 保存业务记录，接线见[外壳示例入口](foundation.md#显式载入示例)。真实引用由 Agent 接受事务捕获 question/resource/entry 公开快照；教学提案由持久 ToolCall 保存，点击执行由 Operation.proposalSource 定位，详见[契约](../contracts/agent.md#教学提案与点击执行)。
 
 Web [apps/web/src/features/agent/](../../apps/web/src/features/agent)，API [apps/api/src/agent/](../../apps/api/src/agent)；入口由 WorkbenchApp 组合。
 
@@ -43,6 +43,6 @@ GOAT API 消耗账户 credits，不等于无限免费；Provider 返回 cost=0 �
 
 ## 业务端口与验证
 
-[apps/api/src/agent/business.js#connectBusinessOperations](../../apps/api/src/agent/business.js) 适配题库兼容 operations 与当前 v2 材料操作；副本只读查询调用 [materials-operations](../../apps/api/src/modules/questions/materials-operations.js) 的 `listQuestionCopiesForAgent`，不从 HTTP router 构造工具。其他模块真实可调用面从[各技术页](README.md)核对，日程只读 port 不能直接冒充幂等写入口。首批工具由机器 schema 的 `x-agent-tools` 封闭定义；四模块扩展仍按[未来扩展](../contracts/agent.md#四模块扩展契约)形成现行 schema 后接入。
+[apps/api/src/agent/business.js#connectBusinessOperations](../../apps/api/src/agent/business.js) 适配题库兼容 operations 与当前 v2 材料操作；副本只读查询调用 [materials-operations](../../apps/api/src/modules/questions/materials-operations.js) 的 `listQuestionCopiesForAgent`，不从 HTTP router 构造工具。资源和日程引用使用各模块同步 readReference 端口，以便同事务捕获版本；提案创建题目使用 questions.port.operations.createQuestionV2，创建日程使用 schedule.port.operations.createEntry，后者保留原校验、mutations 与提醒结算。当前工具由机器 schema 的 `x-agent-tools` 封闭定义；提案生成只保存结构化结果，`proposals.js` 将已持久卡片转换为业务请求，`tools.js` 复用原 Operation/journal 执行及核实。四模块扩展仍按[未来扩展](../contracts/agent.md#四模块扩展契约)形成现行 schema 后接入。
 
 确定性 HTTP/浏览器与保留库 live 入口见[验证选择](../acceptance/README.md#模块与底座入口)；真实模型必须有本次授权，回放、人工 HTTP 或固定回答不能代签真实业务调用。

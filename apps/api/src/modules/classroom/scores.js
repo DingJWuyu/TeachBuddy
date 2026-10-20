@@ -48,6 +48,12 @@ export function validateScores(exam, rows, {
     if (row.status !== 'present' && (row.totalScore !== null || Object.values(row.scores).some(v => v !== null))) {
       error('attendance-score-conflict', '缺考和未录入不能带有分数。', row);
     }
+    if (row.status === 'present' && row.totalScore === null) {
+      issues.push(issue('warning', 'missing-total', '没有总分，这次不参与排名', {
+        sourceRow: row.sourceRow ?? null,
+        studentId: row.studentId
+      }));
+    }
     const known = exam.questions.filter(q => row.scores[q.id] !== null && row.scores[q.id] !== undefined);
     if (row.status === 'present' && known.length < exam.questions.length) {
       issues.push(issue('warning', 'missing-question-score', '部分题目缺分，统计只使用已知分数。', {
@@ -67,7 +73,9 @@ export function validateScores(exam, rows, {
   if (exam.questions.reduce((s, q) => s + cents(q.maxScore), 0) !== cents(exam.totalMax)) {
     issues.push(issue('warning', 'partial-question-coverage', '计分题满分合计未覆盖整卷总分。'));
   }
-  if (exam.source.some(s => s.renditionFileId === null) || exam.questions.some(q => !q.locations.length)) {
+  if (!exam.source.length) {
+    issues.push(issue('warning', 'source-not-ready', '未上传原卷，看题时缺少证据。'));
+  } else if (exam.source.some(s => s.renditionFileId === null) || exam.questions.some(q => !q.locations.length)) {
     issues.push(issue('warning', 'location-not-ready', '部分原题尚未定位，可从原卷回看。'));
   }
   if (!draft && issues.some(i => i.severity === 'error')) {

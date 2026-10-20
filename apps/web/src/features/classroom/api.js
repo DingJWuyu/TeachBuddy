@@ -49,9 +49,10 @@ export function createClassroomApi({ accountKey, transport, getSignal, onIdentit
       let problem = problemFromResponse(response.status, value);
       if (response.status === 409 && value?.type?.startsWith('/problems/workbench/classroom-')) {
         const copy = {
+          'restore-class-required': '请先恢复所属班级', 'restore-student-required': '请先恢复所属学生',
           'student-number-conflict': '同班学号不能重复', 'tag-name-conflict': '标签名称已存在', 'tag-merged': '标签已合并，请重新选择',
           'question-in-use': '这道题已有成绩，不能移除', 'import-baseline-conflict': '内容已在别处更新，请刷新后再试。',
-          'import-review-required': '还有需要校对的问题', 'exam-material-required': '请先上传原卷', 'import-confirmed': '成绩已保存',
+          'import-review-required': '还有需要校对的问题', 'import-confirmed': '成绩已保存',
         };
         const code = value.type.slice('/problems/workbench/classroom-'.length);
         problem = { ...problem, kind: 'conflict', message: tx(copy[code] || '内容已在别处更新，请刷新后再试。') };
@@ -154,20 +155,14 @@ export function createClassroomApi({ accountKey, transport, getSignal, onIdentit
       return { ...value, classes: await Promise.all(value.classes.map(async c => c.point ? { ...await classPoint(c.point), classId: c.class.id, name: c.class.name } : { ...c, classId: c.class.id, name: c.class.name })) };
     }
     if (params.state === 'deleted') { params = { ...params, deleted: 'deleted' }; delete params.state; }
-    if (path === '/students' && !params.classId) {
+    if (path === '/students' && !params.classId && !params.deleted) {
       const groups = await Promise.all(classes.map(c => rawGet(path, { ...params, classId: c.id })));
       const items = groups.flatMap(g => g.items).map(studentView);
       if (!params.deleted) students = items;
       return { items };
     }
-    if (path === '/records') {
-      if (params.classId || params.studentId) {
-        params = { ...params, scope: params.classId ? 'class' : 'student', subjectId: params.classId || params.studentId }; delete params.classId; delete params.studentId;
-      } else if (params.deleted) {
-        const subjects = [...classes.map(c => ({ scope: 'class', subjectId: c.id })), ...students.map(s => ({ scope: 'student', subjectId: s.id }))];
-        const groups = await Promise.all(subjects.map(s => rawGet(path, { ...params, ...s })));
-        return { items: groups.flatMap(g => g.items).map(recordView) };
-      }
+    if (path === '/records' && (params.classId || params.studentId)) {
+      params = { ...params, scope: params.classId ? 'class' : 'student', subjectId: params.classId || params.studentId }; delete params.classId; delete params.studentId;
     }
     const value = await rawGet(path, params);
     if (path === '/classes' && !params.deleted) classes = value.items;

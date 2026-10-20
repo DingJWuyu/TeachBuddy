@@ -69,25 +69,27 @@ function WorkbenchContent({ boot }) {
   const layoutModel = useLayoutModel(accountKey, generation);
   const [surface, setSurface] = useState(null);
   const preferences = usePreferences(accountKey, generation);
-  const [localAppearance, patchLocalAppearance] = useScene(accountKey, 'custom-appearance', {
+  const [localAppearance] = useScene(accountKey, 'custom-appearance', {
     customBackground: false, backgroundImage: ''
   });
   const appearance = useMemo(() => ({
     theme: 'light', background: 'grid', avatar: '', ...preferences.input,
-    ...(localAppearance.customBackground ? { background: 'custom' } : {}),
-    backgroundImage: localAppearance.backgroundImage || ''
-  }), [preferences.input, localAppearance]);
+    backgroundImage: preferences.input?.backgroundImage || localAppearance.backgroundImage || ''
+  }), [preferences.input, localAppearance.backgroundImage]);
   const setAppearance = useCallback(patch => {
-    const { backgroundImage, ...supported } = patch;
-    const localPatch = {};
-    if (backgroundImage !== undefined) localPatch.backgroundImage = backgroundImage;
-    if (patch.background !== undefined) {
-      localPatch.customBackground = patch.background === 'custom';
-      if (localPatch.customBackground) delete supported.background;
+    preferences.setInput(values => ({ ...values, ...patch,
+      ...(patch.background === 'custom' && !patch.backgroundImage && !values.backgroundImage
+        ? { backgroundImage: localAppearance.backgroundImage || '' } : {})
+    }));
+  }, [preferences.setInput, localAppearance.backgroundImage]);
+  useEffect(() => {
+    // Only an untouched account can adopt the old device choice automatically.
+    // Otherwise retain the device image for explicit selection without replacing
+    // a newer server preference or an unresolved preference draft.
+    if (preferences.status === 'clean' && preferences.baseline?.updatedAt === null && localAppearance.customBackground && localAppearance.backgroundImage) {
+      preferences.setInput(values => ({ ...values, background: 'custom', backgroundImage: localAppearance.backgroundImage }));
     }
-    if (Object.keys(localPatch).length) patchLocalAppearance(localPatch);
-    if (Object.keys(supported).length) preferences.setInput(values => ({ ...values, ...supported }));
-  }, [preferences.setInput, patchLocalAppearance]);
+  }, [preferences.status, preferences.baseline, preferences.setInput, localAppearance]);
   const locale = preferences.input?.locale || 'zh-CN';
   const setLocale = useCallback(locale => preferences.setInput(values => ({ ...values, locale })), [preferences.setInput]);
   useLayoutEffect(() => { void i18n.changeLanguage(locale); }, [locale]);
