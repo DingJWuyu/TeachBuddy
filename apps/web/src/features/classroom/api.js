@@ -21,6 +21,13 @@ const recordView = r => ({ ...r, date: r.occurredOn, body: r.text, subject: { ki
 const questionView = q => ({ ...q, group: q.groupLabel || '', fullScore: q.maxScore, known: q.observedCells, missing: q.missingCount, state: q.reason || 'ok' });
 const mappingBody = m => ({ sheetIndex: m.sheet, headerRow: m.headerRow, firstDataRow: m.firstRow, lastDataRow: m.lastRow, nameColumn: m.nameCol, studentNumberColumn: m.numberCol, totalColumn: m.totalCol, attendanceColumn: m.absentCol, questionColumns: Object.entries(m.questionCols).map(([questionId, column]) => ({ questionId, column })), ignoredRows: [] });
 const rowBody = row => ({ sourceRow: row.sourceRow, studentId: row.studentId, status: row.status, totalScore: row.status === 'present' ? row.total : null, scores: row.status === 'present' ? row.scores : {}, ignored: row.ignored });
+const importIssueView = issue => ({
+  ...issue,
+  code: ['score-out-of-range', 'total-out-of-range'].includes(issue.code) ? 'out-of-range' : issue.code,
+  level: issue.severity,
+  field: issue.questionId || (issue.code === 'total-out-of-range' || issue.field === 'totalScore' ? 'total' : issue.field),
+});
+
 
 /** Owns the classroom DTO translation and one exact persisted logical write.
  * Replaying after reload retains its request key, payload and account scope. */
@@ -74,7 +81,7 @@ export function createClassroomApi({ accountKey, transport, getSignal, onIdentit
     const rows = d.rows.map(row => {
       const source = d.workbook.sheets[m?.sheetIndex || 0].rows.find(r => r.rowNumber === row.sourceRow);
       const display = col => source?.cells.find(c => c.column === col)?.display || '';
-      return { ...row, total: row.totalScore, source: { name: display(m?.nameColumn), studentNo: display(m?.studentNumberColumn) }, issues: issues.filter(i => i.sourceRow == null || i.sourceRow === row.sourceRow).map(i => ({ ...i, level: i.severity, field: i.questionId || (i.field === 'totalScore' ? 'total' : i.field) })) };
+      return { ...row, total: row.totalScore, source: { name: display(m?.nameColumn), studentNo: display(m?.studentNumberColumn) }, issues: issues.filter(i => i.sourceRow == null || i.sourceRow === row.sourceRow).map(importIssueView) };
     });
     return { ...d, mapping: m ? { sheet: m.sheetIndex, headerRow: m.headerRow, firstRow: m.firstDataRow, lastRow: m.lastDataRow, nameCol: m.nameColumn, numberCol: m.studentNumberColumn, totalCol: m.totalColumn, absentCol: m.attendanceColumn, questionCols: Object.fromEntries(m.questionColumns.map(q => [q.questionId, q.column])) } : null, fileName: files.get(d.sourceFileId)?.name || '', workbook: { ...d.workbook, sheets }, rows,
       unrecorded: roster.filter(s => !rows.some(r => !r.ignored && r.studentId === s.id)).map(s => s.id),

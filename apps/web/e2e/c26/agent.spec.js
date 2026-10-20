@@ -335,3 +335,109 @@ test('全站示例载入：上传回执丢失后刷新接续，保留已有分�
   await page.getByRole('button', { name: '去题库', exact: true }).click();
   await expect(page).toHaveURL(/\/questions$/);
 });
+
+async function savedQuestion(page, title) {
+  let pageId;
+  page.on('request', request => { pageId = request.headers()['x-teachbuddy-page'] ?? pageId; });
+  await register(page);
+  const { manualQuestionSample } = await import('../../../api/test/first-flow-harness.js');
+  const headers = () => ({ Origin: world.origin, 'X-TeachBuddy-Request': '1', 'X-TeachBuddy-Page': pageId, 'Idempotency-Key': crypto.randomUUID() });
+  const response = await page.request.post(world.origin + '/api/modules/questions/items', { headers: headers(), data: manualQuestionSample({ title }) });
+  expect(response.status()).toBe(201);
+  return { question: await response.json(), headers };
+}
+
+test('发送意图在点击时冻结，保存响应等待期间的新输入与新模型留给下一轮', async ({ page }) => {
+  const { provider } = await import('../../../api/test/fixtures/c26/provider.js');
+  const model = await provider([[{ type: 'text', text: '收到点击时的请求' }]]);
+  await world.close(); world = await startWorld({ agent: model.config });
+  await savedQuestion(page, '点击时引用的题目'); await page.locator('.tbx-composer.is-placeholder').click();
+  let entered, release;
+  const saving = new Promise(resolve => { entered = resolve; });
+  const held = new Promise(resolve => { release = resolve; });
+  let first = true;
+  await page.route('**/api/agent/conversations/*/draft', async route => {
+    if (route.request().method() === 'PUT' && first && route.request().postDataJSON().text === '点击发送时的A') { first = false; const response = await route.fetch(); entered(); await held; return route.fulfill({ response }); }
+    return route.continue();
+  });
+  let lost = false; const turns = [];
+  await page.route('**/api/agent/conversations/*/turns', async route => {
+    turns.push({ key: route.request().headers()['idempotency-key'], body: route.request().postDataJSON() });
+    if (!lost) { lost = true; const response = await route.fetch(); return route.abort(); }
+    return route.continue();
+  });
+  try {
+    const input = page.getByRole('textbox', { name: 'AI 输入' });
+    await input.fill('@点击时引用');
+    await page.getByRole('option', { name: '点击时引用的题目', exact: true }).click();
+    await input.fill('点击发送时的A'); await saving;
+    await page.getByRole('button', { name: '发送', exact: true }).click();
+    await input.fill('等待响应时的新B');
+    await page.locator('.tbx-drawer').getByRole('button', { name: '移除引用', exact: true }).click();
+    await page.getByRole('button', { name: '选择模型', exact: true }).click();
+    await page.getByRole('option', { name: /GLM/ }).click();
+    release();
+    await expect(page.getByRole('alert')).toContainText('发送尚未确认');
+    await expect(page.locator('.tbx-msg.is-user .tbx-bubble > p')).toHaveText('点击发送时的A');
+    await expect(page.locator('.tbx-msg.is-user .tbx-chip')).toContainText('点击时引用的题目');
+    await expect(page.locator('.tbx-drawer .tbx-chip')).toHaveCount(0);
+    await expect(input).toHaveValue('等待响应时的新B');
+    await page.getByRole('button', { name: '确认发送结果', exact: true }).click();
+    await expect(page.getByText('草稿已保存', { exact: true })).toBeVisible();
+    await expect(input).toHaveValue('等待响应时的新B');
+    expect(turns).toHaveLength(2); expect(turns[1]).toEqual(turns[0]);
+    expect(turns[0].body.modelId).toBe('deepseek/deepseek-v4.1-flash');
+    expect(model.requests()).toBe(1);
+    await page.reload(); await expect(input).toHaveValue('等待响应时的新B');
+  } finally { release(); }
+});
+
+test('同账户双标签页在题库列表各自阅读时，助理上下文留在本页题目', async ({ page, context }) => {
+  const { question, headers } = await savedQuestion(page, '甲页正在阅读的题');
+  const { manualQuestionSample } = await import('../../../api/test/first-flow-harness.js');
+  const response = await page.request.post(world.origin + '/api/modules/questions/items', { headers: headers(), data: manualQuestionSample({ title: '乙页独立阅读的题' }) });
+  expect(response.status()).toBe(201);
+  await page.goto(world.origin + '/questions');
+  await page.locator('.tbx-qn-row').filter({ hasText: question.title }).click();
+  await page.getByRole('button', { name: '打开 AI 助理', exact: true }).click();
+  await expect(page.locator('.tbx-panel-welcome')).toContainText(question.title);
+  const second = await context.newPage();
+  try {
+    await second.goto(world.origin + '/questions');
+    await second.locator('.tbx-qn-row').filter({ hasText: '乙页独立阅读的题' }).click();
+    await expect(second.locator('.q-question-title')).toContainText('乙页独立阅读的题');
+    await page.waitForTimeout(900);
+    await expect(page.locator('.q-question-title')).toContainText(question.title);
+    await expect(page.locator('.tbx-panel-welcome')).toContainText(question.title);
+  } finally { await second.close(); }
+});
+
+for (const kind of ['resource', 'entry']) test(`切换${kind}演示保留原文字和题目引用`, async ({ page }) => {
+  const { headers } = await savedQuestion(page, '原来引用的题目');
+  const date = new Date(); date.setDate(date.getDate() + 1);
+  if (kind === 'entry') {
+    const response = await page.request.post(world.origin + '/api/modules/schedule/entries', { headers: headers(), data: { title: '明天的数学课', items: [], time: { date: date.toISOString().slice(0, 10), startTime: '10:00', durationMinutes: 45, timeZone: 'UTC' }, repeat: null, reminder: null, calendar: { allDay: false, notes: '', tags: [] } } });
+    expect(response.status()).toBe(201);
+    await page.reload();
+  } else {
+    const upload = await page.request.post(world.origin + '/api/workbench/files', { headers: headers(), multipart: { file: { name: '复习提纲.txt', mimeType: 'text/plain', buffer: Buffer.from('期中复习提纲') } } });
+    expect(upload.status()).toBe(201);
+    const resource = await page.request.post(world.origin + '/api/modules/resources/items', { headers: headers(), data: { title: '期中复习提纲', fileId: (await upload.json()).id, folderId: null, tagIds: [], note: '' } });
+    expect(resource.status()).toBe(201);
+  }
+  await page.locator('.tbx-composer.is-placeholder').click();
+  const input = page.getByRole('textbox', { name: 'AI 输入' });
+  await input.fill('@原来引用'); await page.getByRole('option', { name: '原来引用的题目', exact: true }).click();
+  if (kind === 'resource') {
+    await input.fill('已经写好的备课思路 @期中复习');
+    await page.getByRole('option', { name: '期中复习提纲', exact: true }).click();
+  } else {
+    await input.fill('已经写好的备课思路 ');
+    await page.getByRole('button', { name: '哪节课', exact: true }).click();
+    await page.getByRole('option', { name: /明天的数学课/ }).click();
+  }
+  await expect(input).toHaveValue('已经写好的备课思路 ');
+  await expect(page.locator('.tbx-drawer .tbx-chip')).toHaveCount(2);
+  await expect(page.locator('.tbx-drawer')).toContainText('原来引用的题目');
+  await expect(page.locator('.tbx-drawer')).toContainText(kind === 'resource' ? '期中复习提纲' : '明天的数学课');
+});

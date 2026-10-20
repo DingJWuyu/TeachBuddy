@@ -199,7 +199,13 @@ export function ClassroomWorkspace({ api, shell }) {
       {dialog?.name === 'student' && <StudentForm ctx={ctx} {...dialog.props} onClose={close} />}
       {dialog?.name === 'exam' && <ExamForm ctx={ctx} {...dialog.props} onClose={close} />}
       {dialog?.name === 'import' && <ImportDialog ctx={ctx} {...dialog.props} onClose={close} />}
-      {dialog?.name === 'confirm' && <Confirm {...dialog.props} onClose={close} />}
+      {dialog?.name === 'confirm' && <Confirm {...dialog.props} onClose={close} onError={async error => {
+        close();
+        toast(error.message || tx('操作没有完成，请再试一次。'), 'error');
+        // Keep an unknown original request pending; a known rejection can safely
+        // refresh the facts before the teacher explicitly confirms again.
+        if (!['unconfirmed', 'identity'].includes(error.problem?.kind)) await reload();
+      }} />}
       {toastNode}
     </section>
   );

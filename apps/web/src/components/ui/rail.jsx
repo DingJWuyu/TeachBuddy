@@ -125,4 +125,3 @@ export function PrimaryButton({ icon = 'plus', label, onClick, disabled, compact
     </button>
   );
 }
-

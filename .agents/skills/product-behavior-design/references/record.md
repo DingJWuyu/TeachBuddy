@@ -1,22 +1,22 @@
 # Behavior records
 
-A package keeps one `behavior.md` for its session. The integrated reference uses a manifest and documents split by reference area or shared concern. Each behavior has one owner; other documents link to that owner.
+A package keeps one `behavior.md` for its session. The integrated reference uses the existing design-system entry and documents split by reference area or shared concern. Each behavior has one owner; other documents link to that owner.
 
 Keep journey, state, and scenario IDs stable across edits and document moves. Read existing ownership before assigning new IDs. Reuse shared rules by reference rather than repeating them in each journey.
 
-## Manifest
+## Design entry
 
-Keep the integrated manifest as an index:
+Use the existing README as the design entry. Maintain pointers where the accepted change requires them:
 
 - Run entry, prerequisites, and shared artifact locations.
-- Each behavior document's link, scope, acceptance status, and owned IDs.
+- The owning design sources and their scope. Preserve existing IDs where provided; package records hold the user's acceptance of the selected revision.
 - The project's authoritative product docs, and the boundary between prototype intent and current product requirements.
 
-Detailed behavior and scenario coverage belong in the owning documents.
+Detailed behavior belongs in the owning documents; execution coverage belongs in task evidence. Do not create a manifest or scenario taxonomy solely to match this format.
 
 ## Record format
 
-Use the sections below where applicable. A package includes its baseline delta and decision trail. Integrated documents omit those session sections and describe current reference behavior, rationale, limitations, and explicit accepted versus provisional scopes. Reference the manifest for shared run information.
+Use the sections below where applicable. A package includes its baseline delta and decision trail. Integrated documents omit those session sections and describe current reference behavior, rationale, and limitations using the existing document conventions. Reference the design entry for shared run information.
 
 ```markdown
 # <Scope> behavior

@@ -210,4 +210,3 @@
 :is(.wb-shell, .tbx-portal-host) :where(.wb-main, .wb-aux) input[type=checkbox] {
   accent-color: var(--tb-accent);
 }
-

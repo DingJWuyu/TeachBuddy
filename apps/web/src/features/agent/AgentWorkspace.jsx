@@ -4,7 +4,7 @@ import { Icon } from '../../components/icons.jsx';
 import { cx } from '../../components/ui/classNames.js';
 import { tx, useLocale, isEnglish, monthDay } from '../../i18n/presentation.js';
 import { workbenchGet, workbenchPost } from '../../platform/http/apiClient.js';
-import { isDeletedAccount } from '../../platform/device/storage.js';
+import { isDeletedAccount, readLocal } from '../../platform/device/storage.js';
 import { navigate } from '../workbench/routes.js';
 import { usePresentationAgent as useAgent } from './AgentPresentation.jsx';
 import { Prose, Inline } from './Prose.jsx';
@@ -16,7 +16,7 @@ import './agent.css';
 /*
  * The teaching assistant, shared by the home page and the side panel.
  *
- * Shaped after t3code's chat: the answer is plain reading text with no bubble
+ * The answer is plain reading text with no bubble
  * or avatar; the work the assistant did sits above it as quiet one-line rows
  * that fold into “查阅了 2 处 · 4 秒” once the answer starts; what it found
  * comes back as cards you can act on; and the composer is a glass slab with a
@@ -153,16 +153,9 @@ function useRefTitles(refs, agent) {
 }
 
 /* What the teacher is looking at right now, offered as context. */
-function selectedQuestionId(prefix) {
-  // The question bank keeps its selection in its own stored scene, not the URL.
-  try {
-    const store = localStorage;
-    const key = Object.keys(store).find((k) => k.includes(prefix) && k.endsWith(':questions-materials-scene') && !k.includes(':branch:') && !k.includes(':head:'));
-    const scene = key ? JSON.parse(store.getItem(key)) : null;
-    return scene?.kind === 'question' && scene.id ? scene.id : null;
-  } catch {
-    return null;
-  }
+function selectedQuestionId(accountKey) {
+  const scene = readLocal(accountKey, 'questions-materials-scene');
+  return scene?.kind === 'question' && scene.id ? scene.id : null;
 }
 function useCurrentContext(enabled, accountKey) {
   const path = useRoute();
@@ -199,8 +192,6 @@ function useCurrentContext(enabled, accountKey) {
   return ctx;
 }
 
-/* The app drops a send that lands while the draft is still autosaving, so try
-   again a moment later until the turn has started or the text has changed. */
 /* ---------- conversations: rename, pin, delete ---------- */
 
 
@@ -716,13 +707,13 @@ function Composer({ agent, running, ready, variant, autoFocus, focusKey, context
 
   function addRef(r) {
     const input = r.kind === 'question' ? { kind: r.kind, id: r.id, version: r.version } : { kind: r.kind, id: r.id };
-    if (r.kind !== 'question' && !agent.isDemo) { agent.startDemo(draft.text, [input]); return; }
+    if (r.kind !== 'question' && !agent.isDemo) { agent.startDemo(draft.text, [...refs.filter(x => !(x.kind === input.kind && x.id === input.id)), input]); return; }
     agent.edit({ references: [...refs.filter((x) => !(x.kind === r.kind && x.id === r.id)), input] });
   }
   function pick(r) {
     const text = draft.text.replace(/@([^\s@]*)$/, '');
     if (r && r.kind !== 'question' && !agent.isDemo) {
-      void agent.startDemo(text, [{ kind: r.kind, id: r.id }]);
+      void agent.startDemo(text, [...refs.filter(x => !(x.kind === r.kind && x.id === r.id)), { kind: r.kind, id: r.id }]);
     } else {
       if (r) addRef(r);
       if (text !== draft.text) agent.edit({ text });
@@ -1012,7 +1003,7 @@ export function AgentWorkspace({ variant = 'panel' }) {
   function prompt(text, ctx) {
     const refFrom = (c) => (c.kind === 'question' ? { kind: 'question', id: c.id, version: c.version } : { kind: c.kind, id: c.id });
     const extra = ctx ? refFrom(ctx) : lessonRef;
-    if (extra && extra.kind !== 'question' && !agent.isDemo) { agent.startDemo(text, [extra]); return; }
+    if (extra && extra.kind !== 'question' && !agent.isDemo) { agent.startDemo(text, [...(agent.draft?.references ?? []).filter(r => !(r.kind === extra.kind && r.id === extra.id)), extra]); return; }
     if (agent.draft) {
       const refs = agent.draft.references.filter((r) => !(extra && r.kind === extra.kind && r.id === extra.id));
       agent.edit({ text, references: extra ? [...refs, extra] : refs });
@@ -1076,7 +1067,7 @@ export function AgentWorkspace({ variant = 'panel' }) {
 
       {empty && variant === 'home' ? (
         <div className="tbx-empty-stage">
-          <Hero lessons={lessons} lesson={lesson} setLesson={next => { setLesson(next); if (next && !agent.isDemo) void agent.startDemo('', [{ kind: 'entry', id: next.id }]); }} />
+          <Hero lessons={lessons} lesson={lesson} setLesson={next => { setLesson(next); if (next && !agent.isDemo) void agent.startDemo(agent.draft?.text ?? '', [...(agent.draft?.references ?? []).filter(r => r.kind !== 'entry'), { kind: 'entry', id: next.id }]); }} />
           {dock}
           <Suggestions items={heroSuggestions} busy={agent.busy} onPrompt={(text) => prompt(text)} />
           <DemoSeed onSeeded={refreshLessons} />

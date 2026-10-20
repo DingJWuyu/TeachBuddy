@@ -90,7 +90,7 @@ export function Dialog({ title, subtitle, onClose, children, footer, wide, class
 }
 
 /* Confirmations use the shared dialog template (kit/confirm.jsx). */
-export function Confirm({ title, message, confirmLabel, danger, icon, onConfirm, onClose }) {
+export function Confirm({ title, message, confirmLabel, danger, icon, onConfirm, onClose, onError }) {
   return (
     <ConfirmDialog
       title={title}
@@ -98,7 +98,10 @@ export function Confirm({ title, message, confirmLabel, danger, icon, onConfirm,
       confirmLabel={confirmLabel}
       danger={Boolean(danger)}
       icon={icon || 'trash'}
-      onConfirm={async () => { await onConfirm(); onClose(); }}
+      onConfirm={async () => {
+        try { await onConfirm(); onClose(); }
+        catch (error) { await onError(error); }
+      }}
       onCancel={onClose}
     />
   );

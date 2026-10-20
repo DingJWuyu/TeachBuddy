@@ -433,4 +433,3 @@ export function whenLabel(e) {
   const day = offset === 0 ? tx('今天') : offset === 1 ? tx('明天') : offset === 2 ? tx('后天') : monthDay(e.date);
   return e.start ? `${day} ${e.start}` : day;
 }
-

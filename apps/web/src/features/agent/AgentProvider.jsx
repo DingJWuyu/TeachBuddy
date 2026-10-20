@@ -80,14 +80,14 @@ export function AgentProvider({ accountKey, children }) {
     const next = { ...draftRef.current, ...patch, dirty: true };
     draftRef.current = next; setDraft(next); persist(id, next); setStatus("仅保留在此设备");
   }
-  async function save() {
-    const cid = current.current.id, value = draftRef.current;
+  async function save(frozen) {
+    const cid = current.current.id, value = frozen ?? draftRef.current;
     if (!cid || !value || !value.dirty || saving.current || conflict) return value;
     saving.current = true; setStatus("保存中");
     let finishSaving;
     savingDone.current = new Promise(resolve => { finishSaving = resolve; });
     const pending = value.pending ?? { key: uuid(), body: { baseVersion: value.version, text: value.text, references: value.references } };
-    const held = { ...value, pending }; setDraft(held); draftRef.current = held; persist(cid, held);
+    const held = { ...(frozen ? draftRef.current : value), pending }; setDraft(held); draftRef.current = held; persist(cid, held);
     try {
       const { body } = await workbenchPut(`${base}/${cid}/draft`, pending.body, pending.key);
       if (!live.current || current.current.id !== cid) return null;
@@ -95,7 +95,7 @@ export function AgentProvider({ accountKey, children }) {
       const changed = latest.text !== pending.body.text || JSON.stringify(latest.references) !== JSON.stringify(pending.body.references);
       const next = changed ? { ...latest, version: body.version, pending: null, dirty: true } : { ...body, dirty: false };
       setDraft(next); draftRef.current = next; persist(cid, next); setStatus(changed ? "仅保留在此设备" : "草稿已保存"); setError('');
-      return next;
+      return frozen ? body : next;
     } catch (err) {
       if (!live.current || current.current.id !== cid) return null;
       setStatus("仅保留在此设备");
@@ -106,9 +106,9 @@ export function AgentProvider({ accountKey, children }) {
     } finally { saving.current = false; finishSaving(); }
   }
   useEffect(() => {
-    if (!draft?.dirty || draft.pending || conflict) return;
+    if (!draft?.dirty || draft.pending || conflict || busy || sendPending) return;
     const timer = setTimeout(() => void save(), 650); return () => clearTimeout(timer);
-  }, [draft, conflict]);
+  }, [draft, conflict, busy, sendPending]);
   async function chooseDraft(local) {
     const { body } = await workbenchGet(`${base}/${id}`);
     const next = local ? { ...draftRef.current, version: body.draft.version, pending: null, dirty: true } : { ...body.draft, dirty: false };
@@ -127,13 +127,20 @@ export function AgentProvider({ accountKey, children }) {
     if (busy) return; setBusy(true); setError('');
     try {
       const cid = id;
+      const prior = read(prefix + cid + ':send', null);
+      const intent = prior ?? structuredClone({ text: draftRef.current.text, references: draftRef.current.references, modelId: model });
       await savingDone.current;
       if (!live.current || current.current.id !== cid) return;
-      const prior = read(prefix + cid + ':send', null);
       let value = draftRef.current;
-      if (!prior && value.dirty) value = await save();
+      if (!prior && value.pending) {
+        value = await save();
+        if (!value) return;
+      }
+      if (!prior && (value.dirty || value.text !== intent.text || JSON.stringify(value.references) !== JSON.stringify(intent.references))) {
+        value = await save({ ...value, text: intent.text, references: intent.references, dirty: true, pending: null });
+      }
       if (!prior && (!value || value.dirty)) return;
-      const pending = prior ?? { key: uuid(), body: { draftVersion: value.version, modelId: model }, text: value.text, references: value.references };
+      const pending = prior ?? { key: uuid(), body: { draftVersion: value.version, modelId: intent.modelId }, text: intent.text, references: intent.references };
       persist(cid + ':send', pending); setSendPending(true);
       const { body } = await workbenchPost(`${base}/${cid}/turns`, pending.body, pending.key);
       if (!live.current || current.current.id !== cid) return;

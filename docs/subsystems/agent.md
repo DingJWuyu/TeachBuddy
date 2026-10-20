@@ -4,7 +4,7 @@
 
 ## 装配与持久化
 
-[AgentProvider](../../apps/web/src/features/agent/AgentProvider.jsx) 的 `useAgent` 仍是会话、草稿、发送、SSE、停止及真实工具结果的业务入口；发送先等待当前草稿保存结束，再提交固定草稿版本，等待期间的新输入独立保留。[AgentPresentation](../../apps/web/src/features/agent/AgentPresentation.jsx) 只叠加账户设备内的会话重命名、置顶、隐藏及显式选择的示例对话。仅脚本生成回答与会话呈现状态留在本设备，真实对话不经示例脚本；“载入一周的示例数据”与结果卡存题/添加日程经现有 API 真实写入，业务记录由各模块保存，接线见[外壳示例入口](foundation.md#显式载入示例)。新增引用及结构化结果卡缺少真实协议的范围见 [buffer](../../buffer.md#当前发现)。
+[AgentProvider](../../apps/web/src/features/agent/AgentProvider.jsx) 的 `useAgent` 仍是会话、草稿、发送、SSE、停止及真实工具结果的业务入口；点击发送时固定文字、引用与模型，再等待草稿持久化并提交固定版本。等待期间的新输入独立保留，发送未决期间暂停自动上传，不禁止编辑。[AgentPresentation](../../apps/web/src/features/agent/AgentPresentation.jsx) 只叠加账户设备内的会话重命名、置顶、隐藏及显式选择的示例对话。仅脚本生成回答与会话呈现状态留在本设备，真实对话不经示例脚本；“载入一周的示例数据”与结果卡存题/添加日程经现有 API 真实写入，业务记录由各模块保存，接线见[外壳示例入口](foundation.md#显式载入示例)。新增引用及结构化结果卡缺少真实协议的范围见 [buffer](../../buffer.md#当前发现)。
 
 Web [apps/web/src/features/agent/](../../apps/web/src/features/agent)，API [apps/api/src/agent/](../../apps/api/src/agent)；入口由 WorkbenchApp 组合。
 
