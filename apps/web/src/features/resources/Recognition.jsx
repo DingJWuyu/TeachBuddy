@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useEffect, useRef, useState } from "react";
-import { Icon } from "../workbench/chrome/icons.jsx";
+import { Icon } from "../../components/icons.jsx";
 import {
   ModuleDisclosure,
   ModulePresence,

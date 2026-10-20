@@ -81,7 +81,8 @@ test("独立普通进程重启保持同一origin、未知上传原键和新浏�
     await page.getByRole("checkbox").check();
     await page.getByRole("button", { name: "注册", exact: true }).click();
     await expect(page.locator(".wb-shell")).toBeVisible();
-    await page.getByRole("button", { name: "知道了", exact: true }).click();
+    const coach = page.getByRole("button", { name: "知道了", exact: true });
+  if (await coach.count()) await coach.click();
     await page
       .getByRole("navigation", { name: "功能模块" })
       .getByRole("link", { name: /^资源库/ })
@@ -95,7 +96,7 @@ test("独立普通进程重启保持同一origin、未知上传原键和新浏�
       } else await route.continue();
     });
     await page
-      .getByLabel("上传第一份资料", { exact: true })
+      .getByLabel("上传资料", { exact: true })
       .setInputFiles("test/fixtures/materials/c22.pdf");
     await expect(
       page.getByRole("button", { name: "重试确认原请求", exact: true }),
@@ -112,7 +113,8 @@ test("独立普通进程重启保持同一origin、未知上传原键和新浏�
     );
     await page.getByLabel("重新选择原文件", { exact: true }).setInputFiles("test/fixtures/materials/c22.pdf");
     expect((await retried).headers()["idempotency-key"]).toBe(key);
-    await page.getByRole("button", { name: "资料信息", exact: true }).click();
+    await expect(page.locator(".tbx-res-main")).toHaveAttribute("aria-busy", "false");
+    await page.locator(".tbx-res-open").filter({ hasText: "c22.pdf" }).click();
     await expect(page.getByLabel("资源名称")).toHaveValue("c22.pdf");
     await expect(page.getByAltText("第 1 页", { exact: true })).toBeVisible({
       timeout: 60000,

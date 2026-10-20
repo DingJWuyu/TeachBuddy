@@ -1,3 +1,4 @@
+import { confirmLogout } from './helpers.mjs';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -88,8 +89,9 @@ test('AUTH-T02: late schedule response is discarded after logout and another acc
   });
   await page.goto(world.origin + '/calendar?entry=' + entry.id); await received;
   // Client navigation keeps the pending response in this document.
-  await page.locator('.wb-sidebar').getByRole('link', { name: '设置', exact: true }).click();
+  await page.getByRole('link', { name: /^账户：/ }).click();
   await page.getByRole('button', { name: '退出登录', exact: true }).click();
+  await confirmLogout(page);
   await expect(page.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
   // Register directly from the current document, preserving the late-response race.
   await page.getByRole('button', { name: '创建账户' }).click();

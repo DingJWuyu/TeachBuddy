@@ -170,7 +170,7 @@ test('WB-T010/016: moved weekly instances, cancellation recovery, deletion and o
   assert.equal((await f.getNotices()).items.length, 2);
 }));
 
-test('TT-C7: production catalog matches the four-module contract and rejects malformed static inputs', async () => {
+test('TT-C7: production catalog matches the five-page contract and rejects malformed static inputs', async () => {
   const { readFileSync } = await import('node:fs');
   const { assertModuleCatalog, projectModuleCatalog } = await import('@teachbuddy/shared');
   const samples = JSON.parse(readFileSync(new URL('./fixtures/contracts/schedule-v1-samples.json', import.meta.url))).samples;

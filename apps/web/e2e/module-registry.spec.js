@@ -1,15 +1,29 @@
+import fs from 'node:fs';
 import { expect, test } from '@playwright/test';
-import { accountFor, registerTeacher } from './helpers.js';
+import { createIntegration } from '../../api/test/fixtures/auth-integration/harness.js';
+import { register, headers } from './teaching-time-auth/helpers.mjs';
 
-test('the legacy shell keeps stable core navigation without a server module directory', async ({ page }, testInfo) => {
-  await registerTeacher(page, accountFor('empty-module-directory', testInfo, 'empty directory password'));
+let world;
+test.beforeEach(async ({ page }) => {
+  world = await createIntegration();
+  await register(page, world);
+  await page.getByRole('button', { name: '知道了', exact: true }).click();
+});
+test.afterEach(async ({ context }, info) => {
+  await context.close(); await world.close();
+  if (info.status === info.expectedStatus) fs.rmSync(world.directory, { recursive: true, force: true });
+});
 
-  // The old bearer module directory is retired: `GET /api/modules` is now the
-  // workbench catalog and is same-origin only, so this shell no longer reads a
-  // server list at all. Its own registry is empty by design.
-  await expect(page.locator('aside').getByRole('button', { name: '工作台首页', exact: true })).toBeVisible();
-  await expect(page.locator('aside').getByRole('button', { name: '设置', exact: true })).toBeVisible();
-  await expect(page.locator('[data-layout-module]')).toHaveCount(0);
-  await expect(page.getByText('暂无模块')).toHaveCount(0);
-  await expect(page.getByText('选择下一步')).toHaveCount(0);
+test('前端导航与可信目录一致，班级入口可实际访问', async ({ page }) => {
+  const response = await page.request.get(world.origin + '/api/modules', { headers: headers(page) });
+  expect(response.status()).toBe(200);
+  const catalog = await response.json();
+  const sidebar = catalog.items.filter(item => item.webEnabled && item.navigation === 'sidebar');
+  await expect(page.locator('.tbx-side-nav [data-row]')).toHaveCount(sidebar.length);
+  for (const item of sidebar) await expect(page.locator(`.tbx-side-nav [data-row="${item.id}"]`)).toHaveAttribute('href', item.path);
+  await page.locator('.tbx-side-nav [data-row="classroom"]').click();
+  await expect(page.locator('.wb-shell')).toHaveAttribute('data-route', 'classroom');
+  await page.reload();
+  await expect(page.locator('.wb-shell')).toHaveAttribute('data-route', 'classroom');
+  await expect(page.locator('[data-region=not-found]')).toHaveCount(0);
 });

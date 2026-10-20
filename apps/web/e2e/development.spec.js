@@ -56,11 +56,15 @@ test('开发模式资源上传、PDF 中文文字层与重新进入页面', asyn
   page.on('pageerror', error => errors.push(error.message));
   const modules = page.getByRole('navigation', { name: '功能模块' });
   await modules.getByRole('link', { name: /^资源库/ }).click();
-  await expect(page.locator('.res-browser')).toHaveAttribute('aria-busy', 'false');
-  await page.getByLabel('上传第一份资料', { exact: true }).setInputFiles(
+  await expect(page.locator('.tbx-res-main')).toHaveAttribute('aria-busy', 'false');
+  const upload = page.getByLabel('上传资料', { exact: true });
+  await expect(upload).toBeEnabled();
+  await upload.setInputFiles(
     path.resolve('test/fixtures/materials/c22.pdf'),
   );
   await expect(page.locator('.res-status')).toContainText('文件已保存');
+  await expect(page.locator('.res-detail')).toHaveCount(0);
+  await page.locator('.tbx-res-open').filter({ hasText: 'c22.pdf' }).click();
   await expect(page.getByAltText('第 1 页', { exact: true })).toBeVisible();
   await expect.poll(() => page.getByAltText('第 1 页', { exact: true }).evaluate(img => img.naturalWidth)).toBeGreaterThan(100);
   await expect(page.locator('.res-pdf-text')).toContainText('二次函数');
@@ -76,7 +80,7 @@ test('开发模式资源上传、PDF 中文文字层与重新进入页面', asyn
 test('开发模式题库加载、手动录题保存与刷新', async ({ page }) => {
   await page.getByRole('navigation', { name: '功能模块' }).getByRole('link', { name: /^题库/ }).click();
   await expect(page.getByText('正在读取题库…', { exact: true })).toHaveCount(0);
-  await page.locator('.q-finder').getByRole('button', { name: '手动录题', exact: true }).click();
+  await page.getByRole('button', { name: '新建题目', exact: true }).first().click();
   await page.getByLabel('题目标题').fill('开发模式保存验证');
   await page.getByRole('textbox', { name: '题干段落 1', exact: true }).pressSequentially('已知 $x^2=9$，求实数 $x$ 的值。');
   await page.getByRole('button', { name: '保存题目', exact: true }).click();

@@ -8,9 +8,13 @@ import { Document, Packer, Paragraph, ExternalHyperlink, TextRun } from "docx";
 let world;
 async function openInfo(page) {
   await expect(page.locator(".res-detail")).toBeVisible();
-  const toggle = page.getByRole("button", { name: "资料信息", exact: true });
-  if ((await toggle.getAttribute("aria-expanded")) !== "true")
-    await toggle.click();
+  await expect(page.getByLabel('资源名称')).toBeVisible();
+}
+async function uploadAndOpen(page, source) {
+  await page.getByLabel('上传资料', {exact:true}).setInputFiles(source);
+  const name = typeof source === 'string' ? path.basename(source) : source.name;
+  await page.locator('.tbx-res-open').filter({hasText:name}).first().click();
+  await expect(page.locator('.res-detail')).toBeVisible();
 }
 const evidence = path.resolve(
   "test-results/evidence/MANUAL-RESOURCES/v1/browser",
@@ -21,7 +25,7 @@ test.beforeEach(async ({ page }) => {
     directory: fs.mkdtempSync(path.join(os.tmpdir(), "resources-")),
   });
   await registerMath(world, "resources@example.test");
-  await page.goto(world.origin);
+  await page.goto(world.origin + "/resources");
   await expect(
     page.locator(".wb-shell").or(page.getByLabel("邮箱", { exact: true })),
   ).toBeVisible();
@@ -33,11 +37,8 @@ test.beforeEach(async ({ page }) => {
     await page.getByRole("button", { name: "登录", exact: true }).click();
   }
   await expect(page.locator(".wb-shell")).toBeVisible();
-  await page.getByRole("button", { name: "知道了", exact: true }).click();
-  await page
-    .getByRole("navigation", { name: "功能模块" })
-    .getByRole("link", { name: /^资源库/ })
-    .click();
+  const coach = page.getByRole('button', {name:'知道了',exact:true});
+  if (await coach.isVisible()) await coach.click();
 });
 test.afterEach(async ({ context }, info) => {
   await context.close();
@@ -73,9 +74,7 @@ test("带网页超链接的 Word 可预览、下载并重开", async ({ page }) 
       .isVisible()
   )
     await page.getByRole("button", { name: "返回资源库", exact: true }).click();
-  await page
-    .getByLabel(/^上传(第一份)?资料$/)
-    .setInputFiles({
+  await uploadAndOpen(page, {
       name: "课堂链接.docx",
       mimeType:
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -108,12 +107,7 @@ test("带网页超链接的 Word 可预览、下载并重开", async ({ page }) 
 test("全部常用格式内容预览，分类搜索及更新后保库重开", async ({
   page,
 }) => {
-  const nav = (name) =>
-    page
-      .getByRole("navigation", { name: "功能模块" })
-      .getByRole("link", { name: new RegExp(`^${name}`) })
-      .click();
-  await nav("资源库");
+
   const files = [
     "test/fixtures/materials/c22.pptx",
     "test/fixtures/materials/c22.ppt",
@@ -125,9 +119,7 @@ test("全部常用格式内容预览，分类搜索及更新后保库重开", as
     "apps/web/e2e/fixtures/materials-resources/samples/page.webp",
   ];
   for (const source of files) {
-    await page
-      .getByLabel(/^上传(第一份)?资料$/)
-      .setInputFiles(path.resolve(source));
+    await uploadAndOpen(page, path.resolve(source));
     await openInfo(page);
     await expect(page.getByLabel("资源名称")).toHaveValue(
       path.basename(source),
@@ -156,24 +148,21 @@ test("全部常用格式内容预览，分类搜索及更新后保库重开", as
     });
     await page.getByRole("button", { name: "返回资源库", exact: true }).click();
   }
-  await page.getByRole("button", { name: "文件夹与标签", exact: true }).click();
   await page.getByRole("button", { name: "新建文件夹", exact: true }).click();
-  await page
-    .getByRole("dialog", { name: "新建文件夹" })
-    .getByLabel("名称", { exact: true })
-    .fill("课堂资料");
-  await page.getByRole("button", { name: "创建文件夹", exact: true }).click();
-  await expect(page.getByRole("dialog", { name: "新建文件夹" })).toHaveCount(0);
+  const folderName = page.getByRole('textbox', {name:'新文件夹名称',exact:true});
+  await folderName.fill('课堂资料');
+  await folderName.press('Enter');
+  await expect(folderName).toHaveCount(0);
   await page.getByRole("button", { name: "新建标签", exact: true }).click();
   await page
     .getByRole("dialog", { name: "新建标签" })
-    .getByLabel("名称", { exact: true })
+    .getByLabel("标签名称", { exact: true })
     .fill("复习");
-  await page.getByRole("button", { name: "创建标签", exact: true }).click();
+  await page.getByRole('dialog',{name:'新建标签'}).getByRole('button',{name:'保存',exact:true}).click();
   await expect(page.getByRole("dialog", { name: "新建标签" })).toHaveCount(0);
   await page.getByLabel("搜索资料").fill("c22.pptx");
-  await expect(page.locator(".res-card-open")).toHaveCount(1);
-  await page.locator(".res-card-open").click();
+  await expect(page.locator(".tbx-res-open")).toHaveCount(1);
+  await page.locator(".tbx-res-open").click();
   await openInfo(page);
   await page.getByLabel("资源名称").fill("函数课堂课件");
   await page.getByLabel("资源笔记").fill("先观察图像，再归纳单调性");
@@ -207,7 +196,7 @@ test("全部常用格式内容预览，分类搜索及更新后保库重开", as
   const directory = world.directory;
   await world.close();
   world = await createIntegration({ directory });
-  await page.goto(world.origin);
+  await page.goto(world.origin + "/resources");
   await expect(
     page.locator(".wb-shell").or(page.getByLabel("邮箱", { exact: true })),
   ).toBeVisible();
@@ -219,8 +208,8 @@ test("全部常用格式内容预览，分类搜索及更新后保库重开", as
     await page.getByRole("button", { name: "登录", exact: true }).click();
   }
   await expect(page.locator(".wb-shell")).toBeVisible();
-  await page.getByRole("button", { name: "知道了", exact: true }).click();
-  await nav("资源库");
+  const coach = page.getByRole('button', {name:'知道了',exact:true});
+  if (await coach.isVisible()) await coach.click();
   if (
     await page
       .getByRole("button", { name: "返回资源库", exact: true })
@@ -228,8 +217,8 @@ test("全部常用格式内容预览，分类搜索及更新后保库重开", as
   )
     await page.getByRole("button", { name: "返回资源库", exact: true }).click();
   await page.getByLabel("搜索资料").fill("归纳单调性");
-  await expect(page.locator(".res-card-open")).toHaveCount(1);
-  await page.locator(".res-card-open").click();
+  await expect(page.locator(".tbx-res-open")).toHaveCount(1);
+  await page.locator(".tbx-res-open").click();
   await openInfo(page);
   await expect(page.getByLabel("资源名称")).toHaveValue("函数课堂课件");
   await expect(page.locator(".res-page-paper img")).toBeVisible();
@@ -241,9 +230,7 @@ test("转换恢复后重试自动显示页图，不需要刷新", async ({ page 
   const office = path.join(world.directory, "office-after-recovery");
   process.env.MATERIALS_OFFICE_ROOT = office;
   try {
-    await page
-      .getByLabel(/^上传(第一份)?资料$/)
-      .setInputFiles(
+    await uploadAndOpen(page,
         "apps/web/e2e/fixtures/materials-resources/samples/w.docx",
       );
     await expect(

@@ -25,7 +25,7 @@ React 页面
   → SQLite 事务、文件存储、转换任务
 ```
 
-这是一个应用和一个 SQLite 持久底座。[八个产品分区](../PRODUCT_SCOPE.md#产品分区)用于职责与任务归属，其中五个教学业务模块通过单一静态目录装配，班级当前只注册后端；账户与身份、工作台与设置、AI 助理由应用组合。产品分区不要求一一对应顶层代码目录。重大约束见 [ADR 0001](../adr/0001-use-a-single-static-module-catalog.md)；修改模块按本页技术导航找到其真实操作和状态约束。
+这是一个应用和一个 SQLite 持久底座。[八个产品分区](../PRODUCT_SCOPE.md#产品分区)用于职责与任务归属，其中五个教学业务模块通过单一静态目录装配，页面开放由目录的 `webEnabled` 决定；账户与身份、工作台与设置、AI 助理由应用组合。产品分区不要求一一对应顶层代码目录。重大约束见 [ADR 0001](../adr/0001-use-a-single-static-module-catalog.md)；修改模块按本页技术导航找到其真实操作和状态约束。
 
 | 代码位置 | 当前职责 |
 | --- | --- |
@@ -33,7 +33,7 @@ React 页面
 | [apps/web/src/platform/](../../apps/web/src/platform) | 公共 HTTP transport、设备存储/现场与保存协议，按 http/device/saving 职责聚合 |
 | [apps/web/src/components/](../../apps/web/src/components) | 公共文稿呈现/编辑、交互原语与图标；不拥有模块业务数据 |
 | [apps/web/src/features/auth/](../../apps/web/src/features/auth) | 账户与身份的认证页面、会话恢复及请求 transport；删除确认后调用 App 注入的设备清理端口，各存储拥有者清理自己的资料 |
-| `apps/web/src/features/{questions,resources,math,schedule}/` | 依次对应题库、资源库、数学工坊、日程的界面与交互 |
+| `apps/web/src/features/{questions,resources,math,schedule,classroom}/` | 依次对应题库、资源库、数学工坊、日程、班级的界面与交互 |
 | [apps/web/src/features/agent/](../../apps/web/src/features/agent)、[apps/api/src/agent/](../../apps/api/src/agent) | AI 助理的对话、引用、模型运行与工具调用；首页/侧栏由工作台承载 |
 | [apps/web/src/features/reliability/](../../apps/web/src/features/reliability) | 设置消费个人资料导出；隔离 archive/恢复底座保留，设备草稿管理 UI 未接入 |
 | [apps/api/src/server.js](../../apps/api/src/server.js) | 同源 HTTPS、可选 Vite 开发服务、启动完成后监听与停止连接 |
@@ -45,9 +45,9 @@ React 页面
 | [apps/api/src/modules/](../../apps/api/src/modules) | 题库、资源、数学、日程和班级业务；`classroom/` 拥有名单、考试及统计，消费公共文件端口 |
 | [apps/api/src/workbench/reliability/](../../apps/api/src/workbench/reliability) | 个人资料包、备份、恢复与维护锁 |
 | [packages/shared/](../../packages/shared) | 两侧消费的静态模块目录、协议及数学计算、源校验与浏览器/离线呈现；调用方使用 `@teachbuddy/shared` 或显式 `@teachbuddy/shared/math/*` 子路径，实际公开项以 package exports 为准 |
-| `prototype/` | 按范围和确认状态读取的 UI/UX 参考；未确认模块稿不定义生产范围，产品运行不依赖原型源码 |
+| `docs/design-system/` | 用户提供的只读设计输入；从 [README](../design-system/README.md) 进入，产品运行不依赖文档或原型源码 |
 
-模块事实在 [packages/shared/src/moduleCatalog.js](../../packages/shared/src/moduleCatalog.js)，实际 API 工厂映射在 [apps/api/src/workbench/moduleImplementations.js](../../apps/api/src/workbench/moduleImplementations.js)，`moduleLoader.js` 校验并装配它们。Web 的 `features/modules/moduleRegistry.js` 将共享目录投影为页面与图标，外壳、导航、教程和全局搜索消费同一投影，顶层路由从共享目录匹配。目录 v4 的 `webEnabled` 明确页面开放资格，API 装配全部注册模块，Web 只投影已开放模块；班级不需要占位页面。资源深链接适配归属资源模块；日程由 `modules/schedule/index.js` 内部组合业务与提醒并合并迁移。新增能力先找所属模块，不增加另一套全局注册表。
+模块事实在 [packages/shared/src/moduleCatalog.js](../../packages/shared/src/moduleCatalog.js)，实际 API 工厂映射在 [apps/api/src/workbench/moduleImplementations.js](../../apps/api/src/workbench/moduleImplementations.js)，`moduleLoader.js` 校验并装配它们。Web 的 `features/modules/moduleRegistry.js` 将共享目录投影为页面与图标，外壳、导航、教程和全局搜索消费同一投影，顶层路由从共享目录匹配。目录 v4 的 `webEnabled` 明确页面开放资格，API 装配全部注册模块，Web 只投影已开放模块；不另设占位模块或页面清单。资源深链接适配归属资源模块；日程由 `modules/schedule/index.js` 内部组合业务与提醒并合并迁移。新增能力先找所属模块，不增加另一套全局注册表。
 
 ## 公共持久化与失败边界
 

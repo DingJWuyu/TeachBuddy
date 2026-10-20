@@ -11,8 +11,6 @@ export default function QuestionsPage({ route }) {
         key={`${shell.accountKey}:${shell.generation}`}
         accountKey={shell.accountKey}
         requestedId={route?.id}
-        registerTools={shell.registerTools}
-        onOpenTools={() => shell.openPanel("questions-classification")}
         onReturnToLibrary={() => shell.navigate('/questions', { replace: true })}
         transport={auth.request}
       />

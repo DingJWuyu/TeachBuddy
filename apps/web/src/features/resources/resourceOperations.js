@@ -9,7 +9,7 @@ const root = "/api/modules/resources";
 // The workspace receives acknowledged resource results, never intermediate writes.
 export function useResourceOperations({
   accountKey, client, controller, sceneRef, patchScene, currentItem,
-  onResult, onOpen, onClose, refresh,
+  onResult, onClose, refresh,
 }) {
   const { t } = useTranslation("resources");
   const [pending, setPending] = useState(null);
@@ -160,7 +160,8 @@ export function useResourceOperations({
                 : {}),
             };
           }
-          patchScene({ selected: [], selectionMode: false, drafts });
+          patchScene({ selected: ["archive", "restore"].includes(record.input.action) ? [] : sceneRef.current.selected, drafts });
+          onResult({ purpose: "organize", value });
           await remember(null);
           setMessage(
             t("已{{value}} {{count}} 份资料", { value: { move: t("移动"), "add-tags": t("添加标签："), archive: t("归档"), restore: t("恢复") }[record.input.action], count: value.items.length }),
@@ -239,8 +240,6 @@ export function useResourceOperations({
             ),
           });
         }
-        if (record.purpose === "create" && !(record.batchTotal > 1))
-          onOpen(value.id);
         if (["supplement", "replace", "restore-file"].includes(record.purpose))
           patchScene({ supplement: null });
         if (["replace", "restore-file"].includes(record.purpose)) {

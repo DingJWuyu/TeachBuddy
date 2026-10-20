@@ -1,0 +1,688 @@
+:is(.wb-shell, .tbx-portal-host) :is(.tbx-menu, .tbx-side-menu, .cr-menu, .tbx-sheet-menu, .tbx-res-menu, .tbx-model-menu, .tbx-pick-menu, .tbx-switch-menu, .tb-dialog-more-menu, .tbx-kit-menu):not(#tbx-kit),
+:is(.wb-shell, .tbx-portal-host) .res-menu [role=menu]:not(#tbx-kit) {
+  padding: 6px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--tb-surface);
+  box-shadow: var(--tb-shadow-3);
+}
+:is(.wb-shell, .tbx-portal-host) :is(.tbx-menu, .tbx-side-menu, .cr-menu, .tbx-sheet-menu, .tbx-res-menu, .tb-dialog-more-menu, .tbx-kit-menu):not(#tbx-kit) > :is(button, [role=menuitem]),
+:is(.wb-shell, .tbx-portal-host) .res-menu [role=menu]:not(#tbx-kit) > [role=menuitem] {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  min-height: 34px;
+  margin: 0;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--tb-ink);
+  font-size: 14px;
+  font-weight: 500;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background var(--tb-d1), color var(--tb-d1);
+}
+:is(.wb-shell, .tbx-portal-host) :is(.tbx-menu, .tbx-side-menu, .cr-menu, .tbx-sheet-menu, .tbx-res-menu, .tb-dialog-more-menu, .tbx-kit-menu):not(#tbx-kit) > :is(button, [role=menuitem]):is(:hover, :focus-visible):not(:disabled),
+:is(.wb-shell, .tbx-portal-host) .res-menu [role=menu]:not(#tbx-kit) > [role=menuitem]:is(:hover, :focus-visible) {
+  background: var(--tb-fill);
+  outline: none;
+}
+:is(.wb-shell, .tbx-portal-host) :is(.tbx-menu, .tbx-side-menu, .cr-menu, .tbx-sheet-menu, .tbx-res-menu, .tb-dialog-more-menu, .tbx-kit-menu):not(#tbx-kit) > :is(.is-danger, .tb-dialog-more-item.is-danger, [data-danger]) {
+  color: var(--tb-danger);
+}
+:is(.wb-shell, .tbx-portal-host) :is(.tbx-menu, .tbx-side-menu, .cr-menu, .tbx-sheet-menu, .tbx-res-menu, .tb-dialog-more-menu, .tbx-kit-menu):not(#tbx-kit) > :is(.is-danger, [data-danger]):is(:hover, :focus-visible):not(.is-armed) {
+  background: var(--tb-danger-soft);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-confirm-btn {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  min-width: 32px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--tb-danger);
+  font-size: 13px;
+  font-weight: 650;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background var(--tb-d2) var(--tb-ease),
+    color var(--tb-d2),
+    padding 260ms var(--tb-ease),
+    transform var(--tb-d2) var(--tb-spring);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-confirm-btn.is-sm {
+  height: 28px;
+  min-width: 28px;
+  padding: 0 7px;
+  font-size: 12.5px;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-confirm-btn.is-quiet {
+  color: var(--tb-muted);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-confirm-btn:hover:not(:disabled) {
+  background: var(--tb-danger-soft);
+  color: var(--tb-danger);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-confirm-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-confirm-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-confirm-btn .tbx-confirm-idle {
+  margin-left: 5px;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-confirm-btn.has-text {
+  padding: 0 12px 0 10px;
+  background: var(--tb-fill);
+  color: var(--tb-danger);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-confirm-text {
+  max-width: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition:
+    max-width 300ms var(--tb-ease),
+    opacity 200ms var(--tb-ease),
+    margin 300ms var(--tb-ease);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-confirm-btn.is-armed,
+:is(.wb-shell, .tbx-portal-host) .tbx-confirm-btn.is-armed:hover:not(:disabled) {
+  padding: 0 12px 0 10px;
+  background: var(--tb-danger-fill);
+  color: #fff;
+  box-shadow: 0 8px 18px -12px var(--tb-danger-fill);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-confirm-btn.is-armed .tbx-confirm-idle {
+  display: none;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-confirm-btn.is-armed .tbx-confirm-text {
+  max-width: 9em;
+  margin-left: 5px;
+  opacity: 1;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-confirm-mi.is-armed:not(#tbx-kit),
+:is(.wb-shell, .tbx-portal-host) .tbx-confirm-mi.is-armed:not(#tbx-kit):hover {
+  background: var(--tb-danger-fill) !important;
+  color: #fff !important;
+  font-weight: 650;
+  animation: tbx-arm 260ms var(--tb-ease);
+}
+@keyframes tbx-arm {
+  from {
+    transform: scale(0.97);
+  }
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-confirm-scrim {
+  position: fixed;
+  z-index: 1300;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgb(0 0 0 / 0.28);
+  backdrop-filter: blur(6px);
+  animation: tbx-kit-fade 200ms ease both;
+}
+@keyframes tbx-kit-fade {
+  from {
+    opacity: 0;
+  }
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-confirm {
+  width: min(420px, 100%);
+  padding: 24px 24px 20px;
+  border-radius: 22px;
+  background: var(--tb-surface);
+  color: var(--tb-ink);
+  box-shadow: var(--tb-shadow-3);
+  font: 14px/1.6 var(--tb-font);
+  animation: tbx-kit-rise 320ms var(--tb-spring) both;
+}
+@keyframes tbx-kit-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.97);
+  }
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-confirm-icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-bottom: 14px;
+  border-radius: 14px;
+  background: var(--tb-accent-soft);
+  color: var(--tb-accent);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-confirm.is-danger .tbx-confirm-icon {
+  background: var(--tb-danger-soft);
+  color: var(--tb-danger);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-confirm h2 {
+  margin: 0 0 6px;
+  font-family: var(--tb-font-display);
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.012em;
+  line-height: 1.3;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-confirm p {
+  margin: 0;
+  color: var(--tb-muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-confirm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 22px;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-confirm-actions button,
+:is(.wb-shell, .tbx-portal-host) .tbx-kit-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--tb-fill);
+  color: var(--tb-ink);
+  font: 600 14px/1 var(--tb-font);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background var(--tb-d1), transform var(--tb-d2) var(--tb-spring);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-confirm-actions button:hover:not(:disabled) {
+  background: var(--tb-fill-hover);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-confirm-actions button:active:not(:disabled) {
+  transform: scale(0.97);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-confirm-actions .tbx-confirm-ok {
+  background: var(--tb-primary);
+  color: var(--tb-on-primary);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-confirm-actions .tbx-confirm-ok:hover:not(:disabled) {
+  background: var(--tb-primary-hover);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-confirm.is-danger .tbx-confirm-ok,
+:is(.wb-shell, .tbx-portal-host) .tbx-confirm.is-danger .tbx-confirm-ok:hover:not(:disabled) {
+  background: var(--tb-danger-fill);
+  color: #fff;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-confirm-actions button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-confirm-actions .tbx-confirm-secondary {
+  color: var(--tb-danger);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-drop-line {
+  position: absolute;
+  z-index: 3;
+  top: 0;
+  left: 16px;
+  right: 14px;
+  height: 2px;
+  margin-top: -1px;
+  border-radius: 1px;
+  background: var(--tb-accent);
+  pointer-events: none;
+  transition: transform 140ms var(--tb-ease);
+  animation: tbx-kit-fade 140ms ease both;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-drop-line::before {
+  content: "";
+  position: absolute;
+  top: -3px;
+  left: -8px;
+  width: 8px;
+  height: 8px;
+  box-sizing: border-box;
+  border: 2px solid var(--tb-accent);
+  border-radius: 50%;
+  background: var(--tb-surface);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-drag-ghost {
+  position: fixed;
+  z-index: 1000;
+  top: 0;
+  left: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  width: max-content;
+  height: 36px;
+  padding: 0 14px 0 10px;
+  border-radius: 12px;
+  background: color-mix(in oklab, var(--tb-surface) 72%, transparent);
+  backdrop-filter: blur(14px) saturate(1.5);
+  -webkit-backdrop-filter: blur(14px) saturate(1.5);
+  color: var(--tb-ink);
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0.88;
+  box-shadow: 0 12px 28px -12px rgb(0 0 0 / 0.3), 0 0 0 1px rgb(0 0 0 / 0.06);
+  pointer-events: none;
+  animation: tbx-lift 200ms var(--tb-ease) both;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-drag-ghost .tbx-row-icon {
+  color: var(--tb-ink);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-drag-ghost.is-trash {
+  color: var(--tb-danger);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-drag-ghost.is-trash .tbx-row-icon {
+  color: var(--tb-danger);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-drag-ghost.is-group {
+  height: 32px;
+  font-size: 13px;
+  color: var(--side-muted);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-popover {
+  position: fixed;
+  z-index: 1250;
+  min-width: 180px;
+  overflow: auto;
+  padding: 6px;
+  border-radius: 14px;
+  background: var(--tb-surface);
+  color: var(--tb-ink);
+  box-shadow: var(--tb-shadow-3);
+  font: 14px/1.45 var(--tb-font);
+  animation: tbx-kit-pop 200ms var(--tb-ease) both;
+  transform-origin: 50% 0;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-popover.is-above {
+  transform-origin: 50% 100%;
+}
+@keyframes tbx-kit-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.97);
+  }
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-popover > :is(button, [role=menuitem], [role=menuitemradio], [role=menuitemcheckbox]) {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  min-height: 34px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--tb-ink);
+  font: 500 14px/1 var(--tb-font);
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-popover > :is(button, [role^=menuitem]):is(:hover, :focus-visible):not(:disabled) {
+  background: var(--tb-fill);
+  outline: none;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-popover > :is(button, [role^=menuitem]) > .tbx-pop-check {
+  margin-left: auto;
+  color: var(--tb-accent);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-popover-sep {
+  height: 1px;
+  margin: 5px 8px;
+  background: var(--tb-line-soft);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-popover-label {
+  padding: 6px 10px 4px;
+  color: var(--tb-faint);
+  font-size: 12px;
+  font-weight: 650;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-popover:has(> .tbx-datepicker) {
+  padding: 12px;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-datepicker {
+  width: 252px;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-datepicker header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 2px 8px 6px;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-datepicker header strong {
+  font-size: 15px;
+  font-weight: 700;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-datepicker header button.tbx-datepicker-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  width: auto;
+  height: 28px;
+  margin-left: -6px;
+  padding: 0 8px;
+  border-radius: 8px;
+  color: var(--tb-ink);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-datepicker header button.tbx-datepicker-title:first-child svg {
+  transform: none;
+  color: var(--tb-faint);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-datepicker header .tbx-datepicker-title:disabled {
+  cursor: default;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-datepicker header .tbx-datepicker-title:disabled:hover {
+  background: transparent;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-datepicker-grid,
+:is(.wb-shell, .tbx-portal-host) .tbx-datepicker-cells {
+  animation: tbx-kit-fade 160ms ease both;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-datepicker-cells {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  padding: 4px 0 2px;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-datepicker-cells button {
+  height: 44px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--tb-ink);
+  font: 550 14px/1 var(--tb-font);
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-datepicker-cells button:hover:not(:disabled) {
+  background: var(--tb-fill);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-datepicker-cells button.is-today {
+  color: var(--tb-accent);
+  font-weight: 750;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-datepicker-cells button.is-selected,
+:is(.wb-shell, .tbx-portal-host) .tbx-datepicker-cells button.is-selected:hover {
+  background: var(--tb-accent);
+  color: #fff;
+  font-weight: 700;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-datepicker-cells button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-datepicker header span {
+  display: flex;
+  gap: 2px;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-datepicker header button {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--tb-accent);
+  cursor: pointer;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-datepicker header button:first-child svg {
+  transform: rotate(90deg);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-datepicker header button:last-child svg {
+  transform: rotate(-90deg);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-datepicker header button:hover {
+  background: var(--tb-fill);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-datepicker-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-datepicker-weekday {
+  display: grid;
+  place-items: center;
+  height: 24px;
+  color: var(--tb-faint);
+  font-size: 11.5px;
+  font-weight: 650;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-datepicker-grid button {
+  display: grid;
+  place-items: center;
+  height: 33px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--tb-ink);
+  font: 500 14px/1 var(--tb-font);
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition: background var(--tb-d1), color var(--tb-d1);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-datepicker-grid button:hover:not(:disabled) {
+  background: var(--tb-fill);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-datepicker-grid button.is-outside {
+  color: var(--tb-faint);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-datepicker-grid button.is-today {
+  color: var(--tb-accent);
+  font-weight: 750;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-datepicker-grid button.is-selected,
+:is(.wb-shell, .tbx-portal-host) .tbx-datepicker-grid button.is-selected:hover {
+  background: var(--tb-accent);
+  color: #fff;
+  font-weight: 700;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-datepicker-grid button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-datepicker footer {
+  display: flex;
+  justify-content: center;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--tb-line-soft);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-datepicker footer button {
+  height: 28px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--tb-accent);
+  font: 600 13px/1 var(--tb-font);
+  cursor: pointer;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-datepicker footer button:hover:not(:disabled) {
+  background: var(--tb-accent-soft);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-popover:has(> .tbx-timepicker) {
+  min-width: 0;
+  padding: 6px;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-timepicker {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  width: 132px;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-timepicker-col {
+  display: grid;
+  align-content: start;
+  max-height: 248px;
+  overflow: auto;
+  scrollbar-width: none;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-timepicker-col::-webkit-scrollbar {
+  display: none;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-timepicker-col + .tbx-timepicker-col {
+  padding-left: 4px;
+  border-left: 1px solid var(--tb-line-soft);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-timepicker button {
+  flex: none;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--tb-ink);
+  font: 500 14px/1 var(--tb-font);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  cursor: pointer;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-timepicker button:hover {
+  background: var(--tb-fill);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-timepicker button.is-selected {
+  background: var(--tb-accent);
+  color: #fff;
+  font-weight: 650;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-seg {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--tb-fill);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-seg-thumb {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 0;
+  border-radius: 999px;
+  background: var(--tb-surface);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.1), 0 4px 10px -4px rgb(0 0 0 / 0.16);
+  transition: transform 460ms var(--tb-ease), width 460ms var(--tb-ease);
+  pointer-events: none;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-seg > button {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 30px;
+  min-height: 0;
+  padding: 0 13px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--tb-muted);
+  font: 650 13.5px/1 var(--tb-font);
+  cursor: pointer;
+  transition: color var(--tb-d2);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-seg.is-icons > button {
+  width: 36px;
+  padding: 0;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-seg > button,
+:is(.wb-shell, .tbx-portal-host) .tbx-seg > button:is(:hover, [aria-pressed=true]) {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-seg > button[aria-pressed=true],
+:is(.wb-shell, .tbx-portal-host) .tbx-seg > button[aria-pressed=true]:hover {
+  color: var(--tb-ink) !important;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-seg > button:hover:not([aria-pressed=true]) {
+  color: var(--tb-ink-2);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  min-height: 0;
+  padding: 0 14px 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--tb-fill);
+  color: var(--tb-ink);
+  font: 600 14px/1 var(--tb-font);
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background var(--tb-d1),
+    color var(--tb-d1),
+    transform var(--tb-d2) var(--tb-spring);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-filter-btn:hover,
+:is(.wb-shell, .tbx-portal-host) .tbx-filter-btn.is-open {
+  background: var(--tb-fill-hover);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-filter-btn:active {
+  transform: scale(0.96);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-filter-btn.is-active {
+  background: var(--tb-accent-soft);
+  color: var(--tb-accent);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-filter-btn-text {
+  display: inline-grid;
+  justify-items: center;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-filter-btn-text > span {
+  grid-area: 1 / 1;
+  transition: opacity var(--tb-d2), transform var(--tb-d2) var(--tb-ease);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-filter-btn-text > span[aria-hidden=true] {
+  opacity: 0;
+  transform: scale(0.8);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-filter-btn-text > span:last-child {
+  font-variant-numeric: tabular-nums;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-filter-menu {
+  min-width: 210px;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-filter-menu .tbx-filter-mark {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 18px;
+  color: var(--tb-faint);
+}
+:is(.wb-shell, .tbx-portal-host) :is(.res-ui, .res-dialog, .tbx-cr, .q-modal, .wb-dialog, .settings-confirm, .tb-dialog) select:not([multiple], [size]):not(.res-preview-toolbar select, .cal-select-wrap > select) {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 36px !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238e8e93' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6.5 9.5 5.5 5.5 5.5-5.5'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 12px center !important;
+  background-size: 16px 16px !important;
+}
+
+
+.tbx-menu-trigger { position: relative; display: inline-flex; }
+.tbx-menu-item { white-space: nowrap; }

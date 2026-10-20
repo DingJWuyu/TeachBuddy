@@ -1157,7 +1157,7 @@
           "path": "/classroom",
           "navigation": "sidebar",
           "auxiliaryPanel": true,
-          "webEnabled": false,
+          "webEnabled": true,
           "requires": []
         }
       ]

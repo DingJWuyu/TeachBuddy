@@ -21,13 +21,6 @@ async function call(page, method, path, data, status = 200) {
   expect(response.status(), await response.text()).toBe(status);
   return response.json();
 }
-async function adopt(page, region = page) {
-  await region.getByRole('button', { name: '查看服务器版本', exact: true }).click();
-  await region.getByRole('button', { name: '采用服务器版本', exact: true }).click();
-  await page.getByRole('dialog').getByRole('button', { name: '采用服务器版本', exact: true }).click();
-  await expect(region.locator('[data-region="conflict"]')).toHaveCount(0);
-}
-
 test('共享保存：账户外观丢响应后保留后续选择，冲突刷新后采用远端', async ({ page }) => {
   const path = '/api/reliability/v1/preferences', writes = [];
   await page.goto(world.origin + '/settings');

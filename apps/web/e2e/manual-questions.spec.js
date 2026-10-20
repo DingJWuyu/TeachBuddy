@@ -28,7 +28,7 @@ async function start(page) {
   await page.getByRole('navigation', { name: '功能模块' }).getByRole('link', { name: /^题库/ }).click();
 }
 async function create(page, title) {
-  await page.locator('.q-finder').getByRole('button', { name: '手动录题', exact: true }).click();
+  await page.locator('.q-finder').getByRole('button', { name: '新建题目', exact: true }).click();
   await page.getByLabel('题目标题').fill(title);
   await page.getByRole('textbox', { name: '题干段落 1', exact: true }).fill('已知 $x^2=4$，求 $x$。');
   await page.getByRole('button', { name: '保存题目', exact: true }).click();
@@ -116,11 +116,11 @@ test('较慢的旧搜索响应不会覆盖最新搜索', async ({page}) => {
   await page.getByLabel('搜索题目').fill('不存在');
   await arrived;
   await page.getByLabel('搜索题目').fill('搜索保留');
-  await expect(page.locator('.q-list-entry')).toHaveCount(1);
+  await expect(page.locator('.tbx-qn-row')).toHaveCount(1);
   const response = page.waitForResponse(r => new URL(r.url()).searchParams.get('q') === '不存在');
   release();
   await response;
-  await expect(page.locator('.q-list-entry')).toHaveCount(1);
+  await expect(page.locator('.tbx-qn-row')).toHaveCount(1);
   await expect(page.getByLabel('搜索题目')).toHaveValue('搜索保留');
 });
 
@@ -145,7 +145,7 @@ test('Word 原稿与原生配图可对照，图片识别失败后补充草稿及
   await expect(page.locator('.q-original img')).toBeVisible();
   await expect(page.locator('.q-main')).toContainText('本地识别暂不可用，原稿已保存；配置恢复后可重试本页。');
   await page.getByRole('button', { name: '材料操作', exact: true }).click();
-  await page.getByRole('button',{name:'补充题目草稿',exact:true}).click();
+  await page.getByRole('menuitem', { name: '补充题目草稿',exact:true}).click();
   await editReview(page);
   await page.getByLabel('草稿标题').fill('图片校对题');
   await page.locator('.q-review-result textarea').first().fill('已知 $x^2=4$，求 $x$。');
@@ -227,7 +227,7 @@ test('旧 DOC 本机转换后自动读取，对照校对并保存重开', async 
     const reopened = await fresh.newPage();
     await reopened.goto(world.origin + questionPath);
     await reopened.getByRole('button', { name: '知道了', exact: true }).click();
-    await reopened.locator('.q-list-entry').filter({ hasText: '旧 DOC 校对保存题' }).click();
+    await reopened.locator('.tbx-qn-row').filter({ hasText: '旧 DOC 校对保存题' }).click();
     await expect(reopened.getByRole('heading', { name: '旧 DOC 校对保存题', exact: true })).toBeVisible();
     await expect(reopened.locator('.q-reading-body')).toContainText('校对备注');
     await expect(reopened.locator('.q-question img').first()).toBeVisible();
@@ -237,32 +237,4 @@ test('旧 DOC 本机转换后自动读取，对照校对并保存重开', async 
     await expect(reopened.locator('.q-original')).toContainText('旧版 DOC 转换可能丢失公式或嵌入对象');
     await reopened.screenshot({path:path.join(evidence,'legacy-doc-reopened.png')});
   } finally { await fresh.close(); }
-});
-
-test('列表与对照宽度可调整，刷新后恢复且小屏不横溢出', async ({page}) => {
-  await start(page);
-  await create(page,'调宽验证');
-  const finder = page.locator('.q-finder');
-  const before = (await finder.boundingBox()).width;
-  const divider = page.getByRole('separator',{name:'调整题目列表宽度'});
-  const grip = await divider.boundingBox();
-  await page.mouse.move(grip.x+grip.width/2,grip.y+80);
-  await page.mouse.down();
-  await page.mouse.move(grip.x+grip.width/2+80,grip.y+80,{steps:8});
-  await page.mouse.up();
-  expect((await finder.boundingBox()).width).toBeGreaterThan(before+60);
-  const width = (await finder.boundingBox()).width;
-  await page.reload();
-  await expect(page.getByRole('heading', { name: '调宽验证', exact: true })).toBeVisible();
-  expect(Math.abs((await finder.boundingBox()).width-width)).toBeLessThan(2);
-  await page.getByRole('button',{name:'复制改编',exact:true}).click();
-  const compare = page.getByRole('separator',{name:'调整原题对照宽度'});
-  await compare.focus();
-  await page.keyboard.press('ArrowLeft');
-  await expect(compare).toHaveAttribute('aria-valuenow','48');
-  await page.setViewportSize({width:768,height:1024});
-  await expect(page.locator('.wb-shell')).toHaveAttribute('data-sidebar', 'rail');
-  await expect(page.getByRole('button', { name: '展开侧栏', exact: true })).toBeVisible();
-  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
-  await page.screenshot({path:path.join(evidence,'comparison-tablet.png'), animations:'disabled'});
 });

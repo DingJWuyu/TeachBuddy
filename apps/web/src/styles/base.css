@@ -1,0 +1,104 @@
+:root:has(.wb-shell) {
+  -webkit-text-size-adjust: 100%;
+  text-rendering: optimizeLegibility;
+  font-family: var(--tb-font);
+  color: var(--tb-ink);
+  background: var(--tb-canvas);
+  font-feature-settings: "tnum" 0, "kern" 1;
+}
+:root:has(.wb-shell) body {
+  margin: 0;
+  background: var(--tb-canvas);
+  color: var(--tb-ink);
+  font-family: var(--tb-font);
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+/* The prototype workspace establishes its own reading rhythm beneath the shell. */
+.wb-shell.tb-prototype .wb-workspace {
+  font-size: 13px;
+  line-height: 1.65;
+}
+:where(:root:has(.wb-shell)) :is(body, input, select, textarea, button) {
+  color: var(--tb-ink);
+}
+:where(:root:has(.wb-shell)) :is(input, select, textarea) {
+  font: inherit;
+  border-color: var(--tb-line);
+  background: var(--tb-surface);
+}
+:where(:root:has(.wb-shell)) ::selection {
+  background: rgb(0 113 227 / 0.2);
+  color: inherit;
+}
+:where(:root:has(.wb-shell)) :focus-visible {
+  outline: 2px solid var(--tb-focus);
+  outline-offset: 2px;
+}
+:where(:root:has(.wb-shell)) * {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklab, var(--tb-ink) 18%, transparent) transparent;
+}
+:root:has(.wb-shell) ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+:root:has(.wb-shell) ::-webkit-scrollbar-thumb {
+  background: color-mix(in oklab, var(--tb-ink) 16%, transparent);
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background-clip: padding-box;
+}
+:root:has(.wb-shell) ::-webkit-scrollbar-thumb:hover {
+  background-color: color-mix(in oklab, var(--tb-ink) 28%, transparent);
+}
+.ae-page {
+  --tb-ease: cubic-bezier(.4, 0, .2, 1);
+}
+.tbx-mark {
+  flex: none;
+  display: block;
+}
+.tbx-mark-tile {
+  fill: #1d1d1f;
+}
+.tbx-mark-page {
+  fill: #ffffff;
+}
+.tbx-mark-spark {
+  fill: #0a84ff;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+:root[data-workbench-theme=dark] .tbx-mark-tile {
+  fill: #2c2c2e;
+}
+.tbx-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.tbx-wordmark {
+  font-family: var(--tb-font-display);
+  font-size: 17px;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+  color: var(--tb-ink);
+}
+:root:has(.wb-shell) :is(input:not([type=checkbox], [type=radio], [type=range], [type=color], [type=file], [type=button], [type=submit]), textarea, select):focus-visible {
+  outline: none !important;
+}
+:root:has(.wb-shell) :is(label, div, form, span):not(.tbx-hs-field, .tb-search-input-row, .tbx-new-group):has(> :is(svg, .tb-icon)):has(> :is(input, textarea):focus-visible) {
+  box-shadow: inset 0 0 0 1.5px var(--tb-accent), 0 0 0 4px rgb(0 113 227 / 0.16) !important;
+}
+:root:has(.wb-shell) :is(.res-ui, .res-dialog, .q-modal, .wb-dialog, .settings-confirm, .tb-dialog) :is(input:not([type=checkbox], [type=radio], [type=range], [type=file]), select, textarea):focus-visible:not(:is(label, div, form, span):has(> :is(svg, .tb-icon)) > *) {
+  box-shadow: inset 0 0 0 1.5px var(--tb-accent), 0 0 0 4px rgb(0 113 227 / 0.16);
+}
+:where(.wb-shell) label span {
+  display: inline;
+  margin-bottom: 0;
+  color: inherit;
+  font-size: inherit;
+}

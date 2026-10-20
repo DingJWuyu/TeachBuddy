@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 const t = (key, options) => i18n.t(key, { ns: "workbench", ...options });
 import { useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Icon } from './icons.jsx';
+import { Icon } from '../../../components/icons.jsx';
 import { workbenchModules, moduleDisplayName } from '../../modules/moduleRegistry.js';
 import { ModulePresence, useModuleDialogFocus } from '../../../components/interaction/ModuleMotion.jsx';
 const names = ids => ids.map(id => moduleDisplayName(workbenchModules.find(m => m.id === id)) || t("暂不可用模块")).join('、') || t("空");

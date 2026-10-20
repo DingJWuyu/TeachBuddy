@@ -62,7 +62,7 @@ async function signIn(page, query = '') {
   await expect(page.getByRole('heading', { name: '欢迎回来' })).toBeVisible();
   await page.getByLabel('邮箱', { exact: true }).fill(TEACHER.email);
   await page.getByLabel('密码', { exact: true }).fill(TEACHER.password);
-  await page.getByRole('button', { name: '登录', exact: true }).click();
+  await page.getByRole('button', { name: /^登录(?: ›)?$/ }).click();
   await expect(page.locator('[data-harness-nickname]')).toHaveText(TEACHER.nickname);
 }
 

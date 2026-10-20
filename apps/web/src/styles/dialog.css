@@ -1,0 +1,362 @@
+
+.cal-dialog {
+  color: var(--tb-ink);
+  font-family:
+    "DM Sans",
+    "Noto Sans SC",
+    system-ui,
+    sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.cal-dialog * {
+  box-sizing: border-box;
+}
+
+.cal-dialog button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.cal-dialog :is(input, textarea, select) {
+  font: inherit;
+  color: inherit;
+  min-width: 0;
+}
+
+.cal-dialog :is(button, input, select):focus-visible {
+  outline: none;
+  outline-offset: 0;
+}
+
+.cal-dialog button:focus-visible {
+  background: var(--tb-fill-hover);
+}
+
+.cal-dialog button:disabled {
+  cursor: default;
+  opacity: .45;
+}
+
+
+
+
+
+
+
+.cal-dialog input:not([type=radio]),
+.cal-dialog select,
+.cal-dialog .cal-field > input,
+.cal-dialog .cal-field > select,
+.cal-dialog .cal-field-pair input {
+  display: block;
+  width: 100%;
+  height: 40px;
+  padding: 8px 12px;
+  border: 1px solid var(--tb-line);
+  border-radius: 8px;
+  background: var(--tb-surface);
+  box-shadow: 0 1px 2px #00000003;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.cal-dialog input:focus,
+.cal-dialog .cal-field input:focus {
+  border-color: #5b5b5c;
+  outline: none;
+}
+
+.cal-dialog .cal-field {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 8px;
+  font-size: 14px;
+  line-height: 14px;
+  font-weight: 400;
+  color: var(--tb-ink);
+}
+
+.cal-dialog .cal-field > span {
+  margin: 0;
+  color: inherit;
+  font-size: inherit;
+}
+
+.cal-dialog .cal-field-pair {
+  margin-top: 16px;
+}
+
+.cal-dialog .cal-field-pair {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 8px;
+}
+
+.cal-dialog .cal-field-pair input {
+  padding: 8px 10px;
+}
+
+.cal-dialog .cal-field-pair input::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  width: 13px;
+  margin: 0;
+  padding: 0;
+}
+
+.cal-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  background: #0005;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  animation: cal-fade 150ms ease-out;
+}
+
+.cal-overlay-presence {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  opacity: 1;
+  transition: opacity 180ms ease;
+}
+
+.cal-overlay-presence[data-state=closed] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.cal-overlay-presence .cal-dialog-backdrop {
+  animation: none;
+}
+
+.cal-overlay-presence .cal-dialog {
+  animation: none;
+  transform: translateY(0) scale(1);
+  transition: transform 180ms cubic-bezier(.2, .8, .2, 1);
+}
+
+.cal-overlay-presence[data-state=closed] .cal-dialog {
+  transform: translateY(4px) scale(.97);
+}
+
+@media (prefers-reduced-motion: reduce) {
+.cal-overlay-presence,
+.cal-overlay-presence .cal-dialog {
+    transition: none;
+  }
+
+}
+.cal-dialog {
+  width: min(384px, 100%);
+  max-height: calc(100dvh - 48px);
+  overflow-y: auto;
+  background: var(--tb-surface);
+  border: 1px solid var(--tb-line);
+  border-radius: 14px;
+  box-shadow: 0 16px 60px #0002;
+  padding: 24px;
+  animation: cal-pop 180ms cubic-bezier(.2, .8, .2, 1);
+}
+
+.cal-dialog > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.cal-dialog h2 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.cal-dialog p {
+  margin: 0 0 16px;
+}
+
+.cal-dialog > header .cal-icon-button {
+  width: 24px;
+  height: 24px;
+  border: 0;
+}
+
+.cal-dialog footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.cal-dialog footer > button {
+  min-height: 36px;
+  padding: 6px 14px;
+  border: 1px solid var(--tb-line);
+  border-radius: 9px;
+  background: var(--tb-surface);
+}
+
+.cal-dialog footer > button.is-primary {
+  background: #323234;
+  color: #fff;
+  border-color: #323234;
+}
+
+.cal-dialog footer > button.is-primary:focus-visible {
+  background: #4a4a4c;
+}
+
+.cal-dialog .is-danger {
+  color: #d04f57;
+}
+
+.cal-dialog .cal-label-colors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  border: 0;
+  padding: 0;
+  margin: 20px 0 0;
+}
+
+.cal-dialog .cal-label-colors legend {
+  margin-bottom: 10px;
+}
+
+.cal-dialog .cal-label-colors button {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  color: #fff;
+}
+
+.cal-dialog .cal-label-colors button:focus-visible {
+  filter: brightness(.82);
+}
+@media (prefers-reduced-motion: reduce) {
+.cal-dialog-backdrop,
+.cal-dialog {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+
+}
+
+.cal-dialog :is(input:not([type=radio]):not([type=checkbox]), select):focus {
+  outline: none;
+  border-color: light-dark(#8a8a8c, #969da9);
+  box-shadow: inset 0 0 0 1px light-dark(#8a8a8c, #969da9);
+}
+
+@keyframes cal-pop {
+from {
+    opacity: 0;
+    transform: translateY(4px) scale(.96);
+  }
+
+to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+}
+@keyframes cal-fade {
+from {
+    opacity: 0;
+  }
+
+to {
+    opacity: 1;
+  }
+
+}
+.cal-overlay-presence,
+.cal-overlay-presence[data-state=closed] {
+  opacity: 1;
+  transition: none;
+}
+.cal-overlay-presence .cal-dialog-backdrop {
+  transition: background-color 140ms ease;
+}
+.cal-overlay-presence[data-state=closed] .cal-dialog-backdrop {
+  background-color: transparent;
+  backdrop-filter: blur(0);
+  -webkit-backdrop-filter: blur(0);
+}
+.cal-overlay-presence .cal-dialog {
+  transition: transform 180ms cubic-bezier(.2, .8, .2, 1), opacity 180ms ease;
+}
+.cal-overlay-presence[data-state=closed] .cal-dialog {
+  opacity: 0;
+}
+:is(.wb-shell, .tbx-portal-host) .cal-dialog {
+  border: 0 !important;
+  border-radius: 22px !important;
+  box-shadow: var(--tb-shadow-3) !important;
+}
+:is(.wb-shell, .tbx-portal-host) .cal-dialog h2 {
+  font-size: 19px !important;
+  letter-spacing: -0.012em;
+}
+:is(.wb-shell, .tbx-portal-host) .cal-dialog footer > button:not(.tbx-confirm-btn) {
+  min-height: 36px;
+  padding: 0 16px;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: var(--tb-fill) !important;
+  color: var(--tb-ink);
+  font-weight: 600;
+  transition: background var(--tb-d1), transform var(--tb-d2) var(--tb-spring);
+}
+:is(.wb-shell, .tbx-portal-host) .cal-dialog footer > button:not(.tbx-confirm-btn):hover {
+  background: var(--tb-fill-hover) !important;
+}
+:is(.wb-shell, .tbx-portal-host) .cal-dialog footer > button:not(.tbx-confirm-btn):active {
+  transform: scale(0.96);
+}
+:is(.wb-shell, .tbx-portal-host) .cal-dialog footer > .tbx-confirm-btn {
+  height: 36px;
+  border-radius: 999px;
+}
+:is(.wb-shell, .tbx-portal-host) .cal-dialog :is(input[type=text], input[type=number], input:not([type]), select, textarea) {
+  border: 1px solid transparent !important;
+  border-radius: 11px !important;
+  background-color: var(--tb-fill) !important;
+  color: var(--tb-ink);
+  outline: none !important;
+  transition:
+    background-color var(--tb-d2),
+    border-color var(--tb-d2),
+    box-shadow var(--tb-d2);
+}
+:is(.wb-shell, .tbx-portal-host) .cal-dialog :is(input[type=text], input[type=number], input:not([type]), select, textarea):focus,
+:is(.wb-shell, .tbx-portal-host) .cal-dialog :is(input[type=text], input[type=number], input:not([type]), select, textarea):focus-visible {
+  border-color: var(--tb-accent) !important;
+  background-color: var(--tb-surface) !important;
+  box-shadow: var(--tb-ring) !important;
+}
+:is(.wb-shell, .tbx-portal-host) .cal-dialog footer > button.is-primary {
+  background: var(--tb-accent) !important;
+  color: #fff;
+}
+:is(.wb-shell, .tbx-portal-host) .cal-dialog footer > button.is-primary:hover,
+:is(.wb-shell, .tbx-portal-host) .cal-dialog footer > button.is-primary:focus-visible {
+  background: color-mix(in oklab, var(--tb-accent) 88%, black) !important;
+}
+:is(.wb-shell, .tbx-portal-host) .cal-dialog-backdrop {
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.cal-dialog .cal-icon-button { display: inline-grid; place-items: center; padding: 0; border-radius: 8px; background: transparent; }

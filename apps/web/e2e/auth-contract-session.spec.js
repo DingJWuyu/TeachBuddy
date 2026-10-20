@@ -57,7 +57,7 @@ async function signIn(page, { email, password, nickname, remember = true }) {
   await page.getByLabel('邮箱', { exact: true }).fill(email);
   await page.getByLabel('密码', { exact: true }).fill(password);
   if (!remember) await page.getByLabel('记住我').uncheck();
-  await page.getByRole('button', { name: '登录', exact: true }).click();
+  await page.getByRole('button', { name: /^登录(?: ›)?$/ }).click();
   await expect(page.locator('[data-harness-nickname]')).toHaveText(nickname);
 }
 
@@ -180,7 +180,7 @@ test('记住我保存失败：继续当前会话进入 page 模式，刷新回�
   });
   await page.getByLabel('邮箱', { exact: true }).fill(TEACHER.email);
   await page.getByLabel('密码', { exact: true }).fill(TEACHER.password);
-  await page.getByRole('button', { name: '登录', exact: true }).click();
+  await page.getByRole('button', { name: /^登录(?: ›)?$/ }).click();
 
   await expect(page.getByRole('heading', { name: '保存登录状态' })).toBeVisible();
   await expect(page.getByText('登录已完成，但登录状态未能保存。')).toBeVisible();
@@ -204,7 +204,7 @@ test('记住我保存失败：重试保存成功后刷新可恢复（PN01 / WB-A
   });
   await page.getByLabel('邮箱', { exact: true }).fill(TEACHER.email);
   await page.getByLabel('密码', { exact: true }).fill(TEACHER.password);
-  await page.getByRole('button', { name: '登录', exact: true }).click();
+  await page.getByRole('button', { name: /^登录(?: ›)?$/ }).click();
   await expect(page.getByRole('heading', { name: '保存登录状态' })).toBeVisible();
 
   await page.getByRole('button', { name: '重试保存登录状态' }).click();
@@ -226,7 +226,7 @@ test('离开保存失败卡：定向撤销旧身份且迟到结果不改写新�
   });
   await page.getByLabel('邮箱', { exact: true }).fill(TEACHER.email);
   await page.getByLabel('密码', { exact: true }).fill(TEACHER.password);
-  await page.getByRole('button', { name: '登录', exact: true }).click();
+  await page.getByRole('button', { name: /^登录(?: ›)?$/ }).click();
   await expect(page.getByRole('heading', { name: '保存登录状态' })).toBeVisible();
   const pending = (await readState(PORT)).sessions.find((session) => session.state === 'pending');
 
@@ -359,12 +359,12 @@ test('已知未发出的离线失败可重试，不为注册业务制造副作�
 
   await page.context().setOffline(true);
   expect(await page.evaluate(() => navigator.onLine)).toBe(false);
-  await page.getByRole('button', { name: '登录', exact: true }).click();
+  await page.getByRole('button', { name: /^登录(?: ›)?$/ }).click();
   await expect(page.getByText('网络连接不可用，请检查网络后重试。')).toBeVisible();
   expect(await requestsFor(PORT, { method: 'POST', path: '/api/auth/login' })).toHaveLength(0);
 
   await page.context().setOffline(false);
-  await page.getByRole('button', { name: '登录', exact: true }).click();
+  await page.getByRole('button', { name: /^登录(?: ›)?$/ }).click();
   await expect(page.locator('[data-harness-nickname]')).toHaveText(TEACHER.nickname);
 });
 
@@ -376,7 +376,7 @@ test('请求超时：登录按普通失败、注册按结果未确认（L02 / CC
   await armFault(PORT, { operation: 'login', kind: 'delay', ms: 4000, times: 1 });
   await page.getByLabel('邮箱', { exact: true }).fill(TEACHER.email);
   await page.getByLabel('密码', { exact: true }).fill(TEACHER.password);
-  await page.getByRole('button', { name: '登录', exact: true }).click();
+  await page.getByRole('button', { name: /^登录(?: ›)?$/ }).click();
   await expect(page.getByText('请求超时，请重试。')).toBeVisible();
   await expect(page.getByLabel('邮箱', { exact: true })).toHaveValue(TEACHER.email);
   await expect
@@ -439,7 +439,7 @@ test('跨页身份变化只触发核验，不清除另一账户的当前会话�
   await expect(second.getByRole('heading', { name: '欢迎回来' })).toBeVisible();
   await second.getByLabel('邮箱', { exact: true }).fill(OTHER.email);
   await second.getByLabel('密码', { exact: true }).fill(OTHER.password);
-  await second.getByRole('button', { name: '登录', exact: true }).click();
+  await second.getByRole('button', { name: /^登录(?: ›)?$/ }).click();
   await expect(second.locator('[data-harness-nickname]')).toHaveText(OTHER.nickname);
 
   await page.bringToFront();
@@ -455,7 +455,7 @@ test('登录迟到 pending 不激活，也不污染已切换的新表单（RA02 
   await armFault(PORT, { operation: 'login', kind: 'delay', ms: 1500, times: 1 });
   await page.getByLabel('邮箱', { exact: true }).fill(TEACHER.email);
   await page.getByLabel('密码', { exact: true }).fill(TEACHER.password);
-  await page.getByRole('button', { name: '登录', exact: true }).click();
+  await page.getByRole('button', { name: /^登录(?: ›)?$/ }).click();
 
   await page.getByRole('button', { name: '创建账户' }).click();
   await page.getByLabel('昵称', { exact: true }).fill('迟到的新教师');
@@ -480,7 +480,7 @@ test('账户重置撤销所有旧会话，其他账户不受影响（IS01 / WB-A
   await expect(second.getByRole('heading', { name: '欢迎回来' })).toBeVisible();
   await second.getByLabel('邮箱', { exact: true }).fill(OTHER.email);
   await second.getByLabel('密码', { exact: true }).fill(OTHER.password);
-  await second.getByRole('button', { name: '登录', exact: true }).click();
+  await second.getByRole('button', { name: /^登录(?: ›)?$/ }).click();
   await expect(second.locator('[data-harness-nickname]')).toHaveText(OTHER.nickname);
 
   await revokeAccount(PORT, TEACHER.email);
@@ -499,7 +499,7 @@ test('登录响应晚到但请求已在线发送时按普通失败重试（CC-RA
   await armFault(PORT, { operation: 'login', kind: 'delay', ms: 600, times: 1 });
   await page.getByLabel('邮箱', { exact: true }).fill(TEACHER.email);
   await page.getByLabel('密码', { exact: true }).fill(TEACHER.password);
-  await page.getByRole('button', { name: '登录', exact: true }).click();
+  await page.getByRole('button', { name: /^登录(?: ›)?$/ }).click();
   await expect(page.locator('[data-harness-nickname]')).toHaveText(TEACHER.nickname);
   const requests = await requestsFor(PORT, { method: 'POST', path: '/api/auth/login' });
   expect(requests).toHaveLength(1);
@@ -518,7 +518,7 @@ test('保存失败期间的其他页面通知只触发核验，不误报过期�
   });
   await page.getByLabel('邮箱', { exact: true }).fill(TEACHER.email);
   await page.getByLabel('密码', { exact: true }).fill(TEACHER.password);
-  await page.getByRole('button', { name: '登录', exact: true }).click();
+  await page.getByRole('button', { name: /^登录(?: ›)?$/ }).click();
   await expect(page.getByRole('heading', { name: '保存登录状态' })).toBeVisible();
 
   const second = await context.newPage();
@@ -526,7 +526,7 @@ test('保存失败期间的其他页面通知只触发核验，不误报过期�
   await expect(second.getByRole('heading', { name: '欢迎回来' })).toBeVisible();
   await second.getByLabel('邮箱', { exact: true }).fill(OTHER.email);
   await second.getByLabel('密码', { exact: true }).fill(OTHER.password);
-  await second.getByRole('button', { name: '登录', exact: true }).click();
+  await second.getByRole('button', { name: /^登录(?: ›)?$/ }).click();
   await expect(second.locator('[data-harness-nickname]')).toHaveText(OTHER.nickname);
 
   await page.waitForTimeout(500);

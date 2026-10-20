@@ -27,10 +27,10 @@ test('受控Agent回答的中文、行内与独立公式可读，错误源码和
     await page.getByLabel('密码', { exact: true }).fill('math-password');
     await page.getByRole('button', { name: '登录', exact: true }).click();
     await page.getByRole('button', { name: '知道了', exact: true }).click();
-    await page.locator('.restored-start').click();
+    await page.locator('.tbx-composer.is-placeholder').click();
     await page.getByRole('textbox', { name: 'AI 输入', exact: true }).fill('请解释公式，保留中文。');
     await page.getByRole('button', { name: '发送', exact: true }).click();
-    const reply = page.locator('.agent-message:not(.is-user)');
+    const reply = page.locator('.tbx-msg:not(.is-user)');
     for (const reloaded of [false, true]) {
       if (reloaded) await page.reload();
       await expect(reply).toContainText('行内公式');

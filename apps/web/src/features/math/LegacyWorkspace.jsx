@@ -5,7 +5,7 @@ import { constructionIssue } from '@teachbuddy/shared/math/geometry';
 import { projectSpace } from '@teachbuddy/shared/math/graphics';
 import { useScrollRestore } from '../../components/interaction/useScrollRestore.js';
 import { ModulePresence } from '../../components/interaction/ModuleMotion.jsx';
-import { Popover, MenuItem } from '../../components/interaction/ModuleOverlays.jsx';
+import { Menu as Popover, MenuItem } from '../../components/ui/menu.jsx';
 import { Icon } from '../../components/icons.jsx';
 import { ShellContext } from '../workbench/shellContext.js';
 import { MathTools } from './Integration.jsx';
@@ -333,7 +333,17 @@ export default function LegacyWorkspace({ session, font, fontError, fontAttempt,
       {confirmationDialog}
       <section className="math-main">
         <header className="math-workspace-header">
-          <div className="math-workspace-identity"><span className="math-module-icon"><Icon name="math" size={25}/></span><h1 className="math-heading">{t("数学工坊")}</h1></div>
+        {!home && <div className="math-document-bar">
+          <button className="math-return" onClick={goHome}><Icon name="back"/><span>{t("返回工坊")}</span></button>
+          <input className="math-work-title" aria-label={t("作品名称")} readOnly={!!draft.deletedAt} value={draft.title} onChange={e => edit({ ...draft, title: e.target.value })}/>
+          <span className="math-workspace-status" role="status">{draft.deletedAt ? t("已归档") : mathStatusLabel(status)}</span>
+          {!draft.deletedAt && <div className="math-undo-actions" aria-label={t("编辑历史")}>
+            {['undo', 'redo'].map(direction => <button key={direction} className="math-icon-button" aria-label={direction === 'undo' ? t("撤销") : t("重做")} title={direction === 'undo' ? t("撤销 (Ctrl/Cmd+Z)") : t("重做 (Ctrl/Cmd+Shift+Z)")} disabled={!canChangeHistory || !(direction === 'undo' ? history.canUndo : history.canRedo)} onClick={() => moveHistory(direction)}>
+              <Icon name={direction} size={18}/>
+            </button>)}
+          </div>}
+        </div>}
+
           {!home && <WorkspaceToolbar draft={draft} busy={busy} readOnly={readOnly} pending={pending} empty={session.empty}
             exportOpen={!!viewScene.exportOpen} onHome={goHome} onSave={() => save()} onCopy={() => save(true)}
             onHistory={() => setHistoryOpen(true)} onDynamic={makeDynamicCopy}
@@ -342,16 +352,6 @@ export default function LegacyWorkspace({ session, font, fontError, fontAttempt,
           <input ref={sourceFile} type="file" accept=".json,application/json" aria-label={t("导入制作源文件")} hidden onChange={e => { importSource(e.target.files[0]); e.target.value = ''; }}/>
           {importPending && <button disabled={busy} onClick={() => importHtml()}>{importPending.requiresReselection ? t("重选原文件并确认上传") : t("重试原文件上传")}</button>}
         </header>
-        {!home && <div className="math-document-bar">
-          <button className="math-return" onClick={goHome}><Icon name="back"/><span>{t("返回工坊")}</span></button>
-          <input className="math-work-title" aria-label={t("作品名称")} readOnly={!!draft.deletedAt} value={draft.title} onChange={e => edit({ ...draft, title: e.target.value })}/>
-          <span className="math-workspace-status" role="status">{draft.deletedAt ? t("已归档") : mathStatusLabel(status)}</span>
-          {!draft.deletedAt && <div className="math-undo-actions" aria-label={t("编辑历史")}>
-            {['undo', 'redo'].map(direction => <button key={direction} className="math-icon-button" aria-label={direction === 'undo' ? t("撤销") : t("重做")} title={direction === 'undo' ? t("撤销 (Ctrl/Cmd+Z)") : t("重做 (Ctrl/Cmd+Shift+Z)")} disabled={!canChangeHistory || !(direction === 'undo' ? history.canUndo : history.canRedo)} onClick={() => moveHistory(direction)}>
-              <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={direction === 'redo' ? { transform: 'scaleX(-1)' } : undefined}><path d="M7 4 3 8l4 4M3 8h8a5 5 0 0 1 0 10"/></svg>
-            </button>)}
-          </div>}
-        </div>}
         {fontError && (
           <div role="alert" className="math-message">
             {fontError}

@@ -156,17 +156,16 @@ test('旧空间源自定义顶点与棱、改名删点、投影保存重开', as
 
 test('HTML 从当前菜单导入、源码修改、保存重开及真实离线交互', async ({ page, browser }, info) => {
   const chooser = page.waitForEvent('filechooser');
-  await page.getByRole('button', { name: '作品操作', exact: true }).click();
-  await page.getByRole('menuitem', { name: '导入网页', exact: true }).click();
+  await page.getByRole('complementary', { name: '数学工坊导航', exact: true }).getByRole('button', { name: /^导入网页/ }).click();
   await (await chooser).setFiles({ name: '外部演示.html', mimeType: 'text/html', buffer: Buffer.from('<!doctype html><meta charset="utf-8"><h1>三角形面积</h1><button onclick="document.querySelector(\'output\').textContent=6">计算</button><output>0</output>') });
   await expect(page.getByLabel('作品名称')).toHaveValue('外部演示.html');
   await save(page);
   await page.getByRole('button', { name: '编辑源码', exact: true }).click();
-  const editor = page.getByLabel('网页源码');
+  const editor = page.getByLabel('网页源码', { exact: true });
   await editor.fill((await editor.inputValue()).replace('三角形面积', '底为四、高为三').replace('textContent=6', 'textContent=12'));
   await save(page);
   await page.reload();
-  await page.getByRole('button', { name: '运行预览', exact: true }).click();
+  await page.locator('.math-html .math-add').getByRole('button', { name: '运行预览', exact: true }).click();
   const preview = page.frameLocator('iframe[title="作品隔离预览"]').frameLocator('iframe');
   await expect(preview.locator('h1')).toHaveText('底为四、高为三');
   await preview.getByRole('button', { name: '计算' }).click();
@@ -254,7 +253,7 @@ test('旧动态源拖动绑定、步骤开场及移除全部参数后保存重�
   expect(saved.source.initialStepId).toBe(saved.source.steps[1].id);
   await openTool(page, 'parameters');
   await page.getByRole('button', { name: '移除参数 t', exact: true }).click();
-  await page.getByRole('dialog').getByRole('button', { name: '继续', exact: true }).click();
+  await page.getByRole('alertdialog').getByRole('button', { name: '继续', exact: true }).click();
   saved = await save(page);
   expect(saved.source.parameters).toEqual([]);
   expect(saved.source.drags).toEqual([]);

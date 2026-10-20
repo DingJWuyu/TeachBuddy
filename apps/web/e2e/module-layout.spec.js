@@ -1,71 +1,48 @@
+import fs from 'node:fs';
 import { expect, test } from '@playwright/test';
-import {
-  accountFor,
-  expectNoHorizontalOverflow,
-  expectWithinViewport,
-  loginTeacher,
-  registerTeacher
-} from './helpers.js';
-
-function groupRegion(page, name) {
-  return page.getByRole('region', { name: '模块分组：' + name });
-}
-
-test('teacher can persist empty workspace groups through the sidebar and settings', async ({ page, browser }, testInfo) => {
-  const account = accountFor('empty-layout', testInfo, 'empty layout password');
-  await registerTeacher(page, account);
-
-  await page.getByLabel('新分组名称').fill('第一组');
-  await page.getByRole('button', { name: '创建分组' }).click();
-  await page.getByLabel('新分组名称').fill('第二组');
-  await page.getByRole('button', { name: '创建分组' }).click();
-
-  await groupRegion(page, '第一组').getByLabel('重命名分组 第一组').fill('近期安排');
-  await groupRegion(page, '第一组').getByLabel('重命名分组 第一组').press('Enter');
-  await expect(groupRegion(page, '近期安排')).toBeVisible();
-
-  await groupRegion(page, '第二组').getByLabel('拖动分组 第二组').dragTo(
-    groupRegion(page, '近期安排').getByRole('list')
-  );
-  const groupNames = await page.getByRole('region').evaluateAll((regions) => regions
-    .map((region) => region.getAttribute('aria-label'))
-    .filter((label) => label?.startsWith('模块分组：')));
-  expect(groupNames).toEqual(['模块分组：第二组', '模块分组：近期安排']);
-
-  await page.getByRole('button', { name: '设置' }).click();
-  await expect(page.getByRole('heading', { name: '工作台设置' })).toBeVisible();
-  await expect(page.getByRole('checkbox')).toHaveCount(0);
-  await page.getByRole('button', { name: '工作台首页' }).click();
-  await expect(page.locator('[data-layout-module]')).toHaveCount(0);
-
-  await groupRegion(page, '第二组').getByRole('button', { name: '删除分组 第二组' }).click();
-  await expect(groupRegion(page, '第二组')).not.toBeVisible();
-  await page.reload();
-  await expect(groupRegion(page, '近期安排')).toBeVisible();
-  await expect(page.locator('[data-layout-module]')).toHaveCount(0);
-
-  const otherContext = await browser.newContext({ baseURL: 'http://127.0.0.1:5183' });
-  const otherPage = await otherContext.newPage();
-  try {
-    await otherPage.goto('/');
-    await loginTeacher(otherPage, account);
-    await expect(groupRegion(otherPage, '近期安排')).toBeVisible();
-    await expect(otherPage.locator('[data-layout-module]')).toHaveCount(0);
-  } finally {
-    await otherContext.close();
-  }
+import { createIntegration } from '../../api/test/fixtures/auth-integration/harness.js';
+import { register, login } from './teaching-time-auth/helpers.mjs';
+import { addNavigationGroup, navigationGroup, pointerDrag } from './catalog-navigation.helpers.mjs';
+let world;
+test.beforeEach(async ({ page }) => {
+  world = await createIntegration(); await register(page, world);
+  await page.getByRole('button', { name: '知道了', exact: true }).click();
+});
+test.afterEach(async ({ context }, info) => {
+  await context.close(); await world.close();
+  if (info.status === info.expectedStatus) fs.rmSync(world.directory, { recursive: true, force: true });
 });
 
-test('empty workspace layout remains usable at a narrow viewport', async ({ page }, testInfo) => {
-  await page.setViewportSize({ width: 390, height: 844 });
-  await registerTeacher(page, accountFor('empty-layout-narrow', testInfo, 'narrow layout password'));
+test('空分组重命名、重排与解散在独立设备读回', async ({ page, browser }) => {
+  await addNavigationGroup(page, '第一组');
+  await addNavigationGroup(page, '第二组');
+  await navigationGroup(page, '第一组').getByRole('button', { name: '分组选项', exact: true }).click();
+  await page.getByRole('menuitem', { name: '重命名分组', exact: true }).click();
+  const rename = page.getByRole('textbox', { name: '重命名分组', exact: true });
+  await rename.fill('近期安排'); await rename.press('Enter');
+  await pointerDrag(page, navigationGroup(page, '第二组').locator('.tbx-group-head'), navigationGroup(page, '近期安排').locator('.tbx-group-head'), { top: true });
+  await expect.poll(() => page.locator('.tbx-group-name').allTextContents()).toEqual(['教学', '第二组', '近期安排']);
+  await page.reload();
+  await expect.poll(() => page.locator('.tbx-group-name').allTextContents()).toEqual(['教学', '第二组', '近期安排']);
+  await navigationGroup(page, '第二组').getByRole('button', { name: '分组选项', exact: true }).click();
+  await page.getByRole('menuitem', { name: '解散分组', exact: true }).click();
+  await page.getByRole('menuitem', { name: '确认解散', exact: true }).click();
+  await expect(navigationGroup(page, '第二组')).toHaveCount(0);
+  const context = await browser.newContext({ ignoreHTTPSErrors: true });
+  try {
+    const other = await context.newPage(); await other.goto(world.origin); await login(other);
+    await other.getByRole('button', { name: '知道了', exact: true }).click();
+    await expect(navigationGroup(other, '近期安排')).toBeVisible();
+    await expect(navigationGroup(other, '第二组')).toHaveCount(0);
+  } finally { await context.close(); }
+});
 
-  await expectNoHorizontalOverflow(page);
-  await page.getByLabel('新分组名称').fill('移动端分组');
-  await expectWithinViewport(page, page.getByRole('button', { name: '创建分组' }));
-  await page.getByRole('button', { name: '创建分组' }).click();
-  await expect(groupRegion(page, '移动端分组')).toBeVisible();
-  await page.getByRole('button', { name: '设置' }).click();
-  await expect(page.getByRole('heading', { name: '工作台设置' })).toBeVisible();
-  await expectNoHorizontalOverflow(page);
+test('窄屏抽屉可新建分组并前往设置', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.getByRole('button', { name: '打开工作台导航', exact: true }).click();
+  await addNavigationGroup(page, '移动端分组');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.locator('.tb-account-row').click();
+  await expect(page.locator('.wb-shell')).toHaveAttribute('data-route', 'settings');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });

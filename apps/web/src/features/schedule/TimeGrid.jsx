@@ -15,8 +15,20 @@ import { ModulePresence, useModuleDialogFocus } from '../../components/interacti
 
 const plugins = [timeGridPlugin, dayGridPlugin, interactionPlugin];
 
-function MonthMore({ date, events, onClose, onOpen, disabled }) {
+function MonthMore({ date, events, onClose, onOpen, disabled, anchor }) {
   const panel = useRef(null);
+  useLayoutEffect(() => {
+    const node = panel.current;
+    if (!node || !anchor) return;
+    const width = node.offsetWidth, height = node.offsetHeight, margin = 12;
+    let left = anchor.left - 8;
+    if (left + width > innerWidth - margin) left = anchor.left + anchor.width + 8 - width;
+    left = Math.min(Math.max(left, margin), innerWidth - width - margin);
+    const top = Math.min(Math.max(anchor.top - 6, margin), innerHeight - height - margin);
+    node.style.left = `${left}px`;
+    node.style.top = `${top}px`;
+    node.style.setProperty('--tbx-origin', `${anchor.left + anchor.width / 2 - left}px ${anchor.top + anchor.height / 2 - top}px`);
+  }, [anchor, events.length]);
   const eventsRef = useRef(events); eventsRef.current = events;
   const gesture = useRef(null);
   useEffect(() => {
@@ -37,7 +49,7 @@ function MonthMore({ date, events, onClose, onOpen, disabled }) {
   }, [disabled]);
   const label = new Intl.DateTimeFormat(i18n.resolvedLanguage, { dateStyle: 'long', timeZone: 'UTC' }).format(new Date(`${date}T00:00:00Z`));
   useModuleDialogFocus(panel, onClose);
-  return <section ref={panel} className="cal-month-more-popover fc-more-popover" role="dialog" aria-label={label}>
+  return <section ref={panel} className={`cal-month-more-popover fc-more-popover${anchor ? ' is-anchored' : ''}`} role="dialog" aria-label={label}>
     <header><span>{label}</span><IconButton name="close" label={i18n.t('关闭', { ns: 'schedule' })} onClick={onClose}/></header>
     <div className="cal-month-more-body">{events.map(event => <button type="button" key={event.id} data-event-id={event.id} disabled={disabled} className={`cal-month-more-event fc-daygrid-event fc-event${event.extendedProps.selected ? ' is-selected' : ''}`} style={{ background: event.backgroundColor, color: event.textColor }} onPointerDown={e => { gesture.current = { x: e.clientX, y: e.clientY, dragged: false }; }} onClick={() => { if (!gesture.current?.dragged) onOpen(event.extendedProps.occurrence); }}>
       <i style={{ background: event.extendedProps.color }}/><span title={event.title}>{event.title}</span>
@@ -45,12 +57,24 @@ function MonthMore({ date, events, onClose, onOpen, disabled }) {
   </section>;
 }
 
+function draftEvent(draft, month) {
+  const time = !month && draft && !draft.id && draft.content?.time;
+  if (!time) return [];
+  const allDay = Boolean(draft.content.calendar?.allDay);
+  const start = Date.parse(`${time.date}T${allDay ? '00:00' : time.startTime}:00Z`);
+  const end = start + Math.max(allDay ? 1440 : 5, time.durationMinutes || 60) * 60000;
+  if (!Number.isFinite(start) || !Number.isFinite(end)) return [];
+  const iso = value => new Date(value).toISOString().slice(0, 19);
+  return [{ id: '__draft', title: draft.content.title || '', start: allDay ? time.date : iso(start), end: allDay ? iso(end).slice(0, 10) : iso(end), allDay, editable: true, durationEditable: true, extendedProps: { draft: true } }];
+}
+
 export default function TimeGrid({ view, anchor, zone, occurrences, labels, selected, onSelect, onClear, onOpen, onMove, onRange, onDay,
-  scroll, monthScroll, onScroll, onMonthScroll, disabled }) {
+  scroll, monthScroll, onScroll, onMonthScroll, onDraftMove, disabled }) {
   const { t } = useTranslation("schedule");
   const ref = useRef(null);
   const host = useRef(null);
   const gesture = useRef({ active: false, cancelled: false });
+  const heldScroll = useRef(null);
   useEffect(() => {
     const begin = event => {
       if (event.button !== 0 || !(host.current?.contains(event.target) || event.target.closest('.cal-month-more-event'))) return;
@@ -61,7 +85,13 @@ export default function TimeGrid({ view, anchor, zone, occurrences, labels, sele
       const current = gesture.current;
       if (current.active && Math.hypot(event.clientX - current.x, event.clientY - current.y) >= 3) current.moved = true;
     };
-    const finish = () => { gesture.current.active = false; };
+    const finish = () => {
+      const current = gesture.current;
+      current.active = false;
+      if (!current.moved) return;
+      current.settleUntil = performance.now() + 200;
+      setTimeout(() => { const held = heldScroll.current; heldScroll.current = null; held?.(); }, 220);
+    };
     const cancel = event => {
       const current = gesture.current;
       if (event.key !== 'Escape' || !current.active || !current.moved) return;
@@ -93,8 +123,11 @@ export default function TimeGrid({ view, anchor, zone, occurrences, labels, sele
     const dismiss = event => {
       if (!event.target.closest('.cal-month-more-popover, .fc-daygrid-more-link')) setMore(null);
     };
+    const drift = () => { if (!gesture.current.active) setMore(null); };
+    const scroller = host.current;
     document.addEventListener('pointerdown', dismiss);
-    return () => document.removeEventListener('pointerdown', dismiss);
+    scroller?.addEventListener('scroll', drift, { passive: true });
+    return () => { document.removeEventListener('pointerdown', dismiss); scroller?.removeEventListener('scroll', drift); };
   }, [more]);
   const monthStart = `${anchor.slice(0, 7)}-01`;
   const [extended, setExtended] = useState(() => monthScroll?.anchor === anchor ? { key: monthStart, range: monthScroll.range } : null);
@@ -110,7 +143,7 @@ export default function TimeGrid({ view, anchor, zone, occurrences, labels, sele
       event.extendedProps.selected = true;
     }
     return event;
-  }), [occurrences, zone, labels, selected?.id, selected?.origin, i18n.resolvedLanguage]);
+  }).concat(draftEvent(selected, month)), [occurrences, zone, labels, selected, month, i18n.resolvedLanguage]);
   useLayoutEffect(() => {
     if (!month || !host.current) return;
     const node = host.current;
@@ -140,7 +173,7 @@ export default function TimeGrid({ view, anchor, zone, occurrences, labels, sele
     // UTC-shaped values place the local clock on the floating-time grid.
     return new Date(`${parts.date}T${formatClock(parts.minutes)}:${new Date(stamp).toISOString().slice(17)}`);
   }, [zone]);
-  useEffect(() => { if (!selected || selected.id) ref.current?.getApi().unselect(); }, [selected?.id, selected?.clientId]);
+  useEffect(() => { if (!selected || selected.id || !month && selected.content?.time) ref.current?.getApi().unselect(); }, [selected?.id, selected?.clientId, month]);
   useEffect(() => {
     const api = ref.current?.getApi();
     if (!api) return;
@@ -160,6 +193,10 @@ export default function TimeGrid({ view, anchor, zone, occurrences, labels, sele
       adjusting.current = false;
     });
     const listener = () => {
+      if (gesture.current.active && gesture.current.moved || performance.now() < (gesture.current.settleUntil || 0)) {
+        heldScroll.current = listener;
+        return;
+      }
       if (!month) { callbacks.current.onScroll(node.scrollTop); return; }
       if (adjusting.current) return;
       const bounds = node.getBoundingClientRect();
@@ -188,7 +225,12 @@ export default function TimeGrid({ view, anchor, zone, occurrences, labels, sele
     const frame = requestAnimationFrame(() => { adjusting.current = false; });
     return () => cancelAnimationFrame(frame);
   }, [visible]);
-  return <div className={`cal-grid-wrap${month ? ' is-month' : ''}`} ref={host} data-region="time-grid">
+  return <div className={`cal-grid-wrap${month ? ' is-month' : ''}`} ref={host} data-region="time-grid" onDoubleClick={event => {
+    if (!month || disabled) return;
+    const cell = event.target.closest('.fc-daygrid-day');
+    if (!cell || event.target.closest('.fc-event, .fc-daygrid-more-link')) return;
+    ref.current?.getApi().select({ start: cell.dataset.date, end: addDays(cell.dataset.date, 1), allDay: true });
+  }}>
     <FullCalendar ref={ref} key={`${kind}:${month ? monthStart : view.days}`} plugins={plugins} locales={[zhCnLocale]} locale={i18n.resolvedLanguage?.startsWith("zh") ? "zh-cn" : "en"} initialView={kind} initialDate={anchor}
       views={{ calendarDays: { type: 'timeGrid', duration: { days: view.days || 7 } }, calendarMonth: { type: 'dayGrid' } }}
       visibleRange={visible} height={month ? 'auto' : '100%'} headerToolbar={false} firstDay={1} timeZone="UTC"
@@ -206,10 +248,11 @@ export default function TimeGrid({ view, anchor, zone, occurrences, labels, sele
       moreLinkClick={info => {
         const date = info.date.toISOString().slice(0, 10);
         const ids = [...new Set(info.allSegs.map(seg => seg.event.id))];
-        setMore(current => current?.date === date ? null : { date, ids });
+        const box = info.jsEvent?.target?.closest?.('.fc-daygrid-day')?.getBoundingClientRect();
+        setMore(current => current?.date === date ? null : { date, ids, anchor: box && { left: box.left, top: box.top, width: box.width, height: box.height } });
         return true;
       }}
-      events={events} eventClassNames={info => info.isMirror && !info.event.title && !info.event.extendedProps.occurrence ? ['cal-selection-preview'] : selected && info.event.extendedProps.occurrence?.key.entryId === selected.id &&
+      events={events} eventClassNames={info => info.event.extendedProps.draft ? ['cal-draft-event'] : info.isMirror && !info.event.title && !info.event.extendedProps.occurrence ? ['cal-selection-preview'] : selected && info.event.extendedProps.occurrence?.key.entryId === selected.id &&
         (info.event.extendedProps.occurrence?.key.originDate ?? null) === (selected.origin ?? null) ? ['is-selected'] : []}
       dayHeaderContent={arg => <span className="cal-day-heading"><span>{weekdayLabel(arg.date.toISOString().slice(0, 10))}</span>{!month && <button type="button" className={arg.isToday ? 'is-today' : ''} aria-label={t("查看 {{value}}", { value: arg.date.toISOString().slice(0, 10) })} onClick={() => onDay(arg.date.toISOString().slice(0, 10))}>{arg.date.getUTCDate()}</button>}</span>}
       dayCellContent={arg => month ? <span className={arg.isToday ? 'cal-today-dot' : ''}>{arg.date.getUTCDate() === 1 ? formatDateLabel(arg.date.toISOString().slice(0, 10)) : arg.date.getUTCDate()}</span> : null}
@@ -219,19 +262,23 @@ export default function TimeGrid({ view, anchor, zone, occurrences, labels, sele
         if (selectedEvent && Date.parse(`${selectedEvent.start}Z`) < arg.date.getTime() + 86400000 && Date.parse(`${selectedEvent.end}Z`) > arg.date.getTime()) classes.push('cal-selected-day');
         return classes;
       }}
-      eventContent={info => info.isMirror && !info.event.title && !info.event.extendedProps.occurrence ? <span className="cal-selection-time">{info.event.startStr.slice(11, 16)} - {info.event.endStr.slice(0, 10) !== info.event.startStr.slice(0, 10) ? `${formatDateLabel(info.event.endStr.slice(0, 10))} ` : ''}{info.event.endStr.slice(11, 16)}</span> : <div className={`cal-event-content${month || info.event.allDay ? ' is-compact' : ''}`}>
+      eventContent={info => info.event.extendedProps.draft ? <span className="cal-draft-content">
+        {!info.event.allDay && <span className="cal-selection-time">{info.event.startStr.slice(11, 16)} - {info.event.endStr.slice(0, 10) !== info.event.startStr.slice(0, 10) ? `${formatDateLabel(info.event.endStr.slice(0, 10))} ` : ''}{info.event.endStr.slice(11, 16)}</span>}
+        {info.event.title && <span className="cal-event-title">{info.event.title}</span>}
+      </span> : info.isMirror && !info.event.title && !info.event.extendedProps.occurrence ? <span className="cal-selection-time">{info.event.startStr.slice(11, 16)} - {info.event.endStr.slice(0, 10) !== info.event.startStr.slice(0, 10) ? `${formatDateLabel(info.event.endStr.slice(0, 10))} ` : ''}{info.event.endStr.slice(11, 16)}</span> : <div className={`cal-event-content${month || info.event.allDay ? ' is-compact' : ''}`}>
         {month ? <i style={{ background: info.event.extendedProps.color }}/> : !info.event.allDay && <span className="cal-event-time">{info.timeText.replace('–', ' - ')}</span>}
         <span className="cal-event-title">{info.event.title}</span>
       </div>}
       datesSet={info => callbacks.current.onRange(info.startStr.slice(0, 10), addDays(info.endStr.slice(0, 10), -1))}
-      dateClick={() => { if (!gesture.current.cancelled) onClear(); }}
+      dateClick={() => { if (!gesture.current.cancelled && !gesture.current.selected) onClear(); }}
       select={info => {
+        gesture.current.selected = true;
         if (gesture.current.cancelled) ref.current?.getApi().unselect();
         else onSelect(info.startStr, info.endStr, info.allDay);
       }}
       selectAllow={() => !gesture.current.cancelled}
       eventAllow={() => !gesture.current.cancelled}
-      eventClick={info => { ref.current?.getApi().unselect(); onOpen(info.event.extendedProps.occurrence); }}
+      eventClick={info => { if (info.event.extendedProps.draft) return; ref.current?.getApi().unselect(); onOpen(info.event.extendedProps.occurrence); }}
       droppable={!disabled} dropAccept=".cal-month-more-event"
       drop={info => {
         if (gesture.current.cancelled) return;
@@ -242,10 +289,10 @@ export default function TimeGrid({ view, anchor, zone, occurrences, labels, sele
         setMore(null);
         if (delta) onMove({ event: { ...event, startStr: shift(event.start), endStr: shift(event.end) }, revert() {} });
       }}
-      eventDrop={info => { if (gesture.current.cancelled) info.revert(); else onMove(info); }} eventResize={info => { if (gesture.current.cancelled) info.revert(); else onMove(info); }}
+      eventDrop={info => { if (gesture.current.cancelled) info.revert(); else if (info.event.extendedProps.draft) onDraftMove?.(info); else onMove(info); }} eventResize={info => { if (gesture.current.cancelled) info.revert(); else if (info.event.extendedProps.draft) onDraftMove?.(info); else onMove(info); }}
     />
-    {more && createPortal(<ModulePresence present>
-      {more && <MonthMore disabled={disabled} date={more.date} events={more.ids.map(id => events.find(event => event.id === id)).filter(Boolean)} onClose={() => setMore(null)} onOpen={onOpen}/>}
+    {more && createPortal(<ModulePresence present className="tbx-portal-host">
+      {more && <MonthMore anchor={more.anchor} disabled={disabled} date={more.date} events={more.ids.map(id => events.find(event => event.id === id)).filter(Boolean)} onClose={() => setMore(null)} onOpen={onOpen}/>}
     </ModulePresence>, document.body)}
   </div>;
 }

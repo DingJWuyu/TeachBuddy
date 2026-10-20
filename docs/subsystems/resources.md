@@ -37,6 +37,12 @@ Web 的 PDF.js worker、CMap 和标准字体随本机构建提供，不依赖外
 
 [模块迁移](../../apps/api/src/modules/resources/migrations/index.js) 提供表结构；其他模块不直接读取这些表，导出沿 readForExport。
 
+## 新版列表与设备呈现
+
+新版资源列表、文件夹树、标签、选择与批量动作消费现有真实 client/resourceOperations；资料信息、预览、查找、识别及文件历史保留真实读取与写入，不以原型的内存数据替代。标签名称与顺序真实保存；颜色仅在账户隔离的 resources 设备现场保存，发送 taxonomy 时剥离非契约字段。
+
+移除文件夹树通过真实 taxonomy 更新执行；树内资料按后端规则移到最近保留祖先，原型要求全部归未分组的差异见 [buffer](../../buffer.md#当前发现)。拖动文件夹归档按现有 organize 每批最多 100 条顺序提交，全部确认成功后才删树；失败或未知保留树与原请求，成功批次不回滚。
+
 ## 验证入口
 
 入口和受影响场景统一从[资源验证](../acceptance/README.md#资源专项)选择，执行分工沿[CI 与本地验证](../agents/github-workflow.md#ci-与本地验证)。核对真实收录、文件替换/历史恢复与正文读取；Office 工具、识别回放和真实模型分别记录。技术入口只描述调用路径，不声明本候选通过。

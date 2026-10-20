@@ -1,0 +1,212 @@
+:is(.wb-shell, .tbx-portal-host) .wb-button,
+:is(.wb-shell, .tbx-portal-host) .wb-icon-button {
+  border: 0;
+  background: var(--tb-fill);
+  color: var(--tb-ink);
+  font-weight: 600;
+  transition:
+    background var(--tb-d1) var(--tb-ease),
+    color var(--tb-d1),
+    transform var(--tb-d2) var(--tb-spring),
+    box-shadow var(--tb-d2);
+}
+:is(.wb-shell, .tbx-portal-host) .wb-button {
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 11px;
+  font-size: 13px;
+}
+:is(.wb-shell, .tbx-portal-host) .wb-icon-button {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--tb-muted);
+}
+:is(.wb-shell, .tbx-portal-host) .wb-button:hover:not(:disabled) {
+  background: var(--tb-fill-hover);
+}
+:is(.wb-shell, .tbx-portal-host) .wb-icon-button:hover:not(:disabled),
+:is(.wb-shell, .tbx-portal-host) .wb-icon-button[aria-expanded=true] {
+  background: var(--tb-fill-hover);
+  color: var(--tb-ink);
+}
+:is(.wb-shell, .tbx-portal-host) .wb-button:active:not(:disabled),
+:is(.wb-shell, .tbx-portal-host) .wb-icon-button:active:not(:disabled) {
+  transform: scale(0.96);
+}
+:is(.wb-shell, .tbx-portal-host) .wb-button.is-primary {
+  background: var(--tb-primary);
+  color: var(--tb-on-primary);
+  box-shadow: 0 8px 18px -12px var(--tb-primary-glow);
+}
+:is(.wb-shell, .tbx-portal-host) .wb-button.is-primary:hover:not(:disabled) {
+  background: var(--tb-primary-hover);
+}
+:is(.wb-shell, .tbx-portal-host) .wb-button.is-on {
+  background: var(--tb-accent-soft);
+  color: var(--tb-accent);
+}
+:is(.wb-shell, .tbx-portal-host) .wb-button.is-danger {
+  background: var(--tb-danger-soft);
+  color: var(--tb-danger);
+}
+:is(.wb-shell, .tbx-portal-host) :is(.wb-input, .wb-button, .wb-icon-button, .wb-chip, .wb-tab):focus-visible {
+  outline: 2px solid var(--tb-focus);
+  outline-offset: 2px;
+}
+:is(.wb-shell, .tbx-portal-host) .wb-input {
+  min-height: 36px;
+  padding: 7px 12px;
+  border: 1px solid transparent;
+  border-radius: 11px;
+  background: var(--tb-fill);
+  transition:
+    background var(--tb-d2),
+    border-color var(--tb-d2),
+    box-shadow var(--tb-d2);
+}
+:is(.wb-shell, .tbx-portal-host) .wb-input:hover:not(:focus) {
+  background: var(--tb-fill-hover);
+}
+:is(.wb-shell, .tbx-portal-host) .wb-input:focus {
+  background: var(--tb-surface);
+  border-color: var(--tb-accent);
+  box-shadow: var(--tb-ring);
+  outline: none;
+}
+:is(.wb-shell, .tbx-portal-host) .wb-label {
+  color: var(--tb-muted);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+:is(.wb-shell, .tbx-portal-host) .wb-chip {
+  height: 28px;
+  padding: 0 11px;
+  border: 0;
+  background: var(--tb-fill);
+  color: var(--tb-ink-2);
+  font-weight: 600;
+  transition: background var(--tb-d1), color var(--tb-d1);
+}
+:is(.wb-shell, .tbx-portal-host) .wb-chip:hover {
+  background: var(--tb-fill-hover);
+}
+:is(.wb-shell, .tbx-portal-host) .wb-chip.is-active {
+  background: var(--tb-ink);
+  color: var(--tb-surface);
+}
+:is(.wb-shell, .tbx-portal-host) .wb-tabs {
+  gap: 2px;
+  padding: 3px;
+  border-radius: 12px;
+  background: var(--tb-fill);
+  flex: 0 1 auto;
+}
+:is(.wb-shell, .tbx-portal-host) .wb-tab {
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 9px;
+  color: var(--tb-muted);
+  font-weight: 600;
+  transition: background var(--tb-d2) var(--tb-ease), color var(--tb-d2);
+}
+:is(.wb-shell, .tbx-portal-host) .wb-tab.is-active {
+  background: var(--tb-surface);
+  color: var(--tb-ink);
+  box-shadow: var(--tb-shadow-1);
+}
+:is(.wb-shell, .tbx-portal-host) .wb-popover {
+  min-width: 180px;
+  padding: 6px;
+  border-radius: 16px;
+  background: color-mix(in oklab, var(--tb-surface) 92%, transparent);
+  backdrop-filter: var(--tb-blur);
+  box-shadow: var(--tb-shadow-3);
+  animation: tbx-pop-in 200ms var(--tb-ease) both;
+}
+:is(.wb-shell, .tbx-portal-host) .wb-menu-item {
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 10px;
+  color: var(--tb-ink);
+  font-size: 13.5px;
+  font-weight: 500;
+  transition: background var(--tb-d1);
+}
+:is(.wb-shell, .tbx-portal-host) .wb-menu-item:hover {
+  background: var(--tb-fill);
+}
+:is(.wb-shell, .tbx-portal-host) .wb-menu-item.is-danger {
+  color: var(--tb-danger);
+}
+:is(.wb-shell, .tbx-portal-host) .wb-menu-item.is-danger:hover {
+  background: var(--tb-danger-soft);
+}
+:is(.wb-shell, .tbx-portal-host) .wb-dialog-scrim {
+  background: rgb(0 0 0 / 0.32);
+  backdrop-filter: blur(6px);
+  animation: tbx-fade-in 260ms var(--tb-ease) both;
+}
+:is(.wb-shell, .tbx-portal-host) .wb-dialog {
+  gap: 14px;
+  padding: 22px;
+  border-radius: 24px;
+  background: var(--tb-surface);
+  box-shadow: var(--tb-shadow-3);
+  animation: tbx-sheet-in 360ms var(--tb-ease) both;
+}
+:is(.wb-shell, .tbx-portal-host) .wb-dialog h2 {
+  font-size: 18px;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+}
+@keyframes tbx-sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+:is(.wb-shell, .tbx-portal-host) .wb-module-disclosure-trigger {
+  border-radius: 12px;
+  font-weight: 650;
+}
+:is(.wb-shell, .tbx-portal-host) .wb-selection-bar {
+  border-radius: 16px;
+  background: var(--tb-ink);
+  color: var(--tb-surface);
+  box-shadow: var(--tb-shadow-3);
+}
+:is(.wb-shell, .tbx-portal-host) .wb-storage-warning,
+:is(.wb-shell, .tbx-portal-host) .wb-recovery-notice {
+  margin: 0 0 10px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--tb-yellow-soft);
+  color: var(--tb-warning-ink);
+}
+:is(.wb-shell, .tbx-portal-host) :where(.wb-main, .wb-aux) :where(input[type=text], input[type=search], input[type=email], input[type=number], input:not([type]), select, textarea) {
+  border: 1px solid transparent;
+  border-radius: 11px;
+  background-color: var(--tb-fill);
+  color: var(--tb-ink);
+  transition:
+    background-color var(--tb-d2),
+    border-color var(--tb-d2),
+    box-shadow var(--tb-d2);
+}
+:is(.wb-shell, .tbx-portal-host) :where(.wb-main, .wb-aux) :where(input[type=text], input[type=search], input:not([type]), select, textarea):focus {
+  background-color: var(--tb-surface);
+  border-color: var(--tb-accent);
+  box-shadow: var(--tb-ring);
+  outline: none;
+}
+:is(.wb-shell, .tbx-portal-host) :where(.wb-main, .wb-aux) input[type=checkbox] {
+  accent-color: var(--tb-accent);
+}

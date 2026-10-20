@@ -1,3 +1,4 @@
+import { confirmLogout } from './teaching-time-auth/helpers.mjs';
 import { test, expect, registrationForm, register, signIn, openSettings, deferred, password } from './fixtures/auth-completeness.js';
 
 test('S45 返回登录后同页可重新登录，不重复注册', async ({ page, world }) => {
@@ -11,7 +12,7 @@ test('S45 返回登录后同页可重新登录，不重复注册', async ({ page
   world.workbench.db.exec('DROP TRIGGER fail_remember');
   const pendingId = world.workbench.db.prepare('SELECT id FROM auth_sessions WHERE revokedAt IS NULL').get().id;
   const logout = page.waitForRequest('**/api/auth/logout');
-  await page.getByRole('button', { name: '返回登录', exact: true }).click();
+  await page.getByRole('button', { name: /^返回登录(?: ›)?$/ }).click();
   expect((await logout).postDataJSON().sessionId).toBe(pendingId);
   await expect(page.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
   await signIn(page, email);
@@ -32,6 +33,7 @@ test('返回登录的准备失败可重试，期间不提交必败登录', async
   let logins = 0;
   page.on('request', request => { if (request.url().endsWith('/api/auth/login')) logins += 1; });
   await page.getByRole('button', { name: '退出登录', exact: true }).click();
+  await confirmLogout(page);
   await expect(page.getByRole('heading', { name: '恢复失败', exact: true })).toBeVisible();
   expect(logins).toBe(0);
   blockPreparation = false;
@@ -65,7 +67,7 @@ test(`放弃恢复的撤销${committed ? '已提交回执丢失' : '未到服务
     if (committed) await route.fetch();
     await route.abort('failed');
   });
-  await page.getByRole('button', { name: '返回登录', exact: true }).click();
+  await page.getByRole('button', { name: /^返回登录(?: ›)?$/ }).click();
   await expect(page.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
   await expect(page.getByRole('status')).toContainText('退出结果暂未确认');
   await page.getByRole('status').evaluate(element => Promise.all(element.getAnimations().map(animation => animation.finished)));
@@ -106,6 +108,7 @@ test('退出未知反馈与同目标核实跨普通导航保留', async ({ page,
     await route.abort('failed');
   });
   await page.getByRole('button', { name: '退出登录', exact: true }).click();
+  await confirmLogout(page);
   await expect(page.getByRole('alert')).toContainText('退出结果暂未确认');
   const protectedRequests = [];
   page.on('request', request => {
@@ -136,6 +139,7 @@ test('资源页直接核实仍沿原退出目标，等待时保留账户提示',
   let target;
   await page.route('**/api/auth/logout', async route => { target = route.request().postDataJSON().sessionId; await route.abort('failed'); });
   await page.getByRole('button', { name: '退出登录', exact: true }).click();
+  await confirmLogout(page);
   await expect(page.getByRole('alert')).toContainText('退出结果暂未确认');
   await page.locator('a[href^="/resources"]').first().click();
   const confirmation = page.locator('[data-region="logout-confirmation"]');
@@ -200,6 +204,7 @@ test('另一 remembered 账户不受原账户未决撤销影响', async ({ page,
   await register(page, world, emailA);
   await openSettings(page);
   await page.getByRole('button', { name: '退出登录', exact: true }).click();
+  await confirmLogout(page);
   await expect(page.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
   await signIn(page, emailA, { remember: false });
   const other = await context.newPage();
@@ -207,6 +212,7 @@ test('另一 remembered 账户不受原账户未决撤销影响', async ({ page,
   await openSettings(page);
   await page.route('**/api/auth/logout', route => route.abort('failed'));
   await page.getByRole('button', { name: '退出登录', exact: true }).click();
+  await confirmLogout(page);
   await expect(page.getByRole('alert')).toContainText('退出结果暂未确认');
   await other.reload();
   await expect(other.locator('.wb-shell')).toBeVisible();
@@ -225,6 +231,7 @@ test('未知退出后核实明确失败仍保留业务锁与原目标', async ({
   let target;
   await page.route('**/api/auth/logout', async route => { target = route.request().postDataJSON().sessionId; await route.abort('failed'); });
   await page.getByRole('button', { name: '退出登录', exact: true }).click();
+  await confirmLogout(page);
   await expect(page.getByRole('alert')).toContainText('退出结果暂未确认');
   await page.unroute('**/api/auth/logout');
   world.workbench.db.exec("CREATE TRIGGER fail_logout BEFORE UPDATE OF revokedAt ON auth_sessions BEGIN SELECT RAISE(ABORT, 'isolated revocation failure'); END");
@@ -245,19 +252,19 @@ test('放弃 pending 的撤销处理中编辑字段，确认后保留新输入',
   world.workbench.db.exec('DROP TRIGGER fail_remember');
   const held = deferred();
   await page.route('**/api/auth/logout', async route => { const response = await route.fetch(); await held.promise; await route.fulfill({ response }); });
-  await page.getByRole('button', { name: '返回登录', exact: true }).click();
+  await page.getByRole('button', { name: /^返回登录(?: ›)?$/ }).click();
   await expect(page.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
   await page.getByLabel('邮箱', { exact: true }).fill('edited@example.test');
   await page.getByLabel('密码', { exact: true }).fill(password);
   held.resolve();
-  await expect(page.getByRole('button', { name: '登录', exact: true })).toBeEnabled();
+  await expect(page.getByRole('button', { name: /^登录(?: ›)?$/ })).toBeEnabled();
   await expect(page.getByLabel('邮箱', { exact: true })).toHaveValue('edited@example.test');
   await expect(page.getByLabel('密码', { exact: true })).toHaveValue(password);
 });
 
 test('未知发码反馈说明可能收件并保留注册输入', async ({ page, world }) => {
   await page.goto(world.origin);
-  await page.getByRole('button', { name: '创建账户', exact: true }).click();
+  await page.getByRole('button', { name: /^创建账户(?: ›)?$/ }).click();
   await page.getByLabel('邮箱', { exact: true }).fill('send-unknown@example.test');
   await page.getByLabel('密码', { exact: true }).fill(password);
   await page.route('**/api/auth/registration-codes', async route => { await route.fetch(); await route.abort('failed'); });

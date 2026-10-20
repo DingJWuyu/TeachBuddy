@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 
-import { Icon } from './icons.jsx';
+import { Icon } from '../../../components/icons.jsx';
 import { routeClick, withSearch } from './routes.js';
 
 // Exported so the narrow-screen drawer renders the same list as the menu.

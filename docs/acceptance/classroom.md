@@ -1,6 +1,6 @@
 # 班级验收
 
-核验[班级行为](../features/classroom.md)与[接口契约](../contracts/classroom.md)时使用。本轮验收后端，不以接口通过代表教师界面或 AI 工具接入完成。实际候选和通过证据查[项目状态](../plans/run-state.md)。
+核验[班级行为](../features/classroom.md)与[接口契约](../contracts/classroom.md)时使用。后端、教师页面与 AI 工具分别验证，接口通过不能代签页面或模型操作。实际候选和通过证据查[项目状态](../plans/run-state.md)。
 
 ## 必需场景
 
@@ -13,7 +13,8 @@
 | 统计 | 固定数字核对总分差异、同分排名、各题/标签分母、多标签去重、缺考/缺分、未考标签、不同满分、分布边界和同场跨班比较 |
 | 标签与历史 | 重名拒绝、合并原子改所有考试且去重；已使用计分题不能直接移除，降低满分造成越界时整笔拒绝；改班/删除学生后重导入仍保留历史成绩与快照 |
 | 数据生命周期 | 个人 ZIP 解压检查原件、JSON、可读层及关系；新库备份恢复、固定旧库升级、账户删除隔离；损坏/跨账户文件和关系拒绝恢复 |
-| 外壳边界 | API 目录注册课堂后端但 Web 无班级入口；原四个页面继续可达，`/classroom` 与退役 `/classes` 不开放页面 |
+| 外壳边界 | 班级沿单一目录开放 `/classroom` 页面，题库、资源库、数学和日程继续可达；退役 `/classes` 不恢复 |
+| 教师页面 | 对照设计输入操作班级/学生、拖拽换座与未排座、自由记录、考试与标签、三步导入、学生/班级成绩、同场比较及归档恢复；真实保存后刷新读回，缺分与缺考不画成零 |
 
 ## 固定计算样例
 
@@ -25,6 +26,6 @@
 
 先按[隔离环境](../SETUP.md#新的隔离环境)安装锁定依赖。`apps/api/test/classroom-core.test.js`、`classroom-assessment.test.js`、`classroom-import.test.js`、`classroom-statistics.test.js`、`classroom-lifecycle.test.js`、`classroom-workbook.test.js` 使用真实 HTTP/SQLite 或真实工作簿；固定生成器在 `apps/api/test/fixtures/classroom/`，测试不读取 docs 作为输入。`classroom-paper.test.js` 使用公共转换器及真实原卷；它和 assessment、lifecycle 的预览场景均需按[文件转换工具](../SETUP.md#文件转换工具)配置工具，由 CI 的文件输出组运行。
 
-导航用 `apps/web/e2e/catalog-navigation.spec.js`，构建和 CI 分工沿[CI 与本地验证](../agents/github-workflow.md#ci-与本地验证)，不要为 API 另建 UI 单元测试。测试自行生成隔离数据，产物与清理沿[验证指南](README.md#隔离与产物)。
+教师完整流程使用 `apps/web/e2e/classroom.config.mjs` 与 `classroom.spec.js`，以 `WORKBENCH_WEB_DIST` 指定隔离生产构建，已纳入 CI 收集；覆盖名单、座位、记录、原卷与 Excel 校对确认、统计和归档恢复，仍须区分固定候选的实际结果。导航另用 `apps/web/e2e/catalog-navigation.spec.js`，构建和 CI 分工沿[CI 与本地验证](../agents/github-workflow.md#ci-与本地验证)，不要为 API 另建 UI 单元测试。测试自行生成隔离数据，产物与清理沿[验证指南](README.md#隔离与产物)。
 
 构造输入证明固定契约及处理行为，不能证明任意学校成绩表和复杂原卷均可识别。真实教师样例尚未提供；首份真实样例按实际版式核对匹配、校对负担和原题定位。真实邮件、教师设备上的 Word/WPS、前端观感和实际 AI 模型不由这些后端测试代签。

@@ -1,5 +1,7 @@
 import { useTranslation } from 'react-i18next';
-import { Popover, ConfirmDialog } from '../../components/interaction/ModuleOverlays.jsx';
+import { Menu as Popover } from '../../components/ui/menu.jsx';
+import { AppConfirmDialog as ConfirmDialog, ConfirmDialog as LifecycleConfirmDialog } from '../../components/ui/confirm.jsx';
+import { tx } from '../../i18n/presentation.js';
 import { ModulePresence, ModuleDisclosure } from '../../components/interaction/ModuleMotion.jsx';
 import React, { useEffect, useRef, useState } from 'react';
 import { supportedDocument } from '@teachbuddy/shared';
@@ -10,10 +12,11 @@ import { useQuestionSession } from './useQuestionSession.js';
 import { useScrollRestore } from '../../components/interaction/useScrollRestore.js';
 import { FragmentReview } from './FragmentReview.jsx';
 import { NoteFragments } from './NoteFragments.jsx';
-import { ImportList, isCompletedImport } from './ImportList.jsx';
+import { isCompletedImport } from './ImportList.jsx';
 import OriginalPane from './OriginalPane.jsx';
 import ResizeDivider from './ResizeDivider.jsx';
-import { QuestionIcon, QuestionDialog, QuestionDocumentEditor, QuestionWelcome } from './QuestionControls.jsx';
+import { QuestionIcon, QuestionDialog, QuestionDocumentEditor } from './QuestionControls.jsx';
+import { QuestionFinder, QuestionWelcome, TYPE_HUES } from './QuestionFinder.jsx';
 import './questions-materials.css';
 const active = new Set(['queued', 'running', 'cancelling']);
 const stateNames = {
@@ -30,8 +33,6 @@ export default function MaterialsQuestionsPage({
   accountKey,
   transport,
   requestedId,
-  registerTools,
-  onOpenTools,
   onReturnToLibrary,
 }) {
   const { t } = useTranslation("questions");
@@ -42,7 +43,7 @@ export default function MaterialsQuestionsPage({
   const [sourceCopyStatus, setSourceCopyStatus] = useState("");
   const { state, actions } = useQuestionSession({ accountKey, transport, requestedId, onReturnToLibrary: () => {
     onReturnToLibrary?.();
-    requestAnimationFrame(() => pageNode.current?.querySelector('.q-finder h1')?.focus({ preventScroll: true }));
+    requestAnimationFrame(() => pageNode.current?.querySelector('.tbx-qn-bar h1')?.focus({ preventScroll: true }));
   }, onFocusReviewIssue: issueId => {
     const target = issueId
       ? [...(pageNode.current?.querySelectorAll('[data-issue-id]') ?? [])].find(node => node.dataset.issueId === issueId)?.querySelector('select')
@@ -71,8 +72,6 @@ export default function MaterialsQuestionsPage({
   const [source, setSource] = useState(null);
   const picker = useRef(null);
   const [splitAt, setSplitAt] = useState(1), [mergeId, setMergeId] = useState('');
-  const editorRef = useRef(null);
-  editorRef.current = { scene };
   useEffect(() => { setSource(null); sourceCopyAttempt.current += 1; setSourceCopyStatus(''); }, [scene.id, scene.kind]);
   const setIncludeAnswers = includeAnswers => patchScene({ includeAnswers });
   const questionScroll = useScrollRestore(
@@ -100,10 +99,7 @@ export default function MaterialsQuestionsPage({
       if (listRestored.current) { disconnect(); return; }
       if (!node.getClientRects().length) return;
       node.scrollTop = initialListTop.current;
-      const filters = finder.querySelector('.q-filters')?.closest('.wb-module-presence');
-      const opening = editorRef.current.scene.filtersOpen && filters?.dataset.state !== 'open';
-      const moving = filters?.getAnimations().some(animation => animation.playState === 'running');
-      if (!node.querySelector('[data-image-state="loading"]') && !opening && !moving) {
+      if (!node.querySelector('[data-image-state="loading"]')) {
         listRestored.current = true;
         disconnect();
         patchScene({ listScroll: node.scrollTop });
@@ -166,94 +162,12 @@ export default function MaterialsQuestionsPage({
       )}</ModulePresence>
     </div>
   );
-  const toolsRef = useRef(taxonomyTools);
-  toolsRef.current = taxonomyTools;
-  useEffect(() => {
-    if (!registerTools) return;
-    registerTools([
-      {
-        id: "questions-classification",
-        label: t("分类与标签"),
-        render: () => toolsRef.current,
-      },
-    ]);
-    return () => registerTools([]);
-  }, [
-    registerTools,
-    taxonomy,
-    manage,
-    busy,
-    scene.typeId,
-    JSON.stringify(scene.tagIds),
-    items,
-  ]);
   return (
-    <div ref={pageNode} className="wb-module q-workspace" data-review={scene.kind === "import"}
+    <div className="q-workspace-host"><div ref={pageNode} className="wb-module q-workspace" data-review={scene.kind === "import"}
       style={{"--q-ratio": scene.compare ? (scene.compareWidth ?? 0.5) : (scene.listWidth ?? 0.32)}}
       data-compare={Boolean(scene.compare && value?.source?.kind === "copy")}>
-      {scene.kind !== "import" && <ResizeDivider
-        value={scene.compare ? (scene.compareWidth ?? 0.5) : (scene.listWidth ?? 0.32)}
-        label={scene.compare ? t("调整原题对照宽度") : t("调整题目列表宽度")}
-        onChange={width => patchScene(scene.compare ? {compareWidth: width} : {listWidth: width})} />}
       <aside className="q-finder" inert={scene.compare && value?.source?.kind === "copy" ? true : undefined} aria-hidden={scene.compare && value?.source?.kind === "copy" ? true : undefined}>
-        <header className="q-finder-heading">
-          <h1 tabIndex={-1}><span className="q-heading-icon"><QuestionIcon name="book" size={24} /></span>{archived ? t("归档内容") : t("题库")}<span className="q-list-count">{archived ? items.length + imports.length : items.length}</span></h1>
-          <Popover label={t("题库选项")}>
-            {({ close }) => <div className="q-question-menu">
-              <button role="menuitem" onClick={() => { showTaxonomy(); onOpenTools?.(); close(); }}>{t("管理题型与标签")}</button>
-              <button role="menuitem" onClick={() => { returnToLibrary(archived ? 'active' : 'deleted', true); close(); }}>{archived ? t("返回题库") : t("归档内容")}</button>
-            </div>}
-          </Popover>
-        </header>
-        {archived ? <button className="q-text-button q-back" onClick={() => returnToLibrary('active', true)}><QuestionIcon name="back" />{t("返回题库")}</button> : <div className="q-entry-actions">
-          <button className="primary" onClick={startCapture}><QuestionIcon name="upload" />{t("从资料收录")}</button>
-          <button onClick={() => open('new', null)}><QuestionIcon name="edit" />{t("手动录题")}</button>
-        </div>}
-        {!archived && hasNewDraft && scene.kind !== 'new' && <button className="q-draft-entry" onClick={resumeNewDraft}><QuestionIcon name="edit" /><span>{t("继续未完成的题目")}</span><QuestionIcon name="chevron" size={14} /></button>}
-        <div className="q-search-row">
-          <div className="q-search"><QuestionIcon name="search" size={17} /><input aria-label={t("搜索题目")} placeholder={scene.searchAnswers ? t("搜索题目、答案或笔记") : t("搜索题干、公式或笔记")} value={scene.q ?? ''} onChange={e => patchScene({ q: e.target.value })} /></div>
-          <button className={`q-icon-button${scene.filtersOpen || hasFilters ? ' is-active' : ''}`} aria-label={t("筛选题目")} title={t("筛选题目")} aria-expanded={Boolean(scene.filtersOpen)} onClick={() => patchScene({ filtersOpen: !scene.filtersOpen })}><QuestionIcon name="filter" /></button>
-        </div>
-        <ModulePresence present={Boolean(scene.filtersOpen)} mode="collapse">
-          <div className="q-filters">
-            <label>{t("题型")}<select aria-label={t("筛选题型")} value={scene.typeId ?? ''} onChange={e => patchScene({ typeId: e.target.value })}><option value="">{t("全部题型")}</option>{taxonomy.types.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}</select></label>
-            <label className="q-checkbox"><input type="checkbox" checked={scene.starred} onChange={e => patchScene({ starred: e.target.checked })} />{t("只看已标记")}</label>
-            <label className="q-checkbox"><input type="checkbox" checked={Boolean(scene.searchAnswers)} onChange={e => patchScene({ searchAnswers: e.target.checked })} />{t("同时搜索答案与解析")}</label>
-            {taxonomy.tags.length > 0 && <div className="q-filter-tags"><span>{t("标签")}</span>{taxonomy.tags.map(tag => <label key={tag.id} className="q-checkbox"><input type="checkbox" checked={scene.tagIds?.includes(tag.id) ?? false} onChange={e => patchScene({ tagIds: e.target.checked ? [...(scene.tagIds ?? []), tag.id] : scene.tagIds.filter(id => id !== tag.id) })} />{tag.name}</label>)}</div>}
-          </div>
-        </ModulePresence>
-        {hasFilters && <div className="q-filter-summary"><span>{t("筛选结果 ·")} {items.length} {t("题")}</span><button className="q-text-button" onClick={() => patchScene({ q: '', typeId: '', tagIds: [], starred: false, searchAnswers: false })}>{t("清除条件")}</button></div>}
-        {!registerTools && taxonomyTools}
-        <div
-          className="q-list"
-          ref={listNode}
-          onWheel={() => { listRestored.current = true; }}
-          onPointerDown={() => { listRestored.current = true; }}
-          onKeyDown={() => { listRestored.current = true; }}
-          onScroll={event => {
-            if (listRestored.current) patchScene({ listScroll: event.currentTarget.scrollTop });
-          }}
-        >
-          <ImportList imports={imports} archived={archived} selectedId={scene.id} onOpen={id => open("import", id)} />
-          {listState === 'loading' ? <p className="q-list-empty" role="status">{t("正在读取题库…")}</p> : listState === 'error' ? <div className="q-list-empty"><p>{t("题库暂时无法读取")}</p><button onClick={reload}>{t("重新加载")}</button></div> : items.length === 0 && <p className="q-list-empty">{hasFilters ? t("没有符合条件的题目，试试调整筛选。") : archived ? t("没有归档的题目。") : imports.length ? t("材料确认入库后，题目会出现在这里。") : t("收录第一道题，开始积累。")}</p>}
-          {items.map((q) => (
-            <div className="q-list-entry" key={q.id}>
-            <button
-              className={scene.id === q.id ? "selected" : ""}
-              key={q.id}
-              onClick={() => open("question", q.id)}
-            >
-              <strong>
-                {q.starred ? "★ " : ""}
-                {q.title || sourceText(q.body).slice(0, 36) || t("未命名题目")}
-              </strong>
-              <div className="q-excerpt"><DocumentView value={{version: q.body.version,
-                blocks: q.body.blocks.filter(block => block.type !== "image").slice(0, 1)}} /></div>
-              {documentAssets(q.body).figures[0] && <DocumentView value={{version: 2, blocks: [documentAssets(q.body).figures[0]]}} />}
-            </button>
-            </div>
-          ))}
-        </div>
+        <QuestionFinder {...{ archived, items, imports, taxonomy, scene, patchScene, hasFilters, listState, reload, open, startCapture, resumeNewDraft, hasNewDraft, showTaxonomy, returnToLibrary, listNode, listRestored, taxonomyTools, busy }} />
       </aside>
       <ModulePresence present={Boolean(scene.compare && value?.source?.kind === "copy")} className="q-compare-presence">
       {scene.compare && value?.source?.kind === "copy" && <section className="q-copy-source" aria-label={t("原题对照")}>
@@ -320,27 +234,25 @@ export default function MaterialsQuestionsPage({
                     }
                   > {t("重试未完成部分")} </button>
                 )}
-                <Popover label={t("材料操作")}>{({ close }) => <div className="q-question-menu" onClick={event => { if (event.target.closest('button:not(:disabled)')) close(); }}>
+                <Popover label={t("材料操作")}>{({ close }) => <>
                 <button
                   disabled={busy || Boolean(value.deletedAt) || active.has(job?.state)}
-                  onClick={() => picker.current.click()}
+                  role="menuitem" onClick={() => { picker.current.click(); close(); }}
                 > {t("补充照片")} </button>
                 <button
                   disabled={
                     busy || active.has(job?.state) || Boolean(value.deletedAt)
                   }
-                  onClick={() =>
-                    appendDraft(visibleOriginal.current)
-                  }
+                  role="menuitem" onClick={() => { appendDraft(visibleOriginal.current); close(); }}
                 > {t("补充题目草稿")} </button>
                 <button
                   disabled={busy || active.has(job?.state)}
-                  onClick={() => requestLifecycle(value.deletedAt ? 'restore' : 'archive')}
+                  role="menuitem" onClick={() => { requestLifecycle(value.deletedAt ? 'restore' : 'archive'); close(); }}
                 >
                   {value.deletedAt ? t("恢复材料") : t("归档材料")}
                 </button>
-                {value.deletedAt && <button className="q-danger" disabled={busy || active.has(job?.state)} onClick={() => requestLifecycle('purge')}>{t("彻底删除材料")}</button>}
-                </div>}</Popover>
+                {value.deletedAt && <button className="is-danger" role="menuitem" disabled={busy || active.has(job?.state)} onClick={() => { requestLifecycle('purge'); close(); }}>{t("彻底删除材料")}</button>}
+                </>}</Popover>
                 <input
                   ref={picker}
                   hidden
@@ -521,8 +433,8 @@ export default function MaterialsQuestionsPage({
                 <span className="q-save-state">{busy ? t("正在保存…") : hasDraft ? t("草稿保存在此设备") : scene.kind === 'new' ? t("尚未保存") : t("已保存")}</span>
                 <button className="primary" disabled={busy || Boolean(value.deletedAt) || unsupportedQuestion} onClick={saveQuestion}><QuestionIcon name="check" />{t("保存题目")}</button>
               </> : <>
-                <div className="q-question-title"><span className="q-eyebrow">{value.deletedAt ? t("已归档") : value.source?.kind === 'copy' ? t("改编题目") : t("我的题目")}</span><h2>{value.title || t("未命名题目")}{value.starred && <QuestionIcon name="star" size={18} />}</h2></div>
-                <Popover label={t("更多题目操作")}>{({ close }) => <div className="q-question-menu"><button role="menuitem" disabled={busy || unsupportedQuestion} onClick={() => { requestLifecycle(value.deletedAt ? 'restore' : 'archive'); close(); }}>{value.deletedAt ? t("恢复题目") : t("归档题目")}</button>{value.deletedAt && <button className="q-danger" role="menuitem" disabled={busy} onClick={() => { requestLifecycle('purge'); close(); }}>{t("彻底删除题目")}</button>}</div>}</Popover>
+                <div className="q-question-title"><span className="q-eyebrow">{value.deletedAt ? t("已归档") : value.source?.kind === 'copy' ? t("改编题目") : ''}</span><h2>{value.title || t("未命名题目")}{value.starred && <QuestionIcon name="star" size={18} />}</h2></div>
+                <Popover label={t("更多题目操作")}>{({ close }) => <><button role="menuitem" disabled={busy || unsupportedQuestion} onClick={() => { requestLifecycle(value.deletedAt ? 'restore' : 'archive'); close(); }}>{value.deletedAt ? t("恢复题目") : t("归档题目")}</button>{value.deletedAt && <button className="is-danger" role="menuitem" disabled={busy} onClick={() => { requestLifecycle('purge'); close(); }}>{t("彻底删除题目")}</button>}</>}</Popover>
               </>}
             </header>
             {conflict && scene.kind === 'new' && value?.source?.kind === 'copy' && (
@@ -557,7 +469,7 @@ export default function MaterialsQuestionsPage({
               </ModuleDisclosure>
               {hasDraft && <button className="q-text-button q-discard" onClick={() => requestDiscard()}>{t("放弃未保存的修改")}</button>}
             </fieldset> : <>
-              <div className="q-question-meta">{taxonomy.types.filter(t => t.id === value.typeId).map(t => <span className="q-type" key={t.id}>{t.name}</span>)}{taxonomy.tags.filter(t => value.tagIds.includes(t.id)).map(t => <span className="q-tag" key={t.id}><QuestionIcon name="tag" size={12} />{t.name}</span>)}</div>
+              <div className="q-question-meta">{taxonomy.types.filter(t => t.id === value.typeId).map(t => <span className={`q-type is-${TYPE_HUES[taxonomy.types.indexOf(t) % TYPE_HUES.length]}`} key={t.id}>{t.name}</span>)}{taxonomy.tags.filter(t => value.tagIds.includes(t.id)).map(t => <span className="q-tag" key={t.id}><QuestionIcon name="tag" size={12} />{t.name}</span>)}</div>
               <article className="q-reading-body" aria-label={t("题干")}><DocumentView value={value.body} /></article>
               {value.answerStatus === 'present' ? <ModuleDisclosure title={t("答案与解析")} open={Boolean(scene.answerOpen)} onOpenChange={answerOpen => patchScene({ answerOpen })} className="q-answer"><DocumentView value={value.solution} /></ModuleDisclosure> : <p className="q-missing-answer">{t("暂未添加答案")} <button className="q-text-button" disabled={Boolean(value.deletedAt) || unsupportedQuestion} onClick={() => { beginEdit(true); patchScene({ answerOpen: true }); }}>{t("添加答案")}</button></p>}
               {(value.note || value.noteFragments?.length > 0) && <ModuleDisclosure title={t("教学笔记")} className="q-reader-note">{value.note && <p>{value.note}</p>}<NoteFragments fragments={value.noteFragments} /></ModuleDisclosure>}
@@ -704,15 +616,19 @@ export default function MaterialsQuestionsPage({
       </ModulePresence>
       <ModulePresence present={confirmDiscard}>{confirmDiscard && <ConfirmDialog title={t("放弃未保存的修改？")} message={t("此设备上的这份草稿将被删除，已经保存的题目不受影响。")} confirmLabel={t("放弃修改")} onCancel={() => cancelDiscard()} onConfirm={discardDraft} />}</ModulePresence>
       <ModulePresence present={Boolean(copyCandidate)}>{copyCandidate && <ConfirmDialog title={t("替换未完成的题目？")} message={t("你还有一份未完成的新题草稿。开始这次改编会替换它，已保存的题目不受影响。")} confirmLabel={t("替换并开始改编")} onCancel={() => cancelCopy()} onConfirm={replaceWithCopy} />}</ModulePresence>
-      <ModulePresence present={Boolean(lifecycleAction)}>{lifecycleAction && <QuestionDialog
+      <ModulePresence present={Boolean(lifecycleAction)}>{lifecycleAction && <LifecycleConfirmDialog
         title={`${lifecycleAction.mode === 'purge' ? t("彻底删除") : lifecycleAction.mode === 'restore' ? t("恢复") : t("归档")}${lifecycleAction.kind === 'import' ? t("材料") : t("题目")}？`}
-        onClose={() => { cancelLifecycle(); }} className="q-lifecycle-dialog">
-        <p>{lifecycleAction.mode === 'purge'
+        message={lifecycleAction.mode === 'purge'
           ? t("“{{value}}”及其本地草稿将彻底删除，无法恢复。{{detail}}", { value: lifecycleAction.item.title || t("未命名题目"), detail: lifecycleAction.kind === 'import' ? t("已入库的题目会保留。") : t("已有改编题会保留。") })
-          : lifecycleAction.mode === 'restore' ? t("恢复后，会重新出现在题库中。") : t("将移出当前列表，并返回题库。你可以在“题库选项”的“归档内容”中恢复或彻底删除。")}</p>
+          : lifecycleAction.mode === 'restore' ? t("恢复后，会重新出现在题库中。") : tx("将移出当前列表。之后可以在左侧的“已归档”里恢复或彻底删除。")}
+        danger={lifecycleAction.mode === 'purge'}
+        icon={lifecycleAction.mode === 'restore' ? 'restore' : 'trash'}
+        busy={busy}
+        confirmLabel={busy ? t("正在处理…") : lifecycleAction.mode === 'purge' ? t("彻底删除") : lifecycleAction.mode === 'restore' ? t("确认恢复") : t("确认归档")}
+        onConfirm={confirmLifecycle}
+        onCancel={cancelLifecycle}>
         {message && <p className="q-error" role="alert">{message}</p>}
-        <footer><button disabled={busy} onClick={() => cancelLifecycle()}>{t("取消")}</button><button className={lifecycleAction.mode === 'purge' ? 'q-danger-primary' : 'primary'} disabled={busy} onClick={confirmLifecycle}>{busy ? t("正在处理…") : lifecycleAction.mode === 'purge' ? t("彻底删除") : lifecycleAction.mode === 'restore' ? t("确认恢复") : t("确认归档")}</button></footer>
-      </QuestionDialog>}</ModulePresence>
+      </LifecycleConfirmDialog>}</ModulePresence>
       <ModulePresence present={Boolean(newCategory)}>{newCategory && <QuestionDialog title={newCategory.kind === 'types' ? t("新建题型") : t("新建标签")} onClose={() => closeCategory()}>
         <form onSubmit={event => { event.preventDefault(); createCategory(); }}>
           <label>{t("名称")}<input aria-label={t("分类名称")} value={categoryName} maxLength={80} onChange={event => changeCategoryName(event.target.value)} /></label>
@@ -721,7 +637,7 @@ export default function MaterialsQuestionsPage({
           {message && <p role="alert">{message}</p>}
         </form>
       </QuestionDialog>}</ModulePresence>
-    </div>
+    </div></div>
   );
 }
 function Taxonomy({ taxonomy, disabled, onSave }) {

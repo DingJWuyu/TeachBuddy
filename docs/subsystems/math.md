@@ -27,6 +27,8 @@ const result = await math.port.operations.exportWork({
 
 ## 运行路径与持久化
 
+[Web 数学入口](../../apps/web/src/features/math/index.jsx) 组织新版主卡片与共享 Rail：类型、导入与归档归模块右轨，公式缩略图使用 KaTeX，作品预览和正式输出继续使用各自现有渲染路径。新版界面不替换本地引擎、保存源或旧源兼容。
+
 [WorkshopWorkspace](../../apps/web/src/features/math/WorkshopWorkspace.jsx) 承接当前统一编辑器，workshop/editor 统一内容快照、试演和撤销，[geogebra/workshop-runtime](../../apps/web/src/features/math/geogebra/workshop-runtime.js) 封装本地 GGB 控制。公式输入使用 MathLive，排版使用本地 MathJax。workshop-render 使用隔离、限时 Chromium 与 Web 同一资产根目录的本地运行时，禁用导入文件脚本并拒绝外部资源；纯公式渲染不启动 GGB，数学源错误与运行时/浏览器故障分开返回。
 
 
@@ -35,7 +37,7 @@ const result = await math.port.operations.exportWork({
 - 普通源沿 [render](../../apps/api/src/modules/math/render.js) 与 [render-worker](../../apps/api/src/modules/math/render-worker.js)；工坊沿 [workshop-render](../../apps/api/src/modules/math/workshop-render.js)，生成固定 PNG/SVG 后存 File。纯公式与数学视图保留各自格式限制。
 - 离线演示沿 [presentation](../../apps/api/src/modules/math/presentation.js) 或 [workshop-presentation](../../apps/api/src/modules/math/workshop-presentation.js)，使用公开 shared 入口打包本地运行资源；外部 HTML 使用隔离包装器，边界见 [隔离语义](../contracts/math.md#导出与-html-隔离)。
 
-网页助理的 [web-ai](../../apps/web/src/features/math/web-ai) 通过 [浏览器扩展](../../extensions/math-web-ai/README.md) 接老师的 DeepSeek 页面；构造执行仍由编辑器校验/读回，不成为服务器任意 JS、文件或 SQL 工具。当前 workshop 与旧源共存，兼容/未知 renderer 与源版本处理见数学契约。
+网页助理的 [web-ai](../../apps/web/src/features/math/web-ai) 通过 [浏览器扩展](../../extensions/math-web-ai/README.md) 接老师的 DeepSeek 页面；构造执行仍由编辑器校验/读回，不成为服务器任意 JS、文件或 SQL 工具。当前统一制作与旧源读取兼容共存，兼容/未知 renderer 与源版本处理见数学契约。
 
 ## 验证入口
 

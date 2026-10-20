@@ -1,7 +1,8 @@
+import { moduleRow, navigationGroup, pointerDrag } from './catalog-navigation.helpers.mjs';
 import fs from 'node:fs';
 import { test, expect, chromium } from '@playwright/test';
 import { createIntegration } from '../../api/test/fixtures/auth-integration/harness.js';
-import { register, login, headers } from './teaching-time-auth/helpers.mjs';
+import { register, login, headers, confirmLogout } from './teaching-time-auth/helpers.mjs';
 let world;
 let device;
 let other;
@@ -17,8 +18,8 @@ test.afterEach(async ({ context }, info) => {
   if (info.status === info.expectedStatus) fs.rmSync(world.directory, { recursive: true, force: true });
   else fs.writeFileSync(info.outputPath('fixture-directory.txt'), world.directory);
 });
-const row = (page, id) => page.locator(`[data-drop-module="${id}"]`);
-const group = page => page.locator('[data-drop-group]').filter({ has: page.getByText('同步备课', { exact: true }) });
+const row = (page, id) => moduleRow(page, id);
+const group = page => page.locator('[data-group]').filter({ has: page.getByText('同步备课', { exact: true }) });
 async function dismissCoach(page) {
   const coach = page.getByRole('button', { name: '知道了', exact: true });
   if (await coach.count()) await coach.click();
@@ -26,11 +27,11 @@ async function dismissCoach(page) {
 test('账户导航在独立设备读回分组、位置和隐藏状态', async ({ page }, info) => {
   await register(page, world);
   await dismissCoach(page);
-  await page.locator('[data-new-group-toggle]').click();
+  await page.getByRole('button', { name: '新建分组', exact: true }).click();
   await page.getByRole('textbox', { name: '新分组名称' }).fill('同步备课');
   await page.getByRole('textbox', { name: '新分组名称' }).press('Enter');
-  await row(page, 'math').dragTo(group(page));
-  await expect(group(page).locator('[data-drop-module="math"]')).toBeVisible();
+  await pointerDrag(page, row(page, 'math'), group(page).locator('.tbx-drop-hint'));
+  await expect(group(page).locator('[data-row="math"]')).toBeVisible();
   await row(page, 'resources').focus();
   await page.keyboard.press('Delete');
   await expect(row(page, 'resources')).toHaveCount(0);
@@ -39,17 +40,17 @@ test('账户导航在独立设备读回分组、位置和隐藏状态', async ({
   await login(other);
   await dismissCoach(other);
   await other.screenshot({ animations: 'disabled', path: info.outputPath('device-b.png') });
-  await expect(group(other).locator('[data-drop-module="math"]')).toBeVisible();
+  await expect(group(other).locator('[data-row="math"]')).toBeVisible();
   await expect(row(other, 'resources')).toHaveCount(0);
-  await page.getByRole('button', { name: '收起分组 同步备课', exact: true }).click();
+  await page.getByRole('button', { name: '同步备课', exact: true }).click();
   await page.reload();
-  await expect(page.getByRole('button', { name: '展开分组 同步备课', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: '同步备课', exact: true })).toHaveAttribute('aria-expanded', 'false');
   await other.reload();
-  await expect(other.getByRole('button', { name: '收起分组 同步备课', exact: true })).toBeVisible();
-  await expect(group(other).locator('[data-drop-module="math"]')).toBeVisible();
+  await expect(other.getByRole('button', { name: '同步备课', exact: true })).toHaveAttribute('aria-expanded', 'true');
+  await expect(group(other).locator('[data-row="math"]')).toBeVisible();
   await logout(other);
   await login(other);
-  await expect(group(other).locator('[data-drop-module="math"]')).toBeVisible();
+  await expect(group(other).locator('[data-row="math"]')).toBeVisible();
   await expect(row(other, 'resources')).toHaveCount(0);
   await logout(other);
   await register(other, world, 'teacher-b@example.test');
@@ -68,13 +69,14 @@ async function settled(page) {
   await expect(page.locator('[data-navigation-status]')).toHaveCount(0);
 }
 async function addGroup(page, name) {
-  await page.locator('[data-new-group-toggle]').click();
+  await page.getByRole('button', { name: '新建分组', exact: true }).click();
   await page.getByRole('textbox', { name: '新分组名称' }).fill(name);
   await page.getByRole('textbox', { name: '新分组名称' }).press('Enter');
 }
 async function logout(page) {
   await page.locator('.tb-account-row').click();
   await page.getByRole('button', { name: '退出登录', exact: true }).click();
+  await confirmLogout(page);
   await expect(page.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
 }
 async function start(page) { await register(page, world); await dismissCoach(page); await settled(page); }
@@ -90,7 +92,7 @@ test('读取失败不覆盖服务器，重试后恢复布局', async ({ page }) 
   });
   await page.reload();
   await expect(page.getByText('导航读取失败', { exact: true })).toBeVisible();
-  await expect(page.locator('[data-new-group-toggle]')).toBeDisabled();
+  await expect(page.getByRole('button', { name: '新建分组', exact: true })).toBeDisabled();
   expect(writes).toBe(0);
   expect(await read(page)).toEqual(before);
   await page.unroute('**' + endpoint);
@@ -137,11 +139,11 @@ test('并发修改明确冲突，可对照采用服务器或保留本机布局',
   await expect(page.getByRole('button', { name: '使用已保存布局', exact: true })).toBeVisible();
   page.once('dialog', dialog => dialog.dismiss());
   await page.getByRole('button', { name: '使用已保存布局', exact: true }).click();
-  await expect(page.locator('.tb-module-nav')).toContainText('待舍弃修改');
+  await expect(page.locator('.tbx-side-nav')).toContainText('待舍弃修改');
   page.once('dialog', dialog => dialog.accept());
   await page.getByRole('button', { name: '使用已保存布局', exact: true }).click();
-  await expect(page.locator('.tb-module-nav')).not.toContainText('待舍弃修改');
-  await expect(page.locator('.tb-module-nav')).toContainText('另一修改');
+  await expect(page.locator('.tbx-side-nav')).not.toContainText('待舍弃修改');
+  await expect(page.locator('.tbx-side-nav')).toContainText('另一修改');
 });
 
 for (const failure of ['断响应', '无效成功内容', '事务回滚']) test(`${failure}后保留原请求及后续输入，刷新后恢复`, async ({ page }) => {
@@ -182,7 +184,7 @@ for (const failure of ['断响应', '无效成功内容', '事务回滚']) test(
   expect(saved.version).toBe(before.version + 2);
   expect(saved.layout.hiddenModuleIds).toContain('resources');
   await other.goto(world.origin); await login(other); await dismissCoach(other);
-  await expect(other.locator('.tb-module-nav')).toContainText('未确认分组');
+  await expect(other.locator('.tbx-side-nav')).toContainText('未确认分组');
   await expect(row(other, 'resources')).toHaveCount(0);
 });
 
@@ -197,10 +199,10 @@ test('首次导入本机布局，休眠项保留，新增模块进未分组', as
     hiddenModuleIds: ['resources', 'sleeping-hidden']
   } })), accountKey);
   await page.unroute('**' + endpoint); await page.reload();
-  await expect(page.getByRole('button', { name: '展开分组 旧备课组', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: '旧备课组', exact: true })).toHaveAttribute('aria-expanded', 'false');
   await settled(page);
-  await expect(page.locator('[data-drop-group="ungrouped"] [data-drop-module="math"]')).toBeVisible();
-  await page.getByRole('button', { name: '展开分组 旧备课组', exact: true }).click();
+  await expect(page.locator('[data-group="ungrouped"] [data-row="math"]')).toBeVisible();
+  await page.getByRole('button', { name: '旧备课组', exact: true }).click();
   await row(page, 'questions').focus(); await page.keyboard.press('Alt+ArrowDown'); await settled(page);
   await addGroup(page, '继续编辑'); await settled(page);
   const saved = await read(page);
@@ -208,7 +210,7 @@ test('首次导入本机布局，休眠项保留，新增模块进未分组', as
   expect(saved.layout.hiddenModuleIds).toContain('sleeping-hidden');
   expect(saved.layout.groups.every(g => !Object.hasOwn(g, 'collapsed'))).toBe(true);
   await other.goto(world.origin); await login(other); await dismissCoach(other);
-  await expect(other.getByRole('button', { name: '收起分组 旧备课组', exact: true })).toBeVisible();
+  await expect(other.getByRole('button', { name: '旧备课组', exact: true })).toHaveAttribute('aria-expanded', 'true');
   await expect(row(other, 'resources')).toHaveCount(0);
 });
 
@@ -233,7 +235,7 @@ for (const method of ['GET', 'PUT']) test(`旧账户迟到${method}不会回填�
   await logout(page);
   await register(page, world, 'teacher-b@example.test'); await dismissCoach(page); await settled(page);
   release();
-  await expect(page.locator('.tb-module-nav')).not.toContainText('甲账户');
+  await expect(page.locator('.tbx-side-nav')).not.toContainText('甲账户');
   await addGroup(page, '乙账户布局'); await settled(page);
   const saved = await read(page);
   expect(JSON.stringify(saved.layout)).not.toContain('甲账户');
@@ -242,19 +244,20 @@ for (const method of ['GET', 'PUT']) test(`旧账户迟到${method}不会回填�
 
 test('真实主题开关、窄屏导航和隐藏恢复', async ({ page }, info) => {
   await start(page);
-  const before = await row(page, 'questions').boundingBox();
   let release;
   const gate = new Promise(resolve => { release = resolve; });
   await page.route('**' + endpoint, async route => {
     if (route.request().method() === 'PUT') await gate;
     await route.continue();
   });
+  const saving = page.waitForRequest(request => request.method() === 'PUT' && request.url().endsWith(endpoint));
   await addGroup(page, '紧凑导航');
-  await expect(page.getByText('导航保存中…', { exact: true })).toBeVisible();
-  expect(Math.abs((await row(page, 'questions').boundingBox()).y - before.y)).toBeLessThan(1);
+  await saving;
+  await expect(navigationGroup(page, '紧凑导航')).toBeVisible();
+  await expect(row(page, 'questions')).toBeVisible();
   await page.screenshot({ animations: 'disabled', path: info.outputPath('saving-position.png') });
   release(); await settled(page); await page.unroute('**' + endpoint);
-  await row(page, 'math').dragTo(page.locator('[data-drop-group]').filter({ has: page.getByText('紧凑导航', { exact: true }) }));
+  await pointerDrag(page, row(page, 'math'), navigationGroup(page, '紧凑导航').locator('.tbx-drop-hint'));
   await settled(page);
   await page.locator('.tb-account-row').click();
   for (const theme of ['深色', '浅色']) {
@@ -263,20 +266,20 @@ test('真实主题开关、窄屏导航和隐藏恢复', async ({ page }, info) 
     await page.screenshot({ animations: 'disabled', path: info.outputPath(`${theme}-desktop.png`) });
     await page.setViewportSize({ width: 390, height: 844 });
     await page.getByRole('button', { name: '打开工作台导航', exact: true }).click();
-    await expect(page.locator('[data-drop-group]').filter({ has: page.getByText('紧凑导航', { exact: true }) }).locator('[data-drop-module="math"]')).toBeVisible();
+    await expect(page.locator('[data-group]').filter({ has: page.getByText('紧凑导航', { exact: true }) }).locator('[data-row="math"]')).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await page.screenshot({ animations: 'disabled', path: info.outputPath(`${theme}-narrow.png`) });
-    await page.locator('.tb-sidebar-mobile-head').getByRole('button', { name: '关闭', exact: true }).click();
+    await page.locator('.tbx-side-mobile-head').getByRole('button', { name: '关闭', exact: true }).click();
     await page.setViewportSize({ width: 1440, height: 900 });
   }
-  await expect(page.getByRole('button', { name: '打开工作台导航', exact: true })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: '打开工作台导航', exact: true })).toBeHidden();
   await row(page, 'resources').press('Delete');
   await expect(row(page, 'resources')).toHaveCount(0);
   await settled(page);
-  await page.locator('[data-trash-toggle]').click();
-  await page.getByRole('button', { name: '资源库。点击恢复到未分组，或拖到其他分组' }).click();
+  await page.getByRole('button', { name: /^垃圾桶/ }).click();
+  await page.getByRole('button', { name: '恢复 资源库', exact: true }).click();
   await settled(page); await page.reload();
-  await expect(page.locator('[data-drop-group="ungrouped"] [data-drop-module="resources"]')).toBeVisible();
+  await expect(page.locator('[data-group="ungrouped"] [data-row="resources"]')).toBeVisible();
 });
 
 for (const source of ['直接冲突', '未知结果确认']) test(`${source}草稿连续刷新仍需明确解决，不能自动覆盖远端`, async ({ page }, info) => {
@@ -320,12 +323,12 @@ for (const source of ['直接冲突', '未知结果确认']) test(`${source}草�
         await other.route('**' + endpoint, route => route.fulfill({ status: 503, contentType: 'application/problem+json', body: '{"type":"/problems/workbench/temporarily-unavailable"}' }));
         await other.reload();
         await expect(other.getByRole('button', { name: '重试读取导航', exact: true })).toBeVisible();
-        await expect(other.locator('[data-new-group-toggle]')).toBeDisabled();
+        await expect(other.getByRole('button', { name: '新建分组', exact: true })).toBeDisabled();
         expect(await read(page)).toEqual(remote);
         await other.unroute('**' + endpoint);
       }
       await other.reload();
-      await expect(other.locator('[data-new-group-toggle]')).toBeEnabled();
+      await expect(other.getByRole('button', { name: '新建分组', exact: true })).toBeEnabled();
       await expect(other.locator('[data-navigation-status="loading"], [data-navigation-status="saving"]')).toHaveCount(0);
       // Observe the server after the restored draft has completed its lifecycle.
       await expect(other.getByText('导航已在别处修改', { exact: true })).toBeVisible();
@@ -379,8 +382,11 @@ for (const failure of ['读取失败', '结果未确认']) test(`折叠侧栏${f
   const first = await row(page, 'questions').boundingBox();
   fs.writeFileSync(info.outputPath('rail-measurement.json'), JSON.stringify({ failure, sidebar, first }));
   await page.screenshot({ animations: 'disabled', path: info.outputPath('rail-error.png') });
-  expect(sidebar.width).toBe(72);
-  expect(first.y - sidebar.y).toBeLessThan(64);
+  expect(sidebar.width).toBe(64);
+  const recovery = await page.getByRole('button', { name: '展开侧栏处理导航同步', exact: true }).boundingBox();
+  expect(recovery.x).toBeGreaterThanOrEqual(sidebar.x);
+  expect(recovery.x + recovery.width).toBeLessThanOrEqual(sidebar.x + sidebar.width);
+  expect(recovery.y + recovery.height).toBeLessThanOrEqual(first.y);
   await page.getByRole('button', { name: '展开侧栏处理导航同步', exact: true }).click();
   await expect(page.locator('.tb-sidebar')).not.toHaveClass(/is-rail-collapsed/);
   await page.unroute('**' + endpoint);

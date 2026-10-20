@@ -1,25 +1,2 @@
-.reliability-list {
-  margin: 12px 0 0;
-  padding: 0;
-  list-style: none;
-}
-.reliability-list li {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 10px 0;
-  border-top: 1px solid var(--wb-border, light-dark(#e3e3e3, var(--app-line)));
-}
-.reliability-list li > div {
-  min-width: 0;
-  overflow-wrap: anywhere;
-}
-.reliability-list small {
-  display: block;
-  margin-top: 4px;
-  color: var(--wb-muted, light-dark(#737373, var(--app-muted)));
-}
-.reliability-list button {
-  flex-shrink: 0;
-}
+.reliability-list { margin: 0; padding: 0; list-style: none; }
+.reliability-pending { margin-top: 16px; }

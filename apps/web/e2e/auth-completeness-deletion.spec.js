@@ -33,7 +33,7 @@ test('删除账户清除真实题库未确认上传的原文件，并保留其�
   await expect(page.getByRole('button', { name: '开始整理', exact: true })).toBeEnabled();
   await expect.poll(() => uploadKeys(page, 'teachbuddy.questions.uploads')).toContainEqual(expect.stringMatching(`^${owner}:`));
   await page.evaluate(async owner => {
-    for (const [database, storeName] of [['teachbuddy.questions.uploads', 'pending'], ['teachbuddy.math.uploads', 'pending'], ['teachbuddy-resources-pending', 'requests']]) {
+    for (const [database, storeName] of [['teachbuddy.questions.uploads', 'pending'], ['teachbuddy.math.uploads', 'pending'], ['teachbuddy-resources-pending', 'requests'], ['teachbuddy-classroom-pending', 'requests'], ['teachbuddy-sample-week', 'requests']]) {
       const db = await new Promise((resolve, reject) => {
         const request = indexedDB.open(database, 1);
         request.onupgradeneeded = () => request.result.createObjectStore(storeName);
@@ -60,7 +60,7 @@ test('删除账户清除真实题库未确认上传的原文件，并保留其�
   await removeAccount(page, email);
   await expect(page.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
   expect(world.workbench.db.prepare('SELECT count(*) n FROM auth_accounts').get().n).toBe(0);
-  for (const [database, storeName] of [['teachbuddy.questions.uploads', 'pending'], ['teachbuddy.math.uploads', 'pending'], ['teachbuddy-resources-pending', 'requests']])
+  for (const [database, storeName] of [['teachbuddy.questions.uploads', 'pending'], ['teachbuddy.math.uploads', 'pending'], ['teachbuddy-resources-pending', 'requests'], ['teachbuddy-classroom-pending', 'requests'], ['teachbuddy-sample-week', 'requests']])
     expect(await uploadKeys(page, database, storeName)).toEqual(['other-account:original']);
   expect(await page.evaluate(owner => Object.keys(localStorage).filter(key => key.includes(owner) && !key.startsWith('tb.account.deleted:')), owner)).toEqual([]);
   expect(await page.evaluate(() => localStorage.getItem('tb.workbench.v1:other-account:draft'))).toBe('设备草稿');
@@ -237,7 +237,7 @@ test('首次删除未送达后新会话可重新确认删除，并收敛同账�
   const loggedIn = page.waitForResponse(response => response.url().endsWith('/api/auth/login'));
   await page.getByLabel('邮箱', { exact: true }).fill(email);
   await page.getByLabel('密码', { exact: true }).fill(password);
-  await page.getByRole('button', { name: '登录', exact: true }).click();
+  await page.getByRole('button', { name: /^登录(?: ›)?$/ }).click();
   const response = await loggedIn;
   expect(response.status()).toBe(200);
   expect((await response.json()).id).not.toBe(original.sessionId);

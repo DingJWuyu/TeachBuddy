@@ -85,13 +85,25 @@ Job 内部 Interface：`jobs.enqueue({principal, kind, target}, mutation)` 在�
 
 [apps/api/src/workbench/reliability/](../../apps/api/src/workbench/reliability) 拥有个人资料包、维护锁、停服备份与恢复，制品格式归同目录 `archive.schema.json`，装配在 `schema.js`。个人导出受理事务同步调用各模块 `port.readForExport(principal)`，读取业务值、历史和专属证据，不补写默认设置或结算提醒；`portable.js` 组装关系与附件，异步打包在受理提交后执行。模块存储改变时同步其只读导出端口。
 
-维护入口为 `node apps/api/src/scripts/reliability.js --help`；backup/restore/activate 的停服、独占目录及物理隔离要求见[恢复契约](../contracts/data.md#部署备份与还原)。认证清理调用[认证恢复端口](identity.md#恢复与账户生命周期)，外层不拼认证表 SQL。Web `features/reliability/DataManagement.jsx` 被设置的真实导出调用；主应用没有设备草稿查看、下载或清理管理入口；已移除旧 RecoveryDrafts 与 workbench/deviceData，隔离 archive/恢复底座继续按数据契约保护既有内容。
+维护入口为 `node apps/api/src/scripts/reliability.js --help`；backup/restore/activate 的停服、独占目录及物理隔离要求见[恢复契约](../contracts/data.md#部署备份与还原)。认证清理调用[认证恢复端口](identity.md#恢复与账户生命周期)，外层不拼认证表 SQL。Web `features/reliability/DataManagement.jsx` 被设置的真实导出调用；导出列表移除只写账户设备现场 `export-packages.hidden`，不调用不存在的服务端删除；主应用没有设备草稿查看、下载或清理管理入口；已移除旧 RecoveryDrafts 与 workbench/deviceData，隔离 archive/恢复底座继续按数据契约保护既有内容。
 
 ## 工作台外壳、偏好与支持页
 
-[apps/web/src/features/workbench/WorkbenchApp.jsx](../../apps/web/src/features/workbench/WorkbenchApp.jsx) 装配外壳、导航、辅助栏、偏好和支持页；`WorkbenchSettings.jsx` 与 `settings-shell.css` 拥有设置，`SupportPages.jsx`、`helpContent.js` 与 `support-shell.css` 拥有帮助。工作台客户端 [api.js](../../apps/web/src/features/workbench/api.js) 拥有 `getWorkbenchContext`，再经公共 HTTP 读取可信账户上下文。导航 API 为 [apps/api/src/workbench/navigation.js](../../apps/api/src/workbench/navigation.js)，偏好为 [apps/api/src/workbench/preferences.js](../../apps/api/src/workbench/preferences.js)；二者都属于工作台偏好/导航职责。共享草稿、保存协议和文稿组件使用独立 platform/components 入口，不回填到工作台业务目录。
+[apps/web/src/features/workbench/WorkbenchApp.jsx](../../apps/web/src/features/workbench/WorkbenchApp.jsx) 装配外壳、导航、辅助栏、偏好和支持页；`WorkbenchSettings.jsx` 与 `settings-shell.css` 拥有设置，`SupportPages.jsx`、`help/` 与 `support-shell.css` 拥有帮助。工作台客户端 [api.js](../../apps/web/src/features/workbench/api.js) 拥有 `getWorkbenchContext`，再经公共 HTTP 读取可信账户上下文。导航 API 为 [apps/api/src/workbench/navigation.js](../../apps/api/src/workbench/navigation.js)，偏好为 [apps/api/src/workbench/preferences.js](../../apps/api/src/workbench/preferences.js)；二者都属于工作台偏好/导航职责。共享草稿、保存协议和文稿组件使用独立 platform/components 入口，不回填到工作台业务目录。
 
-`appearance.css` 持有全站调色板与内容背景，WorkbenchApp 将同一偏好传给顶栏、侧栏、模块、菜单与弹层。语言词库在 [apps/web/src/i18n/locales/](../../apps/web/src/i18n/locales)，通过 i18next/react-i18next 的显式词条与插值呈现；教师正文及导出内容不参与翻译。
+`chrome/` 拥有侧栏、顶栏、品牌、搜索、通知、引导及相关外壳组件；`useLayoutModel.js` 消费真实导航保存、重试与冲突状态。模块右轨持续挂载，`AuxiliaryPanel.jsx` 的助理栏通过开闭状态覆盖右轨；具体尺寸与过渡只由共享样式和设计输入维护。
+
+`styles/` 持有公共 tokens、字体、共享控件与界面呈现样式，`chrome/chrome.css` 拥有外壳组合，`appearance.css` 保留偏好应用所需适配。WorkbenchApp 将同一账户偏好传给顶栏、侧栏、模块、菜单与弹层。`useScene(accountKey, 'custom-appearance')` 单独拥有设备内自定义背景图，不发送到服务端 preferences；主题、既有背景、语言和头像继续使用真实偏好接口。学期组织和反馈记录同样是账户隔离的设备现场，不能按导航与通知的真实接口推定为服务端数据。
+
+语言词库在 [i18n/locales/](../../apps/web/src/i18n/locales)，界面迁移文案在 [presentationResources.js](../../apps/web/src/i18n/presentationResources.js)，均由 i18next/react-i18next 消费。[presentation.js](../../apps/web/src/i18n/presentation.js) 提供 `tx`、语言与日期 helpers；教师正文及导出内容不参与翻译。
+
+## 显式载入示例
+
+工作台的“载入一周的示例数据”由用户明确触发。[seedSampleWeek](../../apps/web/src/features/workbench/demo/seed.js) 顺序调用 [workspace](../../apps/web/src/features/workbench/demo/workspace.js) 的题目、资源、日程与数学准备及 [classroom](../../apps/web/src/features/workbench/demo/classroom.js) 的班级、考试、Excel 校对确认。示例 JSON、xlsx 与 PDF 资产归该源码目录，通过正常模块及资产导入构建，不从 docs 或 E2E fixture 加载运行代码。
+
+示例内容的权威输入为 [question-data.js](../../apps/web/src/features/workbench/demo/question-data.js) 与 [classroom-data.json](../../apps/web/src/features/workbench/demo/classroom-data.json)。修改这些内容后，从仓库根目录运行 `node scripts/demo/generate-sample-assets.mjs`，由[生成器](../../scripts/demo/generate-sample-assets.mjs)通过已安装的 xlsx、KaTeX 与 Playwright Chromium 重建三份原卷 PDF 和五份成绩 xlsx；随代码保留这些可重建资产，正常启动不执行生成器。
+
+每步保留账户范围的原请求体、幂等键与已确认对象 ID，失败接续继续原步骤；上传字节独立保留在 `teachbuddy-sample-week` IndexedDB，删号确认后由 `accountDeviceData` 调用 `clearSampleWeekDeviceData` 清理；时间点恢复由 `deviceRecovery` 按 `pending:sample-week:*` 指针转入原有恢复隔离，不自动重发。已确认步骤不因重复点击或恢复而新建。业务记录通过普通真实 API 保存，既有账户内容继续保留。它与助理脚本回答的本地模拟是两种职责，不能将示例数据标为仅存在于内存，也不能以示例回答证明真实模型能力。当前候选的完整载入与恢复验证查任务记录。
 
 ## 验证入口
 
@@ -102,6 +114,7 @@ Job 内部 Interface：`jobs.enqueue({principal, kind, target}, mutation)` 在�
 - [platform/http](../../apps/web/src/platform/http) 的 `apiClient.js`、`problems.js`、`request.js` 统一请求/问题语义；账户 transport 附加可信身份，平台层不拥有登录表单或模块业务。
 - [platform/device](../../apps/web/src/platform/device) 的 `storage.js`、`deviceRequestStore.js`、`useScene.js`、`uuid.js` 拥有设备存储、未决请求、场景与 ID 原语；账户隔离和迟到响应由使用这些原语的模块保持。
 - [platform/saving](../../apps/web/src/platform/saving) 的 `useSavableDocument.js`、`useIdempotentSubmit.js`、`saveStates.js` 承担公共保存状态与幂等提交机制，不解释题目/作品业务内容。
-- [components/materials](../../apps/web/src/components/materials) 聚合 `DocumentView`、`DocumentEditor`、`MathFormula`、documents、样式及公开入口；[components/interaction](../../apps/web/src/components/interaction) 聚合 ModuleMotion/ModuleOverlays、overlays、useForegroundRefresh、useScrollRestore；[icons](../../apps/web/src/components/icons.jsx) 提供共享图标。设置特有 SettingsControls 留在 workbench。
+- [components/ui](../../apps/web/src/components/ui) 提供确认、浮层、分段、日期时间、筛选与模块右轨；`menu.jsx` 的 Menu/MenuItem 与 `dialog.jsx` 的 Dialog/Overlay 统一业务菜单和对话框的 portal、键盘及焦点；`motion.js`、`colors.js`、`classNames.js` 提供公共呈现原语。共享图标统一由 `components/icons.jsx` 导出，产品通过正常 imports 消费，不使用原型全局桥接。
+- [components/materials](../../apps/web/src/components/materials) 聚合 `DocumentView`、`DocumentEditor`、`MathFormula`、documents、样式及公开入口；[components/interaction](../../apps/web/src/components/interaction) 聚合 ModuleMotion、useForegroundRefresh、useScrollRestore 等动效与现场 hooks；[icons](../../apps/web/src/components/icons.jsx) 提供共享图标。设置特有 SettingsControls 留在 workbench。
 
 后端通用文稿读取在 [content/document](../../apps/api/src/workbench/content/document.js) 的 documentText/walkBlocks/images；不承担数学 Source 协议。数学协议由 [math/contract](../../apps/api/src/modules/math/contract.js) 拥有；共用 casefold 在 [workbench/text](../../apps/api/src/workbench/text.js)。材料 Problem 沿 [workbench/problems](../../apps/api/src/workbench/problems.js)，HTTP JSON/错误适配沿 [workbench/http](../../apps/api/src/workbench/http.js)，不为每个业务路由重复实现。

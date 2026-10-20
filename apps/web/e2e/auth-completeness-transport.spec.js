@@ -1,3 +1,4 @@
+import { confirmLogout } from './teaching-time-auth/helpers.mjs';
 import net from 'node:net';
 import { test, expect, registrationForm, register, signIn, openSettings, password } from './fixtures/auth-completeness.js';
 
@@ -31,6 +32,7 @@ function holdResponse(world, pathname, { partialBody = true, headers = true } = 
 async function logout(page) {
   await openSettings(page);
   await page.getByRole('button', { name: '退出登录', exact: true }).click();
+  await confirmLogout(page);
   await expect(page.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
   await page.reload();
   await expect(page.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
@@ -65,11 +67,11 @@ for (const partialBody of [false, true]) {
     const wrongPassword = 'transport-wrong-password';
     await page.getByLabel('邮箱', { exact: true }).fill(email);
     await page.getByLabel('密码', { exact: true }).fill(wrongPassword);
-    await page.getByRole('button', { name: '登录', exact: true }).click();
+    await page.getByRole('button', { name: /^登录(?: ›)?$/ }).click();
     await expect.poll(() => stall.held.length).toBe(1);
     await expect(page.getByRole('button', { name: '登录中', exact: true })).toBeDisabled();
     await expect(page.locator('.ae-notice')).toContainText('请求超时', { timeout: 12_000 });
-    await expect(page.getByRole('button', { name: '登录', exact: true })).toBeEnabled();
+    await expect(page.getByRole('button', { name: /^登录(?: ›)?$/ })).toBeEnabled();
     await expect(page.getByLabel('邮箱', { exact: true })).toHaveValue(email);
     await expect(page.getByLabel('密码', { exact: true })).toHaveValue(wrongPassword);
     expect(stall.held).toHaveLength(1);
@@ -95,7 +97,7 @@ test('已提交注册的正文超时保持未知和输入，不自动重放，�
   await expect(page.locator('.wb-shell')).toHaveCount(0);
   expect(stall.held).toHaveLength(1);
   stall.remove();
-  await page.getByRole('button', { name: '登录', exact: true }).click();
+  await page.getByRole('button', { name: /^登录(?: ›)?$/ }).click();
   await signIn(page, email);
 });
 
@@ -125,7 +127,13 @@ test('已提交重置等待完整回执超时仍未知，不自动重放，可�
   expect(stall.held).toHaveLength(1);
   await expect(page.locator('.wb-shell')).toHaveCount(0);
   stall.remove();
-  await page.getByRole('button', { name: '返回登录', exact: true }).click();
+  await page.getByRole('button', { name: /^返回登录(?: ›)?$/ }).click();
+  await signIn(page, email, { password: newPassword });
+  await logout(page);
+  await page.getByLabel('邮箱', { exact: true }).fill(email);
+  await page.getByLabel('密码', { exact: true }).fill(password);
+  await page.getByRole('button', { name: /^登录(?: ›)?$/ }).click();
+  await expect(page.getByRole('alert')).toContainText('邮箱或密码不正确');
   await signIn(page, email, { password: newPassword });
 });
 
@@ -137,9 +145,9 @@ for (const outcome of ['success', 'disconnect', 'timeout']) {
     const stall = holdResponse(world, '/api/auth/login');
     await page.getByLabel('邮箱', { exact: true }).fill(email);
     await page.getByLabel('密码', { exact: true }).fill(password);
-    await page.getByRole('button', { name: '登录', exact: true }).click();
+    await page.getByRole('button', { name: /^登录(?: ›)?$/ }).click();
     await expect.poll(() => stall.held.length).toBe(1);
-    await page.getByRole('button', { name: '创建账户', exact: true }).click();
+    await page.getByRole('button', { name: /^创建账户(?: ›)?$/ }).click();
     await page.getByLabel('昵称', { exact: true }).fill('迟到响应后的新昵称');
     await page.getByLabel('邮箱', { exact: true }).fill('transport-fresh@example.test');
     const settled = page.waitForEvent(outcome === 'success' ? 'requestfinished' : 'requestfailed',
@@ -149,7 +157,7 @@ for (const outcome of ['success', 'disconnect', 'timeout']) {
     await settled;
     // Flush the application's promise chain after the browser consumed the body.
     await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 0)));
-    await expect(page.getByRole('heading', { name: '创建账户', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /^创建账户(?: ›)?$/ })).toBeVisible();
     await expect(page.getByLabel('昵称', { exact: true })).toHaveValue('迟到响应后的新昵称');
     await expect(page.getByLabel('邮箱', { exact: true })).toHaveValue('transport-fresh@example.test');
     await expect(page.locator('.ae-notice')).toHaveCount(0);

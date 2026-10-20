@@ -1,3 +1,4 @@
+import { confirmLogout } from './teaching-time-auth/helpers.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import { backup, restore, activate } from '../../api/src/workbench/reliability/backup.js';
@@ -166,6 +167,7 @@ test('昵称迟到回执不恢复已退出的身份或覆盖另一账户', async
   await input.fill('旧账户的迟到昵称'); await input.press('Enter');
   await expect.poll(() => committed).toBe(true);
   await page.getByRole('button', { name: '退出登录', exact: true }).click();
+  await confirmLogout(page);
   await expect(page.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
   await register(page, world, 'teacher-b@example.test');
   const response = page.waitForResponse('**/api/auth/profile');
@@ -232,7 +234,7 @@ test('数学参数校验随当前语言显示，修正后可保存重开原始�
 });
 
 test('删除账户提供可执行的危险确认', async ({ page }, info) => {
-  await page.getByRole('button', { name: '删除账户', exact: true }).click();
+  await page.getByRole('button', { name: '删除账户…', exact: true }).click();
   const dialog = page.getByRole('dialog', { name: '删除账户？', exact: true });
   await expect(dialog).toBeVisible();
   await expect(dialog).toHaveCSS('opacity', '1');
@@ -243,7 +245,7 @@ test('删除账户提供可执行的危险确认', async ({ page }, info) => {
   await dialog.getByRole('button', { name: '取消', exact: true }).click();
   await expect(dialog).not.toBeVisible();
   expect(world.workbench.db.prepare('SELECT count(*) n FROM auth_accounts').get().n).toBe(1);
-  await page.getByRole('button', { name: '删除账户', exact: true }).click();
+  await page.getByRole('button', { name: '删除账户…', exact: true }).click();
   await dialog.getByLabel('输入账户邮箱以确认').fill('teacher-a@example.test');
   await dialog.getByRole('button', { name: '永久删除账户', exact: true }).click();
   await expect(page.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
@@ -277,7 +279,7 @@ test('删除丢失回执后刷新仍可用原请求核实，英文不串入匿�
     await route.fetch();
     await route.abort('failed');
   });
-  await page.getByRole('button', { name: 'Delete account', exact: true }).click();
+  await page.getByRole('button', { name: 'Delete Account…', exact: true }).click();
   const dialog = page.getByRole('dialog');
   await dialog.locator('input[type=email]').fill('teacher-a@example.test');
   await dialog.getByRole('button', { name: 'Permanently delete account', exact: true }).click();
@@ -332,6 +334,7 @@ test('英文覆盖四模块和帮助，独立浏览器读回，同浏览器换�
   } finally { await context.close(); }
   await page.goto(world.origin + '/settings');
   await page.getByRole('button', { name: 'Sign out', exact: true }).click();
+  await confirmLogout(page);
   await expect(page.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
   await register(page, world, 'teacher-b@example.test');
   const coach = page.getByRole('button', { name: '知道了', exact: true });
@@ -411,14 +414,14 @@ test('键盘语言菜单、真实偏好冲突、教师原文及英文窄屏危�
   await expect(page.getByRole('button', { name: 'Language', exact: true })).toBeEnabled();
   await expect(page.locator('.wb-shell')).toHaveAttribute('data-theme', 'dark');
   await page.screenshot({ path: info.outputPath('settings-en-390-dark.png'), animations: 'disabled' });
-  await page.getByRole('button', { name: 'Delete account', exact: true }).click();
+  await page.getByRole('button', { name: 'Delete Account…', exact: true }).click();
   const confirm = page.getByRole('dialog', { name: 'Delete account?', exact: true });
   await expect(confirm).toHaveCSS('opacity', '1');
   await page.screenshot({ path: info.outputPath('delete-en-390-dark.png'), animations: 'disabled' });
   const box = await confirm.boundingBox(); expect(box.x).toBeGreaterThanOrEqual(0); expect(box.x + box.width).toBeLessThanOrEqual(390);
   await page.keyboard.press('Escape');
   await expect(confirm).not.toBeVisible();
-  await expect(page.getByRole('button', { name: 'Delete account', exact: true })).toBeFocused();
+  await expect(page.getByRole('button', { name: 'Delete Account…', exact: true })).toBeFocused();
 });
 
 test('维护恢复清除删除回执后明确无法核实，可重新准备登录且不清未确认设备资料', async ({ page, browser }, info) => {
@@ -434,7 +437,7 @@ test('维护恢复清除删除回执后明确无法核实，可重新准备登�
   fs.unlinkSync(blob); fs.mkdirSync(blob);
   const attempts = [];
   page.on('request', request => { if (request.url().endsWith('/api/auth/account-deletion')) attempts.push(request.postDataJSON()); });
-  await page.getByRole('button', { name: '删除账户', exact: true }).click();
+  await page.getByRole('button', { name: '删除账户…', exact: true }).click();
   const dialog = page.getByRole('dialog', { name: '删除账户？', exact: true });
   await dialog.getByLabel('输入账户邮箱以确认').fill('teacher-a@example.test');
   await dialog.getByRole('button', { name: '永久删除账户', exact: true }).click();

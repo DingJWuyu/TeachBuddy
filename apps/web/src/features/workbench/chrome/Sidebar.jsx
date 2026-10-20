@@ -1,1017 +1,690 @@
+import { useEffect, useRef, useState } from 'react';
+import { cx } from '../../../components/ui/classNames.js';
+import { tx, useLocale } from '../../../i18n/presentation.js';
+import { useFlip } from '../../../components/ui/motion.js';
+import { ConfirmMenuItem, ConfirmHost } from '../../../components/ui/confirm.jsx';
+import { Icon } from '../../../components/icons.jsx';
+import { workbenchModules as workbenchModulesAll, moduleDisplayName } from '../../modules/moduleRegistry.js';
 import { groupDisplayName } from './displayNames.js';
-import i18n from "../../../i18n/index.js";
-import { useTranslation } from 'react-i18next';
-const t = (key, options) => i18n.t(key, { ns: "workbench", ...options });
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { useNavigation } from '../useNavigation.js';
-import NavigationStatus, { NavigationBusy } from './NavigationStatus.jsx';
-import { useWorkbenchShell } from '../shellContext.js';
+import { followAnchor } from '../routes.js';
+import { modulePath, withSearch, HOME_PATH } from './routes.js';
 import { SUPPORT_MENU_ITEMS } from './SupportMenu.jsx';
-import { createDragChip } from './dragChip.js';
-import { HOME_PATH, modulePath, routeClick, withSearch } from './routes.js';
-import { Icon } from './icons.jsx';
 import SidebarHead from './SidebarHead.jsx';
-import { workbenchModules, moduleDisplayName } from '../../modules/moduleRegistry.js';
-const MODULES = workbenchModules.filter(module => module.navigation === 'sidebar');
+import NavigationStatus from './NavigationStatus.jsx';
+export { useLayoutModel } from './useLayoutModel.js';
 
-function moduleById(moduleId) {
-  return MODULES.find((moduleItem) => moduleItem.id === moduleId);
+/*
+ * The navigation panel, rebuilt.
+ *
+ * Data and every operation still come from the app's own layout model
+ * (groups, moving, hiding, restoring); this file owns only how it looks and
+ * how it moves:
+ *   - groups read as quiet sections, like a Finder sidebar
+ *   - collapsing to the rail folds the account details, the semester and the
+ *     section headings upward while the module icons glide up to their rail
+ *     positions; nothing jumps sideways
+ *   - dragging is pointer-driven: a compact, translucent copy of the row
+ *     follows the pointer; nothing else moves. A blue line with a small ring
+ *     marks where it will land; the rows glide into place only after the drop
+ *   - folding a group is a pure CSS height transition (no FLIP), so nothing
+ *     pops in before it slides
+ *   - the bin is a full-width row that opens downward in place
+ */
+
+const tw = tx;
+const DRAG_SLOP = 5;
+const TOUCH_HOLD = 320;
+
+function Glyph({ name, size = 20 }) {
+  return <Icon name={name} size={size} strokeWidth={1.75} />;
 }
 
-function removeModule(groups, moduleId) {
-  groups.forEach((group) => {
-    group.moduleIds = group.moduleIds.filter((id) => id !== moduleId);
+function useModules() {
+  const list = workbenchModulesAll.filter((m) => m.navigation === 'sidebar');
+  return { list, byId: (id) => list.find((m) => m.id === id) };
+}
+
+function GroupMenu({ at, onRename, onDelete, onClose }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    ref.current?.querySelector('button')?.focus();
+    const down = (e) => { if (!ref.current?.contains(e.target) && !e.target.closest?.('.tbx-group-more')) onClose(); };
+    const key = (e) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('pointerdown', down, true);
+    document.addEventListener('keydown', key);
+    return () => {
+      document.removeEventListener('pointerdown', down, true);
+      document.removeEventListener('keydown', key);
+    };
+  }, [onClose]);
+  return (
+    <div className="tbx-side-menu" role="menu" ref={ref} style={{ left: at.x, top: at.y }}>
+      <button type="button" role="menuitem" className="tbx-mi" onClick={onRename}><Glyph name="pencil" size={16} />{tw('重命名分组')}</button>
+      <ConfirmMenuItem className="tbx-mi" icon={<Glyph name="close" size={16} />} label={tw('解散分组')} confirmLabel={tw('确认解散')} onConfirm={onDelete} />
+    </div>
+  );
+}
+
+export default function Sidebar({
+  modulePaths = {}, model, routePath, onNavigate, mobileOpen, onCloseMobile, isNarrow, railCollapsed, onExpand,
+  openSurface, onToggleSurface, onOpenSurface, onCloseSurface, accountName,
+}) {
+  useLocale();
+  const modules = useModules();
+  const editable = model.navigation.editable;
+  const hiddenIds = model.layout.hiddenModuleIds;
+  const hidden = new Set(hiddenIds);
+
+  const [drag, setDrag] = useState(null); // { type, id, from, x, y, dx, dy, w, h }
+  const [target, setTarget] = useState(null); // { kind: 'slot', groupId, index } | { kind: 'group', index } | { kind: 'trash' }
+  const [line, setLine] = useState(null); // where the drop line sits, in the list's own coordinates
+  const dragRef = useRef(null);
+  const targetRef = useRef(null);
+  const suppressClick = useRef(false);
+  const navRef = useRef(null);
+  const trashRef = useRef(null);
+  const holdTimer = useRef(0);
+  const expandTimer = useRef({ id: null, timer: 0 });
+  const handlers = useRef(null);
+  const stable = useRef({
+    move: (e) => handlers.current?.onMove(e),
+    up: (e) => handlers.current?.onUp(e),
+    cancel: (e) => handlers.current?.onCancel(e),
   });
-}
 
-function readDragPayload(event) {
-  try {
-    return JSON.parse(event.dataTransfer.getData('text/plain'));
-  } catch {
-    return null;
-  }
-}
+  const [trashOpen, setTrashOpen] = useState(false);
+  const [adding, setAdding] = useState(false);
+  const [draftName, setDraftName] = useState('');
+  const [renaming, setRenaming] = useState(null);
+  const [renameDraft, setRenameDraft] = useState('');
+  const [nameError, setNameError] = useState('');
+  const [menu, setMenu] = useState(null);
+  const [tip, setTip] = useState(null);
+  const [mobileSupport, setMobileSupport] = useState(false);
 
-// Drag target marks are strings so they can drive CSS classes directly. Module
-// marks encode which side of the row the insertion line belongs to.
-function moduleDropMark(kind, groupId, moduleId) {
-  return `module-${kind}:${groupId}:${moduleId}`;
-}
-
-function isModuleDropTarget(mark, moduleId, kind) {
-  if (!mark || !moduleId) return false;
-  const [head, , markedModuleId] = mark.split(':');
-  return head === `module-${kind}` && markedModuleId === moduleId;
-}
-
-export function useLayoutModel(accountKey, generation) {
-  const navigation = useNavigation(accountKey, generation);
-  const layout = {
-    ...navigation.raw,
-    groups: navigation.raw.groups.map(group => ({
-      ...group, fixed: group.id === 'ungrouped', collapsed: Boolean(navigation.device.collapsed[group.id]),
-      moduleIds: group.moduleIds.filter(id => moduleById(id))
-    })),
-    hiddenModuleIds: navigation.raw.hiddenModuleIds.filter(id => moduleById(id))
-  };
-  const [announcement, setAnnouncement] = useState(t("工作台布局已载入"));
-  /*
-   * Bumped on every accepted change. Consumers that only care that the layout
-   * moved, and not which part of it moved, watch this instead of trying to see a
-   * change through the mutable layout object they already hold.
-   */
-  const [revision, setRevision] = useState(0);
-
-  function update(message, recipe) {
-    if (!navigation.editable) { setAnnouncement(t("导航尚未读取，请先重试读取")); return false; }
-    navigation.change(recipe);
-    setRevision(current => current + 1);
-    setAnnouncement(message);
-    return true;
-  }
-
-  return {
-    navigation,
-    layout,
-    revision,
-    announcement,
-    announce: setAnnouncement,
-    reset() {
-      if (!navigation.editable) return;
-      navigation.reset();
-      setAnnouncement(t("已恢复默认布局"));
-    },
-    toggleGroup(groupId) {
-      navigation.toggleGroup(groupId);
-      setAnnouncement(t("已切换分组展开状态"));
-    },
-    createGroup(name) {
-      const trimmedName = name.trim();
-      if (!navigation.editable || !trimmedName || trimmedName.length > 80) return false;
-      update(t("已创建分组 {{trimmedName}}", { trimmedName: trimmedName }), (next) => {
-        const ungroupedIndex = next.groups.findIndex((group) => group.id === 'ungrouped');
-        next.groups.splice(ungroupedIndex, 0, {
-          id: `group-${crypto.randomUUID()}`,
-          name: trimmedName,
-          moduleIds: []
-        });
-      });
-      return true;
-    },
-    renameGroup(groupId, name) {
-      const trimmedName = name.trim();
-      if (!navigation.editable || !trimmedName || trimmedName.length > 80) return false;
-      update(t("分组已重命名为 {{trimmedName}}", { trimmedName: trimmedName }), (next) => {
-        const group = next.groups.find((item) => item.id === groupId && item.id !== 'ungrouped');
-        if (group) { group.name = trimmedName; delete group.nameKey; }
-      });
-      return true;
-    },
-    deleteGroup(groupId) {
-      update(t("分组已删除，原有模块已移到未分组"), (next) => {
-        const group = next.groups.find((item) => item.id === groupId && item.id !== 'ungrouped');
-        const ungrouped = next.groups.find((item) => item.id === 'ungrouped');
-        if (!group || !ungrouped) return;
-        ungrouped.moduleIds.push(...group.moduleIds.filter((id) => !ungrouped.moduleIds.includes(id)));
-        next.groups = next.groups.filter((item) => item.id !== groupId);
-      });
-    },
-    moveGroup(sourceId, targetId) {
-      if (sourceId === targetId) return;
-      update(t("分组顺序已调整"), (next) => {
-        const sourceIndex = next.groups.findIndex((group) => group.id === sourceId && group.id !== 'ungrouped');
-        const targetIndex = next.groups.findIndex((group) => group.id === targetId);
-        if (sourceIndex < 0 || targetIndex < 0) return;
-        const [source] = next.groups.splice(sourceIndex, 1);
-        const nextTargetIndex = next.groups.findIndex((group) => group.id === targetId);
-        next.groups.splice(nextTargetIndex < 0 ? next.groups.length - 1 : nextTargetIndex, 0, source);
-      });
-    },
-    /*
-     * A group dragged to the trash is deleted, not stored.
-     *
-     * Only its modules are recoverable, and they come back individually. Keeping
-     * the group itself in the trash would mean the trash holds something the user
-     * cannot see anywhere else, and restoring it would rebuild a grouping they
-     * had already thrown away. What they threw away is the grouping, so the
-     * grouping is what goes; the modules inside it are what they might miss.
-     */
-    hideGroup(groupId) {
-      update(t("分组已删除，其中的模块已移入垃圾桶"), (next) => {
-        const sourceIndex = next.groups.findIndex((group) => group.id === groupId && group.id !== 'ungrouped');
-        if (sourceIndex < 0) return;
-        const [group] = next.groups.splice(sourceIndex, 1);
-        for (const moduleId of group.moduleIds) {
-          if (!next.hiddenModuleIds.includes(moduleId)) next.hiddenModuleIds.push(moduleId);
-        }
-      });
-    },
-    moveModule(moduleId, destinationGroupId, targetModuleId = null, position = 'before') {
-      if (moduleId === targetModuleId) return;
-      update(t("{{value}}已移动", { value: moduleDisplayName(moduleById(moduleId)) || t("模块") }), (next) => {
-        removeModule(next.groups, moduleId);
-        next.hiddenModuleIds = next.hiddenModuleIds.filter((id) => id !== moduleId);
-        const destination = next.groups.find((group) => group.id === destinationGroupId);
-        if (!destination) return;
-        // Resolve the anchor index after the removal, so dragging downwards
-        // within a group does not land one slot short.
-        const anchorIndex = targetModuleId ? destination.moduleIds.indexOf(targetModuleId) : -1;
-        const insertIndex = anchorIndex < 0
-          ? destination.moduleIds.length
-          : anchorIndex + (position === 'after' ? 1 : 0);
-        destination.moduleIds.splice(insertIndex, 0, moduleId);
-      });
-    },
-    moveModuleByKeyboard(moduleId, direction) {
-      update(t("{{value}}已移动", { value: moduleDisplayName(moduleById(moduleId)) || t("模块") }), (next) => {
-        const groupIndex = next.groups.findIndex((group) => group.moduleIds.includes(moduleId));
-        if (groupIndex < 0) return;
-        const group = next.groups[groupIndex];
-        const moduleIndex = group.moduleIds.indexOf(moduleId);
-        if (direction === 'up' || direction === 'down') {
-          const visible = group.moduleIds.filter(id => moduleById(id));
-          const target = visible[visible.indexOf(moduleId) + (direction === 'up' ? -1 : 1)];
-          if (!target) return;
-          const targetIndex = group.moduleIds.indexOf(target);
-          [group.moduleIds[moduleIndex], group.moduleIds[targetIndex]] = [group.moduleIds[targetIndex], group.moduleIds[moduleIndex]];
-          return;
-        }
-        const groupOffset = direction === 'left' ? -1 : 1;
-        const destination = next.groups[groupIndex + groupOffset];
-        if (!destination) return;
-        group.moduleIds.splice(moduleIndex, 1);
-        destination.moduleIds.push(moduleId);
-      });
-    },
-    hideModule(moduleId) {
-      update(t("{{value}}已隐藏", { value: moduleDisplayName(moduleById(moduleId)) || t("模块") }), (next) => {
-        removeModule(next.groups, moduleId);
-        if (!next.hiddenModuleIds.includes(moduleId)) next.hiddenModuleIds.push(moduleId);
-      });
-    },
-    restoreModule(moduleId) {
-      update(t("{{value}}已恢复到未分组", { value: moduleDisplayName(moduleById(moduleId)) || t("模块") }), (next) => {
-        removeModule(next.groups, moduleId);
-        next.hiddenModuleIds = next.hiddenModuleIds.filter((id) => id !== moduleId);
-        const ungrouped = next.groups.find((group) => group.id === 'ungrouped');
-        if (ungrouped && !ungrouped.moduleIds.includes(moduleId)) ungrouped.moduleIds.push(moduleId);
-      });
-    }
-  };
-}
-
-function useNarrowLayout() {
-  const [isNarrow, setIsNarrow] = useState(() => window.matchMedia('(max-width: 700px)').matches);
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia('(max-width: 700px)');
-    function handleChange(event) {
-      setIsNarrow(event.matches);
-    }
-    mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
-  }, []);
-
-  return isNarrow;
-}
-
-function ContextMenu({ position, onRename, onDelete, onClose }) {
-  const { t } = useTranslation("workbench");
-  const menuRef = useRef(null);
-
-  useEffect(() => {
-    menuRef.current?.querySelector('button')?.focus();
-    function handlePointerDown(event) {
-      if (!menuRef.current?.contains(event.target)) onClose();
-    }
-    function handleKeyDown(event) {
-      if (event.key === 'Escape') onClose();
-    }
-    document.addEventListener('pointerdown', handlePointerDown);
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('pointerdown', handlePointerDown);
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [onClose]);
-
-  return (
-    <div ref={menuRef} className="tb-context-menu" role="menu" style={{ left: position.x, top: position.y }}
-      onKeyDown={(event) => {
-        if (event.key === 'Escape') {
-          event.stopPropagation();
-          onClose();
-        }
-      }}>
-      <button role="menuitem" onClick={onRename}>{t("重命名分组")}</button>
-      <button role="menuitem" className="is-danger" onClick={onDelete}>{t("移到未分组")}</button>
-    </div>
-  );
-}
-
-// Anchors the new-group popover to the right of its trigger, matching the
-// trash panel's flyout grammar instead of pushing a full-width form into flow.
-function useFlyoutPosition(open) {
-  const triggerRef = useRef(null);
-  const [position, setPosition] = useState({ top: 0, left: 0 });
-
-  useLayoutEffect(() => {
-    if (!open) return;
-    const trigger = document.querySelector('[data-new-group-toggle]');
-    if (!trigger) return;
-    triggerRef.current = trigger;
-    const rect = trigger.getBoundingClientRect();
-    const width = 236;
-    const margin = 8;
-    const left = Math.min(rect.right + margin, window.innerWidth - width - 12);
-    const top = Math.min(rect.top - 8, window.innerHeight - 60);
-    setPosition({ top, left });
-  }, [open]);
-
-  return position;
-}
-
-function NewGroupForm({ onCreate, onClose }) {
-  const { t } = useTranslation("workbench");
-  const formRef = useRef(null);
-  const [name, setName] = useState('');
-  const position = useFlyoutPosition(true);
-
-  useEffect(() => {
-    formRef.current?.querySelector('input')?.focus();
-    function handlePointerDown(event) {
-      if (!formRef.current?.contains(event.target) && !event.target.closest('[data-new-group-toggle]')) onClose();
-    }
-    function handleKeyDown(event) {
-      if (event.key === 'Escape') onClose();
-    }
-    document.addEventListener('pointerdown', handlePointerDown);
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('pointerdown', handlePointerDown);
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [onClose]);
-
-  return (
-    <form
-      ref={formRef}
-      className="tb-new-group-form"
-      style={{ top: position.top, left: position.left }}
-      onKeyDown={(event) => {
-        if (event.key === 'Escape') {
-          event.stopPropagation();
-          onClose();
-        }
-      }}
-      onSubmit={(event) => {
-        event.preventDefault();
-        if (onCreate(name)) onClose();
-      }}
-    >
-      <input name="new-group-name" aria-label={t("新分组名称")} maxLength={80} value={name} onChange={(event) => setName(event.target.value)} placeholder={t("分组名称")} />
-    </form>
-  );
-}
-
-function HiddenModules({ model, open, onToggle, dragState, onDrop, onStartDrag, onFinishDrag }) {
-  const { t } = useTranslation("workbench");
-  const wrapRef = useRef(null);
-  const buttonRef = useRef(null);
-  const [panelPosition, setPanelPosition] = useState({ left: 0, top: 0 });
-  /*
-   * True while a draggable module or group is over the trash. The row turns into
-   * a delete target: the icon goes red and swells, which is the confirmation the
-   * user gets before releasing. It is cleared on leave as well as on drop, so a
-   * drag that changes its mind leaves no red behind.
-   */
-  const [isDropTarget, setIsDropTarget] = useState(false);
-  const hiddenCount = model.layout.hiddenModuleIds.length;
-
-  const positionPanel = useCallback(() => {
-    const rect = buttonRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const panelHeight = Math.min(340, 64 + hiddenCount * 45);
-    setPanelPosition({
-      left: Math.min(rect.right + 10, window.innerWidth - 246),
-      top: Math.max(12, Math.min(rect.top, window.innerHeight - panelHeight - 12))
-    });
-  }, [hiddenCount]);
-
-  useEffect(() => {
-    if (!open) return undefined;
-    positionPanel();
-    function handlePointerDown(event) {
-      if (!wrapRef.current?.contains(event.target)) onToggle(false);
-    }
-    function handleKeyDown(event) {
-      if (event.key === 'Escape') onToggle(false);
-    }
-    window.addEventListener('resize', positionPanel);
-    window.addEventListener('scroll', positionPanel, true);
-    document.addEventListener('pointerdown', handlePointerDown);
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('resize', positionPanel);
-      window.removeEventListener('scroll', positionPanel, true);
-      document.removeEventListener('pointerdown', handlePointerDown);
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [open, onToggle, positionPanel]);
-
-  return (
-    <div className="tb-trash-wrap" ref={wrapRef}>
-      <button
-        ref={buttonRef}
-        type="button"
-        data-trash-toggle
-        className={`tb-trash-target${isDropTarget ? ' is-drop-target' : ''}`}
-        aria-label={hiddenCount ? t("垃圾桶，{{hiddenCount}} 项", { hiddenCount: hiddenCount }) : t("垃圾桶")}
-        aria-expanded={open}
-        onClick={() => onToggle(!open)}
-        onDragOver={(event) => {
-          const payload = readDragPayload(event) || dragState;
-          if (payload?.type === 'module' || payload?.type === 'group') {
-            event.preventDefault();
-            setIsDropTarget(true);
-          }
-        }}
-        onDragLeave={(event) => {
-          if (!event.currentTarget.contains(event.relatedTarget)) setIsDropTarget(false);
-        }}
-        onDrop={(event) => {
-          setIsDropTarget(false);
-          onDrop(event);
-        }}
-      >
-        <span className="tb-trash-icon"><Icon name="trash" /></span>
-        <span>{t("垃圾桶")}</span>
-        {hiddenCount > 0 && <b>{hiddenCount}</b>}
-      </button>
-      {open && (
-        <div className="tb-hidden-panel" style={panelPosition}>
-          {model.layout.hiddenModuleIds.map((moduleId) => {
-            const moduleItem = moduleById(moduleId);
-            return (
-              <button
-                key={moduleId}
-                draggable={model.navigation.editable}
-                aria-label={t("{{value}}。点击恢复到未分组，或拖到其他分组", { value: moduleDisplayName(moduleItem) })}
-                onClick={() => model.restoreModule(moduleId)}
-                onDragStart={(event) => onStartDrag(event, { type: 'module', id: moduleId })}
-                onDragEnd={onFinishDrag}
-              >
-                <span className="tb-module-icon"><Icon name={moduleItem.icon} /></span>
-                <span>{moduleDisplayName(moduleItem)}</span>
-                <Icon name="plus" size={15} />
-              </button>
-            );
-          })}
-          {!hiddenCount && <p>{t("空")}</p>}
-        </div>
-      )}
-    </div>
-  );
-}
-
-export default function Sidebar({ modulePaths = {}, model, routePath, onNavigate, mobileOpen, onCloseMobile, isNarrow, railCollapsed, onExpand, openSurface, onToggleSurface, onOpenSurface, onCloseSurface, accountName }) {
-  const { t } = useTranslation("workbench");
+  useEffect(() => { setTip(null); }, [railCollapsed, routePath]);
 
   function moduleHref(id) {
     const path = modulePath(id);
     const remembered = modulePaths[id];
-    return remembered && (remembered === path || remembered.startsWith(path + '/') || remembered.startsWith(path + '?'))
-      ? remembered : path;
+    return remembered && (remembered === path || remembered.startsWith(path + '/') || remembered.startsWith(path + '?')) ? remembered : path;
   }
 
-  const [addingGroup, setAddingGroup] = useState(false);
-  const [contextMenu, setContextMenu] = useState(null);
-  const [renamingGroupId, setRenamingGroupId] = useState(null);
-  const [renameDraft, setRenameDraft] = useState('');
-  const [dragState, setDragState] = useState(null);
-  const [dragTarget, setDragTarget] = useState(null);
-  const dragTargetRef = useRef(null);
-  // The drag image in flight. Created on dragstart and removed on dragend, so a
-  // cancelled drag leaves no chip behind in the document.
-  const dragChipRef = useRef(null);
-  const [hiddenOpen, setHiddenOpen] = useState(false);
-  const [mobileSupportOpen, setMobileSupportOpen] = useState(false);
-  const [railTooltip, setRailTooltip] = useState(null);
-  function showRailTooltip(event, label) {
-    if (!railCollapsed) return;
-    const rect = event.currentTarget.getBoundingClientRect();
-    setRailTooltip({ label, left: rect.right + 14, top: rect.top + rect.height / 2 });
-  }
-  useEffect(() => {
-    setRailTooltip(null);
-    const clear = () => setRailTooltip(null);
-    window.addEventListener('scroll', clear, true);
-    window.addEventListener('resize', clear);
-    return () => {
-      window.removeEventListener('scroll', clear, true);
-      window.removeEventListener('resize', clear);
-    };
-  }, [railCollapsed, routePath]);
-  const longPressTimerRef = useRef(null);
-  const mobileCloseRef = useRef(null);
-  // Cached when a drag starts so boundary resolution stays stable for the whole
-  // gesture: group id -> id of the group above it, and group id -> bottom edge
-  // of that group's last row (used to split the gap between two groups).
-  const previousGroupRef = useRef(new Map());
-  const previousGroupEndRef = useRef(new Map());
-  const hidden = new Set(model.layout.hiddenModuleIds);
+  /* ----- the layout ----- */
+  const groups = model.layout.groups.map((g) => ({ ...g, visible: g.moduleIds.filter((id) => !hidden.has(id) && modules.byId(id)) }));
+  const baseGroups = groups;
+  const moduleDrag = drag?.type === 'module' && drag.active ? drag : null;
+  // Rows glide only after an order change we started (capture() before the
+  // model call). Folding a group is left entirely to its CSS transition.
+  const flipRef = useFlip(null);
+  const act = (fn) => { flipRef.capture(); return fn(); };
 
-  /*
-   * The chip follows the pointer through window-level listeners rather than
-   * through each row's own handlers. A drag spends most of its life over rows the
-   * sidebar did not write, and the chip has to keep up there too.
-   */
-  useEffect(() => {
-    function handleMove(event) {
-      dragChipRef.current?.moveTo(event.clientX, event.clientY);
+  /* ----- group names: no blanks, no duplicates, never the reserved "Ungrouped" ----- */
+  const norm = (v) => String(v || '').normalize('NFKC').trim().toLowerCase();
+  function nameProblem(name, selfId) {
+    const n = norm(name);
+    if (!n) return null;
+    const reserved = [tw('未分组'), '未分组', 'ungrouped'].map(norm);
+    if (reserved.includes(n)) return tw('“{{name}}”是系统保留的名称，换一个吧', { name: name.trim() });
+    if (baseGroups.some((g) => g.id !== selfId && norm(groupDisplayName(g)) === n)) return tw('已经有叫“{{name}}”的分组了', { name: name.trim() });
+    return null;
+  }
+
+  /* ----- pointer-driven drag ----- */
+  function beginPress(e, payload) {
+    if (!editable || isNarrow || e.button > 0) return;
+    if (e.target.closest('input, .tbx-group-more, .tbx-trash-restore')) return;
+    const el = e.currentTarget;
+    const r = el.getBoundingClientRect();
+    // The floating copy is only as wide as icon + label, so the pointer keeps
+    // hold of it near the start even if the row was grabbed on its far side.
+    let compact = r.width;
+    const label = el.querySelector('.tbx-row-label, .tbx-group-name');
+    if (label?.firstChild) {
+      const range = document.createRange();
+      range.selectNodeContents(label);
+      const text = range.getBoundingClientRect();
+      compact = Math.min(r.width, Math.max(text.right - r.left + 14, 80));
     }
-    window.addEventListener('dragover', handleMove);
-    window.addEventListener('drag', handleMove);
-    return () => {
-      window.removeEventListener('dragover', handleMove);
-      window.removeEventListener('drag', handleMove);
+    const press = {
+      ...payload,
+      pointerId: e.pointerId,
+      sx: e.clientX,
+      sy: e.clientY,
+      dx: Math.min(e.clientX - r.left, compact - 16),
+      dy: e.clientY - r.top,
+      w: r.width,
+      h: r.height,
+      active: false,
+      touch: e.pointerType !== 'mouse',
+      ready: e.pointerType === 'mouse',
     };
-  }, []);
-
-  useEffect(() => {
-    if (!isNarrow || !mobileOpen) return undefined;
-    mobileCloseRef.current?.focus();
-  }, [isNarrow, mobileOpen]);
-
-  useEffect(() => {
-    if (!isNarrow || !mobileOpen) return undefined;
-    function handleKeyDown(event) {
-      if (event.key === 'Escape' && !event.defaultPrevented && !openSurface) onCloseMobile();
+    dragRef.current = press;
+    if (press.touch) {
+      clearTimeout(holdTimer.current);
+      holdTimer.current = setTimeout(() => {
+        if (dragRef.current === press) { press.ready = true; activate(e.clientX, e.clientY); }
+      }, TOUCH_HOLD);
     }
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isNarrow, mobileOpen, onCloseMobile, openSurface]);
-
-  function beginRename(group) {
-    setContextMenu(null);
-    setRenamingGroupId(group.id);
-    setRenameDraft(groupDisplayName(group));
+    window.addEventListener('pointermove', stable.current.move, { passive: false });
+    window.addEventListener('pointerup', stable.current.up);
+    window.addEventListener('pointercancel', stable.current.cancel);
   }
-
-  function commitRename(groupId) {
-    if (model.renameGroup(groupId, renameDraft)) setRenamingGroupId(null);
+  function activate(x, y) {
+    const d = dragRef.current;
+    if (!d || d.active) return;
+    d.active = true;
+    suppressClick.current = true;
+    document.documentElement.classList.add('tbx-dragging');
+    d.origin = originOf(d);
+    setDrag({ ...d, x, y });
+    // "Ungrouped" may appear as a drop target; measure after it has rendered
+    requestAnimationFrame(() => track(x, y));
   }
-
-  function openContextMenu(event, group) {
-    if (group.fixed || !model.navigation.editable) return;
-    event.preventDefault();
-    setContextMenu({
-      group,
-      position: {
-        x: Math.min(event.clientX || 24, window.innerWidth - 220),
-        y: Math.min(event.clientY || 80, window.innerHeight - 150)
+  function originOf(d) {
+    if (d.type === 'group') {
+      const movable = baseGroups.filter((g) => !g.fixed);
+      return { index: Math.max(0, movable.findIndex((g) => g.id === d.id)) };
+    }
+    if (d.from === 'trash') return null;
+    const g = baseGroups.find((x) => x.visible.includes(d.id));
+    return g ? { groupId: g.id, index: g.visible.indexOf(d.id) } : null;
+  }
+  function onMove(e) {
+    const d = dragRef.current;
+    if (!d || e.pointerId !== d.pointerId) return;
+    if (!d.active) {
+      const far = Math.hypot(e.clientX - d.sx, e.clientY - d.sy) > DRAG_SLOP;
+      if (d.touch && !d.ready) { if (far) cleanup(); return; }
+      if (!far) return;
+      activate(e.clientX, e.clientY);
+      return;
+    }
+    e.preventDefault();
+    setDrag((cur) => (cur ? { ...cur, x: e.clientX, y: e.clientY } : cur));
+    track(e.clientX, e.clientY);
+  }
+  function track(x, y) {
+    const d = dragRef.current;
+    if (!d?.active) return;
+    const next = hitTest(d, x, y);
+    if (next === undefined) return;
+    if (JSON.stringify(next) !== JSON.stringify(targetRef.current)) {
+      targetRef.current = next;
+      setTarget(next);
+    }
+    const l = lineFor(d, next);
+    setLine((cur) => (cur?.top === l?.top ? cur : l));
+  }
+  // Where an element sits in the list, ignoring transforms in flight.
+  function box(el) {
+    const nav = navRef.current;
+    let top = 0;
+    let n = el;
+    while (n && n !== nav) { top += n.offsetTop; n = n.offsetParent; }
+    if (n !== nav) return el.getBoundingClientRect();
+    const t = nav.getBoundingClientRect().top + nav.clientTop - nav.scrollTop + top;
+    return { top: t, bottom: t + el.offsetHeight, height: el.offsetHeight };
+  }
+  function hitTest(d, x, y) {
+    const trash = trashRef.current?.getBoundingClientRect();
+    if (trash && y >= trash.top - 6 && y <= trash.bottom + 6 && x >= trash.left - 40 && x <= trash.right + 60) return { kind: 'trash' };
+    const nav = navRef.current?.getBoundingClientRect();
+    if (!nav || x < nav.left - 60 || x > nav.right + 80) return undefined;
+    const sections = [...navRef.current.querySelectorAll('[data-group]')];
+    if (!sections.length) return undefined;
+    if (d.type === 'group') {
+      const movable = sections.filter((s) => s.dataset.fixed !== 'true' && s.dataset.group !== d.id);
+      let index = 0;
+      for (const s of movable) {
+        const r = box(s);
+        if (y > r.top + Math.min(r.height, 40) / 2) index += 1;
       }
-    });
-  }
-
-  function startLongPress(event, group) {
-    if (event.pointerType === 'mouse' || group.fixed) return;
-    window.clearTimeout(longPressTimerRef.current);
-    longPressTimerRef.current = window.setTimeout(() => openContextMenu(event, group), 480);
-  }
-
-  function clearLongPress() {
-    window.clearTimeout(longPressTimerRef.current);
-  }
-
-  function startDrag(event, payload) {
-    if (!model.navigation.editable) { event.preventDefault(); return; }
-    setDragState(payload);
-    const map = new Map();
-    const ends = new Map();
-    let previous = null;
-    for (const group of model.layout.groups) {
-      if (previous) map.set(group.id, previous);
-      const section = document.querySelector(`[data-drop-group="${group.id}"]`);
-      const lastRow = section?.querySelector('.tb-module-row:last-of-type');
-      if (lastRow) ends.set(group.id, lastRow.getBoundingClientRect().bottom);
-      previous = group.id;
+      return { kind: 'group', index };
     }
-    previousGroupRef.current = map;
-    previousGroupEndRef.current = ends;
-    event.dataTransfer.effectAllowed = 'move';
-    event.dataTransfer.setData('text/plain', JSON.stringify(payload));
-
-    /*
-     * A row dragged at full size covers the trash it is aimed at, which hides the
-     * only feedback that says the trash has recognised the drag. The chip is the
-     * same 32px white disc for modules and groups, differing only in icon, so the
-     * gesture reads the same everywhere in the shell. It starts under the pointer
-     * and is moved by `followDrag`, because the native image is suppressed.
-     */
-    dragChipRef.current?.remove();
-    dragChipRef.current = createDragChip({ icon: payload.type === 'group' ? 'folder' : moduleById(payload.id)?.icon || 'inbox' });
-    dragChipRef.current.set(event);
-    dragChipRef.current.moveTo(event.clientX, event.clientY);
-  }
-
-  /** Keeps the chip under the pointer for the whole gesture. */
-  function followDrag(event) {
-    dragChipRef.current?.moveTo(event.clientX, event.clientY);
-  }
-
-  function finishDrag() {
-    setDragState(null);
-    dragTargetRef.current = null;
-    setDragTarget(null);
-    dragChipRef.current?.remove();
-    dragChipRef.current = null;
-  }
-
-  /* Keep the resolved target with its insertion mark; dragging removes the source from the layout, so drop-time geometry differs. */
-  function applyDragTarget(target) {
-    dragTargetRef.current = target;
-    const next = markOf(target);
-    setDragTarget((current) => (current === next ? current : next));
-  }
-
-  function markOf(target) {
-    if (!target) return null;
-    if (target.kind === 'group') return `group:${target.groupId}`;
-    /*
-     * An empty group is marked as a place rather than as a boundary. There is no
-     * row to draw an insertion line against, so the whole group is outlined
-     * instead, which is also what tells the user the group will accept the drop.
-     */
-    if (target.kind === 'groupOnly') return `group-empty:${target.groupId}`;
-    if (target.kind === 'groupEnd') return `group-end:${target.groupId}`;
-    if (target.kind === 'start') return moduleDropMark('before', target.groupId, target.moduleId);
-    return moduleDropMark(target.kind, target.groupId, target.moduleId);
-  }
-
-  /**
-   * Where a module drop inside this group would land.
-   *
-   * A module can land before or after a row, or at the very top of a group. The
-   * last one is the group's own insertion point rather than a row's, because
-   * above the first row there is no row to be "before": the pointer is over the
-   * heading, the group's padding or the gap the group shares with the one above.
-   * Resolving it to the end of the previous group, which is what a row-only rule
-   * does, is why a module could not be dropped at the top of a group.
-   */
-  function resolveModuleTarget(section, y, current) {
-    const rows = [...section.querySelectorAll('.tb-module-row')];
-    const firstRow = rows[0]?.getBoundingClientRect();
-    const previousGroupId = previousGroupRef.current.get(section.dataset.dropGroup);
-
-    /* With no rows, the whole group targets its empty list. */
-    if (!firstRow) return { kind: 'groupOnly', groupId: section.dataset.dropGroup };
-
-    const row = y >= firstRow.top && y <= rows.at(-1).getBoundingClientRect().bottom
-      ? rows.find((candidate) => {
-        const rect = candidate.getBoundingClientRect();
-        return y >= rect.top && y <= rect.bottom;
-      })
-      : null;
-
-    if (row) {
-      const rect = row.getBoundingClientRect();
-      const id = row.dataset.dropModule;
-      const middle = rect.top + rect.height / 2;
-      // A whole row of hysteresis: the pointer must travel a quarter row clear of
-      // the midpoint on either side before the marked side flips, so a hand that
-      // sits on one boundary does not make the insertion line flicker.
-      const slack = rect.height / 2;
-      let after = y >= middle;
-      if (current?.kind === 'after' && current.moduleId === id && y < middle - slack) after = false;
-      if (current?.kind === 'before' && current.moduleId === id && y >= middle + slack) after = true;
-      return after
-        ? { kind: 'after', groupId: section.dataset.dropGroup, moduleId: id }
-        : { kind: 'before', groupId: section.dataset.dropGroup, moduleId: id };
+    let i = sections.length - 1;
+    for (let k = 0; k < sections.length; k += 1) {
+      if (y < box(sections[k]).bottom) { i = k; break; }
     }
-
-    /*
-     * Above the first row. The gap between two groups belongs to both, so it is
-     * split at the midpoint between the previous group's last row and where this
-     * group begins. Above the split the module joins the previous group's end,
-     * below it it joins the top of this one. The heading counts as the group's
-     * top: a pointer on the heading has arrived at this group, not at the one
-     * above it, which is what makes the top of a group a real drop target.
-     */
-    const groupTop = section.querySelector('.tb-group-heading')?.getBoundingClientRect().top ?? firstRow.top;
-    if (!previousGroupId || y >= groupTop) {
-      return { kind: 'start', groupId: section.dataset.dropGroup, moduleId: rows[0].dataset.dropModule };
+    const section = sections[i];
+    const head = section.querySelector('.tbx-group-head');
+    if (head && i > 0) {
+      const h = box(head);
+      // the upper half of a heading still belongs to the end of the group above
+      if (y < h.top + h.height / 2) {
+        const prev = baseGroups.find((g) => g.id === sections[i - 1].dataset.group);
+        if (prev && !prev.collapsed) {
+          armExpand(null);
+          return { kind: 'slot', groupId: prev.id, index: prev.visible.filter((id) => id !== d.id).length };
+        }
+      }
     }
-    const boundaryY = (previousGroupEndRef.current.get(previousGroupId) + groupTop) / 2;
-    const slack = firstRow.height / 2;
-    let usePrevious = y < boundaryY;
-    if (current?.kind === 'groupEnd' && current.groupId === previousGroupId && y > boundaryY + slack) usePrevious = false;
-    if (current?.kind === 'start' && current.groupId === section.dataset.dropGroup && y < boundaryY - slack) usePrevious = true;
-    return usePrevious
-      ? { kind: 'groupEnd', groupId: previousGroupId }
-      : { kind: 'start', groupId: section.dataset.dropGroup, moduleId: rows[0].dataset.dropModule };
+    const groupId = section.dataset.group;
+    const g = baseGroups.find((x) => x.id === groupId);
+    if (!g) return undefined;
+    if (g.collapsed) {
+      armExpand(groupId);
+      return { kind: 'slot', groupId, index: g.visible.filter((id) => id !== d.id).length };
+    }
+    armExpand(null);
+    const rows = [...section.querySelectorAll('[data-row]')].filter((r) => r.dataset.row !== d.id);
+    let index = 0;
+    for (const r of rows) {
+      const b = box(r);
+      if (y > b.top + b.height / 2) index += 1;
+    }
+    return { kind: 'slot', groupId, index };
   }
-
-  function dropOnGroup(event, groupId) {
-    event.preventDefault();
-    event.stopPropagation();
-    const payload = readDragPayload(event) || dragState;
-    if (payload?.type === 'module') moveModuleTo(payload.id, dragTargetRef.current);
-    if (payload?.type === 'group') model.moveGroup(payload.id, groupId);
-    finishDrag();
+  // The drop line: a short blue rule with a ring at its start, between rows.
+  function lineFor(d, to) {
+    const nav = navRef.current;
+    if (!nav || !to || to.kind === 'trash') return null;
+    const origin = nav.getBoundingClientRect().top + nav.clientTop - nav.scrollTop;
+    let y = null;
+    if (to.kind === 'group') {
+      if (d.origin && to.index === d.origin.index) return null;
+      const movable = [...nav.querySelectorAll('[data-group]')].filter((s) => s.dataset.fixed !== 'true' && s.dataset.group !== d.id);
+      if (to.index < movable.length) y = box(movable[to.index]).top - 2;
+      else {
+        const fixed = nav.querySelector('[data-group][data-fixed="true"]');
+        y = fixed ? box(fixed).top - 2 : movable.length ? box(movable[movable.length - 1]).bottom + 2 : null;
+      }
+    } else {
+      const o = d.origin;
+      if (o && d.from !== 'trash' && o.groupId === to.groupId && o.index === to.index) return null;
+      const section = [...nav.querySelectorAll('[data-group]')].find((s) => s.dataset.group === to.groupId);
+      if (!section) return null;
+      if (section.classList.contains('is-collapsed')) {
+        const head = section.querySelector('.tbx-group-head');
+        y = head ? box(head).bottom + 1 : box(section).top;
+      } else {
+        const rows = [...section.querySelectorAll('[data-row]')].filter((r) => r.dataset.row !== d.id);
+        if (!rows.length) return null; // an empty group lights up its own drop area instead
+        y = to.index < rows.length ? box(rows[to.index]).top - 1 : box(rows[rows.length - 1]).bottom + 1;
+      }
+    }
+    return y == null ? null : { top: Math.round(y - origin) };
   }
-
-  function dropOnModule(event) {
-    event.preventDefault();
-    event.stopPropagation();
-    const payload = readDragPayload(event) || dragState;
-    if (payload?.type === 'module') moveModuleTo(payload.id, dragTargetRef.current);
-    finishDrag();
+  // Hovering a folded section while dragging opens it after a beat.
+  function armExpand(groupId) {
+    const cur = expandTimer.current;
+    if (cur.id === groupId) return;
+    clearTimeout(cur.timer);
+    expandTimer.current = { id: groupId, timer: groupId ? setTimeout(() => model.toggleGroup(groupId), 650) : 0 };
   }
-
-  /** Applies one resolved module target to the layout. */
-  function moveModuleTo(moduleId, target) {
-    if (!target) return;
-    /*
-     * An empty group has no anchor row, so the module is appended to it: with no
-     * rows, the end of its list is the only place the module can go.
-     */
-    if (target.kind === 'groupEnd' || target.kind === 'groupOnly') {
-      model.moveModule(moduleId, target.groupId, null, 'after');
+  function onUp(e) {
+    const d = dragRef.current;
+    if (!d || e.pointerId !== d.pointerId) return;
+    if (d.active) commit(d, targetRef.current);
+    cleanup();
+  }
+  function onCancel() { cleanup(); }
+  function cleanup() {
+    clearTimeout(holdTimer.current);
+    armExpand(null);
+    dragRef.current = null;
+    targetRef.current = null;
+    setDrag(null);
+    setTarget(null);
+    setLine(null);
+    document.documentElement.classList.remove('tbx-dragging');
+    window.removeEventListener('pointermove', stable.current.move);
+    window.removeEventListener('pointerup', stable.current.up);
+    window.removeEventListener('pointercancel', stable.current.cancel);
+    setTimeout(() => { suppressClick.current = false; }, 0);
+  }
+  function commit(d, to) {
+    if (!to) return;
+    if (to.kind === 'trash') {
+      if (d.type === 'module' && d.from !== 'trash') act(() => model.hideModule(d.id));
+      if (d.type === 'group') act(() => model.hideGroup(d.id));
       return;
     }
-    model.moveModule(moduleId, target.groupId, target.moduleId, target.kind === 'after' ? 'after' : 'before');
-  }
-
-  /*
-   * The row is a link, so Enter and Space are left alone: they navigate, which
-   * is what a row that goes somewhere should do with the keyboard. Only the two
-   * layout gestures stay, Delete to hide and Alt plus an arrow to reorder.
-   */
-  function handleModuleKeyDown(event, moduleId) {
-    if (event.key === 'Delete' || event.key === 'Backspace') {
-      event.preventDefault();
-      model.hideModule(moduleId);
+    if (d.type === 'group' && to.kind === 'group') {
+      if (d.origin && to.index === d.origin.index) return;
+      const order = baseGroups.filter((g) => !g.fixed && g.id !== d.id);
+      const before = order[to.index]?.id ?? baseGroups.find((g) => g.fixed)?.id;
+      if (before && before !== d.id) act(() => model.moveGroup(d.id, before));
       return;
     }
-    if (!event.altKey) return;
-    const directions = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right' };
-    if (directions[event.key]) {
-      event.preventDefault();
-      model.moveModuleByKeyboard(moduleId, directions[event.key]);
+    if (d.type === 'module' && to.kind === 'slot') {
+      const g = baseGroups.find((x) => x.id === to.groupId);
+      const list = g.visible.filter((id) => id !== d.id);
+      const o = d.origin;
+      if (o && o.groupId === to.groupId && o.index === to.index && d.from !== 'trash') return;
+      act(() => {
+        if (to.index < list.length) model.moveModule(d.id, to.groupId, list[to.index], 'before');
+        else if (list.length) model.moveModule(d.id, to.groupId, list[list.length - 1], 'after');
+        else model.moveModule(d.id, to.groupId, null, 'after');
+      });
     }
   }
+  // Window listeners are stable wrappers around the latest closures.
+  handlers.current = { onMove, onUp, onCancel, cleanup };
+  useEffect(() => () => handlers.current.cleanup(), []);
+
+  /* ----- rail tooltips ----- */
+  function showTip(e, label) {
+    if (!railCollapsed || drag) return;
+    const r = e.currentTarget.getBoundingClientRect();
+    setTip({ label, left: r.right + 12, top: r.top + r.height / 2 });
+  }
+
+  function handleRowKey(e, id) {
+    if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); act(() => model.hideModule(id)); return; }
+    if (!e.altKey) return;
+    const dir = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right' }[e.key];
+    if (dir) { e.preventDefault(); act(() => model.moveModuleByKeyboard(id, dir)); }
+  }
+
+  function createGroup() {
+    const problem = nameProblem(draftName);
+    if (problem) { setNameError(problem); return; }
+    if (act(() => model.createGroup(draftName))) { setDraftName(''); setAdding(false); setNameError(''); }
+  }
+  function startRename(g) { setRenaming(g.id); setRenameDraft(groupDisplayName(g)); setNameError(''); }
+  function commitRename(groupId, { leaving = false } = {}) {
+    const problem = nameProblem(renameDraft, groupId);
+    if (problem) {
+      if (leaving) { setRenaming(null); setNameError(''); } else setNameError(problem);
+      return;
+    }
+    if (model.renameGroup(groupId, renameDraft) || leaving) { setRenaming(null); setNameError(''); }
+  }
+  function toggle(g) {
+    if (suppressClick.current || renaming === g.id) return;
+    model.toggleGroup(g.id);
+  }
+
+  const isGroupDragging = drag?.active && drag.type === 'group';
+  const showFixedWhenEmpty = drag?.active && drag.type === 'module';
+
+  const row = (id, groupId) => {
+    const m = modules.byId(id);
+    if (!m) return null;
+    const label = moduleDisplayName(m);
+    const active = modulePath(id) === routePath;
+    const origin = moduleDrag && moduleDrag.id === id;
+    return (
+      <a
+        key={id}
+        ref={flipRef(`m:${id}`)}
+        href={moduleHref(id)}
+        className={cx('tbx-row', active && 'is-active', origin && 'is-origin')}
+        data-row={id}
+        data-label={label}
+        data-module={id}
+        draggable={false}
+        aria-current={active ? 'page' : undefined}
+        aria-label={`${label}。${tw('可拖动排序；Alt 加方向键移动；Delete 移到垃圾桶')}`}
+        onDragStart={(e) => e.preventDefault()}
+        onPointerDown={(e) => beginPress(e, { type: 'module', id, from: 'nav', groupId })}
+        onPointerEnter={(e) => showTip(e, label)}
+        onPointerLeave={() => setTip(null)}
+        onFocus={(e) => showTip(e, label)}
+        onBlur={() => setTip(null)}
+        onKeyDown={(e) => handleRowKey(e, id)}
+        onClick={(e) => {
+          if (suppressClick.current) { e.preventDefault(); return; }
+          followAnchor(e, moduleHref(id));
+          onNavigate();
+        }}
+      >
+        <span className="tbx-row-icon"><Glyph name={m.icon} /></span>
+        <span className="tbx-row-label">{label}</span>
+      </a>
+    );
+  };
 
   return (
     <>
-      <button hidden={!mobileOpen} aria-hidden={!mobileOpen} className={`tb-mobile-scrim ${mobileOpen ? 'is-visible' : ''}`} aria-label={t("关闭工作台导航")} onClick={onCloseMobile} />
+      <button
+        hidden={!mobileOpen}
+        aria-hidden={!mobileOpen}
+        className={cx('tb-mobile-scrim', mobileOpen && 'is-visible')}
+        aria-label={tw('关闭工作台导航')}
+        onClick={onCloseMobile}
+      />
       <aside
-        className={`tb-sidebar ${mobileOpen ? 'is-mobile-open' : ''} ${railCollapsed ? 'is-rail-collapsed' : ''}`}
-        aria-label={t("工作台导航")}
+        className={cx('tb-sidebar tbx-side', mobileOpen && 'is-mobile-open', railCollapsed && 'is-rail-collapsed', drag?.active && 'is-dragging')}
+        aria-label={tw('工作台导航')}
         aria-hidden={isNarrow && !mobileOpen ? true : undefined}
-        inert={isNarrow && !mobileOpen ? true : undefined}
+        inert={isNarrow && !mobileOpen}
       >
-        <div className="tb-sidebar-mobile-head"><strong>{t("工作台")}</strong><button ref={mobileCloseRef} onClick={onCloseMobile} aria-label={t("关闭")}><Icon name="close" /></button></div>
-        <SidebarHead
-          accountName={accountName}
-          onAnnounce={model.announce}
-          openSurface={openSurface}
-          onToggleSurface={onToggleSurface}
-          onOpenSurface={onOpenSurface}
-          onCloseSurface={onCloseSurface}
-          visible={isNarrow ? mobileOpen : !railCollapsed}
-        />
-
-        {}
         {isNarrow && (
-          <nav className="tb-mobile-nav" aria-label={t("全局导航")}>
-            <a
-              className={`tb-module-row${routePath === HOME_PATH ? ' is-active' : ''}`}
-              href={withSearch(HOME_PATH)}
-              aria-current={routePath === HOME_PATH ? 'page' : undefined}
-              onClick={(event) => {
-                routeClick(event, HOME_PATH);
-                onCloseMobile();
-              }}
-            >
-              <span className="tb-module-icon"><Icon name="home" /></span>
-              <span>{t("首页")}</span>
+          <div className="tbx-side-mobile-head">
+            <strong>TeachBuddy</strong>
+            <button type="button" onClick={onCloseMobile} aria-label={tw('关闭')}><Glyph name="close" size={18} /></button>
+          </div>
+        )}
+
+        <div className="tbx-side-head">
+          <SidebarHead
+            accountName={accountName}
+            onAnnounce={model.announce}
+            openSurface={openSurface}
+            onToggleSurface={onToggleSurface}
+            onOpenSurface={onOpenSurface}
+            onCloseSurface={onCloseSurface}
+            visible={isNarrow ? mobileOpen : !railCollapsed}
+          />
+        </div>
+
+        {isNarrow && (
+          <nav className="tbx-side-mobile-nav" aria-label={tw('全局导航')}>
+            <a className={cx('tbx-row', routePath === HOME_PATH && 'is-active')} href={withSearch(HOME_PATH)} aria-current={routePath === HOME_PATH ? 'page' : undefined} onClick={(e) => { followAnchor(e, HOME_PATH); onCloseMobile(); }}>
+              <span className="tbx-row-icon"><Glyph name="home" /></span>
+              <span className="tbx-row-label">{tw('首页')}</span>
             </a>
-            {workbenchModules.filter(module => module.navigation === 'top').map(module => <a
-              key={module.id}
-              className={`tb-module-row${routePath === module.path ? ' is-active' : ''}`}
-              href={module.path}
-              aria-current={routePath === module.path ? 'page' : undefined}
-              onClick={(event) => { routeClick(event, module.path); onCloseMobile(); }}
-            >
-              <span className="tb-module-icon"><Icon name={module.icon} /></span>
-              <span>{moduleDisplayName(module)}</span>
-            </a>)}
-            <button
-              type="button"
-              className="tb-module-row"
-              aria-expanded={mobileSupportOpen}
-              onClick={() => setMobileSupportOpen((current) => !current)}
-            >
-              <span className="tb-module-icon"><Icon name="circleHelp" /></span>
-              <span>{t("支持")}</span>
-              <Icon name="chevron" size={16} />
+            {workbenchModulesAll.filter((m) => m.navigation === 'top').map((m) => (
+              <a key={m.id} className={cx('tbx-row', routePath === m.path && 'is-active')} href={m.path} aria-current={routePath === m.path ? 'page' : undefined} onClick={(e) => { followAnchor(e, m.path); onCloseMobile(); }}>
+                <span className="tbx-row-icon"><Glyph name={m.icon || 'calendar'} /></span>
+                <span className="tbx-row-label">{moduleDisplayName(m)}</span>
+              </a>
+            ))}
+            <button type="button" className="tbx-row" aria-expanded={mobileSupport} onClick={() => setMobileSupport((v) => !v)}>
+              <span className="tbx-row-icon"><Glyph name="circleHelp" /></span>
+              <span className="tbx-row-label">{tw('支持')}</span>
+              <span className={cx('tbx-chevron', mobileSupport && 'is-open')}><Glyph name="chevron" size={16} /></span>
             </button>
-            {/*
-              The drawer renders the same destinations as the desktop support
-              menu, and every one of them leaves the drawer behind: the row
-              closes the drawer and then lets the link navigate.
-            */}
-            {mobileSupportOpen && SUPPORT_MENU_ITEMS.map((item) => (
-              <a
-                className={`tb-module-row tb-mobile-support-item${routePath === item.route ? ' is-active' : ''}`}
-                key={item.label}
-                href={withSearch(item.route)}
-                aria-current={routePath === item.route ? 'page' : undefined}
-                onClick={(event) => {
-                  routeClick(event, item.route);
-                  onCloseMobile();
-                }}
-              >
-                <span className="tb-module-icon"><Icon name={item.icon} size={16} /></span>
-                <span>{t(item.label)}</span>
+            {mobileSupport && SUPPORT_MENU_ITEMS.map((item) => (
+              <a key={item.label} className={cx('tbx-row is-sub', routePath === item.route && 'is-active')} href={withSearch(item.route)} onClick={(e) => { followAnchor(e, item.route); onCloseMobile(); }}>
+                <span className="tbx-row-icon"><Glyph name={item.icon} size={18} /></span>
+                <span className="tbx-row-label">{tw(item.label)}</span>
               </a>
             ))}
           </nav>
         )}
 
-        <div className="tb-workspace-heading">
-          <strong>{t("工作台")}</strong>
-          <NavigationBusy navigation={model.navigation} />
-          <button
-            type="button"
-            disabled={!model.navigation.editable}
-            data-new-group-toggle
-            aria-label={addingGroup ? t("关闭新建分组") : t("新建分组")}
-            aria-expanded={addingGroup}
-            onClick={() => setAddingGroup((current) => !current)}
-          >
-            <Icon name={addingGroup ? 'minus' : 'plus'} size={16} />
-          </button>
-        </div>
         <NavigationStatus navigation={model.navigation} railCollapsed={railCollapsed} onExpand={onExpand} />
-        {addingGroup && <NewGroupForm onCreate={model.createGroup} onClose={() => setAddingGroup(false)} />}
 
-        <nav className="tb-module-nav" aria-label={t("功能模块")}>
-          {model.layout.groups.map((group) => {
-            /*
-             * A group that has lost every module keeps its heading, and so does
-             * one that never had a module. Removing it would take away the only
-             * place those modules could be dragged back to, which is why dropping
-             * a module into an emptied group never worked: by the time the group
-             * was empty there was nothing left to drop onto. The ungrouped area
-             * is always shown for the same reason, and because restores land in
-             * it.
-             */
-            const visibleModuleIds = group.moduleIds.filter((moduleId) => !hidden.has(moduleId));
+        <nav className={cx('tbx-side-nav', isGroupDragging && 'is-group-drag')} aria-label={tw('功能模块')} ref={navRef}>
+          {groups.map((g) => {
+            const empty = g.visible.length === 0;
+            // "Ungrouped" shows whenever it holds modules, and as a drop target while dragging
+            if (g.fixed && empty && !showFixedWhenEmpty) return null;
+            const isTarget = target?.kind === 'slot' && target.groupId === g.id;
+            const lifted = isGroupDragging && drag.id === g.id;
+            const name = groupDisplayName(g);
+            const editing = renaming === g.id;
             return (
-            <section
-              className={`tb-group ${dragTarget === `group:${group.id}` ? 'is-group-insert-target' : ''} ${dragTarget === `group-empty:${group.id}` ? 'is-empty-drop-target' : ''} ${dragTarget === `group-end:${group.id}` ? 'is-module-end-target' : ''}`}
-              data-drop-group={group.id}
-              key={group.id}
-              /*
-               * Target resolution lives in onDragOver, the only drag event that
-               * carries pointer coordinates. Resolution happens on enter, and
-               * the boundary belonging to the gap above a group depends on where
-               * in that gap the pointer sits.
-               */
-              onDragOver={(event) => {
-                const payload = readDragPayload(event) || dragState;
-                if (payload?.type === 'module') {
-                  event.preventDefault();
-                  applyDragTarget(resolveModuleTarget(event.currentTarget, event.clientY, dragTargetRef.current));
-                  return;
-                }
-                if (payload?.type === 'group') {
-                  event.preventDefault();
-                  if (payload.id !== group.id) applyDragTarget({ kind: 'group', groupId: group.id });
-                }
-              }}
-              onDragLeave={(event) => {
-                if (!event.currentTarget.contains(event.relatedTarget)) applyDragTarget(null);
-              }}
-              onDrop={(event) => dropOnGroup(event, group.id)}
-            >
-              <div
-                className={`tb-group-heading ${dragState?.type === 'group' && dragState.id === group.id ? 'is-dragging' : ''}`}
-                draggable={model.navigation.editable && !group.fixed && renamingGroupId !== group.id}
-                onDragStart={(event) => startDrag(event, { type: 'group', id: group.id })}
-                onDrag={followDrag}
-                onDragEnd={finishDrag}
-                onContextMenu={(event) => openContextMenu(event, group)}
-                onPointerDown={(event) => startLongPress(event, group)}
-                onPointerUp={clearLongPress}
-                onPointerCancel={clearLongPress}
-                onPointerMove={clearLongPress}
+              <section
+                key={g.id}
+                ref={flipRef(`g:${g.id}`)}
+                className={cx('tbx-group', g.collapsed && 'is-collapsed', isTarget && 'is-target', lifted && 'is-lifted', empty && 'is-empty')}
+                data-group={g.id}
+                data-fixed={g.fixed ? 'true' : 'false'}
               >
-                {renamingGroupId === group.id ? (
-                  <input
-                    autoFocus
-                    className="tb-group-rename"
-                    maxLength={80}
-                    name={`rename-${group.id}`}
-                    aria-label={t("重命名分组 {{value}}", { value: groupDisplayName(group) })}
-                    value={renameDraft}
-                    onChange={(event) => setRenameDraft(event.target.value)}
-                    onBlur={() => commitRename(group.id)}
-                    onKeyDown={(event) => {
-                      if (event.key === 'Enter') commitRename(group.id);
-                      if (event.key === 'Escape') {
-                        event.stopPropagation();
-                        setRenamingGroupId(null);
-                      }
-                    }}
-                  />
-                ) : (
-                  /*
-                   * The name is a heading and the chevron is a button, because a
-                   * collapsed group cannot be a link: a heading that navigates to
-                   * a hidden row would land the user on a page they cannot see.
-                   * Collapsed, the heading is a plain label and the chevron is the
-                   * only control. The heading is still the whole drag handle, as
-                   * it was before, via the wrapper's own heading classes.
-                   */
-                  <>
-                    {group.collapsed ? (
-                      <span className="tb-group-label">{groupDisplayName(group)}</span>
-                    ) : (
-                      <a
-                        className="tb-group-label"
-                        href={withSearch(group.moduleIds[0] ? modulePath(group.moduleIds[0]) : HOME_PATH)}
-                        onClick={(event) => routeClick(event, group.moduleIds[0] ? modulePath(group.moduleIds[0]) : HOME_PATH)}
-                        onKeyDown={(event) => {
-                          if ((event.shiftKey && event.key === 'F10') || event.key === 'ContextMenu') openContextMenu(event, group);
-                        }}
-                      >
-                        {groupDisplayName(group)}
-                      </a>
-                    )}
-                    <button
-                      type="button"
-                      className="tb-group-toggle"
-                      aria-expanded={!group.collapsed}
-                      aria-label={group.collapsed ? t("展开分组 {{value}}", { value: groupDisplayName(group) }) : t("收起分组 {{value}}", { value: groupDisplayName(group) })}
-                      onClick={() => model.toggleGroup(group.id)}
-                      onKeyDown={(event) => {
-                        if ((event.shiftKey && event.key === 'F10') || event.key === 'ContextMenu') openContextMenu(event, group);
+                <div className="tbx-fold tbx-group-fold">
+                  <div>
+                    <div
+                      className={cx('tbx-group-head', editing && 'is-editing')}
+                      role="button"
+                      tabIndex={editing ? -1 : 0}
+                      aria-expanded={!g.collapsed}
+                      aria-label={name}
+                      onPointerDown={g.fixed || editing ? undefined : (e) => beginPress(e, { type: 'group', id: g.id })}
+                      onClick={(e) => { if (!e.target.closest('.tbx-group-more, input')) toggle(g); }}
+                      onKeyDown={(e) => {
+                        if (e.target !== e.currentTarget) return;
+                        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(g); }
+                      }}
+                      onContextMenu={(e) => {
+                        if (g.fixed || !editable) return;
+                        e.preventDefault();
+                        setMenu({ group: g, at: { x: Math.min(e.clientX, innerWidth - 220), y: Math.min(e.clientY, innerHeight - 110) } });
                       }}
                     >
-                      <Icon name="chevron" size={16} />
-                    </button>
-                  </>
-                )}
-              </div>
-              {/*
-                * The list stays mounted and the wrapper animates its height, so a
-                * group opens and closes instead of appearing. Keeping it mounted
-                * is also what lets a drag start from a group that is still
-                * closing. `inert` takes the collapsed rows out of the tab order
-                * and out of the accessibility tree at the same time the collapse
-                * starts, so a shrinking row cannot be reached by keyboard.
-                */}
-              <div className={`tb-module-collapse${group.collapsed && !railCollapsed ? ' is-collapsed' : ''}`}>
-                <div className="tb-module-clip" inert={group.collapsed && !railCollapsed ? true : undefined}>
-                  <div className="tb-module-list">
-                  {visibleModuleIds.map((moduleId) => {
-                    const moduleItem = moduleById(moduleId);
-                    return (
-                      /*
-                       * A module row navigates, so it is an anchor rather than a
-                       * div with a button role: middle-click, copy link and the
-                       * browser's own status bar all come for free. Drag still
-                       * works, and a drag that moves the row never fires click.
-                       *
-                       * Alt+arrow and Delete still reorder and hide, but the row
-                       * is no longer a tab stop of its own: the link is the tab
-                       * stop, which is what a row that goes somewhere should be.
-                       */
-                      <a
-                        key={moduleId}
-                        href={moduleHref(moduleId)}
-                        className={`tb-module-row ${modulePath(moduleId) === routePath ? 'is-active' : ''} ${dragState?.type === 'module' && dragState.id === moduleId ? 'is-dragging' : ''} ${isModuleDropTarget(dragTarget, moduleId, 'before') ? 'is-drop-target is-drop-before' : ''} ${isModuleDropTarget(dragTarget, moduleId, 'after') ? 'is-drop-target is-drop-after' : ''}`}
-                        data-drop-module={moduleId}
-                        data-label={moduleDisplayName(moduleItem)}
-                        onPointerEnter={(event) => showRailTooltip(event, moduleDisplayName(moduleItem))}
-                        onPointerLeave={() => setRailTooltip(null)}
-                        onFocus={(event) => showRailTooltip(event, moduleDisplayName(moduleItem))}
-                        onBlur={() => setRailTooltip(null)}
-                        draggable={model.navigation.editable}
-                        aria-current={modulePath(moduleId) === routePath ? 'page' : undefined}
-                        aria-label={t("{{value}}{{detail}}。Enter 打开；可拖动；Alt 加方向键移动；Delete 隐藏", { value: moduleDisplayName(moduleItem), detail: modulePath(moduleId) === routePath ? t("，当前页面") : '' })}
-                        onKeyDown={(event) => handleModuleKeyDown(event, moduleId)}
-                        onClick={(event) => {
-                          /* Keep the shell mounted for ordinary clicks; modified clicks retain native link behavior. */
-                          routeClick(event, moduleHref(moduleId));
-                          onNavigate();
-                        }}
-                        onDragStart={(event) => startDrag(event, { type: 'module', id: moduleId })}
-                        onDrag={followDrag}
-                        onDragEnd={finishDrag}
-                        onDragOver={(event) => {
-                          event.preventDefault();
-                          event.stopPropagation();
-                          const payload = readDragPayload(event) || dragState;
-                          if (payload?.type !== 'module' || payload.id === moduleId) return;
-                          applyDragTarget(resolveModuleTarget(
-                            event.currentTarget.closest('[data-drop-group]'),
-                            event.clientY,
-                            dragTargetRef.current
-                          ));
-                        }}
-                        onDrop={dropOnModule}
-                      >
-                        <span className="tb-module-icon"><Icon name={moduleItem.icon} /></span>
-                        <span>{moduleDisplayName(moduleItem)}</span>
-                      </a>
-                    );
-                  })}
+                      {editing ? (
+                        <input
+                          autoFocus
+                          className="tbx-group-rename"
+                          maxLength={80}
+                          value={renameDraft}
+                          aria-label={tw('重命名分组')}
+                          aria-invalid={nameError ? true : undefined}
+                          onChange={(e) => { setRenameDraft(e.target.value); setNameError(''); }}
+                          onBlur={() => commitRename(g.id, { leaving: true })}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') commitRename(g.id);
+                            if (e.key === 'Escape') { e.stopPropagation(); setRenaming(null); setNameError(''); }
+                          }}
+                        />
+                      ) : (
+                        <span className="tbx-group-title">
+                          <span className="tbx-group-name">{name}</span>
+                          <span className="tbx-chevron"><Glyph name="chevron" size={14} /></span>
+                        </span>
+                      )}
+                      {!g.fixed && editable && !editing && (
+                        <button
+                          type="button"
+                          className="tbx-group-more"
+                          aria-label={tw('分组选项')}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const r = e.currentTarget.getBoundingClientRect();
+                            setMenu((m) => (m?.group.id === g.id ? null : { group: g, at: { x: r.right + 6, y: r.top } }));
+                          }}
+                        >
+                          <Glyph name="more" size={16} />
+                        </button>
+                      )}
+                    </div>
+                    {editing && nameError && <p className="tbx-name-error" role="alert">{nameError}</p>}
                   </div>
                 </div>
-              </div>
-            </section>
+                <div className="tbx-group-body">
+                  <div className="tbx-group-rows">
+                    {g.visible.map((id) => row(id, g.id))}
+                    {empty && (showFixedWhenEmpty
+                      ? <div className={cx('tbx-drop-hint', isTarget && 'is-on')}>{tw('放到这里')}</div>
+                      : !g.fixed && <div className="tbx-fold tbx-hint-fold"><div className="tbx-drop-hint is-idle">{tw('把模块拖到这里')}</div></div>)}
+                  </div>
+                </div>
+              </section>
             );
           })}
-          <HiddenModules
-            model={model}
-            open={hiddenOpen}
-            onToggle={setHiddenOpen}
-            dragState={dragState}
-            onStartDrag={startDrag}
-            onFinishDrag={finishDrag}
-            onDrop={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-              const payload = readDragPayload(event) || dragState;
-              if (payload?.type === 'module') model.hideModule(payload.id);
-              if (payload?.type === 'group') model.hideGroup(payload.id);
-              finishDrag();
-            }}
-          />
+          {line && <div className="tbx-drop-line" style={{ transform: `translateY(${line.top}px)` }} aria-hidden="true" />}
+
+          <div className="tbx-fold tbx-new-group-fold" ref={flipRef('new-group')}>
+            <div>
+              {adding ? (
+                <form className={cx('tbx-new-group', nameError && 'is-invalid')} onSubmit={(e) => { e.preventDefault(); createGroup(); }}>
+                  <Glyph name="folder" size={18} />
+                  <input
+                    autoFocus
+                    value={draftName}
+                    maxLength={80}
+                    placeholder={tw('分组名称')}
+                    aria-label={tw('新分组名称')}
+                    aria-invalid={nameError ? true : undefined}
+                    onChange={(e) => { setDraftName(e.target.value); setNameError(''); }}
+                    onBlur={() => { if (!draftName.trim() || nameError) { setDraftName(''); setAdding(false); setNameError(''); } }}
+                    onKeyDown={(e) => { if (e.key === 'Escape') { e.stopPropagation(); setDraftName(''); setAdding(false); setNameError(''); } }}
+                  />
+                </form>
+              ) : (
+                <button type="button" className="tbx-new-group-button" disabled={!editable} onClick={() => { setAdding(true); setNameError(''); }}>
+                  <Glyph name="plus" size={16} />
+                  <span>{tw('新建分组')}</span>
+                </button>
+              )}
+              {adding && nameError && <p className="tbx-name-error" role="alert">{nameError}</p>}
+            </div>
+          </div>
         </nav>
 
-        {contextMenu && (
-          <ContextMenu
-            position={contextMenu.position}
-            onRename={() => beginRename(contextMenu.group)}
-            onDelete={() => {
-              model.deleteGroup(contextMenu.group.id);
-              setContextMenu(null);
-            }}
-            onClose={() => setContextMenu(null)}
-          />
-        )}
+        <div className={cx('tbx-side-foot', trashOpen && 'is-open')}>
+          <button
+            type="button"
+            ref={trashRef}
+            className={cx('tbx-row tbx-trash', target?.kind === 'trash' && 'is-drop', drag?.active && 'is-armed')}
+            aria-expanded={trashOpen}
+            data-label={tw('垃圾桶')}
+            onPointerEnter={(e) => showTip(e, hiddenIds.length ? `${tw('垃圾桶')} · ${hiddenIds.length}` : tw('垃圾桶'))}
+            onPointerLeave={() => setTip(null)}
+            onClick={() => { if (railCollapsed) onExpand(); setTrashOpen((v) => (railCollapsed ? true : !v)); }}
+          >
+            <span className="tbx-row-icon"><Glyph name="trash" /></span>
+            <span className="tbx-row-label">{target?.kind === 'trash' ? tw('松开，移到垃圾桶') : tw('垃圾桶')}</span>
+            {hiddenIds.length > 0 && <span className="tbx-count">{hiddenIds.length}</span>}
+            <span className="tbx-chevron"><Glyph name="chevron" size={14} /></span>
+          </button>
+          <div className="tbx-trash-drawer">
+            <div className="tbx-trash-list">
+              {hiddenIds.length === 0 && <p className="tbx-trash-empty">{tw('垃圾桶是空的。把不常用的模块拖到这里，界面会更清爽。')}</p>}
+              {hiddenIds.map((id) => {
+                const m = modules.byId(id);
+                if (!m) return null;
+                return (
+                  <div
+                    key={id}
+                    className={cx('tbx-trash-item', drag?.active && drag.id === id && 'is-lifted')}
+                    onPointerDown={(e) => beginPress(e, { type: 'module', id, from: 'trash' })}
+                  >
+                    <span className="tbx-row-icon"><Glyph name={m.icon} size={18} /></span>
+                    <span className="tbx-row-label">{moduleDisplayName(m)}</span>
+                    <button type="button" className="tbx-trash-restore" onClick={() => act(() => model.restoreModule(id))} aria-label={`${tw('恢复')} ${moduleDisplayName(m)}`}>
+                      <Glyph name="restore" size={15} />{tw('恢复')}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
       </aside>
-      {railCollapsed && railTooltip && (
-        <span className="tb-rail-tooltip" role="tooltip" style={{ left: railTooltip.left, top: railTooltip.top }}>
-          {railTooltip.label}
-        </span>
+
+      {drag?.active && (
+        <div
+          className={cx('tbx-drag-ghost', drag.type === 'group' && 'is-group', target?.kind === 'trash' && 'is-trash')}
+          style={{ transform: `translate(${drag.x - drag.dx}px, ${drag.y - drag.dy}px)` }}
+          aria-hidden="true"
+        >
+          {drag.type === 'module' ? (
+            <>
+              <span className="tbx-row-icon"><Glyph name={modules.byId(drag.id)?.icon} /></span>
+              <span>{moduleDisplayName(modules.byId(drag.id))}</span>
+            </>
+          ) : (
+            <>
+              <span className="tbx-row-icon"><Glyph name="folder" size={18} /></span>
+              <span>{groupDisplayName(baseGroups.find((g) => g.id === drag.id) || {})}</span>
+            </>
+          )}
+        </div>
       )}
+      {menu && (
+        <GroupMenu
+          at={menu.at}
+          onClose={() => setMenu(null)}
+          onRename={() => { startRename(menu.group); setMenu(null); }}
+          onDelete={() => { act(() => model.deleteGroup(menu.group.id)); setMenu(null); }}
+        />
+      )}
+      <ConfirmHost />
+      {railCollapsed && tip && <span className="tb-rail-tooltip tbx-tip" role="tooltip" style={{ left: tip.left, top: tip.top }}>{tip.label}</span>}
     </>
   );
 }
-

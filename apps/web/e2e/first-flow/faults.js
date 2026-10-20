@@ -1,14 +1,11 @@
 /**
- * B15 fault control for the real-service first-flow E2E.
+ * Fault control for the real-service first-flow E2E.
  *
  * `loseCommittedResponses` keeps the real write path: the request reaches the
  * server and commits, then the browser drops the response. Chromium may resend
  * such a write on its own, so every attempt is dropped while the server has
  * committed exactly one object per idempotency key - the request state the UI
  * must report as unknown instead of saved.
- *
- * The storage-side fault (SQLite refusing writes) lives on the service fixture,
- * because it must act on the runner's own database connection.
  */
 
 /**

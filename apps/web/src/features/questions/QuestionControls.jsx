@@ -5,7 +5,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Icon } from '../../components/icons.jsx';
 import { DocumentEditor, DocumentView } from '../../components/materials/index.js';
 import { parseInlineRuns, serializeInlineRuns } from '../../components/materials/documents.js';
-import { Popover } from '../../components/interaction/ModuleOverlays.jsx';
+import { Menu as Popover } from '../../components/ui/menu.jsx';
 import { structureChanged, undoStructure } from './document-structure.js';
 import { supportedDocument } from '@teachbuddy/shared';
 import { useModuleDialogFocus } from '../../components/interaction/ModuleMotion.jsx';
@@ -117,23 +117,9 @@ export function QuestionDocumentEditor({ value, onChange, label = t("题干"), o
         </div>
       </div>)}
       <div className="q-insert-tools"><button type="button" onClick={() => insert('math')}><QuestionIcon name="math" size={16} />{t("插入公式")}</button><button type="button" onClick={() => insert('image')} disabled={!onPickImage}><QuestionIcon name="image" size={16} />{t("插入图片")}</button>
-        <Popover label={t("插入更多内容")} icon={null} buttonClassName="q-text-button" align="start">{({ close }) => <div className="q-question-menu">{[['paragraph', t("添加段落")], ['heading', t("添加小标题")], ['list', t("添加选项或列表")], ['table', t("添加表格")]].map(([kind, text]) => <button key={kind} role="menuitem" type="button" onClick={() => { insert(kind); close(); }}>{text}</button>)}</div>}</Popover>
+        <Popover label={t("插入更多内容")} icon={null} buttonClassName="q-text-button" align="start">{({ close }) => <>{[['paragraph', t("添加段落")], ['heading', t("添加小标题")], ['list', t("添加选项或列表")], ['table', t("添加表格")]].map(([kind, text]) => <button key={kind} role="menuitem" type="button" onClick={() => { insert(kind); close(); }}>{text}</button>)}</>}</Popover>
       </div>
       {error && <p className="q-error" role="alert">{error}</p>}
     </div>}
   </section>;
-}
-
-export function QuestionWelcome({ onCapture, onCreate, hasItems }) {
-  const { t } = useTranslation("questions");
-  return <div className="q-welcome">
-    <span className="q-welcome-icon"><QuestionIcon name="book" size={32} /></span>
-    <h2>{hasItems ? t("选一道题，开始准备下一节课") : t("把好题留下来，随时用起来")}</h2>
-    <p>{hasItems ? t("在左侧查找题目，查看答案或改编题目。") : t("收录试卷、截图或文字里的题目，之后随时查找和改编。")}</p>
-    <div className="q-welcome-actions">
-      <button className="primary" onClick={onCapture}><QuestionIcon name="upload" />{t("从资料收录")}</button>
-      <button onClick={onCreate}><QuestionIcon name="edit" />{t("手动录题")}</button>
-    </div>
-    {!hasItems && <span className="q-muted">{t("已有材料可以收录，也可以直接输入一道题。")}</span>}
-  </div>;
 }

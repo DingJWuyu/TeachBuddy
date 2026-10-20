@@ -1,0 +1,593 @@
+:is(.wb-shell, .tbx-portal-host) .tbx-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--tbx-aux-w);
+  gap: 14px;
+  height: 100%;
+  min-height: 0;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-split > .tbx-rail {
+  grid-column: 2;
+  grid-row: 1;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-split > :not(.tbx-rail) {
+  grid-column: 1;
+  grid-row: 1;
+  min-width: 0;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: 22px;
+  background: var(--tb-surface);
+  color: var(--tb-ink);
+  box-shadow: var(--tb-shadow-1);
+  font: 14px/1.5 var(--tb-font);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail :where(button) {
+  min-height: 0;
+  font: inherit;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-scroll {
+  flex: 1;
+  min-height: 0;
+  padding: 18px 14px 12px;
+  overflow: hidden auto;
+  scrollbar-width: thin;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-foot {
+  flex: none;
+  padding: 8px 14px 14px;
+  border-top: 1px solid var(--tb-line-soft);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-section + .tbx-rail-section {
+  margin-top: 18px;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 32px;
+  margin: 0 2px 8px 6px;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-head h2 {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  font-size: 15px;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-head h2 > span {
+  color: var(--tb-muted);
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-actions {
+  display: inline-flex;
+  flex: none;
+  gap: 6px;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-action {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--tb-fill);
+  color: var(--tb-ink-2);
+  cursor: pointer;
+  transition:
+    background var(--tb-d1),
+    color var(--tb-d1),
+    transform var(--tb-d2) var(--tb-spring);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-action:hover:not(:disabled) {
+  background: var(--tb-fill-hover);
+  color: var(--tb-ink);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-action:active:not(:disabled) {
+  transform: scale(0.92);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-action.is-on {
+  background: var(--tb-accent-soft);
+  color: var(--tb-accent);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-action.is-primary {
+  background: var(--tb-brand);
+  color: var(--tb-on-brand);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-action.is-primary:hover:not(:disabled) {
+  background: color-mix(in oklab, var(--tb-brand) 88%, black);
+  color: var(--tb-on-brand);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-action:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-item {
+  position: relative;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-item + .tbx-rail-item {
+  margin-top: 1px;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-hit {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 40px;
+  padding: 7px 10px 7px calc(8px + var(--depth, 0) * 14px);
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--tb-ink-2);
+  font-size: 14px;
+  font-weight: 550;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--tb-d1), color var(--tb-d1);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-hit:hover:not(:disabled) {
+  background: var(--tb-fill);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-hit:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-hit small {
+  flex: none;
+  color: var(--tb-faint);
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background: var(--tb-fill);
+  color: var(--tb-muted);
+  transition: background var(--tb-d1), color var(--tb-d1);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-item.is-current .tbx-rail-hit {
+  background: var(--tb-accent-soft);
+  color: var(--tb-accent);
+  font-weight: 650;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-item.is-current .tbx-rail-icon {
+  background: var(--tb-accent);
+  color: #fff;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-item.is-current small {
+  color: var(--tb-accent);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-dot {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  margin: 0 8px;
+  border-radius: 50%;
+  background: var(--hue, var(--tb-faint));
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-more {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--tb-muted);
+  opacity: 0;
+  transform: translateY(-50%);
+  cursor: pointer;
+  transition: opacity var(--tb-d1), background var(--tb-d1);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-item:is(:hover, :focus-within) .tbx-rail-more {
+  opacity: 1;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-item.has-more:is(:hover, :focus-within) .tbx-rail-hit small {
+  opacity: 0;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-item.has-more .tbx-rail-label {
+  margin-right: 4px;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-more:hover {
+  background: var(--tb-fill-hover);
+  color: var(--tb-ink);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-item .tbx-rail-more:disabled {
+  opacity: 0;
+  pointer-events: none;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-more:active {
+  transform: translateY(-50%) scale(0.92);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-empty {
+  margin: 0 8px 4px;
+  color: var(--tb-faint);
+  font-size: 13px;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 0 4px;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-tags button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 28px;
+  padding: 0 11px 0 9px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--tb-fill);
+  color: var(--tb-ink-2);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background var(--tb-d1),
+    color var(--tb-d1),
+    transform var(--tb-d2) var(--tb-spring);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-tags button:hover:not(:disabled) {
+  background: var(--tb-fill-hover);
+  color: var(--tb-ink);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-tags button:active:not(:disabled) {
+  transform: scale(0.96);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-tags button[aria-pressed=true] {
+  background: var(--tb-accent-soft);
+  color: var(--tb-accent);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  margin-top: 18px;
+  padding: 12px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--tb-accent-soft);
+  color: var(--tb-accent);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--tb-d1), transform var(--tb-d2) var(--tb-spring);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-hint > span {
+  flex: 1;
+  color: var(--tb-ink-2);
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-hint > svg {
+  flex: none;
+  margin-top: 1px;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-hint > svg:last-child {
+  align-self: center;
+  color: var(--tb-faint);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-hint:hover {
+  background: color-mix(in oklab, var(--tb-accent-soft) 80%, var(--tb-accent));
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-hint:active {
+  transform: scale(0.985);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-hint.is-purple {
+  background: var(--tb-lavender-soft, color-mix(in srgb, #af52de 12%, var(--tb-surface)));
+  color: var(--tb-lavender-deep, #8e44c9);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-hint.is-green {
+  background: color-mix(in srgb, #34c759 13%, var(--tb-surface));
+  color: #2a9d45;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-hint.is-purple:hover {
+  background: color-mix(in srgb, #af52de 18%, var(--tb-surface));
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-hint.is-green:hover {
+  background: color-mix(in srgb, #34c759 19%, var(--tb-surface));
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-pane-title {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  max-width: 100%;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-pane-title > div {
+  min-width: 0;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-pane-title h1 {
+  margin: 0;
+  overflow: hidden;
+  font-family: var(--tb-font-display);
+  font-size: 22px;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  outline: none;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-pane-title > div > span {
+  display: block;
+  color: var(--tb-faint);
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-mod-icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  background:
+    linear-gradient(
+      180deg,
+      #2b8cf0,
+      #0071e3);
+  color: #fff;
+  box-shadow: 0 10px 20px -12px rgb(0 113 227 / 0.7);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-mod-icon.is-orange {
+  background:
+    linear-gradient(
+      180deg,
+      #ffb340,
+      #ff9500);
+  box-shadow: 0 10px 20px -12px rgb(255 149 0 / 0.7);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-mod-icon.is-purple {
+  background:
+    linear-gradient(
+      180deg,
+      #c48cf0,
+      var(--tb-lavender-deep, #8e44c9));
+  box-shadow: 0 10px 20px -12px rgb(142 68 201 / 0.7);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-mod-icon.is-green {
+  background:
+    linear-gradient(
+      180deg,
+      #4cd964,
+      #30b14c);
+  box-shadow: 0 10px 20px -12px rgb(48 177 76 / 0.75);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-primary {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 16px 0 13px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--tb-brand);
+  color: var(--tb-on-brand);
+  font: 650 14px/1 var(--tb-font);
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: 0 8px 18px -12px var(--tb-primary-glow);
+  transition: background var(--tb-d1), transform var(--tb-d2) var(--tb-spring);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-primary:hover:not(:disabled, .is-disabled) {
+  background: color-mix(in oklab, var(--tb-brand) 88%, black);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-primary:active:not(:disabled, .is-disabled) {
+  transform: scale(0.97);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-primary:is(:disabled, .is-disabled) {
+  opacity: 0.45;
+  cursor: default;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-primary.is-compact {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+}
+@media (max-width: 950px) {
+  :is(.wb-shell, .tbx-portal-host) .tbx-split {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: 10px;
+  }
+  :is(.wb-shell, .tbx-portal-host) .tbx-split > .tbx-rail {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  :is(.wb-shell, .tbx-portal-host) .tbx-split > :not(.tbx-rail) {
+    grid-row: 2;
+  }
+  :is(.wb-shell, .tbx-portal-host) .tbx-rail {
+    flex-direction: row;
+    align-items: center;
+    border-radius: 18px;
+  }
+  :is(.wb-shell, .tbx-portal-host) .tbx-rail-scroll {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 8px;
+    overflow: auto hidden;
+    scrollbar-width: none;
+    -webkit-mask-image:
+      linear-gradient(
+        90deg,
+        #000 calc(100% - 24px),
+        transparent);
+    mask-image:
+      linear-gradient(
+        90deg,
+        #000 calc(100% - 24px),
+        transparent);
+  }
+  :is(.wb-shell, .tbx-portal-host) .tbx-rail-section {
+    display: contents;
+  }
+  :is(.wb-shell, .tbx-portal-host) .tbx-rail-head {
+    display: contents;
+  }
+  :is(.wb-shell, .tbx-portal-host) .tbx-rail-head h2,
+  :is(.wb-shell, .tbx-portal-host) .tbx-rail-tags,
+  :is(.wb-shell, .tbx-portal-host) .tbx-rail-hint,
+  :is(.wb-shell, .tbx-portal-host) .tbx-rail-empty,
+  :is(.wb-shell, .tbx-portal-host) .tbx-rail-more,
+  :is(.wb-shell, .tbx-portal-host) .tbx-rail-actions .tbx-rail-action:not(.is-primary) {
+    display: none;
+  }
+  :is(.wb-shell, .tbx-portal-host) .tbx-rail-actions {
+    order: -1;
+  }
+  :is(.wb-shell, .tbx-portal-host) .tbx-rail-item {
+    flex: none;
+  }
+  :is(.wb-shell, .tbx-portal-host) .tbx-rail-item + .tbx-rail-item {
+    margin-top: 0;
+  }
+  :is(.wb-shell, .tbx-portal-host) .tbx-rail-hit {
+    min-height: 32px;
+    padding: 3px 12px 3px 4px;
+    border-radius: 999px;
+  }
+  :is(.wb-shell, .tbx-portal-host) .tbx-rail-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+  }
+  :is(.wb-shell, .tbx-portal-host) .tbx-rail-foot {
+    padding: 6px 8px;
+    border-top: 0;
+    border-left: 1px solid var(--tb-line-soft);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  :is(.wb-shell, .tbx-portal-host) .tbx-rail * {
+    transition: none !important;
+  }
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-item.is-tree .tbx-rail-hit {
+  padding-left: calc(26px + var(--depth, 0) * 16px);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-toggle {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: calc(5px + var(--depth, 0) * 16px);
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--tb-faint);
+  transform: translateY(-50%);
+  cursor: pointer;
+  transition: background var(--tb-d1), color var(--tb-d1);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-toggle svg {
+  transform: rotate(-90deg);
+  transition: transform 260ms var(--tb-ease);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-toggle.is-open svg {
+  transform: none;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-toggle:hover {
+  background: var(--tb-fill-hover);
+  color: var(--tb-ink);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-item.is-current .tbx-rail-toggle {
+  color: var(--tb-accent);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-fold {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 320ms var(--tb-ease), opacity 240ms var(--tb-ease);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-fold > div {
+  min-height: 0;
+  overflow: hidden;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-fold.is-closed {
+  grid-template-rows: 0fr;
+  opacity: 0;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-item[data-drop].is-drop .tbx-rail-hit {
+  background: var(--tb-accent-soft);
+  color: var(--tb-accent);
+  box-shadow: inset 0 0 0 1.5px var(--tb-accent);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-item[data-drop].is-drop .tbx-rail-icon {
+  background: var(--tb-accent);
+  color: #fff;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-item[data-drop^=archive].is-drop .tbx-rail-hit {
+  background: color-mix(in oklab, var(--tb-danger) 10%, transparent);
+  color: var(--tb-danger);
+  box-shadow: inset 0 0 0 1.5px var(--tb-danger);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-item[data-drop^=archive].is-drop .tbx-rail-icon {
+  background: var(--tb-danger);
+}
+@media (max-width: 950px) {
+  :is(.wb-shell, .tbx-portal-host) .tbx-rail-toggle,
+  :is(.wb-shell, .tbx-portal-host) .tbx-rail-fold.is-closed {
+    display: none;
+  }
+  :is(.wb-shell, .tbx-portal-host) .tbx-rail-item.is-tree .tbx-rail-hit {
+    padding-left: 4px;
+  }
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-drag + .tbx-rail-drag {
+  margin-top: 1px;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-drag.is-origin {
+  opacity: 0.35;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-list {
+  position: relative;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-editing {
+  margin: 2px 0;
+  padding-left: calc(var(--depth, 0) * 16px);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-editing .tbx-new-group {
+  animation: none;
+}

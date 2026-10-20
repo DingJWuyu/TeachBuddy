@@ -10,7 +10,7 @@ Work with the user to agree the **shared interface** that lets frontend and back
 
 ## Establish the starting point
 
-Read [product-behavior-design's artifact layout](../product-behavior-design/SKILL.md#artifacts) and [behavior record definition](../product-behavior-design/references/record.md) as the input contract. Read the project document entry for the authoritative product scope, existing contracts, and acceptance definitions. Then read the prototype manifest's per-scope status, follow ownership to selected behavior records and shared concerns, and use their scenario entries to reach the relevant runtime and selected visual inputs. The integrated prototype may be Mixed or Draft; its simulations and historical passes do not define current product capabilities. Reuse the existing journey, state, and scenario IDs.
+Read [product-behavior-design's artifact layout](../product-behavior-design/SKILL.md#artifacts) and [behavior record definition](../product-behavior-design/references/record.md) as the input contract. Read the project document entry for the authoritative product scope, existing contracts, and acceptance definitions. Then read the design-system entry and selected owning sources, following their links to the runnable reference and relevant visual inputs. Establish acceptance from the user's instruction or package record; no manifest is required. Prototype simulations and historical passes do not define current product capabilities. Reuse journey, state, and scenario IDs where the inputs provide them.
 
 Consume only the selected explicitly accepted scope of the current integrated reference. Keep these inputs read-only. If that scope is ambiguous, still in review, or awaiting integration, identify the input gap with the user before designing the dependent interface. Other accepted scopes can proceed independently.
 
@@ -38,7 +38,7 @@ Use `writing-for-agents` to maintain the following artifacts as agreements form.
 
 **Contract entry**
 
-- Identify the scope, agreement status, and exact source revision and accepted scope. Link the authoritative product docs, manifest, owning reference records, and relevant visual inputs or task evidence through their existing entries.
+- Identify the scope, agreement status, and exact source revision and accepted scope. Link the authoritative product docs, design entry, owning reference records, and relevant visual inputs or task evidence through their existing entries.
 - Map the in-scope upstream scenario IDs and referenced states to shared interface definitions and contract cases, or to the side that owns the behavior entirely.
 - Link the shared definitions, cases, glossary, and relevant decisions. Distinguish confirmed agreements from proposals, and name open decisions with the IDs and interface elements they block.
 

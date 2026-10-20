@@ -1,3 +1,4 @@
+import { confirmLogout } from './teaching-time-auth/helpers.mjs';
 import { test, expect, deferred, register, signIn, openSettings, removeAccount } from './fixtures/auth-completeness.js';
 
 test('退出未决时保留当前核实目标，不能切入另一账户删除核实', async ({ page, browser, world }, info) => {
@@ -20,6 +21,7 @@ test('退出未决时保留当前核实目标，不能切入另一账户删除�
     return route.abort('failed');
   });
   await page.getByRole('button', { name: '退出登录', exact: true }).click();
+  await confirmLogout(page);
   try {
     await expect(page.getByRole('button', { name: '正在退出…', exact: true })).toBeDisabled();
     await expect(page.getByRole('button', { name: '继续核实账户删除', exact: true })).toBeDisabled();
@@ -45,6 +47,7 @@ test('退出处理中及结果未知时昵称不能绕过身份锁提交', async
   await page.route('**/api/auth/logout', async route => { await held.promise; await route.abort('failed'); });
   try {
     await page.getByRole('button', { name: '退出登录', exact: true }).click();
+    await confirmLogout(page);
     await expect(page.getByRole('button', { name: '正在退出…', exact: true })).toBeDisabled();
     await page.getByRole('button', { name: '修改昵称', exact: true }).click();
     const input = page.getByRole('textbox', { name: '昵称', exact: true });

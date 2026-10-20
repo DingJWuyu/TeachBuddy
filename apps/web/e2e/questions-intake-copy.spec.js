@@ -53,7 +53,7 @@ test('补充草稿采用当前第二张原稿，保存刷新入库后仍定位�
   const selectedFile=await page.getByLabel('原稿文件').inputValue();
   await expect(page.locator('.q-original img').first()).toBeVisible();
   await page.getByRole('button',{name:'材料操作',exact:true}).click();
-  await page.getByRole('button',{name:'补充题目草稿',exact:true}).click();
+  await page.getByRole('menuitem', { name: '补充题目草稿',exact:true}).click();
   await page.getByRole('button',{name:'修改题目',exact:true}).click();
   await page.getByLabel('题干段落 1',{exact:true}).fill('解方程 $x+3=5$。');
   await page.getByRole('button',{name:'完成修改',exact:true}).click();
@@ -77,7 +77,7 @@ test('补充草稿采用当前第二张原稿，保存刷新入库后仍定位�
 });
 async function manualQuestion(page) {
   await start(page);
-  await page.locator('.q-finder').getByRole('button',{name:'手动录题',exact:true}).click();
+  await page.locator('.q-finder').getByRole('button',{name:'新建题目',exact:true}).click();
   await page.getByLabel('题目标题',{exact:true}).fill('完整文字与公式复制');
   await page.getByLabel('题干段落 1',{exact:true}).fill('已知 $x^2=9$，求 $x$。\n说明：保留完整题面。');
   await page.getByRole('button',{name:'保存题目',exact:true}).click();
@@ -144,7 +144,7 @@ test('浏览器无剪贴板API时保留可选文本且不报告成功',async({pa
 
 async function addDraftAndSave(page, title) {
   await page.getByRole('button',{name:'材料操作',exact:true}).click();
-  await page.getByRole('button',{name:'补充题目草稿',exact:true}).click();
+  await page.getByRole('menuitem', { name: '补充题目草稿',exact:true}).click();
   await page.getByRole('button',{name:'修改题目',exact:true}).click();
   await page.getByLabel('题干段落 1',{exact:true}).fill(title);
   await page.getByRole('button',{name:'完成修改',exact:true}).click();
@@ -166,7 +166,7 @@ test('纯文字补录保留文字定位，补充照片后采用当前可见照�
   expect(text.draft.parts[0].locations[0]).toEqual({kind:'text',start:0,end:[...'1. 求 $1+1$。'].length});
   await page.getByRole('button',{name:'材料操作',exact:true}).click();
   const chooser=page.waitForEvent('filechooser');
-  await page.getByRole('button',{name:'补充照片',exact:true}).click();
+  await page.getByRole('menuitem', { name: '补充照片',exact:true}).click();
   await (await chooser).setFiles([await photo('supplement-1.png','3. Compute 2 + 2.'),await photo('supplement-2.png','4. Solve x + 4 = 6.')]);
   await expect(page.getByLabel('原稿文件')).toBeVisible();
   await page.getByLabel('原稿文件').selectOption({index:1});
@@ -229,7 +229,7 @@ for (const pagination of ['ready','unavailable','legacy']) {
     await page.getByLabel('原稿段落',{exact:true}).selectOption(String(source.paragraph));
     await expect(page.locator(`.q-word-original [data-paragraph="${source.paragraph}"]`)).toHaveClass(/is-current/);
     await page.getByRole('button',{name:'材料操作',exact:true}).click();
-    await page.getByRole('button',{name:'补充题目草稿',exact:true}).click();
+    await page.getByRole('menuitem', { name: '补充题目草稿',exact:true}).click();
     await capture(page,`word-${pagination}-supplement-action`,{source,original});
     await expect(page.locator(".q-review-current h3")).toContainText(`共 ${original.drafts.length+1} 题`);
     await page.getByRole('button',{name:'修改题目',exact:true}).click();

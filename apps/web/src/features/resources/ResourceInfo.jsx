@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Icon } from "../workbench/chrome/icons.jsx";
+import { Icon } from "../../components/icons.jsx";
 import { ModuleDisclosure } from "../../components/interaction/ModuleMotion.jsx";
 
 export function ResourceInfo({

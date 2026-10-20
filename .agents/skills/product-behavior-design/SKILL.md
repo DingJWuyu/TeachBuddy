@@ -12,25 +12,23 @@ Do not undertake system design, API design, contract design, or production imple
 
 ## Write boundary
 
-A **package** is one session's working copy and decision record under `.scratch/`. Feedback rounds continue in the same package. The root `prototype/` is the integrated design reference. Read its manifest for the selected scope: it can contain Accepted, Mixed, and Draft areas. Acceptance applies only to the scope explicitly confirmed by the user. Production behavior and contracts follow the project's authoritative docs, not inferred prototype data or historical passes.
+A **package** is one session's working copy and decision record under `.scratch/`. Feedback rounds continue in the same package. The integrated design reference is `docs/design-system/`; its README links the runnable `teachbuddy-app/` and design rules. Read the project's document entry and the selected design sources. Acceptance applies only to the scope explicitly confirmed by the user; do not infer it from a file's existence. Production behavior and contracts follow the project's authoritative docs, not inferred prototype data or historical passes.
 
-**Before explicit user acceptance, the package is the only writable repository location.** Keep all of `prototype/` read-only, including its source, behavior documents, and evidence. This boundary includes writes made by development servers, builds, verification scripts, and capture tools.
+**Before explicit user acceptance, the package is the only writable repository location.** Keep all of `docs/design-system/` read-only, including its source, design documents, and assets. This boundary includes writes made by development servers, builds, verification scripts, and capture tools.
 
-Acceptance authorizes integration of the presented scope into `prototype/`, not changes elsewhere in the repository.
+Acceptance authorizes integration of the presented scope into `docs/design-system/`, not changes elsewhere in the repository.
 
 ## Artifacts
 
 Use this output layout at the project root. Create directories as needed; preserve the prototype's native source structure inside its runtime location.
 
 ```text
-prototype/
-  behavior/
-    manifest.md             Run entry, scope status, behavior ownership
-    <area>.md               Reference behavior for one area or shared concern
-  evidence/
-    screenshots/<journey>/  Selected enduring visual design inputs
-  verification/             Reusable checks and capture scripts
-  ...                       Integrated runtime source, scenarios, and assets
+docs/design-system/
+  README.md                 Design entry and shared principles
+  teachbuddy-app/            Integrated runnable reference
+  components/               Component design references
+  assets/                   Design assets
+  ...                       Existing design rules and references
 .scratch/
   <package>/
     behavior.md             Baseline, changes, decisions, and coverage
@@ -41,15 +39,15 @@ prototype/
     tmp/                    Probes and intermediate output
 ```
 
-`prototype/` describes its current reference behavior and explicit acceptance boundaries. Preserve useful confirmed intent and stable scenario IDs; distinguish Draft additions from accepted scopes. Fixed Git links may provide necessary historical provenance without making old outputs runtime inputs. Keep reusable checks with the runtime, durable selected visual inputs with a stated purpose, and execution results in the package or task evidence. The reference must remain runnable without any package; repository artifacts outside `.scratch/` must neither reference nor depend on package contents.
+Use the existing design entry and owning documents; do not introduce a parallel manifest or duplicate rules just to fit this skill. Preserve useful confirmed intent and any existing scenario IDs, and record the selected scope and acceptance in the package. Fixed Git links may provide necessary historical provenance without making old outputs runtime inputs. Keep durable selected visual inputs with a stated purpose and execution results in the package or task evidence. The reference must remain runnable without any package; repository artifacts outside `.scratch/` must neither reference nor depend on package contents.
 
-The package's decision record preserves the process; its evidence presents the current working version. Use `writing-for-agents` when writing behavior records. Read [references/record.md](references/record.md) when creating or updating a record or manifest.
+The package's decision record preserves the process; its evidence presents the current working version. Use `writing-for-agents` when writing behavior records. Read [references/record.md](references/record.md) when creating or updating a record.
 
 ## Process
 
 ### 1. Pick up the request
 
-Read the project document entry and prototype manifest, then the behavior documents relevant to the request. Establish the selected scope and its acceptance status before treating it as settled input. When resuming a package, read its record as well. If there is no accepted version, locate the supplied prototype; ask for a selection when it is missing or ambiguous.
+Read the project document entry, design-system README, and design sources relevant to the request. Establish the selected scope and its acceptance status from the user's instruction or recorded acceptance before treating it as settled input. When resuming a package, read its record as well. If there is no accepted version, locate the supplied prototype; ask for a selection when it is missing or ambiguous.
 
 Without a change request or acceptance, identify the current prototype, ask what the user wants to change, and wait. Do not create artifacts or start a runtime walkthrough on this entry path. For explicit acceptance of a presented package, go to step 6.
 

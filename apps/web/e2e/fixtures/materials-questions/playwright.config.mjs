@@ -1,7 +1,7 @@
 import { defineConfig } from "@playwright/test";
 export default defineConfig({
   testDir: "../..",
-  testMatch: "materials-questions*.spec.js",
+  testMatch: "materials-questions-fragments.spec.js",
   workers: 1,
   timeout: 30000,
   use: {

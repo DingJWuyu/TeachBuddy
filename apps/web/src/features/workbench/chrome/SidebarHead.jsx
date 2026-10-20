@@ -3,7 +3,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useScene } from '../../../platform/device/useScene.js';
 import { useWorkbenchShell } from '../shellContext.js';
 import { createPortal } from 'react-dom';
-import { Icon } from './icons.jsx';
+import { Icon } from '../../../components/icons.jsx';
 import { routeClick } from './routes.js';
 import {
   COPYABLE_ITEMS, LANGUAGES,
@@ -170,6 +170,10 @@ function CopyPanel({ candidates, source, onPickSource, picked, onToggle, notice,
             </button>
             {sourceOpen ? (
               <div className="tb-copy-source-menu" role="listbox" aria-label={t("复制来源")}>
+                {candidates.length === 0 && <button type="button" role="option" aria-disabled="true" aria-selected={false}
+                  className="tb-copy-source-option is-empty" onClick={() => closeSource({ restoreFocus: true })}>
+                  <span className="tb-copy-source-mark" /><span>{t('无')}</span>
+                </button>}
                 {candidates.map((semester) => (
                   <button
                     key={semester.id}

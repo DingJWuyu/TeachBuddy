@@ -3,13 +3,15 @@ import { useTranslation } from 'react-i18next';
 import { mountWorkshopEditor } from './workshop/editor.js';
 import VisualFormulaInput from './VisualFormulaInput.jsx';
 import FormulaPreview from './FormulaPreview.jsx';
+import { WorkIllustration } from './WorkspaceHome.jsx';
+import { tx } from '../../i18n/presentation.js';
 import { MathWebAssistant } from './web-ai/MathWebAssistant.jsx';
 import { Icon } from '../../components/icons.jsx';
 import { createPortal, flushSync } from 'react-dom';
 import { useAuxiliaryTools, ShellContext, useAuxiliaryAssistant } from '../workbench/shellContext.js';
 import { ModuleDisclosure, ModulePresence, useModuleDialogFocus } from '../../components/interaction/ModuleMotion.jsx';
 import { useMathConfirm } from './useMathConfirm.jsx';
-import { MathMenu, MenuItem } from './MathMenu.jsx';
+import { Menu as MathMenu, MenuItem } from '../../components/ui/menu.jsx';
 import { useMathDialogKeys } from './useMathDialogKeys.js';
 import './workshop.css';
 
@@ -144,7 +146,7 @@ export default function WorkshopWorkspace({ draft, accountKey, takeAssistantRequ
   useEffect(() => { setLocalFormula(null); setLocalStep(null); }, [state.selection?.id]);
   useEffect(() => {
     const keys = event => {
-      const dialogOpen = [...document.querySelectorAll('[role="dialog"]')].some(node => node.getClientRects().length && !node.closest('[inert]'));
+      const dialogOpen = [...document.querySelectorAll('[role="dialog"], [role="alertdialog"]')].some(node => node.getClientRects().length && !node.closest('[inert]'));
       if (dialogOpen) { if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') event.preventDefault(); return; }
       if (event.key === 'Escape') { if (presenting) void endPreview(); else if (tool) setTool(null); else shell?.closePanel(); }
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') { event.preventDefault(); void onSave(); }
@@ -236,11 +238,11 @@ export default function WorkshopWorkspace({ draft, accountKey, takeAssistantRequ
       {state.mode !== 'preview' && (source.formulas.length > 0 || source.graph || pending || status === '保存失败') && <span className={`mw-save-state${status === '保存失败' || pending ? ' has-error' : ''}`} role="status">{t(pending && !busy ? '保存结果待确认' : status === '未保存' ? '等待保存' : status)}</span>}
       <div className="mw-heading-actions">
         {state.mode === 'preview' ? <button className="mw-button is-primary" onClick={endPreview}>{t('返回编辑')}</button> : <>
-          <button className="mw-button" disabled={!ready || busy || state.busy} onClick={() => preview()}>{t('试演')}</button>
+          <button className="mw-button is-primary" disabled={!ready || busy || state.busy} onClick={() => preview()}><Icon name="play" size={13}/>{t('试演')}</button>
 
         </>}
-        <button className="mw-button" disabled={busy || state.busy || !draft.id} onClick={() => setDownloadOpen(value => !value)}>{t('下载')}</button>
-        <MathMenu label={t('更多作品操作')} className="mw-work-actions">{({ close }) => <>
+        <button className="mw-button" disabled={busy || state.busy || !draft.id} onClick={() => setDownloadOpen(value => !value)}><Icon name="arrowDown" size={15}/>{t('下载')}</button>
+        <MathMenu buttonClassName="mw-icon" menuClassName="mw-work-menu" label={t('更多作品操作')} className="mw-work-actions">{({ close }) => <>
           <MenuItem disabled={busy || state.busy} onClick={() => { close(); onSave(); }}>{t(pending ? '确认结果' : '立即保存')}</MenuItem>
           <MenuItem disabled={!ready || busy || state.busy} onClick={() => { close(); void preview(true); }}>{t('课堂展示')}</MenuItem>
           <MenuItem disabled={!draft.id || busy || state.busy} onClick={() => { close(); onHistory(); }}>{t('历史版本')}</MenuItem>
@@ -258,8 +260,8 @@ export default function WorkshopWorkspace({ draft, accountKey, takeAssistantRequ
         <button className="mw-button" aria-label={t('教学步骤')} disabled={editingBlocked || !ready} onClick={addStep}><Icon name="prep" size={18}/>{t('步骤')}</button>
       </div>
       <div className="mw-view-tools">
-        <button className="mw-icon" aria-label={t('撤销')} title={t('撤销')} disabled={editingBlocked || !state.canUndo} onClick={() => moveHistory('undo')}>↶</button>
-        <button className="mw-icon" aria-label={t('重做')} title={t('重做')} disabled={editingBlocked || !state.canRedo} onClick={() => moveHistory('redo')}>↷</button>
+        <button className="mw-icon" aria-label={t('撤销')} title={t('撤销')} disabled={editingBlocked || !state.canUndo} onClick={() => moveHistory('undo')}><Icon name="undo" size={17}/></button>
+        <button className="mw-icon" aria-label={t('重做')} title={t('重做')} disabled={editingBlocked || !state.canRedo} onClick={() => moveHistory('redo')}><Icon name="redo" size={17}/></button>
 
         <button className="mw-icon mw-panel-toggle" aria-label={t('内容列表')} title={t('内容列表')} onClick={() => { setTool(null); editor.current?.select(null); shell?.openPanel('math-workshop-tools'); }}><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m3 6 7-3 7 3-7 3-7-3Zm0 4 7 3 7-3M3 14l7 3 7-3"/></svg></button>
       </div>
@@ -267,25 +269,31 @@ export default function WorkshopWorkspace({ draft, accountKey, takeAssistantRequ
     <div className="mw-layout">
       <main className="mw-surface">
         {!source.formulas.length && !graphVisible && !addingFormula && <div className="mw-empty">
-          <Icon name="math" size={30}/><h2>{t('还没有内容')}</h2><p>{t('在右侧说说想法，或用上方工具制作。')}</p>
+          <div className="mw-empty-art" aria-hidden="true">{['formula', 'dynamic', 'space'].map(kind => <span key={kind} className={`is-${kind}`}><WorkIllustration kind={kind}/></span>)}</div>
+          <h2>{tx('从一个公式或一张图开始')}</h2><p>{tx('用下面的工具动手做，或在右侧助理里说说你的想法。')}</p>
+          <div className="mw-empty-actions">
+            <button type="button" disabled={editingBlocked || !ready} onClick={() => { setAddingFormula(true); setTool(null); }}><span className="mw-empty-glyph">ƒ</span><span><strong>{tx('写公式')}</strong><small>{tx('分式、根式、上下标')}</small></span></button>
+            <button type="button" disabled={editingBlocked || !ready} onClick={() => beginTool('graph')}><span className="mw-empty-glyph"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" aria-hidden="true"><path d="M3 3v14h14M5 6c3 12 6 12 10 0"/></svg></span><span><strong>{tx('画图形')}</strong><small>{tx('函数、点线圆、立体')}</small></span></button>
+            <button type="button" disabled={editingBlocked || !ready} onClick={() => beginTool('parameter')}><span className="mw-empty-glyph"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><path d="M3 6h4m4 0h6M3 14h8m4 0h2"/><circle cx="9" cy="6" r="2"/><circle cx="13" cy="14" r="2"/></svg></span><span><strong>{tx('加参数')}</strong><small>{tx('拖动滑杆，让图动起来')}</small></span></button>
+          </div>
         </div>}
         {(visibleFormulas.length > 0 || addingFormula) && <div className="mw-formula-band" inert={state.busy || undefined}>
           {visibleFormulas.map(formula => <div key={formula.id} className={`mw-formula-row${selectedFormula?.id === formula.id ? ' is-selected' : ''}`}>
             {selectedFormula?.id === formula.id && !frozen ? <div className="mw-formula-edit"><VisualFormulaInput autoFocus value={(localFormula ?? formula).latex} onChange={latex => updateFormula({ latex })} onConfirm={async () => { await capture(); editor.current?.select(null); }}/></div> : <button className="mw-formula-select" disabled={frozen || state.busy} aria-label={t('编辑公式 {{number}}', { number: source.formulas.indexOf(formula) + 1 })} onClick={() => select({ type: 'formula', id: formula.id })}>
               <FormulaPreview source={{ schemaVersion: 1, kind: 'formula', ...formula, color: formula.color }}/>
             </button>}
-            {!frozen && <button className="mw-icon" aria-label={t('移除公式')} onClick={() => removeFormula(formula)}>×</button>}
+            {!frozen && <button className="mw-icon" aria-label={t('移除公式')} onClick={() => removeFormula(formula)}><Icon name="close" size={13}/></button>}
           </div>)}
           {addingFormula && <div className="mw-new-formula"><VisualFormulaInput autoFocus value={formulaInput} onChange={changeFormulaInput} onConfirm={addFormula}/><div className="mw-inline-actions"><button className="mw-button" onClick={() => { setAddingFormula(false); changeFormulaInput(''); }}>{t('取消')}</button><button className="mw-button is-primary" disabled={state.busy || !formulaInput.trim()} onClick={addFormula}>{t('加入作品')}</button></div></div>}
         </div>}
-        {drawingTool && <div className="mw-drawing-hint"><span>{t(({ point: '点击画布放置点', segment: '依次点击两个端点', circle: '点击圆心，再点击圆上一点', polygon: '依次点击顶点，最后点击第一个点闭合', midpoint: '选择两个点或一条线段', perpendicular: '选择一个点和一条直线', intersect: '选择两个相交的图形' })[drawingTool])}</span><button className="mw-button" disabled={state.busy} onClick={() => chooseDrawingTool('select')}>{t('完成')}</button><button className="mw-icon" aria-label={t('取消绘图工具')} disabled={state.busy} onClick={() => chooseDrawingTool('select')}>×</button></div>}
+        {drawingTool && <div className="mw-drawing-hint"><span>{t(({ point: '点击画布放置点', segment: '依次点击两个端点', circle: '点击圆心，再点击圆上一点', polygon: '依次点击顶点，最后点击第一个点闭合', midpoint: '选择两个点或一条线段', perpendicular: '选择一个点和一条直线', intersect: '选择两个相交的图形' })[drawingTool])}</span><button className="mw-button" disabled={state.busy} onClick={() => chooseDrawingTool('select')}>{t('完成')}</button><button className="mw-icon" aria-label={t('取消绘图工具')} disabled={state.busy} onClick={() => chooseDrawingTool('select')}><Icon name="close" size={13}/></button></div>}
         {state.graphMounting && <div className="mw-notice" role="status">{t('正在准备画布…')}</div>}
         <div className={`mw-graph-area${graphVisible ? ' has-graph' : ''}`}>{graphVisible && !frozen && <div className="mw-graph-controls"><button className="mw-button" onClick={() => { setShowExpression(value => !value); }}>{t('输入算式')}</button><select aria-label={t('数学视图')} value={source.view} disabled={editingBlocked || !ready} onChange={event => apply({ view: event.target.value })}>{views.map(([view, label]) => <option key={view} value={view}>{t(label)}</option>)}</select></div>}<div className={`mw-graph-host${graphVisible ? ' has-graph' : ''}`} ref={graphHost} inert={draft.deletedAt || undefined}/>{graphVisible && <a className="mw-engine-credit" href="/vendor/math/geogebra/NOTICE.txt" target="_blank" rel="noreferrer">GeoGebra</a>}</div>
         <ModulePresence present={!frozen && showExpression} mode="collapse" className="mw-expression-disclosure"><form className="mw-expression" onSubmit={addExpression}>
           <span aria-hidden="true">ƒ</span><input ref={expressionField} aria-label={t('图形表达式')} placeholder={t('输入算式，如 f(x)=x²')} disabled={state.busy} value={expression} onChange={event => changeExpression(event.target.value)}/>
-          <button type="submit" className="mw-icon" aria-label={t('建立图形')} disabled={state.busy || !expression.trim() || !ready}>↵</button><button type="button" className="mw-icon" aria-label={t('收起算式')} onClick={() => setShowExpression(false)}><Icon name="close" size={16}/></button>
+          <button type="submit" className="mw-icon" aria-label={t('建立图形')} disabled={state.busy || !expression.trim() || !ready}><Icon name="arrowUp" size={16}/></button><button type="button" className="mw-icon" aria-label={t('收起算式')} onClick={() => setShowExpression(false)}><Icon name="close" size={16}/></button>
         </form></ModulePresence>
-        {source.steps.length > 0 ? <div className="mw-step-rail"><span>{t('步骤')}</span><nav aria-label={t('教学步骤')}>{source.steps.map((step, index) => <button key={step.id} disabled={state.busy} className={selectedStep?.id === step.id || state.previewStepId === step.id ? 'is-selected' : ''} onClick={() => state.mode === 'preview' ? editor.current.preview({ stepId: step.id }).then(() => setState(editor.current.read())).catch(onError) : select({ type: 'step', id: step.id })}><span>{index + 1}</span>{step.title}</button>)}</nav>{!frozen && <button className="mw-icon" aria-label={t('添加步骤')} disabled={state.busy} onClick={addStep}>+</button>}</div>
+        {source.steps.length > 0 ? <div className="mw-step-rail"><span>{t('步骤')}</span><nav aria-label={t('教学步骤')}>{source.steps.map((step, index) => <button key={step.id} disabled={state.busy} className={selectedStep?.id === step.id || state.previewStepId === step.id ? 'is-selected' : ''} onClick={() => state.mode === 'preview' ? editor.current.preview({ stepId: step.id }).then(() => setState(editor.current.read())).catch(onError) : select({ type: 'step', id: step.id })}><span>{index + 1}</span>{step.title}</button>)}</nav>{!frozen && <button className="mw-icon" aria-label={t('添加步骤')} disabled={state.busy} onClick={addStep}><Icon name="plus" size={15}/></button>}</div>
           : null}
         {state.mode === 'preview' && <PreviewControls state={state} editor={editor.current} onError={onError} onState={setState} readOnly={!!draft.deletedAt}/>}
       </main>
@@ -309,7 +317,7 @@ export default function WorkshopWorkspace({ draft, accountKey, takeAssistantRequ
         </div>
       </WorkshopToolsPortal>}
     </div>
-    <ModulePresence present={downloadOpen}>{downloadOpen && <WorkshopDownloadDialog label={t('下载作品')} onClose={() => setDownloadOpen(false)}><header><h3>{t('下载作品')}</h3><button className="mw-icon" onClick={() => setDownloadOpen(false)} aria-label={t('关闭下载')}>×</button></header>
+    <ModulePresence present={downloadOpen}>{downloadOpen && <WorkshopDownloadDialog label={t('下载作品')} onClose={() => setDownloadOpen(false)}><header><h3>{t('下载作品')}</h3><button className="mw-icon" onClick={() => setDownloadOpen(false)} aria-label={t('关闭下载')}><Icon name="close" size={13}/></button></header>
       <div className="mw-download-types">{[['png', '图片'], ['source', '可编辑源'], ['bundle', '课堂演示']].map(([format, label]) => <button className={download.format === format ? 'is-selected' : ''} key={format} onClick={() => setDownload({ ...download, format, selection: 'work' })}>{t(label)}</button>)}</div>
       {['png', 'svg'].includes(download.format) && <><label>{t('内容')}<select value={download.selection} onChange={event => setDownload({ ...download, format: 'png', selection: event.target.value, formulaId: source.formulas[0]?.id })}><option value="work">{t('整份作品')}</option>{source.graph && <option value="graph">{t('数学视图')}</option>}{source.formulas.length > 0 && <option value="formula">{t('公式')}</option>}</select></label>
         {download.selection === 'formula' && <label>{t('公式')}<select value={download.formulaId ?? source.formulas[0]?.id} onChange={event => setDownload({ ...download, formulaId: event.target.value })}>{source.formulas.map((formula, index) => <option value={formula.id} key={formula.id}>{index + 1}. {formula.latex}</option>)}</select></label>}

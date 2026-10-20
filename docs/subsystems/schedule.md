@@ -33,6 +33,8 @@ HTTP 写入由认证 transport 附加页面/保护头和逻辑 UUID key，router
 
 模块 [index](../../apps/api/src/modules/schedule/index.js) 合并业务与 reminders migrations 后统一导出；账户生命周期沿 [account-deletion](../../apps/api/src/workbench/account-deletion.js) 调用日程模块的 `deleteAccountData`，在外层事务中按 accountKey 显式清理该账户通知和日程数据，保留其他账户。reminders 工厂没有独立公开清理端口。日程不依赖题库、班级或教学记录业务。
 
+Web 的日历与任务看板在 [index.jsx](../../apps/web/src/features/schedule/index.jsx) 组合；[TaskBoard](../../apps/web/src/features/schedule/TaskBoard.jsx) 负责看板，[EntryEditor](../../apps/web/src/features/schedule/EntryEditor.jsx) 负责当前任务与事项编辑，[ScheduleDialogs](../../apps/web/src/features/schedule/ScheduleDialogs.jsx) 组合标签、重复、提醒及事项移动弹层，统一消费公共菜单、日期时间与对话框。既有安排、提醒与未确认写入继续经同一真实 API，不以演示数据替换。
+
 Web 的 [useScheduleSettings](../../apps/web/src/features/schedule/useScheduleSettings.js) 和 [useNotifications](../../apps/web/src/features/schedule/useNotifications.js) 拥有账户时区/日程设置及通知状态，不放公共平台层。它们通过 schedule/api 使用同一身份与请求协议。
 
 ## 验证入口

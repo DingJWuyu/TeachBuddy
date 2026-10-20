@@ -1,0 +1,2916 @@
+/* css/classroom.css */
+.wb-shell[data-route=classroom] .wb-workspace {
+  padding: var(--app-workspace-padding);
+  gap: 16px;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr {
+  --cr-green: #30b14c;
+  --cr-green-soft: color-mix(in srgb, #34c759 13%, var(--tb-surface));
+  position: relative;
+  height: 100%;
+  min-height: 0;
+  color: var(--tb-ink);
+  font: 14px/1.55 var(--tb-font);
+  font-synthesis: weight style;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr :where(button) {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr :where(button):disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr :where(input:not([type=checkbox]):not([type=radio]):not([type=file]), select, textarea) {
+  width: 100%;
+  min-height: 38px;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 10px;
+  background-color: var(--tb-fill);
+  color: var(--tb-ink);
+  font: inherit;
+  font-size: 14px;
+  box-shadow: none;
+  outline: none;
+  transition: background var(--tb-d1), box-shadow var(--tb-d1);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr :where(input:not([type=checkbox]):not([type=radio]):not([type=file]), select, textarea):hover:not(:disabled) {
+  background-color: var(--tb-fill-hover);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr :where(input:not([type=checkbox]):not([type=radio]):not([type=file]), select, textarea):focus {
+  outline: none;
+  background-color: var(--tb-surface);
+  box-shadow: inset 0 0 0 1.5px var(--tb-accent), 0 0 0 4px rgb(0 113 227 / 0.16);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr textarea {
+  resize: vertical;
+  line-height: 1.6;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-grow {
+  flex: 1;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-muted {
+  color: var(--tb-muted);
+  font-size: 12.5px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-muted.is-warn {
+  color: var(--tb-warning-ink);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-pad {
+  padding: 4px 2px 8px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-error {
+  margin: 0;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: var(--tb-danger-soft);
+  color: var(--tb-danger);
+  font-size: 13px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-error.is-inline {
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-note {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--tb-accent-soft);
+  color: var(--tb-ink-2);
+  font-size: 13px;
+  line-height: 1.55;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-note svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--tb-accent);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-footnote {
+  margin: 12px 2px 0;
+  color: var(--tb-faint);
+  font-size: 12px;
+  line-height: 1.5;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-loading {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  min-height: 160px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-loading.is-inline {
+  height: auto;
+  padding: 40px 0;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-btn,
+:is(.wb-shell, .tbx-portal-host) .tbx-cr label.cr-btn {
+  justify-content: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: var(--tb-fill);
+  color: var(--tb-ink);
+  font-size: 13.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background var(--tb-d1),
+    color var(--tb-d1),
+    transform var(--tb-d2) var(--tb-spring),
+    box-shadow var(--tb-d2);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-btn:hover:not(:disabled) {
+  background: var(--tb-fill-hover);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-btn.is-on {
+  background: var(--tb-accent-soft);
+  color: var(--tb-accent);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-btn.is-primary {
+  background: var(--tb-accent);
+  color: #fff;
+  box-shadow: 0 8px 18px -12px var(--tb-primary-glow);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-btn.is-primary:hover:not(:disabled) {
+  background: color-mix(in oklab, var(--tb-accent) 88%, black);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-btn.is-danger {
+  background: var(--tb-danger);
+  color: #fff;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-btn.is-quiet {
+  background: transparent;
+  color: var(--tb-accent);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-btn.is-quiet:hover:not(:disabled) {
+  background: var(--tb-accent-soft);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-btn.is-small {
+  height: 30px;
+  padding: 0 12px;
+  font-size: 13px;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-btn.is-big {
+  height: 44px;
+  padding: 0 22px;
+  font-size: 15px;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-btn.is-disabled {
+  opacity: 0.45;
+  pointer-events: none;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-icon-btn {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  color: var(--tb-muted);
+  transition: background var(--tb-d1), color var(--tb-d1);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-icon-btn:hover:not(:disabled),
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-icon-btn.is-on {
+  background: var(--tb-fill);
+  color: var(--tb-ink);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-icon-btn.is-filled {
+  background: var(--tb-fill);
+  color: var(--tb-ink);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-icon-btn.is-filled:hover:not(:disabled) {
+  background: var(--tb-fill-hover);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-icon-btn.is-small {
+  width: 28px;
+  height: 28px;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-link {
+  gap: 5px;
+  padding: 4px 2px;
+  color: var(--tb-accent);
+  font-size: 13px;
+  font-weight: 600;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-link:hover {
+  text-decoration: underline;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-back {
+  gap: 6px;
+  height: 34px;
+  padding: 0 14px 0 10px;
+  border-radius: 999px;
+  background: var(--tb-fill);
+  font-size: 13.5px;
+  font-weight: 600;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-back:hover {
+  background: var(--tb-fill-hover);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-avatar {
+  --a-bg: color-mix(in srgb, var(--a) 16%, var(--tb-surface));
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--a-bg);
+  color: color-mix(in srgb, var(--a) 80%, var(--tb-ink));
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  user-select: none;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-avatar.is-sm {
+  width: 24px;
+  height: 24px;
+  font-size: 10.5px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-avatar.is-lg {
+  width: 48px;
+  height: 48px;
+  font-size: 16px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-avatar.is-xl {
+  width: 76px;
+  height: 76px;
+  font-size: 26px;
+  box-shadow: 0 0 0 4px var(--tb-surface), 0 14px 30px -14px color-mix(in srgb, var(--a) 60%, transparent);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .is-blue {
+  --a: #0a84ff;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .is-green {
+  --a: #30b14c;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .is-orange {
+  --a: #f08a00;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .is-purple {
+  --a: #af52de;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .is-pink {
+  --a: #ff375f;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .is-teal {
+  --a: #1e9db5;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .is-indigo {
+  --a: #5e5ce6;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .is-yellow {
+  --a: #d4a000;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-place-dot {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--a) 15%, var(--tb-surface));
+  color: color-mix(in srgb, var(--a) 85%, var(--tb-ink));
+  font-size: 12px;
+  font-weight: 750;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-rail-item.is-current .cr-place-dot {
+  background: var(--a);
+  color: #fff;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-main {
+  min-height: 0;
+  border-radius: 24px;
+  background: var(--tb-surface);
+  box-shadow: var(--tb-shadow-1);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  container: cr-main / inline-size;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-class,
+:is(.wb-shell, .tbx-portal-host) .cr-page,
+:is(.wb-shell, .tbx-portal-host) .cr-student {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  padding: 18px 20px 12px 22px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-head-title {
+  display: flex;
+  flex: 1 1 220px;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-head-title > div {
+  min-width: 0;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-head-title h2 {
+  margin: 0;
+  overflow: hidden;
+  font-family: var(--tb-font-display);
+  font-size: 24px;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-head-title > div > span {
+  color: var(--tb-faint);
+  font-size: 13px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-class-badge {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--a) 70%, white),
+      var(--a));
+  color: #fff;
+  font-family: var(--tb-font-display);
+  font-size: 20px;
+  font-weight: 800;
+  box-shadow: 0 10px 20px -12px var(--a);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-view {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow: auto;
+  padding: 4px 22px 32px;
+  animation: cr-in 360ms var(--tb-ease) both;
+}
+@keyframes cr-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+:is(.wb-shell, .tbx-portal-host) .cr-page-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 4px 22px 32px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-seg {
+  display: inline-flex;
+  flex: none;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--tb-fill);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-seg button {
+  gap: 6px;
+  height: 30px;
+  padding: 0 14px;
+  border-radius: 999px;
+  color: var(--tb-muted);
+  font-size: 13.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition:
+    background var(--tb-d2),
+    color var(--tb-d2),
+    box-shadow var(--tb-d2);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-seg button:hover {
+  color: var(--tb-ink);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-seg button.is-on {
+  background: var(--tb-surface);
+  color: var(--tb-ink);
+  box-shadow: var(--tb-shadow-1);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-seg button.is-on svg {
+  color: var(--cr-green);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-menuwrap {
+  position: relative;
+  display: inline-flex;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-menu {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 6px);
+  min-width: 200px;
+  max-height: 360px;
+  overflow: auto;
+  padding: 6px;
+  border-radius: 14px;
+  background: var(--tb-surface);
+  box-shadow: var(--tb-shadow-3);
+  animation: cr-pop 180ms var(--tb-ease) both;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-menu.is-end {
+  right: 0;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-menu.is-start {
+  left: 0;
+}
+@keyframes cr-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-menu button {
+  display: flex;
+  gap: 9px;
+  width: 100%;
+  min-height: 34px;
+  padding: 6px 10px;
+  border-radius: 9px;
+  font-size: 14px;
+  text-align: left;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-menu button > span {
+  flex: 1;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-menu button:hover:not(:disabled) {
+  background: var(--tb-fill);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-menu button > svg:first-child {
+  color: var(--tb-muted);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-menu button > svg:last-child:not(:first-child) {
+  color: var(--tb-accent);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-menu button.is-danger {
+  color: var(--tb-danger);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-menu button.is-danger svg {
+  color: var(--tb-danger) !important;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-menu-sep {
+  height: 1px;
+  margin: 4px 8px;
+  background: var(--tb-line-soft);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-toolbar.is-quiet {
+  margin: 18px 0 10px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-toolbar-note {
+  margin-left: 4px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 1 260px;
+  min-width: 140px;
+  height: 36px;
+  padding: 0 10px 0 12px;
+  border-radius: 999px;
+  background: var(--tb-fill);
+  color: var(--tb-muted);
+  transition: background var(--tb-d2), box-shadow var(--tb-d2);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-search:focus-within {
+  background: var(--tb-surface);
+  box-shadow: inset 0 0 0 1.5px var(--tb-accent), 0 0 0 4px rgb(0 113 227 / 0.16);
+}
+.wb-shell .tbx-cr .cr-search input {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+  font-size: 14px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-search input::placeholder {
+  color: var(--tb-faint);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-search-clear {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--tb-faint);
+  color: var(--tb-surface);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-chip {
+  gap: 5px;
+  height: 30px;
+  padding: 0 12px 0 10px;
+  border-radius: 999px;
+  background: var(--tb-fill);
+  color: var(--tb-ink-2);
+  font-size: 13px;
+  font-weight: 550;
+  transition: background var(--tb-d1), color var(--tb-d1);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-chip:hover {
+  background: var(--tb-fill-hover);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-chip[aria-pressed=true] {
+  background: var(--tb-accent);
+  color: #fff;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-empty {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  max-width: 440px;
+  margin: auto;
+  padding: 48px 20px;
+  text-align: center;
+  animation: cr-in 420ms var(--tb-ease) both;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-empty.is-compact {
+  padding: 32px 16px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-empty h3 {
+  margin: 10px 0 0;
+  font-family: var(--tb-font-display);
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-empty.is-compact h3 {
+  font-size: 17px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-empty p {
+  margin: 0 0 12px;
+  color: var(--tb-muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-empty-icon {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  background: var(--tb-fill);
+  color: var(--tb-faint);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-empty-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-art {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, 40px);
+  gap: 10px 12px;
+  padding: 44px 18px 6px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-art-board {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  width: 110px;
+  height: 18px;
+  margin-left: -55px;
+  border-radius: 6px;
+  background: var(--cr-green);
+  box-shadow: 0 8px 16px -10px var(--cr-green);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-art-desk {
+  width: 40px;
+  height: 28px;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--a) 22%, var(--tb-surface));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--a) 30%, transparent);
+  animation: cr-desk-in 600ms var(--tb-spring) both;
+  animation-delay: calc(var(--i) * 60ms + 120ms);
+}
+@keyframes cr-desk-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.8);
+  }
+}
+:is(.wb-shell, .tbx-portal-host) .cr-scrim {
+  position: absolute;
+  z-index: 60;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  border-radius: 24px;
+  background: rgb(0 0 0 / 0.28);
+  backdrop-filter: blur(6px);
+  animation: cr-fade 200ms ease both;
+}
+@keyframes cr-fade {
+  from {
+    opacity: 0;
+  }
+}
+:is(.wb-shell, .tbx-portal-host) .cr-dialog {
+  display: flex;
+  flex-direction: column;
+  width: min(480px, 100%);
+  max-height: 100%;
+  overflow: hidden;
+  border-radius: 22px;
+  background: var(--tb-surface);
+  box-shadow: var(--tb-shadow-3);
+  animation: cr-rise 320ms var(--tb-spring) both;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-dialog.is-wide {
+  width: min(880px, 100%);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-dialog.is-confirm {
+  width: min(420px, 100%);
+}
+@keyframes cr-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.97);
+  }
+}
+:is(.wb-shell, .tbx-portal-host) .cr-dialog-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 20px 20px 6px 24px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-dialog-head h2 {
+  margin: 0;
+  font-family: var(--tb-font-display);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.012em;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-dialog-head p {
+  margin: 4px 0 0;
+  color: var(--tb-muted);
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-dialog-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 12px 24px 18px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-dialog-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px 18px 24px;
+  border-top: 1px solid var(--tb-line-soft);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-confirm-text {
+  margin: 0;
+  color: var(--tb-ink-2);
+  line-height: 1.65;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-form {
+  display: grid;
+  gap: 14px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-form-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-form-row.is-3 {
+  grid-template-columns: 2fr 1fr 1fr;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-form-row.is-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+:is(.wb-shell, .tbx-portal-host) .cr-form-row.is-exam {
+  grid-template-columns: minmax(0, 2fr) minmax(130px, 1fr) minmax(0, 1fr) minmax(0, 0.8fr);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-form-row.is-6 {
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+}
+:is(.wb-shell, .tbx-portal-host) .cr-field {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-field-label {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+  color: var(--tb-ink-2);
+  font-size: 12.5px;
+  font-weight: 650;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-field-label em {
+  color: var(--tb-faint);
+  font-style: normal;
+  font-weight: 500;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-toast {
+  position: absolute;
+  z-index: 80;
+  left: 50%;
+  bottom: 22px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: min(520px, 90%);
+  padding: 10px 16px 10px 12px;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--tb-ink) 92%, transparent);
+  color: var(--tb-surface);
+  font-size: 13.5px;
+  font-weight: 600;
+  box-shadow: var(--tb-shadow-3);
+  backdrop-filter: blur(16px);
+  transform: translateX(-50%);
+  animation: cr-toast 380ms var(--tb-spring) both;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-toast svg {
+  flex: none;
+  color: #4cd964;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-toast.is-error svg {
+  color: #ff6961;
+}
+@keyframes cr-toast {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 14px) scale(0.96);
+  }
+}
+:is(.wb-shell, .tbx-portal-host) .cr-view[data-tab=seats] {
+  padding-bottom: 20px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-seating {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 100%;
+  touch-action: none;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-seating-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-seating-bar .cr-muted {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-seating-tools {
+  display: flex;
+  gap: 8px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-room {
+  position: relative;
+  padding: 18px 22px 24px;
+  border-radius: 22px;
+  background-color: var(--tb-surface-2);
+  background-image: radial-gradient(color-mix(in srgb, var(--tb-ink) 8%, transparent) 1px, transparent 1.3px);
+  background-size: 18px 18px;
+  box-shadow: inset 0 0 0 1px var(--tb-line-soft);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-board {
+  display: grid;
+  place-items: center;
+  width: min(360px, 60%);
+  height: 34px;
+  margin: 0 auto 22px;
+  border-radius: 10px;
+  background:
+    linear-gradient(
+      180deg,
+      #4a5a52,
+      #34433b);
+  color: rgb(255 255 255 / 0.85);
+  font-size: 12.5px;
+  font-weight: 650;
+  letter-spacing: 0.3em;
+  box-shadow: 0 10px 22px -14px rgb(0 0 0 / 0.6), inset 0 1px 0 rgb(255 255 255 / 0.12);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+  gap: 10px 10px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-seat {
+  position: relative;
+  min-width: 0;
+  height: 76px;
+  border-radius: 14px;
+  animation: cr-seat-in 520ms var(--tb-spring) both;
+  animation-delay: calc(min(var(--i), 40) * 9ms);
+}
+@keyframes cr-seat-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.94);
+  }
+}
+:is(.wb-shell, .tbx-portal-host) .cr-seat.is-empty {
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--tb-ink) 10%, transparent);
+  background: color-mix(in srgb, var(--tb-surface) 55%, transparent);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-seat.is-target {
+  box-shadow: inset 0 0 0 2px var(--tb-accent), 0 0 0 4px rgb(0 113 227 / 0.16);
+  background: var(--tb-accent-soft);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-desk {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  align-content: center;
+  column-gap: 9px;
+  width: 100%;
+  height: 100%;
+  padding: 8px 10px;
+  border-radius: 14px;
+  background: var(--tb-surface);
+  text-align: left;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.06), 0 0 0 1px var(--tb-line-soft);
+  cursor: grab;
+  touch-action: none;
+  transition:
+    transform var(--tb-d3) var(--tb-ease),
+    box-shadow var(--tb-d3) var(--tb-ease),
+    opacity var(--tb-d2);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-desk .cr-avatar {
+  grid-row: 1 / span 2;
+  width: 34px;
+  height: 34px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-desk-name {
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-desk small {
+  overflow: hidden;
+  color: var(--tb-faint);
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-desk:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--tb-shadow-2);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-seat.is-target .cr-desk {
+  transform: scale(0.96);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-seat.is-lifted .cr-desk,
+:is(.wb-shell, .tbx-portal-host) .cr-chip-student.is-lifted {
+  opacity: 0.25;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-seating.is-dragging .cr-desk {
+  cursor: grabbing;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-ghost {
+  position: absolute;
+  z-index: 30;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-desk.is-ghost {
+  transform: rotate(-3deg) scale(1.06);
+  box-shadow: 0 24px 48px -16px rgb(0 0 0 / 0.35), 0 0 0 1px var(--tb-line-soft);
+  cursor: grabbing;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-tray {
+  padding: 14px 16px 16px;
+  border-radius: 18px;
+  background: var(--tb-surface-2);
+  box-shadow: inset 0 0 0 1px var(--tb-line-soft);
+  transition: background var(--tb-d2), box-shadow var(--tb-d2);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-tray.is-target {
+  background: var(--tb-accent-soft);
+  box-shadow: inset 0 0 0 2px var(--tb-accent);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-tray-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-tray-head strong {
+  font-size: 14px;
+  font-weight: 700;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-tray-head span {
+  color: var(--tb-faint);
+  font-size: 12.5px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-tray-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 34px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-tray-list .cr-muted {
+  margin: 6px 0 0;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-chip-student {
+  gap: 7px;
+  height: 34px;
+  padding: 0 12px 0 5px;
+  border-radius: 999px;
+  background: var(--tb-surface);
+  font-size: 13.5px;
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.06), 0 0 0 1px var(--tb-line-soft);
+  cursor: grab;
+  touch-action: none;
+  transition:
+    transform var(--tb-d2) var(--tb-spring),
+    box-shadow var(--tb-d2),
+    opacity var(--tb-d2);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-chip-student:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--tb-shadow-2);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-chip-student.is-static {
+  cursor: default;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-chip-student.is-static:hover {
+  transform: none;
+  box-shadow: 0 0 0 1px var(--tb-line-soft);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-chip-student b {
+  margin-left: 2px;
+  color: var(--tb-muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 10px;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-card {
+  position: relative;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 14px 14px 14px 12px;
+  border-radius: 18px;
+  background: var(--tb-surface);
+  text-align: left;
+  box-shadow: 0 0 0 1px var(--tb-line-soft);
+  animation: cr-in 420ms var(--tb-ease) both;
+  animation-delay: calc(var(--i) * 22ms);
+  transition: transform var(--tb-d3) var(--tb-ease), box-shadow var(--tb-d3) var(--tb-ease);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--tb-shadow-2);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-card-text {
+  display: grid;
+  flex: 1;
+  gap: 1px;
+  min-width: 0;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-card-text strong {
+  overflow: hidden;
+  font-size: 15px;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-card-text small {
+  overflow: hidden;
+  color: var(--tb-faint);
+  font-size: 12.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-card-note {
+  overflow: hidden;
+  margin-top: 4px;
+  color: var(--tb-muted);
+  font-size: 12.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-score-pill {
+  display: grid;
+  flex: none;
+  justify-items: end;
+  padding: 4px 10px;
+  border-radius: 12px;
+  background: var(--cr-green-soft);
+  color: var(--cr-green);
+  font-size: 14px;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.25;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-score-pill small {
+  color: var(--tb-muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-score-pill.is-muted {
+  background: var(--tb-fill);
+  color: var(--tb-muted);
+  font-size: 12.5px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-student-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 18px 6px 18px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-student-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 8px 28px 32px;
+  animation: cr-in 380ms var(--tb-ease) both;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-profile {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin: 6px 0 18px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-profile h2 {
+  margin: 0;
+  font-family: var(--tb-font-display);
+  font-size: 30px;
+  font-weight: 750;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-profile p {
+  margin: 4px 0 0;
+  color: var(--tb-muted);
+  font-size: 14px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-traits {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 20px;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-trait {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: var(--tb-surface-2);
+  text-align: left;
+  box-shadow: inset 0 0 0 1px var(--tb-line-soft);
+  transition: background var(--tb-d1), box-shadow var(--tb-d2);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-trait:hover {
+  background: var(--tb-fill);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-trait-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--tb-faint);
+  font-size: 12px;
+  font-weight: 650;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-trait p {
+  margin: 0;
+  color: var(--tb-ink);
+  font-size: 14.5px;
+  line-height: 1.65;
+  white-space: pre-wrap;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-trait.is-empty p {
+  color: var(--tb-faint);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-subtabs {
+  margin-bottom: 14px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-student .cr-view {
+  padding: 0;
+  overflow: visible;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-journal {
+  width: 100%;
+  max-width: 780px;
+  margin: 0 auto;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-composer {
+  padding: 12px 12px 10px 16px;
+  border-radius: 18px;
+  background: var(--tb-surface);
+  box-shadow: 0 0 0 1px var(--tb-line), 0 10px 26px -20px rgb(0 0 0 / 0.4);
+  transition: box-shadow var(--tb-d2);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-composer:focus-within {
+  box-shadow:
+    0 0 0 1.5px var(--tb-accent),
+    0 0 0 5px rgb(0 113 227 / 0.14),
+    0 10px 26px -20px rgb(0 0 0 / 0.4);
+}
+.wb-shell .tbx-cr .cr-composer textarea {
+  min-height: 48px;
+  padding: 2px 0;
+  background: transparent;
+  box-shadow: none;
+  resize: none;
+  font-size: 15px;
+  line-height: 1.7;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-composer-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-date-pill {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 4px 0 10px;
+  border-radius: 999px;
+  background: var(--tb-fill);
+  color: var(--tb-muted);
+}
+.wb-shell .tbx-cr .cr-date-pill input {
+  width: auto;
+  min-height: 0;
+  height: 28px;
+  padding: 0 6px 0 0;
+  background: transparent;
+  color: var(--tb-ink-2);
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: none;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-composer.is-editing {
+  flex: 1;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-timeline,
+:is(.wb-shell, .tbx-portal-host) .cr-timeline ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-month {
+  margin-top: 18px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-month h4 {
+  margin: 0 0 8px 66px;
+  color: var(--tb-faint);
+  font-size: 12.5px;
+  font-weight: 650;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-entry {
+  position: relative;
+  display: flex;
+  gap: 14px;
+  padding-bottom: 10px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-entry::before {
+  content: "";
+  position: absolute;
+  top: 44px;
+  bottom: 0;
+  left: 25px;
+  width: 1.5px;
+  border-radius: 1px;
+  background: var(--tb-line-soft);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-entry:last-child::before {
+  display: none;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-entry-date {
+  display: grid;
+  flex: none;
+  justify-items: center;
+  align-content: start;
+  width: 52px;
+  padding-top: 8px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-entry-date strong {
+  font-family: var(--tb-font-display);
+  font-size: 22px;
+  font-weight: 750;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-entry-date small {
+  color: var(--tb-faint);
+  font-size: 11.5px;
+  font-weight: 600;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-entry-card {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  padding: 12px 16px;
+  border-radius: 16px;
+  background: var(--tb-surface-2);
+  box-shadow: inset 0 0 0 1px var(--tb-line-soft);
+  transition: background var(--tb-d1);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-entry-card:hover {
+  background: var(--tb-fill);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-entry-card p {
+  margin: 0;
+  color: var(--tb-ink);
+  font-size: 14.5px;
+  line-height: 1.75;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-entry-actions {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 999px;
+  background: var(--tb-surface);
+  box-shadow: var(--tb-shadow-1);
+  opacity: 0;
+  transform: translateY(2px);
+  transition: opacity var(--tb-d2), transform var(--tb-d2) var(--tb-ease);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-entry-card:hover .cr-entry-actions,
+:is(.wb-shell, .tbx-portal-host) .cr-entry-card:focus-within .cr-entry-actions {
+  opacity: 1;
+  transform: none;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-entry.is-fresh .cr-entry-card {
+  animation: cr-fresh 1.4s var(--tb-ease) both;
+}
+@keyframes cr-fresh {
+  0% {
+    opacity: 0;
+    transform: translateY(-6px);
+    background: var(--cr-green-soft);
+  }
+  30% {
+    opacity: 1;
+    transform: none;
+    background: var(--cr-green-soft);
+  }
+}
+:is(.wb-shell, .tbx-portal-host) .cr-panel {
+  padding: 16px 18px 18px;
+  border-radius: 20px;
+  background: var(--tb-surface);
+  box-shadow: 0 0 0 1px var(--tb-line-soft);
+  min-width: 0;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-panel + .cr-panel {
+  margin-top: 12px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-panel-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 12px;
+  margin-bottom: 12px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-panel-head h3 {
+  margin: 0;
+  font-family: var(--tb-font-display);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-panel-head label.cr-btn {
+  margin-left: auto;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-split {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-split > .cr-panel + .cr-panel {
+  margin-top: 0;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-chart {
+  margin: 0;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-chart-plot {
+  position: relative;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-chart svg {
+  display: block;
+  overflow: visible;
+  cursor: crosshair;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-grid line {
+  stroke: var(--tb-line-soft);
+  stroke-width: 1;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-grid text,
+:is(.wb-shell, .tbx-portal-host) .cr-axis-label {
+  fill: var(--tb-faint);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-axis-label.is-on {
+  fill: var(--tb-ink);
+  font-weight: 650;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-band {
+  fill: color-mix(in srgb, #34c759 12%, transparent);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-crosshair {
+  stroke: var(--tb-line);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-series {
+  --c: var(--cr-green);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-series.is-grey {
+  --c: #8e8e93;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-series.is-blue {
+  --c: var(--tb-accent);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-line {
+  fill: none;
+  stroke: var(--c);
+  stroke-width: 2.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: cr-draw 900ms var(--tb-ease) 120ms forwards;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-series.is-dashed .cr-line {
+  stroke-width: 1.75;
+  stroke-dasharray: 1;
+}
+@keyframes cr-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+:is(.wb-shell, .tbx-portal-host) .cr-series.is-dashed .cr-line {
+  animation: cr-fade-in 600ms ease 400ms both;
+  stroke-dasharray: 5 5;
+  stroke-dashoffset: 0;
+}
+@keyframes cr-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+:is(.wb-shell, .tbx-portal-host) .cr-dot {
+  fill: var(--c);
+  stroke: var(--tb-surface);
+  stroke-width: 2.5;
+  transition: r var(--tb-d2) var(--tb-spring);
+  animation: cr-dot 420ms var(--tb-spring) both;
+  animation-delay: calc(var(--i) * 70ms + 300ms);
+  transform-box: fill-box;
+  transform-origin: center;
+}
+@keyframes cr-dot {
+  from {
+    opacity: 0;
+    transform: scale(0);
+  }
+}
+:is(.wb-shell, .tbx-portal-host) .cr-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 8px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--tb-muted);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-legend-item i {
+  width: 14px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--cr-green);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-legend-item.is-grey i {
+  background: #8e8e93;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-legend-item.is-blue i {
+  background: var(--tb-accent);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-legend-item.is-dashed i {
+  background:
+    repeating-linear-gradient(
+      90deg,
+      currentColor 0 4px,
+      transparent 4px 7px);
+  color: #8e8e93;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-legend-item.is-band i {
+  height: 10px;
+  border-radius: 3px;
+  background: color-mix(in srgb, #34c759 18%, transparent);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-tip {
+  position: absolute;
+  z-index: 5;
+  display: grid;
+  gap: 3px;
+  min-width: 170px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--tb-surface);
+  box-shadow: var(--tb-shadow-3);
+  pointer-events: none;
+  transform: translateX(-50%);
+  animation: cr-pop 140ms ease both;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-tip strong {
+  font-size: 13px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-tip small {
+  color: var(--tb-faint);
+  font-size: 11.5px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-tip em {
+  color: var(--tb-warning-ink);
+  font-size: 12px;
+  font-style: normal;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-tip-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--tb-muted);
+  font-size: 12px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-tip-row i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--cr-green);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-tip-row.is-grey i {
+  background: #8e8e93;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-tip-row.is-blue i {
+  background: var(--tb-accent);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-tip-row.is-band i {
+  border-radius: 2px;
+  background: color-mix(in srgb, #34c759 25%, transparent);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-tip-row b {
+  margin-left: auto;
+  padding-left: 10px;
+  color: var(--tb-ink);
+  font-variant-numeric: tabular-nums;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-legend-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--tb-muted);
+  font-size: 12px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-legend-inline i {
+  display: inline-block;
+  width: 12px;
+  height: 8px;
+  margin-left: 6px;
+  border-radius: 3px;
+  background: var(--tb-accent);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-legend-inline i.is-mark {
+  width: 2px;
+  height: 12px;
+  border-radius: 1px;
+  background: var(--tb-ink);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-stat {
+  display: grid;
+  gap: 2px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: var(--tb-surface-2);
+  box-shadow: inset 0 0 0 1px var(--tb-line-soft);
+  min-width: 0;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-stat span {
+  color: var(--tb-faint);
+  font-size: 12px;
+  font-weight: 650;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-stat strong {
+  overflow: hidden;
+  font-family: var(--tb-font-display);
+  font-size: 26px;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-stat small {
+  overflow: hidden;
+  color: var(--tb-muted);
+  font-size: 12.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-stat.is-green {
+  background: var(--cr-green-soft);
+  box-shadow: none;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-stat.is-green strong {
+  color: var(--cr-green);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-hist {
+  display: grid;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  align-items: end;
+  gap: 6px;
+  height: 170px;
+  padding-top: 20px;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-hist-bar {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: stretch;
+  height: 100%;
+  padding: 0;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-hist-fill {
+  height: calc(var(--h) * 100%);
+  min-height: 3px;
+  border-radius: 5px 5px 2px 2px;
+  background: color-mix(in srgb, #34c759 calc(28% + var(--i) * 7%), var(--tb-surface));
+  transform-origin: bottom;
+  animation: cr-grow 700ms var(--tb-spring) both;
+  animation-delay: calc(var(--i) * 40ms);
+  transition: filter var(--tb-d1), box-shadow var(--tb-d2);
+}
+@keyframes cr-grow {
+  from {
+    transform: scaleY(0);
+  }
+}
+:is(.wb-shell, .tbx-portal-host) .cr-hist-bar.is-zero .cr-hist-fill {
+  background: var(--tb-fill);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-hist-bar:hover:not(:disabled) .cr-hist-fill {
+  filter: brightness(0.92);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-hist-bar.is-on .cr-hist-fill {
+  background: var(--tb-accent);
+  box-shadow: 0 6px 14px -8px var(--tb-primary-glow);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-hist-count {
+  position: absolute;
+  top: calc((1 - var(--h)) * 100% - 20px);
+  left: 0;
+  right: 0;
+  color: var(--tb-ink-2);
+  font-size: 11.5px;
+  font-weight: 650;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-hist-label {
+  position: absolute;
+  bottom: -18px;
+  left: -3px;
+  color: var(--tb-faint);
+  font-size: 10.5px;
+  font-variant-numeric: tabular-nums;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-axis-note {
+  margin: 24px 0 0;
+  color: var(--tb-faint);
+  font-size: 11.5px;
+  text-align: center;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-bin-students {
+  margin-top: 14px;
+  padding: 12px;
+  border-radius: 14px;
+  background: var(--tb-accent-soft);
+  animation: cr-in 260ms var(--tb-ease) both;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-bin-students strong {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--tb-accent);
+  font-size: 13px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-bin-students > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-bin-students .cr-chip-student {
+  cursor: pointer;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-rates {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-rates li {
+  animation: cr-in 360ms var(--tb-ease) both;
+  animation-delay: calc(var(--i) * 25ms);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-rate {
+  display: grid;
+  grid-template-columns: minmax(64px, 132px) minmax(0, 1fr) 46px;
+  grid-template-areas: "label track value" "meta track value";
+  align-items: center;
+  column-gap: 10px;
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: 10px;
+  text-align: left;
+  cursor: default;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-rate:not(:disabled) {
+  cursor: pointer;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-rate:disabled {
+  opacity: 1;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-rate:not(:disabled):hover,
+:is(.wb-shell, .tbx-portal-host) .cr-rate.is-on {
+  background: var(--tb-fill);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-rate-label {
+  grid-area: label;
+  align-self: end;
+  overflow: hidden;
+  color: var(--tb-ink-2);
+  font-size: 13px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-rate-track {
+  position: relative;
+  display: block;
+  height: 8px;
+  overflow: visible;
+  border-radius: 4px;
+  background: var(--tb-fill);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-rate-track.is-big {
+  height: 10px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-rate > .cr-rate-track {
+  grid-area: track;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-rate-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: calc(var(--w) * 100%);
+  border-radius: 4px;
+  background: var(--cr-green);
+  transform-origin: left;
+  animation: cr-grow-x 800ms var(--tb-ease) both;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-rate-fill.is-low {
+  background: #ff9f0a;
+}
+@keyframes cr-grow-x {
+  from {
+    transform: scaleX(0);
+  }
+}
+:is(.wb-shell, .tbx-portal-host) .cr-rate-mark {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  left: calc(var(--w) * 100%);
+  width: 2px;
+  margin-left: -1px;
+  border-radius: 1px;
+  background: var(--tb-ink);
+  box-shadow: 0 0 0 1.5px var(--tb-surface);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-rate-value {
+  grid-area: value;
+  color: var(--tb-ink);
+  font-size: 13px;
+  font-weight: 700;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-rate:not(:has(.cr-rate-meta)) .cr-rate-label {
+  grid-row: 1 / span 2;
+  align-self: center;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-rate-meta {
+  grid-area: meta;
+  align-self: start;
+  line-height: 1.3;
+  color: var(--tb-faint);
+  font-size: 11.5px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-scores-student .cr-rate-fill {
+  background: var(--tb-accent);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-scores-student .cr-rate-fill.is-low {
+  background: #ff9f0a;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-focus {
+  margin-top: 18px;
+  animation: cr-in 420ms var(--tb-ease) both;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-focus-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0 2px 12px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-focus-head h3 {
+  margin: 0;
+  font-family: var(--tb-font-display);
+  font-size: 21px;
+  font-weight: 750;
+  letter-spacing: -0.015em;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-focus-head .cr-btn svg {
+  transform: rotate(-90deg);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-ranking {
+  display: grid;
+  gap: 1px;
+  max-height: 360px;
+  margin: 0 -6px;
+  padding: 0;
+  overflow: auto;
+  list-style: none;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-ranking li {
+  animation: cr-in 320ms var(--tb-ease) both;
+  animation-delay: calc(var(--i) * 18ms);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-ranking button {
+  gap: 10px;
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: 10px;
+  text-align: left;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-ranking button:hover {
+  background: var(--tb-fill);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-rank {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  color: var(--tb-muted);
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-rank.is-top {
+  color: #fff;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-rank.is-1 {
+  background:
+    linear-gradient(
+      180deg,
+      #ffd60a,
+      #f5a500);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-rank.is-2 {
+  background:
+    linear-gradient(
+      180deg,
+      #c7c7cc,
+      #98989d);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-rank.is-3 {
+  background:
+    linear-gradient(
+      180deg,
+      #f0a46a,
+      #c9733a);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-ranking-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-ranking-score {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-variant-numeric: tabular-nums;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-ranking-score b {
+  font-size: 14px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-ranking-score small {
+  width: 38px;
+  color: var(--tb-faint);
+  font-size: 12px;
+  text-align: right;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-ranking em {
+  color: var(--tb-faint);
+  font-size: 12.5px;
+  font-style: normal;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-tagline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-tagstat {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: var(--tb-fill);
+  color: var(--tb-ink-2);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-tagstat b {
+  color: var(--tb-ink);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-exam-rows {
+  display: grid;
+  gap: 6px;
+  margin: 12px 0;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-exam-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 96px 92px 90px;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 16px;
+  background: var(--tb-surface-2);
+  text-align: left;
+  box-shadow: inset 0 0 0 1px var(--tb-line-soft);
+  transition: background var(--tb-d1), box-shadow var(--tb-d2);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-exam-row:hover {
+  background: var(--tb-fill);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-exam-row.is-on {
+  background: var(--tb-accent-soft);
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--tb-accent) 40%, transparent);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-exam-row-title {
+  display: grid;
+  min-width: 0;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-exam-row-title strong {
+  overflow: hidden;
+  font-size: 14.5px;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-exam-row-title small {
+  overflow: hidden;
+  color: var(--tb-faint);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-exam-row-score {
+  font-variant-numeric: tabular-nums;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-exam-row-score b {
+  font-family: var(--tb-font-display);
+  font-size: 20px;
+  font-weight: 750;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-exam-row-score small {
+  margin-left: 3px;
+  color: var(--tb-faint);
+  font-size: 12px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-exam-row-score em {
+  color: var(--tb-faint);
+  font-style: normal;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-exam-row-rank,
+:is(.wb-shell, .tbx-portal-host) .cr-exam-row-mean {
+  color: var(--tb-muted);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-head-title.is-plain h2 {
+  font-size: 26px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-exams {
+  display: grid;
+  gap: 10px;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-exam-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 18px 14px 14px;
+  border-radius: 18px;
+  background: var(--tb-surface);
+  text-align: left;
+  box-shadow: 0 0 0 1px var(--tb-line-soft);
+  animation: cr-in 380ms var(--tb-ease) both;
+  animation-delay: calc(var(--i) * 40ms);
+  transition: transform var(--tb-d3) var(--tb-ease), box-shadow var(--tb-d3) var(--tb-ease);
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-exam-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--tb-shadow-2);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-exam-card > svg {
+  flex: none;
+  color: var(--tb-faint);
+  transform: rotate(-90deg);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-datebox {
+  display: grid;
+  flex: none;
+  justify-items: center;
+  width: 54px;
+  overflow: hidden;
+  border-radius: 13px;
+  background: var(--tb-surface);
+  box-shadow: 0 0 0 1px var(--tb-line-soft), 0 6px 14px -10px rgb(0 0 0 / 0.3);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-datebox small {
+  width: 100%;
+  padding: 2px 0;
+  background: #ff3b30;
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 700;
+  text-align: center;
+  letter-spacing: 0.04em;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-datebox strong {
+  padding: 2px 0 6px;
+  font-family: var(--tb-font-display);
+  font-size: 22px;
+  font-weight: 750;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-datebox.is-big {
+  width: 68px;
+  border-radius: 16px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-datebox.is-big strong {
+  font-size: 30px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-exam-card-text {
+  display: grid;
+  flex: 1;
+  gap: 3px;
+  min-width: 0;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-exam-card-text strong {
+  font-size: 16px;
+  font-weight: 700;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-exam-card-text small {
+  color: var(--tb-muted);
+  font-size: 12.5px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-class-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 4px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-class-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 650;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-class-chip.is-done {
+  background: var(--cr-green-soft);
+  color: var(--cr-green);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-class-chip.is-todo {
+  background: var(--tb-fill);
+  color: var(--tb-faint);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-class-chip.is-todo i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1.5px currentColor;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-exam-hero {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 4px 0 18px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-exam-hero h2 {
+  margin: 0;
+  font-family: var(--tb-font-display);
+  font-size: 28px;
+  font-weight: 750;
+  letter-spacing: -0.022em;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-exam-hero p {
+  margin: 4px 0 0;
+  color: var(--tb-muted);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-compare {
+  display: grid;
+  gap: 6px;
+  margin: 0 0 6px;
+  padding: 0;
+  list-style: none;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-compare li {
+  display: grid;
+  grid-template-columns: 24px minmax(80px, 140px) minmax(80px, 1fr) repeat(3, 84px);
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: var(--tb-surface-2);
+  animation: cr-in 360ms var(--tb-ease) both;
+  animation-delay: calc(var(--i) * 50ms);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-compare li.is-none {
+  grid-template-columns: 24px minmax(80px, 140px) 1fr auto;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-compare li strong {
+  overflow: hidden;
+  font-size: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-compare-num {
+  display: grid;
+  font-variant-numeric: tabular-nums;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-compare-num b {
+  font-size: 15px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-compare-num small {
+  color: var(--tb-faint);
+  font-size: 11.5px;
+  white-space: nowrap;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-none {
+  color: var(--tb-faint);
+  font-size: 13px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-qcompare {
+  display: grid;
+  margin-top: 14px;
+  border-top: 1px solid var(--tb-line-soft);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-qcompare-row {
+  display: grid;
+  grid-template-columns: minmax(80px, 160px) repeat(var(--n), minmax(0, 1fr));
+  align-items: center;
+  gap: 14px;
+  padding: 7px 4px;
+  border-bottom: 1px solid var(--tb-line-soft);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-qcompare-row.is-head {
+  color: var(--tb-faint);
+  font-size: 12px;
+  font-weight: 650;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-qcompare-row > span:first-child {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 13px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-qcompare-row > span:first-child small {
+  color: var(--tb-faint);
+  font-size: 11.5px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-qcompare-cell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 40px;
+  align-items: center;
+  gap: 8px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-qcompare-cell small {
+  color: var(--tb-ink-2);
+  font-size: 12px;
+  font-weight: 650;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-qlist {
+  display: grid;
+  gap: 10px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-qgroup h4 {
+  margin: 0 0 4px;
+  color: var(--tb-faint);
+  font-size: 12px;
+  font-weight: 650;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-qitem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+  border-radius: 10px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-qitem:nth-child(odd) {
+  background: var(--tb-surface-2);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-qitem strong {
+  min-width: 40px;
+  font-size: 13.5px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-qitem-tags {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-qitem small {
+  color: var(--tb-muted);
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-tagmini {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: var(--tb-accent-soft);
+  color: var(--tb-accent);
+  font-size: 11.5px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-files {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-files li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border-radius: 12px;
+  background: var(--tb-surface-2);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-files img {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  object-fit: cover;
+  box-shadow: 0 0 0 1px var(--tb-line-soft);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-file-icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  background: color-mix(in srgb, #ff3b30 9%, var(--tb-surface));
+  color: #e0352b;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-file-icon em {
+  margin-top: -6px;
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 800;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-files a {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--tb-ink);
+  font-size: 13.5px;
+  font-weight: 600;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-files a:hover {
+  color: var(--tb-accent);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-qtable {
+  display: grid;
+  gap: 4px;
+  padding: 10px;
+  border-radius: 16px;
+  background: var(--tb-surface-2);
+  box-shadow: inset 0 0 0 1px var(--tb-line-soft);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-qtable-head,
+:is(.wb-shell, .tbx-portal-host) .cr-qrow {
+  display: grid;
+  grid-template-columns: minmax(80px, 1.2fr) 72px 72px minmax(120px, 2fr) 28px;
+  align-items: center;
+  gap: 8px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-qtable-head {
+  padding: 0 2px 4px;
+  color: var(--tb-faint);
+  font-size: 12px;
+  font-weight: 650;
+}
+.wb-shell .tbx-cr .cr-qrow input {
+  min-height: 32px;
+  padding: 5px 10px;
+  background-color: var(--tb-surface);
+  font-size: 13.5px;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-tagcell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  width: 100%;
+  min-height: 32px;
+  padding: 5px 8px;
+  border-radius: 10px;
+  background: var(--tb-surface);
+  text-align: left;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-tagcell:hover,
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-tagcell.is-on {
+  box-shadow: inset 0 0 0 1.5px var(--tb-accent);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-tagmenu {
+  width: 220px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-tagmenu-new {
+  display: flex;
+  gap: 6px;
+  padding: 4px;
+}
+.wb-shell .tbx-cr .cr-tagmenu-new input {
+  min-height: 30px;
+  padding: 4px 10px;
+  font-size: 13px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-qadd {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 2px 2px;
+  color: var(--tb-muted);
+  font-size: 13px;
+}
+.wb-shell .tbx-cr .cr-qadd input {
+  width: 56px;
+  min-height: 30px;
+  padding: 4px 8px;
+  background-color: var(--tb-surface);
+  text-align: center;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-tagnew {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 560px;
+  margin-bottom: 14px;
+  padding: 6px 6px 6px 14px;
+  border-radius: 999px;
+  background: var(--tb-fill);
+  color: var(--tb-muted);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-tagnew:focus-within {
+  background: var(--tb-surface);
+  box-shadow: inset 0 0 0 1.5px var(--tb-accent), 0 0 0 4px rgb(0 113 227 / 0.16);
+}
+.wb-shell .tbx-cr .cr-tagnew input {
+  flex: 1;
+  min-height: 30px;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-tags {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-tags li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 8px 8px 12px;
+  border-radius: 14px;
+  background: var(--tb-surface-2);
+  animation: cr-in 320ms var(--tb-ease) both;
+  animation-delay: calc(var(--i) * 30ms);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-tag-icon {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 9px;
+  background: var(--tb-accent-soft);
+  color: var(--tb-accent);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-tags strong {
+  font-size: 14.5px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-tags small {
+  color: var(--tb-faint);
+  font-size: 12.5px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-tag-edit {
+  display: flex;
+  flex: 1;
+  gap: 8px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-archive {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-archive li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 8px 8px 12px;
+  border-radius: 12px;
+  background: var(--tb-surface-2);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-archive-text {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-archive-text strong {
+  overflow: hidden;
+  font-size: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-archive-text small {
+  color: var(--tb-faint);
+  font-size: 12px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-steps {
+  display: flex;
+  gap: 18px;
+  margin: 0 0 18px;
+  padding: 0;
+  list-style: none;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-steps li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--tb-faint);
+  font-size: 13px;
+  font-weight: 600;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-steps li span {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--tb-fill);
+  font-size: 12px;
+  font-weight: 700;
+  transition: background var(--tb-d2), color var(--tb-d2);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-steps li.is-current {
+  color: var(--tb-ink);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-steps li.is-current span {
+  background: var(--tb-accent);
+  color: #fff;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-steps li.is-done span {
+  background: var(--cr-green);
+  color: #fff;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-step {
+  animation: cr-in 320ms var(--tb-ease) both;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-import-start {
+  display: grid;
+  gap: 16px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-drop {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 36px 20px;
+  border-radius: 20px;
+  background: var(--tb-surface-2);
+  text-align: center;
+  cursor: pointer;
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--tb-ink) 12%, transparent);
+  transition:
+    background var(--tb-d2),
+    box-shadow var(--tb-d2),
+    transform var(--tb-d2) var(--tb-spring);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-drop:hover {
+  background: var(--tb-fill);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-drop.is-over {
+  background: var(--tb-accent-soft);
+  box-shadow: inset 0 0 0 2px var(--tb-accent);
+  transform: scale(1.01);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-drop.is-busy {
+  pointer-events: none;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-drop-icon {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  margin-bottom: 6px;
+  border-radius: 16px;
+  background:
+    linear-gradient(
+      180deg,
+      #4cd964,
+      #30b14c);
+  color: #fff;
+  box-shadow: 0 10px 20px -12px rgb(48 177 76 / 0.75);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-drop strong {
+  font-size: 15px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-drop small {
+  color: var(--tb-muted);
+  font-size: 13px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-import-map {
+  display: grid;
+  gap: 14px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-import-file {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--tb-muted);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-import-file strong {
+  color: var(--tb-ink);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-import-questions {
+  border-radius: 14px;
+  background: var(--tb-surface-2);
+  box-shadow: inset 0 0 0 1px var(--tb-line-soft);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-import-questions summary {
+  padding: 10px 14px;
+  color: var(--tb-ink-2);
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-import-questions > div {
+  padding: 0 14px 14px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-sheet-preview {
+  max-height: 260px;
+  overflow: auto;
+  border-radius: 14px;
+  box-shadow: inset 0 0 0 1px var(--tb-line-soft);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-sheet-preview table {
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-sheet-preview th,
+:is(.wb-shell, .tbx-portal-host) .cr-sheet-preview td {
+  min-width: 56px;
+  padding: 5px 10px;
+  border-bottom: 1px solid var(--tb-line-soft);
+  text-align: left;
+  white-space: nowrap;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-sheet-preview thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--tb-surface);
+  color: var(--tb-faint);
+  font-weight: 650;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-sheet-preview tbody th {
+  color: var(--tb-faint);
+  font-weight: 500;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-sheet-preview th.is-mapped {
+  color: var(--tb-accent);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-sheet-preview td.is-mapped {
+  background: color-mix(in srgb, var(--tb-accent) 6%, transparent);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-sheet-preview tr:not(.is-data):not(.is-header) td {
+  color: var(--tb-faint);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-sheet-preview tr.is-header td {
+  color: var(--tb-ink);
+  font-weight: 700;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-sheet-preview td.is-error {
+  background: var(--tb-danger-soft);
+  color: var(--tb-danger);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-review {
+  display: grid;
+  gap: 12px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-review-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-pill {
+  display: inline-flex;
+  align-items: center;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: var(--tb-fill);
+  color: var(--tb-ink-2);
+  font-size: 12.5px;
+  font-weight: 650;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-pill.is-error {
+  background: var(--tb-danger-soft);
+  color: var(--tb-danger);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-pill.is-warn {
+  background: var(--tb-warning-soft);
+  color: var(--tb-warning-ink);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-pill.is-ok {
+  background: var(--cr-green-soft);
+  color: var(--cr-green);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-review-table {
+  display: grid;
+  gap: 4px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-review-row {
+  display: grid;
+  grid-template-columns: 34px minmax(90px, 1fr) minmax(130px, 1.3fr) 72px 84px 64px;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: var(--tb-surface-2);
+  animation: cr-in 260ms var(--tb-ease) both;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-review-row.is-head {
+  background: none;
+  color: var(--tb-faint);
+  font-size: 12px;
+  font-weight: 650;
+  animation: none;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-review-row.has-error {
+  box-shadow: inset 3px 0 0 var(--tb-danger);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-review-row.is-ignored {
+  opacity: 0.55;
+}
+.wb-shell .tbx-cr .cr-review-row :is(input, select) {
+  min-height: 32px;
+  padding: 4px 10px;
+  background-color: var(--tb-surface);
+  font-size: 13px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-review-num {
+  color: var(--tb-faint);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-review-src {
+  display: grid;
+  min-width: 0;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-review-src b {
+  overflow: hidden;
+  font-size: 13.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-review-src small {
+  color: var(--tb-faint);
+  font-size: 11.5px;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-status {
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: var(--cr-green-soft);
+  color: var(--cr-green);
+  font-size: 12.5px;
+  font-weight: 650;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-status.is-absent {
+  background: var(--tb-fill);
+  color: var(--tb-muted);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-issues {
+  grid-column: 2 / -1;
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-issues li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-issues li.is-error {
+  color: var(--tb-danger);
+}
+.wb-shell .tbx-cr .cr-issues .cr-fix {
+  width: 64px;
+  min-height: 24px;
+  height: 24px;
+  margin-left: 6px;
+  padding: 0 8px;
+  border-radius: 7px;
+  background-color: var(--tb-surface);
+  color: var(--tb-ink);
+  font-size: 12.5px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-issues li.is-warning {
+  color: var(--tb-warning-ink);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-unrecorded {
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--tb-surface-2);
+  box-shadow: inset 0 0 0 1px var(--tb-line-soft);
+}
+:is(.wb-shell, .tbx-portal-host) .cr-unrecorded strong {
+  font-size: 13.5px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-unrecorded p {
+  margin: 2px 0 8px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-unrecorded > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-import-done {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 30px 10px 16px;
+  text-align: center;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-done-mark {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  margin-bottom: 8px;
+  border-radius: 50%;
+  background:
+    linear-gradient(
+      180deg,
+      #4cd964,
+      #30b14c);
+  color: #fff;
+  box-shadow: 0 16px 30px -14px rgb(48 177 76 / 0.8);
+  animation: cr-done 700ms var(--tb-spring) both;
+}
+@keyframes cr-done {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+}
+:is(.wb-shell, .tbx-portal-host) .cr-import-done h3 {
+  margin: 0;
+  font-family: var(--tb-font-display);
+  font-size: 22px;
+  font-weight: 750;
+}
+:is(.wb-shell, .tbx-portal-host) .cr-import-done p {
+  margin: 0;
+  color: var(--tb-ink-2);
+  line-height: 1.6;
+}
+:root[data-workbench-theme=dark] .tbx-cr {
+  --cr-green: #32d74b;
+}
+:root[data-workbench-theme=dark] .cr-board {
+  background:
+    linear-gradient(
+      180deg,
+      #2f3a34,
+      #232b26);
+}
+@container cr-main (max-width: 760px) {
+  :is(.wb-shell, .tbx-portal-host) .cr-head {
+    padding: 16px 16px 10px;
+  }
+  :is(.wb-shell, .tbx-portal-host) .cr-tabs {
+    order: 3;
+    width: 100%;
+  }
+  :is(.wb-shell, .tbx-portal-host) .cr-tabs button {
+    flex: 1;
+    justify-content: center;
+    padding: 0 8px;
+  }
+  :is(.wb-shell, .tbx-portal-host) .cr-view,
+  :is(.wb-shell, .tbx-portal-host) .cr-page-scroll {
+    padding: 4px 14px 24px;
+  }
+  :is(.wb-shell, .tbx-portal-host) .cr-split,
+  :is(.wb-shell, .tbx-portal-host) .cr-traits {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  :is(.wb-shell, .tbx-portal-host) .cr-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  :is(.wb-shell, .tbx-portal-host) .cr-seat {
+    height: 64px;
+  }
+  :is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-desk {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    padding: 6px;
+    text-align: center;
+  }
+  :is(.wb-shell, .tbx-portal-host) .cr-desk .cr-avatar {
+    grid-row: auto;
+    width: 26px;
+    height: 26px;
+    font-size: 10px;
+  }
+  :is(.wb-shell, .tbx-portal-host) .cr-desk small {
+    display: none;
+  }
+  :is(.wb-shell, .tbx-portal-host) .cr-desk-name {
+    font-size: 12.5px;
+  }
+  :is(.wb-shell, .tbx-portal-host) .tbx-cr .cr-exam-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  :is(.wb-shell, .tbx-portal-host) .cr-exam-row-rank,
+  :is(.wb-shell, .tbx-portal-host) .cr-exam-row-mean {
+    display: none;
+  }
+  :is(.wb-shell, .tbx-portal-host) .cr-compare li {
+    grid-template-columns: 24px minmax(0, 1fr) 84px;
+  }
+  :is(.wb-shell, .tbx-portal-host) .cr-compare li .cr-rate-track,
+  :is(.wb-shell, .tbx-portal-host) .cr-compare li .cr-compare-num:nth-of-type(n+2) {
+    display: none;
+  }
+  :is(.wb-shell, .tbx-portal-host) .cr-review-row {
+    grid-template-columns: 28px minmax(0, 1fr) minmax(0, 1fr);
+  }
+  :is(.wb-shell, .tbx-portal-host) .cr-form-row.is-3,
+  :is(.wb-shell, .tbx-portal-host) .cr-form-row.is-4,
+  :is(.wb-shell, .tbx-portal-host) .cr-form-row.is-exam {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  :is(.wb-shell, .tbx-portal-host) .cr-student-scroll {
+    padding: 8px 16px 24px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  :is(.wb-shell, .tbx-portal-host) .tbx-cr *,
+  :is(.wb-shell, .tbx-portal-host) .tbx-cr *::before {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+  }
+}
+
+
+/* Menus retain classroom spacing while using the shared portal placement. */
+:is(.wb-shell, .tbx-portal-host) .cr-menu.tbx-popover { position: fixed; right: auto; z-index: 180; }

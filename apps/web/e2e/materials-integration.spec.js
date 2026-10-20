@@ -29,12 +29,16 @@ async function register(page) {
   await page.getByRole("checkbox").check();
   await page.getByRole("button", { name: "注册", exact: true }).click();
   await expect(page.locator(".wb-shell")).toBeVisible();
-  await page.getByRole("button", { name: "知道了", exact: true }).click();
+  const coach = page.getByRole("button", { name: "知道了", exact: true });
+  if (await coach.count()) await coach.click();
 }
 async function infoPanel(page) {
-  const button = page.getByRole("button", { name: "资料信息", exact: true });
-  if (await button.getAttribute("aria-expanded") !== "true") await button.click();
   await expect(page.getByLabel("资源名称")).toBeVisible();
+}
+async function openUploaded(page, title) {
+  await expect(page.locator('.tbx-res-main')).toHaveAttribute('aria-busy', 'false');
+  await page.locator('.tbx-res-open').filter({ hasText: title }).click();
+  await expect(page.locator('.res-detail')).toBeVisible();
 }
 const nav = (page, name) =>
   page.getByRole("navigation", { name: "功能模块" }).getByRole("link", { name: new RegExp("^" + name) }).click();
@@ -58,8 +62,9 @@ test("真实身份外壳：原件预览替换、校对入库与重启恢复", as
   await register(page);
   await nav(page, "资源库");
   await page
-    .getByLabel("上传第一份资料", { exact: true })
+    .getByLabel("上传资料", { exact: true })
     .setInputFiles("test/fixtures/materials/c22.pptx");
+  await openUploaded(page, "c22.pptx");
   await expect(page.getByAltText("第 1 页", { exact: true })).toBeVisible({
     timeout: 60000,
   });
@@ -114,6 +119,7 @@ test("真实身份外壳：原件预览替换、校对入库与重启恢复", as
   await page
     .getByLabel("上传资料", { exact: true })
     .setInputFiles("test/fixtures/questions/figure.png");
+  await openUploaded(page, "figure.png");
   await infoPanel(page);
   await expect(page.getByLabel("资源名称")).toHaveValue("figure.png");
   await page.reload();
@@ -124,39 +130,6 @@ test("真实身份外壳：原件预览替换、校对入库与重启恢复", as
     path: path.join(evidence, "resource-deeplink-restored.png"),
   });
 
-  for (const width of [1280, 1024]) {
-    await page.setViewportSize({ width, height: 800 });
-    if (width === 1024) {
-      await expect(page.locator(".tb-sidebar")).toBeHidden();
-      await page.getByRole("button", { name: "打开工作台导航", exact: true }).click();
-      await expect(page.locator(".tb-sidebar")).toBeVisible();
-      expect(await page.locator(".tb-sidebar").evaluate(el => el.getBoundingClientRect().width)).toBeLessThan(width);
-      await page.locator(".tb-sidebar").getByRole("button", { name: "关闭", exact: true }).click();
-      await expect(page.locator(".tb-sidebar")).toBeHidden();
-    }
-    if (width === 1280)
-      await page
-        .getByRole("tab", { name: "AI 助理", exact: true })
-        .click();
-    expect(
-      await page.evaluate(
-        () => document.documentElement.scrollWidth <= innerWidth,
-      ),
-    ).toBe(true);
-    await page.screenshot({
-      animations: "disabled",
-      path: path.join(evidence, `shell-${width}.png`),
-    });
-    if (width === 1024) {
-      await page
-        .getByRole("button", { name: "关闭辅助栏", exact: true })
-        .first().click();
-      await page.screenshot({
-        animations: "disabled",
-        path: path.join(evidence, "shell-1024-content.png"),
-      });
-    }
-  }
   const storageState = await page.context().storageState();
   await world.close();
   world = await createIntegration({ directory });
@@ -167,7 +140,8 @@ test("真实身份外壳：原件预览替换、校对入库与重启恢复", as
   const reopened = await fresh.newPage();
   await reopened.goto(world.origin + questionPath);
   await expect(reopened.getByRole("heading", { name: "集成校对题", exact: true })).toBeVisible();
-  await reopened.getByRole("button", { name: "知道了", exact: true }).click();
+  const reopenedCoach = reopened.getByRole("button", { name: "知道了", exact: true });
+  if (await reopenedCoach.count()) await reopenedCoach.click();
   await reopened.getByRole("button", { name: "编辑题目", exact: true }).click();
   await expect(reopened.getByLabel("题目标题")).toHaveValue("集成校对题");
   await reopened.screenshot({

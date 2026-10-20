@@ -1,8 +1,8 @@
 import i18n from "../../i18n/index.js";
 import { useTranslation } from 'react-i18next';
-import RestoredHome from './chrome/Home.jsx';
-import RestoredSidebar, { useLayoutModel } from './chrome/Sidebar.jsx';
-import RestoredTopbar from './chrome/Topbar.jsx';
+import Home from './chrome/Home.jsx';
+import Sidebar, { useLayoutModel } from './chrome/Sidebar.jsx';
+import Topbar from './chrome/Topbar.jsx';
 import './chrome/chrome.css';
 import { hasRecoveredDrafts } from '../../platform/device/storage.js';
 import { usePreferences } from './usePreferences.js';
@@ -13,7 +13,7 @@ import { ReferenceAction } from '../agent/ReferenceAction.jsx';
  * Workbench shell: stable sidebar and topbar, module routes from the static
  * catalog, and the shared auxiliary panel. Business content lives in the module
  * pages; everything the teacher sees here is either identity, navigation or the
- * restored view scene.
+ * account view scene.
  */
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
@@ -69,8 +69,25 @@ function WorkbenchContent({ boot }) {
   const layoutModel = useLayoutModel(accountKey, generation);
   const [surface, setSurface] = useState(null);
   const preferences = usePreferences(accountKey, generation);
-  const appearance = useMemo(() => ({ theme: 'light', background: 'grid', avatar: '', ...preferences.input }), [preferences.input]);
-  const setAppearance = useCallback(patch => preferences.setInput(values => ({ ...values, ...patch })), [preferences.setInput]);
+  const [localAppearance, patchLocalAppearance] = useScene(accountKey, 'custom-appearance', {
+    customBackground: false, backgroundImage: ''
+  });
+  const appearance = useMemo(() => ({
+    theme: 'light', background: 'grid', avatar: '', ...preferences.input,
+    ...(localAppearance.customBackground ? { background: 'custom' } : {}),
+    backgroundImage: localAppearance.backgroundImage || ''
+  }), [preferences.input, localAppearance]);
+  const setAppearance = useCallback(patch => {
+    const { backgroundImage, ...supported } = patch;
+    const localPatch = {};
+    if (backgroundImage !== undefined) localPatch.backgroundImage = backgroundImage;
+    if (patch.background !== undefined) {
+      localPatch.customBackground = patch.background === 'custom';
+      if (localPatch.customBackground) delete supported.background;
+    }
+    if (Object.keys(localPatch).length) patchLocalAppearance(localPatch);
+    if (Object.keys(supported).length) preferences.setInput(values => ({ ...values, ...supported }));
+  }, [preferences.setInput, patchLocalAppearance]);
   const locale = preferences.input?.locale || 'zh-CN';
   const setLocale = useCallback(locale => preferences.setInput(values => ({ ...values, locale })), [preferences.setInput]);
   useLayoutEffect(() => { void i18n.changeLanguage(locale); }, [locale]);
@@ -143,7 +160,7 @@ function WorkbenchContent({ boot }) {
   }
 
   let page = null;
-  if (route.name === 'home') page = <RestoredHome returnPath={workbenchModules.some(module => scene.lastWorkPath?.split(/[/?]/)[1] === module.path.slice(1)) ? scene.lastWorkPath : null} />;
+  if (route.name === 'home') page = <Home returnPath={workbenchModules.some(module => scene.lastWorkPath?.split(/[/?]/)[1] === module.path.slice(1)) ? scene.lastWorkPath : null} />;
   else if (activeModule) {
     const Page = activeModule.Page;
     page = <Page route={route} transport={transport} />;
@@ -171,18 +188,19 @@ function WorkbenchContent({ boot }) {
         data-sidebar={collapsed ? 'rail' : 'expanded'}
         data-route={route.name}
         data-theme={appearance.theme}
-        data-background={appearance.background}
+        data-background={appearance.background === 'custom' && !appearance.backgroundImage ? 'grid' : appearance.background}
+        style={appearance.background === 'custom' && appearance.backgroundImage ? { '--tbx-bg-image': `url("${appearance.backgroundImage}")` } : undefined}
         data-reading-size={preferences.baseline?.values.readingSize || 'standard'}
         data-motion={preferences.baseline?.values.motion || 'system'}
       >
-        <RestoredTopbar route={route} collapsed={collapsed} toggleSidebar={toggleSidebar} surface={surface} setSurface={setSurface}
+        <Topbar route={route} collapsed={collapsed} toggleSidebar={toggleSidebar} surface={surface} setSurface={setSurface}
           assistantOpen={panelOpen}
           onToggleAssistant={hasPanel ? () => (panelOpen ? shell.closePanel() : openPanel('ai')) : undefined}>
           <ReferenceAction route={route} onAdded={() => openPanel('ai')} />
-        </RestoredTopbar>
+        </Topbar>
 
         <div className="wb-body">
-          <RestoredSidebar modulePaths={scene.modulePaths} model={layoutModel} routePath={activeModule?.path || route.path} accountName={nickname}
+          <Sidebar modulePaths={scene.modulePaths} model={layoutModel} routePath={activeModule?.path || route.path} accountName={nickname}
             mobileOpen={Boolean(scene.drawerOpen)} isNarrow={narrow} railCollapsed={!narrow && collapsed}
             onExpand={() => patchScene({ sidebarCollapsed: false })}
             onNavigate={() => patchScene({ drawerOpen: false })} onCloseMobile={() => patchScene({ drawerOpen: false })}
@@ -214,7 +232,7 @@ function WorkbenchContent({ boot }) {
               {page}
             </main>
 
-            {(panelOpen || assistant) && <AuxiliaryPanel hidden={!panelOpen || logoutBlocked} />}
+            {(hasPanel || assistant) && <AuxiliaryPanel hidden={!panelOpen || logoutBlocked} available={hasPanel} />}
           </div>
         </div>
       </div>

@@ -19,7 +19,7 @@ test('统一作品：空白退出、公式自动保存、刷新、手动图形�
   await page.screenshot({ path: info.outputPath('home.png') });
   await page.getByRole('button', { name: '新建作品', exact: true }).click();
   await page.getByRole('button', { name: '返回工坊', exact: true }).click();
-  await expect(page.locator('.mw-library-row')).toHaveCount(0);
+  await expect(page.locator('.tbx-mw-card')).toHaveCount(0);
   await page.getByRole('button', { name: '新建作品', exact: true }).click();
     await page.locator('.math-ai-provider').click();
     const popover = page.locator('.math-ai-setup-popover');
@@ -40,8 +40,8 @@ test('统一作品：空白退出、公式自动保存、刷新、手动图形�
   await expect(page.locator('.mw-formula-row')).toHaveCount(1);
   await expect(page.locator('.mw-save-state')).toHaveText('已保存', { timeout: 60000 });
   await page.getByRole('button', { name: '返回工坊', exact: true }).click();
-  await expect(page.locator('.mw-library-row')).toHaveCount(1);
-  await page.reload(); await page.locator('.mw-library-row>button').click();
+  await expect(page.locator('.tbx-mw-card')).toHaveCount(1);
+  await page.reload(); await page.locator('.tbx-mw-card>button').click();
   await expect(page.locator('.mw-formula-row')).toHaveCount(1);
   await expect(page.locator('.mw-formula-row img')).toBeVisible();
   await page.getByRole('button', { name: '添加图形', exact: true }).click();
@@ -105,10 +105,10 @@ test('公式编辑深浅主题与1024和窄屏布局', async ({ page }, info) =>
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.getByRole('button', { name: '返回工坊', exact: true }).click();
-  const workName = await page.locator('.mw-library-row strong').innerText();
+  const workName = await page.locator('.tbx-mw-card strong').innerText();
   const search = page.getByRole('textbox', { name: '搜索作品', exact: true });
   await search.fill(workName);
-  await expect(page.locator('.mw-library-row')).toHaveCount(1);
+  await expect(page.locator('.tbx-mw-card')).toHaveCount(1);
   await expect(search).toBeFocused();
   await page.mouse.move(280, 75);
   await page.screenshot({ path: info.outputPath('final-home-search-dark.png') });
@@ -260,10 +260,10 @@ test('拖点后立即关闭辅助栏仍保存新坐标，纯尺寸变化不保�
 
 test('英文切换覆盖制作工具与删除确认',async({page},info)=>{
   await page.getByRole('button',{name:'简体中文',exact:true}).click();await page.getByRole('menuitemradio',{name:/English/}).click();
-  await page.getByRole('button',{name:'New work',exact:true}).click();await expect(page.getByRole('button',{name:'Add formula',exact:true}).first()).toBeVisible();
+  await page.getByRole('button',{name:'New Work',exact:true}).click();await expect(page.getByRole('button',{name:'Add formula',exact:true}).first()).toBeVisible();
   await page.getByRole('button',{name:'Add graph',exact:true}).click();await page.getByLabel('Graph expression',{exact:true}).fill('A=(1,2)');await page.getByLabel('Graph expression',{exact:true}).press('Enter');
   const tools=page.locator('.mw-tool-host');await expect(tools.getByRole('textbox',{name:'Definition',exact:true})).toHaveValue(/\(1,\s*2\)/,{timeout:90000});
-  await tools.getByRole('button',{name:'Delete object',exact:true}).click();const dialog=page.getByRole('dialog');await expect(dialog).toContainText('Delete A?');await expect(dialog.getByRole('button',{name:'Continue',exact:true})).toBeVisible();await dialog.getByRole('button',{name:'Cancel',exact:true}).click();await page.screenshot({path:info.outputPath('english-workshop.png')});
+  await tools.getByRole('button',{name:'Delete object',exact:true}).click();const dialog=page.getByRole('alertdialog');await expect(dialog).toContainText('Delete A?');await expect(dialog.getByRole('button',{name:'Continue',exact:true})).toBeVisible();await dialog.getByRole('button',{name:'Cancel',exact:true}).click();await page.screenshot({path:info.outputPath('english-workshop.png')});
 });
 
 test('历史海报失败重试、切版查看和恢复生成新版本',async({page},info)=>{
@@ -369,22 +369,21 @@ test('界面路径：一键编辑、未连接输入保护、菜单键盘与下�
   await page.getByRole('button', { name: '收起算式', exact: true }).click();
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.getByRole('button', { name: '返回工坊', exact: true }).click();
-  await expect(page.locator('.mw-library-thumbnail img')).toBeVisible();
+  await expect(page.locator('.tbx-mw-thumb img')).toBeVisible();
   await shot('final-home-light.png');
-  const workName = await page.locator('.mw-library-row strong').innerText();
+  const workName = await page.locator('.tbx-mw-card strong').innerText();
   const search = page.getByRole('textbox', { name: '搜索作品', exact: true });
   await search.fill('不存在的数学作品');
   await expect(page.getByRole('heading', { name: '没有找到作品', exact: true })).toBeVisible();
   await search.fill(workName);
-  await expect(page.locator('.mw-library-row')).toHaveCount(1);
+  await expect(page.locator('.tbx-mw-card')).toHaveCount(1);
   await expect(search).toBeFocused();
   await shot('final-home-search-light.png');
   await search.clear();
-  await page.getByRole('button', { name: '作品操作', exact: true }).click();
-  await shot('final-home-menu.png');
-  await page.keyboard.press('Escape');
+  await expect(page.getByRole('complementary', { name: '数学工坊导航', exact: true })).toBeVisible();
+  await shot('final-home-rail.png');
   await page.reload();
-  await page.locator('.mw-library-row>button').click();
+  await page.locator('.tbx-mw-card>button').click();
   await page.getByRole('button', { name: '编辑公式 1', exact: true }).click();
   await expect(page.locator('.mw-formula-row math-field')).toBeFocused();
   expect(await page.locator('math-field').evaluate(el => el.getValue('latex'))).toBe('y=x^2+1');
@@ -392,7 +391,7 @@ test('界面路径：一键编辑、未连接输入保护、菜单键盘与下�
 
 test('首页数学对话：缺连接保留输入，一次开始只执行一轮，离开后迟到回复失效', async ({ page }, info) => {
   const { savedMath, deviceMath } = await import('./math-unified-helpers.mjs');
-  await page.getByRole('banner').getByRole('button', { name: 'AI 助理', exact: true }).click();
+  await page.getByRole('banner').getByRole('button', { name: /^(打开|收起) AI 助理$/ }).click();
   await expect(page.locator('.math-web-assistant')).toBeVisible();
   await expect(page.locator('.math-ai-connection').first()).toHaveClass(/is-missing/);
   const input = page.getByRole('textbox', { name: '向数学助理提问', exact: true });
@@ -452,7 +451,7 @@ test('首页数学对话：缺连接保留输入，一次开始只执行一轮�
   expect(await page.evaluate(() => window.mathUiRequests.length)).toBe(3);
   const previousWork = (await deviceMath(page)).draft;
   await page.getByRole('button', { name: '关闭辅助栏', exact: true }).last().click();
-  await page.getByRole('banner').getByRole('button', { name: 'AI 助理', exact: true }).click();
+  await page.getByRole('banner').getByRole('button', { name: /^(打开|收起) AI 助理$/ }).click();
   await expect(page.locator('.math-ai-message.is-user').last()).toContainText('把公式改成 y=x^3');
   await expect(page.getByRole('button', { name: '停止生成', exact: true })).toBeEnabled();
   expect(await page.evaluate(() => window.mathUiEvents.some(item => item.type === 'CANCEL'))).toBe(false);
@@ -478,7 +477,7 @@ test('首页数学对话：缺连接保留输入，一次开始只执行一轮�
   expect((await deviceMath(page)).draft.source.formulas).toEqual([]);
   await expect(page.locator('.math-ai-thread')).not.toContainText('迟到回复');
   await page.getByRole('button', { name: '返回工坊', exact: true }).click();
-  await page.locator('.mw-library-row > button').first().click();
+  await page.locator('.tbx-mw-card > button').first().click();
   await expect(page.locator('.mw-formula-row')).toHaveCount(1);
   expect((await savedMath(page)).source.formulas).toEqual(previousWork.source.formulas);
   await page.screenshot({ path: info.outputPath('leave-active-recovered.png') });
@@ -540,7 +539,7 @@ test('参数转算式：取消保留滑杆与引用，确认清理取值和播�
   await expect(tools).toContainText('改为算式后，不再使用滑杆。');
   await tools.getByRole('textbox', { name: '定义', exact: true }).fill('2+2');
   await tools.locator('form').getByRole('button', { name: '改为算式', exact: true }).click();
-  const dialog = page.getByRole('dialog');
+  const dialog = page.getByRole('alertdialog');
   await expect(dialog).toContainText('相关步骤、播放或轨迹会随之调整。是否继续？');
   await dialog.getByRole('button', { name: '取消', exact: true }).focus();
   for (const key of ['Shift+Enter', 'Control+Enter', 'Meta+Enter', 'Alt+Enter']) {
@@ -708,6 +707,7 @@ test('数学助理按钮：深浅主题开始、发送和停止可见，真实�
   const records = [];
   async function record(button, theme, state) {
     await expect(button).toBeEnabled();
+    await button.evaluate(el => Promise.all(el.getAnimations().map(animation => animation.finished.catch(() => {}))));
     const value = await button.evaluate(el => {
       const style = getComputedStyle(el);
       const luminance = color => {
@@ -725,7 +725,9 @@ test('数学助理按钮：深浅主题开始、发送和停止可见，真实�
     await page.getByRole('button', { name, exact: true }).click();
     await expect(page.locator('.wb-shell')).toHaveAttribute('data-theme', theme);
     await page.getByRole('navigation', { name: '功能模块', exact: true }).getByRole('link', { name: /^数学工坊/ }).click();
-    if (!await page.locator('.math-web-assistant').isVisible()) await page.getByRole('banner').getByRole('button', { name: 'AI 助理', exact: true }).click();
+    const assistantToggle = page.getByRole('banner').getByRole('button', { name: /^(打开|收起) AI 助理$/ });
+    if (await assistantToggle.getAttribute('aria-expanded') !== 'true') await assistantToggle.click();
+    await expect(page.getByRole('complementary', { name: '辅助栏', exact: true })).toHaveClass(/is-open/);
     await expect(page.locator('.math-ai-setup')).toHaveCount(0);
     const input = page.getByLabel('向数学助理提问', { exact: true });
     await input.fill('制作一个可调节的函数');
@@ -748,7 +750,8 @@ test('数学助理按钮：深浅主题开始、发送和停止可见，真实�
   }
   fs.writeFileSync(info.outputPath('button-colors.json'), JSON.stringify(records, null, 2));
   for (const record of records) {
-    expect(record.contrast, `${record.theme} ${record.state}`).toBeGreaterThanOrEqual(4.5);
+    expect(record.background, `${record.theme} ${record.state}`).toBe(record.theme === 'dark' ? 'rgb(10, 132, 255)' : 'rgb(0, 113, 227)');
+    expect(record.color).toBe('rgb(255, 255, 255)');
     if (record.svg) expect(record.svg).toBe(record.color);
     expect(record.height).toBe(32);
     if (record.state !== 'start') expect(record.width).toBe(32);

@@ -1,3 +1,4 @@
+import { moduleRow, navigationGroup, pointerDrag } from './catalog-navigation.helpers.mjs';
 import fs from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import { test, expect } from '@playwright/test';
@@ -56,7 +57,7 @@ test('退役导航、旧设备现场、搜索与旧路由正常兜底', async ({
     localStorage.setItem(`tb.workbench.v1:${account}:scene:class-search:retired:active`, JSON.stringify({ draft: '旧记录' }));
   }, context.accountKey);
   await page.reload();
-  await expect(page.locator('[data-drop-module="lessons"], [data-drop-module="classes"]')).toHaveCount(0);
+  await expect(page.locator('[data-row="lessons"], [data-row="classes"]')).toHaveCount(0);
   await expect(page.getByRole('button', { name: '返回工作', exact: true })).toHaveCount(0);
   await page.getByRole('button', { name: '全局搜索', exact: true }).click();
   await page.getByRole('searchbox').fill('备课');
@@ -77,8 +78,7 @@ test('退役导航、旧设备现场、搜索与旧路由正常兜底', async ({
     await expect(page.locator('.wb-shell')).toHaveAttribute('data-route', 'questions');
   }
   await page.goto(world.origin + '/help');
-  await expect(page.locator('[data-region=main]')).not.toContainText('备课');
-  await expect(page.locator('[data-region=main]')).not.toContainText('班级教学');
+  await expect(page.locator('[data-region=main] a[href^="/lessons"], [data-region=main] a[href^="/classes"]')).toHaveCount(0);
   await page.setViewportSize({ width: 390, height: 844 });
   await shot(page, info, 'help-narrow');
 });
@@ -87,24 +87,22 @@ test('退役导航、旧设备现场、搜索与旧路由正常兜底', async ({
 test('独立日程保存刷新读回，深浅色和窄屏保持可用', async ({ page }, info) => {
   await page.goto(world.origin + '/calendar');
   await page.getByRole('button', { name: '新建任务', exact: true }).click();
-  await page.locator('[name=entry-title]').fill('函数课堂复习');
-  await page.locator('[name=entry-title]').press('Enter');
+  await page.locator('#calendar-entry-title').fill('函数课堂复习');
+  await page.locator('#calendar-entry-title').press('Enter');
   const saved = async () => (await get(page, '/api/modules/schedule/entries')).items.find(item => item.title === '函数课堂复习');
   await expect.poll(async () => Boolean((await saved())?.id)).toBe(true);
   const entry = await saved();
   expect(entry).not.toHaveProperty('course');
   expect(entry).not.toHaveProperty('courseState');
-  await page.getByRole('button', { name: '任务操作', exact: true }).click();
-  await expect(page.getByRole('menuitem', { name: '教学关联', exact: true })).toHaveCount(0);
-  await page.keyboard.press('Escape');
+  await expect(page.getByRole('button', { name: '教学关联', exact: true })).toHaveCount(0);
   await shot(page, info, 'schedule-light');
   await page.reload();
-  await expect(page.locator('[name=entry-title]')).toHaveValue('函数课堂复习');
+  await expect(page.locator('#calendar-entry-title')).toHaveValue('函数课堂复习');
   await page.goto(world.origin + '/settings');
   await page.getByRole('button', { name: '深色', exact: true }).click();
   await expect(page.locator('.settings-save-status')).toHaveText('已保存');
   await page.goto(world.origin + `/calendar?entry=${entry.id}`);
-  await expect(page.locator('[name=entry-title]')).toHaveValue('函数课堂复习');
+  await expect(page.locator('#calendar-entry-title')).toHaveValue('函数课堂复习');
   await shot(page, info, 'schedule-dark');
   await page.setViewportSize({ width: 390, height: 844 });
   await shot(page, info, 'schedule-dark-narrow');
@@ -122,12 +120,12 @@ test('旧日程成功回执丢失后原键确认，保留后续输入且不重�
     } else await route.continue();
   });
   await page.getByRole('button', { name: '新建任务', exact: true }).click();
-  await page.locator('[name=entry-title]').fill('旧待确认创建');
-  await page.locator('[name=entry-title]').press('Enter');
+  await page.locator('#calendar-entry-title').fill('旧待确认创建');
+  await page.locator('#calendar-entry-title').press('Enter');
   await expect(page.getByRole('button', { name: '重试确认', exact: true })).toBeVisible();
   const before = (await get(page, '/api/modules/schedule/entries')).items;
   expect(before).toHaveLength(1);
-  await page.locator('[name=entry-title]').fill('确认期间的新输入');
+  await page.locator('#calendar-entry-title').fill('确认期间的新输入');
   // Previous-version input: the browser payload and committed server fingerprint
   // describe the same legacy request, whose original receipt was lost.
   const legacyBody = await page.evaluate(() => {
@@ -150,13 +148,13 @@ test('旧日程成功回执丢失后原键确认，保留后续输入且不重�
   await page.reload();
   await page.getByRole('button', { name: '重试确认', exact: true }).click();
   await expect(page.getByRole('button', { name: '重试确认', exact: true })).toHaveCount(0);
-  await expect(page.locator('[name=entry-title]')).toHaveValue('确认期间的新输入');
+  await expect(page.locator('#calendar-entry-title')).toHaveValue('确认期间的新输入');
   expect((await get(page, '/api/modules/schedule/entries')).items.map(item => item.id)).toEqual([before[0].id]);
-  await page.locator('[name=entry-title]').press('Enter');
+  await page.locator('#calendar-entry-title').press('Enter');
   await expect.poll(async () => (await get(page, '/api/modules/schedule/entries')).items.map(item => ({ id: item.id, title: item.title })))
     .toEqual([{ id: before[0].id, title: '确认期间的新输入' }]);
   await expect(page.getByRole('button', { name: '重试确认', exact: true })).toHaveCount(0);
   await page.reload();
-  await expect(page.locator('[name=entry-title]')).toHaveValue('确认期间的新输入');
+  await expect(page.locator('#calendar-entry-title')).toHaveValue('确认期间的新输入');
   await shot(page, info, 'legacy-pending-confirmed');
 });

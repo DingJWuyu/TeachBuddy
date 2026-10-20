@@ -14,6 +14,7 @@ export default defineConfig({
     ),
   ),
   use: {
+    actionTimeout: 10000,
     browserName: "chromium",
     ignoreHTTPSErrors: true,
     viewport: { width: 1440, height: 900 },

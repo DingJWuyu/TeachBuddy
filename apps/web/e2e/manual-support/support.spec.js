@@ -47,30 +47,30 @@ test('日程自动保存中刷新按原请求确认，后续输入继续保存',
     writes.push({ key: route.request().headers()['idempotency-key'], body: route.request().postData() });
     await route.fetch(); await route.abort('failed');
   });
-  await page.getByLabel('标题', { exact: true }).fill('保存中的日程输入');
+  await page.locator('#calendar-entry-title').fill('保存中的日程输入');
   await expect(page.getByRole('button', { name: '重试确认', exact: true })).toBeVisible();
   await page.reload();
   await expect(page.getByRole('button', { name: '重试确认', exact: true })).toBeVisible();
   await page.unroute('**/api/modules/schedule/entries');
-  await page.getByLabel('标题', { exact: true }).fill('确认期间新增的日程输入');
+  await page.locator('#calendar-entry-title').fill('确认期间新增的日程输入');
   const replay = page.waitForRequest(req => req.method() === 'POST' && req.url().endsWith('/schedule/entries'));
   await page.getByRole('button', { name: '重试确认', exact: true }).click();
   const request = await replay;
   expect({ key: request.headers()['idempotency-key'], body: request.postData() }).toEqual(writes[0]);
-  await expect(page.getByLabel('标题', { exact: true })).toHaveValue('确认期间新增的日程输入');
+  await expect(page.locator('#calendar-entry-title')).toHaveValue('确认期间新增的日程输入');
   await expect.poll(async () => {
     const list = await (await page.request.get(world.origin + '/api/modules/schedule/entries', { headers: headers(page) })).json();
     return list.items.map(item => item.title);
   }).toEqual(['确认期间新增的日程输入']);
   await page.reload();
-  await expect(page.getByLabel('标题', { exact: true })).toHaveValue('确认期间新增的日程输入');
+  await expect(page.locator('#calendar-entry-title')).toHaveValue('确认期间新增的日程输入');
 });
 
 test('日程删除响应丢失后刷新仍用原键确认', async ({ page }) => {
   await page.locator('a[href^="/calendar"]').first().click();
   await page.getByRole('button', { name: '新建任务', exact: true }).click();
   const created = page.waitForResponse(response => response.request().method() === 'POST' && response.url().endsWith('/schedule/entries'));
-  await page.getByLabel('标题', { exact: true }).fill('需要确认删除的安排');
+  await page.locator('#calendar-entry-title').fill('需要确认删除的安排');
   const creation = await created;
   expect(creation.status()).toBe(201);
   const entry = await creation.json();
@@ -80,9 +80,8 @@ test('日程删除响应丢失后刷新仍用原键确认', async ({ page }) => 
     original = { key: route.request().headers()['idempotency-key'], body: route.request().postData() };
     await route.fetch(); await route.abort('failed');
   });
-  await page.getByRole('button', { name: '任务操作', exact: true }).click();
-  await page.getByRole('menuitem', { name: '删除任务', exact: true }).click();
-  await page.getByRole('dialog', { name: '删除任务', exact: true }).getByRole('button', { name: '删除', exact: true }).click();
+  await page.locator('[data-region="entry-editor"]').getByRole('button', { name: '删除', exact: true }).click();
+  await page.getByRole('button', { name: '确认删除', exact: true }).click();
   await expect(page.getByRole('button', { name: '重试确认', exact: true })).toBeVisible();
   await page.reload();
   await expect(page.getByRole('button', { name: '重试确认', exact: true })).toBeVisible();
@@ -101,7 +100,7 @@ test('日程本地草稿重开保留原版本，不覆盖别处修改', async ({
   await page.locator('a[href^="/calendar"]').first().click();
   await page.getByRole('button', { name: '新建任务', exact: true }).click();
   const created = page.waitForResponse(res => res.request().method() === 'POST' && res.url().endsWith('/schedule/entries'));
-  await page.getByLabel('标题', { exact: true }).fill('日程原始内容');
+  await page.locator('#calendar-entry-title').fill('日程原始内容');
   const response = await created;
   const entry = await response.json();
   const input = response.request().postDataJSON();
@@ -112,9 +111,9 @@ test('日程本地草稿重开保留原版本，不覆盖别处修改', async ({
     data: { ...input, expectedVersion: entry.version, title: '别处已保存内容' }
   });
   expect(updated.ok(), await updated.text()).toBeTruthy();
-  await page.getByLabel('标题', { exact: true }).fill('本地未保存内容');
+  await page.locator('#calendar-entry-title').fill('本地未保存内容');
   await expect(page.getByRole('alert')).toContainText('内容已在别处修改');
-  await page.getByRole('button', { name: '关闭任务', exact: true }).click();
+  await page.locator('[data-region="entry-editor"]').getByRole('button', { name: '关闭', exact: true }).click();
   const reopened = page.waitForResponse(res => res.request().method() === 'GET'
     && new URL(res.url()).pathname === '/api/modules/schedule/entries/' + entry.id);
   await page.goto(world.origin + '/calendar?entry=' + entry.id);
@@ -122,8 +121,8 @@ test('日程本地草稿重开保留原版本，不覆盖别处修改', async ({
   expect(reopenedResponse.ok()).toBeTruthy();
   await reopenedResponse.finished();
   await expect(page.getByRole('button', { name: '读取最新版本', exact: true })).toBeVisible();
-  await expect(page.getByLabel('标题', { exact: true })).toHaveValue('本地未保存内容');
-  await page.getByLabel('标题', { exact: true }).fill('重开后继续修改的本地草稿');
+  await expect(page.locator('#calendar-entry-title')).toHaveValue('本地未保存内容');
+  await page.locator('#calendar-entry-title').fill('重开后继续修改的本地草稿');
   await expect(page.getByRole('alert')).toContainText(/内容已在别处修改|本地输入已保留/);
   const current = await (await page.request.get(world.origin + '/api/modules/schedule/entries/' + entry.id, { headers: headers(page) })).json();
   expect(current.title).toBe('别处已保存内容');
@@ -161,7 +160,7 @@ test('资源两标签页上传互不覆盖，原文件确认后筛选与视图�
   await page.getByLabel(/^上传(第一份)?资料$/).setInputFiles({ name: '甲页原图.png', mimeType: 'image/png', buffer });
   await expect(page.getByRole('button', { name: '重试确认原请求' })).toBeVisible();
   await second.getByLabel(/^上传(第一份)?资料$/).setInputFiles({ name: '乙页原图.png', mimeType: 'image/png', buffer });
-  await expect(second.getByRole('heading', { name: '乙页原图.png', exact: true })).toBeVisible();
+  await expect(second.locator('.tbx-res-open').filter({ hasText: '乙页原图.png' })).toBeVisible();
   await page.reload();
   await expect(page.locator('.wb-shell')).toBeVisible({ timeout: 20000 });
   await expect(page.getByLabel('重新选择原文件')).toBeVisible();
@@ -175,15 +174,18 @@ test('资源两标签页上传互不覆盖，原文件确认后筛选与视图�
   const replay = page.waitForRequest(req => req.method() === 'POST' && req.url().endsWith('/api/workbench/files'));
   await page.getByLabel('重新选择原文件').setInputFiles({ name: '甲页原图.png', mimeType: 'image/png', buffer });
   expect((await replay).headers()['idempotency-key']).toBe(key);
-  await expect(page.getByRole('heading', { name: '甲页原图.png', exact: true })).toBeVisible();
-  await page.getByRole('button', { name: '返回资源库', exact: true }).click();
-  await expect(page.locator('.res-card')).toHaveCount(2);
+  await expect(page.locator('.tbx-res-open').filter({ hasText: '甲页原图.png' })).toBeVisible();
+  await expect(page.locator('.tbx-res-card')).toHaveCount(2);
+  // Refresh before the debounced search request can run; the typed view state must already be saved.
+  await page.clock.install();
+  await page.clock.pauseAt(new Date(Date.now() + 100));
   await page.getByLabel('搜索资料').fill('甲页');
   await page.getByRole('button', { name: '列表视图', exact: true }).click();
   await page.reload();
+  await page.clock.resume();
   await expect(page.getByLabel('搜索资料')).toHaveValue('甲页');
-  await expect(page.getByRole('button', { name: '缩略图视图', exact: true })).toBeVisible();
-  await expect(page.locator('.res-card')).toHaveCount(1);
+  await expect(page.getByRole('button', { name: '列表视图', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('.tbx-res-card')).toHaveCount(1);
   await second.close();
 });
 

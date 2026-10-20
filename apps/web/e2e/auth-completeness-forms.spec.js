@@ -33,7 +33,7 @@ test('注册预读中切回登录不创建账户或交接身份', async ({ page,
   const held = await holdPreflight(page);
   await page.getByRole('button', { name: '注册', exact: true }).click();
   await held.reached.promise;
-  await page.getByRole('button', { name: '登录', exact: true }).click();
+  await page.getByRole('button', { name: /^登录(?: ›)?$/ }).click();
   await settlePreflight(page, held);
   await expect(page.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
   await expect(page.locator('.wb-shell')).toHaveCount(0);
@@ -69,7 +69,7 @@ test('注册预读中重复 Enter 只保留一次预读，编辑后旧结果不�
 
 test('发码等待不显示注册进展，真实注册提交才显示注册中', async ({ page, world }, info) => {
   await page.goto(world.origin);
-  await page.getByRole('button', { name: '创建账户', exact: true }).click();
+  await page.getByRole('button', { name: /^创建账户(?: ›)?$/ }).click();
   await page.getByLabel('邮箱', { exact: true }).fill('forms-progress@example.test');
   world.mailer.pauseNext();
   try {
