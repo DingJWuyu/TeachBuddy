@@ -1,3 +1,9 @@
+/* Resource surfaces use the shared workspace inset and rail geometry. */
+.wb-shell.tb-prototype:is([data-route="resources"], [data-route="resource"]) .wb-workspace {
+  padding: var(--app-workspace-padding);
+  gap: 16px;
+}
+.wb-shell.tb-prototype:is([data-route="resources"], [data-route="resource"]) .wb-main { padding: 0; }
 .res-ui,
 .res-dialog {
   --res-ink: var(--tb-ink);
@@ -576,6 +582,67 @@
   color: var(--res-muted);
   margin-top: 3px;
 }
+.res-ui .res-metadata > label,
+.res-field,
+.res-dialog form > label,
+.res-dialog > label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-size: 13px;
+}
+.res-ui :where(select, .res-metadata input:not([type="checkbox"]), textarea),
+.res-dialog :is(input:not([type="checkbox"]), select) {
+  width: 100%;
+  min-width: 0;
+  height: 36px;
+  border: 1px solid var(--res-line);
+  border-radius: 6px;
+  padding: 6px 9px;
+  background: var(--tb-surface);
+  font-size: 13px;
+}
+.res-ui fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+  font-size: 13px;
+}
+.res-ui legend {
+  padding: 0;
+  margin-bottom: 8px;
+}
+.res-ui input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  margin: 0;
+  accent-color: light-dark(#464a53, #bdc1ca);
+}
+.res-tag-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.res-tag-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  max-width: 100%;
+  padding: 4px 8px;
+  border: 1px solid var(--res-line);
+  border-radius: 6px;
+  background: var(--tb-surface);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+.res-tag-option:has(input:checked) {
+  background: var(--res-soft);
+  border-color: var(--res-muted);
+}
 .res-metadata {
   display: flex;
   flex-direction: column;
@@ -828,7 +895,7 @@
 
 /* Resource library (scoped under .wb-shell at build time).
    Library: the files card and the shared rail (split.css), like the other
-   modules. Detail: one surface — header, then the pages on a quiet stage.
+   modules. Detail: one surface - header, then the pages on a quiet stage.
    The module’s colour is system blue. */
 
 :is(.wb-shell, .tbx-portal-host) .res-workspace{

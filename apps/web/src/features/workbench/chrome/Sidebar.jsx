@@ -472,12 +472,12 @@ export default function Sidebar({
 
         {isNarrow && (
           <nav className="tbx-side-mobile-nav" aria-label={tw('全局导航')}>
-            <a className={cx('tbx-row', routePath === HOME_PATH && 'is-active')} href={withSearch(HOME_PATH)} onClick={(e) => { followAnchor(e, HOME_PATH); onCloseMobile(); }}>
+            <a className={cx('tbx-row', routePath === HOME_PATH && 'is-active')} href={withSearch(HOME_PATH)} aria-current={routePath === HOME_PATH ? 'page' : undefined} onClick={(e) => { followAnchor(e, HOME_PATH); onCloseMobile(); }}>
               <span className="tbx-row-icon"><Glyph name="home" /></span>
               <span className="tbx-row-label">{tw('首页')}</span>
             </a>
             {workbenchModulesAll.filter((m) => m.navigation === 'top').map((m) => (
-              <a key={m.id} className={cx('tbx-row', routePath === m.path && 'is-active')} href={m.path} onClick={(e) => { followAnchor(e, m.path); onCloseMobile(); }}>
+              <a key={m.id} className={cx('tbx-row', routePath === m.path && 'is-active')} href={m.path} aria-current={routePath === m.path ? 'page' : undefined} onClick={(e) => { followAnchor(e, m.path); onCloseMobile(); }}>
                 <span className="tbx-row-icon"><Glyph name={m.icon || 'calendar'} /></span>
                 <span className="tbx-row-label">{moduleDisplayName(m)}</span>
               </a>

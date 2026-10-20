@@ -1523,3 +1523,6 @@ fieldset.tbx-sheet-body:disabled { opacity: 1; }
 
 .tbx-sheet button.tbx-item-grip:focus-visible { opacity: 1; }
 
+
+/* The calendar sits directly on the workspace background in the final app. */
+.cal-page { padding: 0; background: transparent; }

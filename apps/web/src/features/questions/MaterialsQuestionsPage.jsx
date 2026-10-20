@@ -433,7 +433,7 @@ export default function MaterialsQuestionsPage({
                 <span className="q-save-state">{busy ? t("正在保存…") : hasDraft ? t("草稿保存在此设备") : scene.kind === 'new' ? t("尚未保存") : t("已保存")}</span>
                 <button className="primary" disabled={busy || Boolean(value.deletedAt) || unsupportedQuestion} onClick={saveQuestion}><QuestionIcon name="check" />{t("保存题目")}</button>
               </> : <>
-                <div className="q-question-title"><span className="q-eyebrow">{value.deletedAt ? t("已归档") : value.source?.kind === 'copy' ? t("改编题目") : t("我的题目")}</span><h2>{value.title || t("未命名题目")}{value.starred && <QuestionIcon name="star" size={18} />}</h2></div>
+                <div className="q-question-title"><span className="q-eyebrow">{value.deletedAt ? t("已归档") : value.source?.kind === 'copy' ? t("改编题目") : ''}</span><h2>{value.title || t("未命名题目")}{value.starred && <QuestionIcon name="star" size={18} />}</h2></div>
                 <Popover label={t("更多题目操作")}>{({ close }) => <><button role="menuitem" disabled={busy || unsupportedQuestion} onClick={() => { requestLifecycle(value.deletedAt ? 'restore' : 'archive'); close(); }}>{value.deletedAt ? t("恢复题目") : t("归档题目")}</button>{value.deletedAt && <button className="is-danger" role="menuitem" disabled={busy} onClick={() => { requestLifecycle('purge'); close(); }}>{t("彻底删除题目")}</button>}</>}</Popover>
               </>}
             </header>

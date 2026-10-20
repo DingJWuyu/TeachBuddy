@@ -96,6 +96,8 @@ test("恢复后新旧格式上传原字节保留且请求隔离", async ({ page 
       ["teachbuddy.questions.uploads", "pending", "pending:questions-upload", "question"],
       ["teachbuddy-resources-pending", "requests", "pending:resources", "resource"],
       ["teachbuddy.math.uploads", "pending", "pending:math-upload", "math"],
+      ["teachbuddy-classroom-pending", "requests", "pending:classroom-upload", "classroom"],
+      ["teachbuddy-sample-week", "requests", "pending:sample-week:classroom:scores-file:0", "sample"],
     ]) {
       const db = await new Promise((resolve, reject) => {
         const request = indexedDB.open(database, 1);
@@ -123,7 +125,7 @@ test("恢复后新旧格式上传原字节保留且请求隔离", async ({ page 
   }, accountKey);
   const replayed = [];
   page.on("request", request => {
-    if (request.method() === "POST" && (new URL(request.url()).pathname === "/api/workbench/files" || /^(question|resource|math)-(first|second)$/.test(request.headers()["idempotency-key"] ?? ""))) replayed.push(request.url());
+    if (request.method() === "POST" && (new URL(request.url()).pathname === "/api/workbench/files" || /^(question|resource|math|classroom|sample)-(first|second)$/.test(request.headers()["idempotency-key"] ?? ""))) replayed.push(request.url());
   });
   await world.close();
   world = null;
@@ -174,6 +176,8 @@ test("恢复后新旧格式上传原字节保留且请求隔离", async ({ page 
       ["teachbuddy.questions.uploads", "pending", "question"],
       ["teachbuddy-resources-pending", "requests", "resource"],
       ["teachbuddy.math.uploads", "pending", "math"],
+      ["teachbuddy-classroom-pending", "requests", "classroom"],
+      ["teachbuddy-sample-week", "requests", "sample"],
     ]) {
       const db = await new Promise((resolve, reject) => { const request = indexedDB.open(database, 1); request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error); });
       const read = key => new Promise((resolve, reject) => { const request = db.transaction(storeName).objectStore(storeName).get(key); request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error); });
@@ -182,7 +186,7 @@ test("恢复后新旧格式上传原字节保留且请求隔离", async ({ page 
         const record = await read(account + ":" + stem + "-" + branch);
         files.push({ name: record.file.name, text: await record.file.text() });
       }
-      if (stem !== "question") {
+      if (stem === "resource" || stem === "math") {
         const record = await read(account + ":recovery:" + recoveryId);
         files.push({ name: record.input.name, text: await record.input.text() });
       }
@@ -190,19 +194,19 @@ test("恢复后新旧格式上传原字节保留且请求隔离", async ({ page 
     }
     return { archive, active, files,
       draft: localStorage.getItem(`tb.workbench.v1:${account}:draft:recovery-test`),
-      pending: ["questions-upload", "resources", "math-upload"].map(name => localStorage.getItem(`tb.workbench.v1:${account}:pending:${name}`)) };
+      pending: ["questions-upload", "resources", "math-upload", "classroom-upload", "sample-week:classroom:scores-file:0"].map(name => localStorage.getItem(`tb.workbench.v1:${account}:pending:${name}`)) };
   }, accountKey);
   expect(preserved.draft).toBeNull();
-  expect(preserved.pending).toEqual([null, null, null]);
-  expect(preserved.active).toEqual([null, null, null]);
+  expect(preserved.pending).toEqual([null, null, null, null, null]);
+  expect(preserved.active).toEqual([null, null, null, null, null]);
   expect(JSON.parse(preserved.archive.records[`tb.workbench.v1:${accountKey}:draft:recovery-test`])).toEqual({ pending: { key: "preserve-old-request" }, input: { text: "恢复前待核对内容" } });
-  for (const stem of ["question", "resource", "math"]) {
+  for (const stem of ["question", "resource", "math", "classroom", "sample"]) {
     for (const branch of ["first", "second"]) {
       expect(preserved.files).toContainEqual({ name: `${stem}-${branch}.txt`, text: `新格式原字节:${stem}:${branch}` });
       expect(JSON.stringify(preserved.archive)).toContain(`${stem}-${branch}`);
     }
   }
-  expect(preserved.files).toHaveLength(8);
+  expect(preserved.files).toHaveLength(12);
   expect(preserved.files).toContainEqual({ name: "resource-original.txt", text: "恢复前文件原字节" });
   expect(preserved.files).toContainEqual({ name: "math-original.html", text: "恢复前文件原字节" });
   expect(replayed).toEqual([]);

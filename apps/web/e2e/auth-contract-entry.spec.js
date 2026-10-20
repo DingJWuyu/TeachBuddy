@@ -74,7 +74,7 @@ async function waitForServerCooldown(port, email) {
 
 test('bootstrap 建立空容器并展示登录卡，空容器不算登录', async ({ page }) => {
   await openEntry(page);
-  await expect(page.getByRole('button', { name: '登录', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: /^登录(?: ›)?$/ })).toBeVisible();
   await expect(page.locator('[data-harness-nickname]')).toHaveCount(0);
   const state = await readState(PORT);
   expect(state.containers).toHaveLength(1);
@@ -91,16 +91,16 @@ test('bootstrap 建立空容器并展示登录卡，空容器不算登录', asyn
 
 test('本地错误不发业务请求（CC-INPUT / IN01）', async ({ page }) => {
   await openEntry(page);
-  await page.getByRole('button', { name: '登录', exact: true }).click();
+  await page.getByRole('button', { name: /^登录(?: ›)?$/ }).click();
   await expect(page.getByText('请填写邮箱。')).toBeVisible();
 
   await page.getByLabel('邮箱', { exact: true }).fill('not-an-email@');
-  await page.getByRole('button', { name: '登录', exact: true }).click();
+  await page.getByRole('button', { name: /^登录(?: ›)?$/ }).click();
   await expect(page.getByText('邮箱格式不正确。')).toBeVisible();
 
   await page.getByLabel('邮箱', { exact: true }).fill(TEACHER.email);
   await page.getByLabel('密码', { exact: true }).fill('short');
-  await page.getByRole('button', { name: '登录', exact: true }).click();
+  await page.getByRole('button', { name: /^登录(?: ›)?$/ }).click();
   await expect(page.getByText('密码至少 8 位。')).toBeVisible();
 
   expect(await requestsFor(PORT, { method: 'POST', path: '/api/auth/login' })).toHaveLength(0);
@@ -134,7 +134,7 @@ test('邮箱规范化提交但键入原文不改（CC-BOUNDARY / B01）', async 
   await openEntry(page);
   await page.getByLabel('邮箱', { exact: true }).fill(' Teacher@Example.COM ');
   await page.getByLabel('密码', { exact: true }).fill('password-8');
-  await page.getByRole('button', { name: '登录', exact: true }).click();
+  await page.getByRole('button', { name: /^登录(?: ›)?$/ }).click();
   await expect(page.getByText('邮箱或密码不正确，请重试。')).toBeVisible();
 
   const requests = await requestsFor(PORT, { method: 'POST', path: '/api/auth/login' });
@@ -148,7 +148,7 @@ test('凭据拒绝只清密码、保留邮箱并可关闭横幅（CC-LOGIN-FAIL 
   await openEntry(page);
   await page.getByLabel('邮箱', { exact: true }).fill(TEACHER.email);
   await page.getByLabel('密码', { exact: true }).fill('wrong password');
-  await page.getByRole('button', { name: '登录', exact: true }).click();
+  await page.getByRole('button', { name: /^登录(?: ›)?$/ }).click();
 
   const banner = page.getByRole('alert').filter({ hasText: '邮箱或密码不正确，请重试。' });
   await expect(banner).toBeVisible();
@@ -166,7 +166,7 @@ test('登录成功后交接到工作台并显示保存昵称（CC-HAPPY / H02）
   await page.getByLabel('邮箱', { exact: true }).fill(TEACHER.email);
   await page.getByLabel('密码', { exact: true }).fill(TEACHER.password);
   await expect(page.getByLabel('记住我')).toBeChecked();
-  await page.getByRole('button', { name: '登录', exact: true }).click();
+  await page.getByRole('button', { name: /^登录(?: ›)?$/ }).click();
 
   await expect(page.locator('[data-harness-nickname]')).toHaveText(TEACHER.nickname);
   await expect(page.locator('[data-harness-account-key]')).not.toBeEmpty();
@@ -353,7 +353,7 @@ test('找回确认本地顺序：验证码形状先于新密码长度（CC-UI / 
 
   await page.getByLabel('验证码', { exact: true }).fill('123456');
   await page.getByRole('button', { name: '重置密码' }).click();
-  await expect(page.getByText('新密码至少 8 位。')).toBeVisible();
+  await expect(page.getByRole('alert').filter({ hasText: '新密码至少 8 位。' })).toBeVisible();
 
   await page.getByLabel('新密码', { exact: true }).fill('long-enough-9');
   await page.getByLabel('确认新密码').fill('long-enough-8');

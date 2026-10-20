@@ -114,7 +114,8 @@ export function createClassroomApi({ accountKey, transport, getSignal, onIdentit
     let rank = 0;
     const people = ranked.map((r, i) => { if (!i || r.totalScore !== ranked[i - 1].totalScore) rank = i + 1; return { ...r, total: r.totalScore, name: r.studentSnapshot.name, studentNo: r.studentSnapshot.studentNumber, rate: r.totalScore / p.exam.totalMax, rank }; });
     people.push(...(result?.rows || []).filter(r => r.status !== 'present' || r.totalScore == null).map(r => ({ ...r, total: r.totalScore, name: r.studentSnapshot.name, studentNo: r.studentSnapshot.studentNumber, rate: null, rank: null })));
-    return { ...p, ...p.overall, state: 'ok', exam: await examView({ ...exams.get(p.exam.id), ...p.exam, questions: p.questions }), present: p.overall.presentCount, absent: p.overall.absentCount, unrecorded: p.overall.unrecordedCount, missingTotal: p.overall.missingTotalCount, students: people, questions: p.questions.map(questionView), tags: p.tags.map(t => ({ ...t, state: t.reason || 'ok' })) };
+    people.sort((a, b) => (a.rank ?? 1e9) - (b.rank ?? 1e9) || a.name.localeCompare(b.name, 'zh'));
+    return { ...p, ...p.overall, distribution: p.overall.distribution.map((bin, index) => ({ ...bin, bin: index })), state: 'ok', exam: await examView({ ...exams.get(p.exam.id), ...p.exam, questions: p.questions }), present: p.overall.presentCount, absent: p.overall.absentCount, unrecorded: p.overall.unrecordedCount, missingTotal: p.overall.missingTotalCount, students: people, questions: p.questions.map(questionView), tags: p.tags.map(t => ({ ...t, state: t.reason || 'ok' })) };
   }
   async function statistics(path, params) {
     const selected = params.examId || [], filters = { ...params, tagIds: params.tagId }; delete filters.tagId; delete filters.examId;
@@ -181,7 +182,7 @@ export function createClassroomApi({ accountKey, transport, getSignal, onIdentit
       if (b.fileId) { b.sourceFileId = b.fileId; delete b.fileId; }
       if (id) {
         const old = imports.get(id) || await rawGet(path);
-        return { baseVersion: b.baseVersion, mapping: b.mapping ? mappingBody(b.mapping) : old.mapping, rows: b.rows === null ? null : b.rows.map(rowBody) };
+        return { baseVersion: b.baseVersion, mapping: b.mapping ? mappingBody(b.mapping) : old.mapping, rows: b.rows == null ? null : b.rows.map(rowBody) };
       }
     }
     return b;

@@ -16,9 +16,9 @@ async function pendingFormula(page,text){await expect.poll(()=>page.locator('.mw
 async function noSaveShortcut(page,id){const sent=page.waitForRequest(req=>req.method()==='PUT'&&req.url().endsWith(`/works/${id}`),{timeout:800}).catch(()=>null);await page.keyboard.press('ControlOrMeta+s');expect(await sent).toBeNull();}
 
 test('未加入公式返回明确确认，取消保留，模块离开与刷新恢复，明确放弃和空白退出不建记录',async({page},info)=>{
-  await formula(page,'x^2+7');await page.getByRole('button',{name:'返回工坊',exact:true}).click();const confirm=page.getByRole('dialog');await expect(confirm).toContainText('还有内容未加入作品');await confirm.getByRole('button',{name:'取消',exact:true}).click();await pendingFormula(page,'x^2+7');
+  await formula(page,'x^2+7');await page.getByRole('button',{name:'返回工坊',exact:true}).click();const confirm=page.getByRole('alertdialog');await expect(confirm).toContainText('还有内容未加入作品');await confirm.getByRole('button',{name:'取消',exact:true}).click();await pendingFormula(page,'x^2+7');
   await module(page,'资源库');await module(page,'数学工坊');await pendingFormula(page,'x^2+7');await page.reload();await pendingFormula(page,'x^2+7');expect((await deviceMath(page)).draft.source.formulas).toHaveLength(0);await page.screenshot({path:info.outputPath('unadded-restored.png')});
-  await page.getByRole('button',{name:'返回工坊',exact:true}).click();await page.getByRole('dialog').getByRole('button',{name:'继续',exact:true}).click();await expect(page.locator('.mw-library-row')).toHaveCount(0);await page.getByRole('button',{name:'新建作品',exact:true}).click();await expect(page.locator('.mw-new-formula')).toHaveCount(0);await page.getByRole('button',{name:'返回工坊',exact:true}).click();await expect(page.getByRole('dialog')).toHaveCount(0);await expect(page.locator('.mw-library-row')).toHaveCount(0);
+  await page.getByRole('button',{name:'返回工坊',exact:true}).click();await page.getByRole('alertdialog').getByRole('button',{name:'继续',exact:true}).click();await expect(page.locator('.tbx-mw-card')).toHaveCount(0);await page.getByRole('button',{name:'新建作品',exact:true}).click();await expect(page.locator('.mw-new-formula')).toHaveCount(0);await page.getByRole('button',{name:'返回工坊',exact:true}).click();await expect(page.getByRole('alertdialog')).toHaveCount(0);await expect(page.locator('.tbx-mw-card')).toHaveCount(0);
 });
 
 test('已有作品未加入输入在自动保存与同键确认后跨模块刷新完整恢复',async({page})=>{
@@ -27,7 +27,7 @@ test('已有作品未加入输入在自动保存与同键确认后跨模块刷�
   let original;let intercepted=false;await page.route(`**/api/modules/math/v1/works/${saved.id}`,async route=>{if(route.request().method()!=='PUT'||intercepted)return route.continue();intercepted=true;original=route.request();const response=await route.fetch();expect(response.status()).toBe(200);await route.abort('failed');});
   await page.getByLabel('作品名',{exact:true}).fill('同键确认保留输入');await expect(page.locator('.mw-save-state')).toHaveText('待确认');const confirmation=page.waitForRequest(req=>req.method()==='PUT'&&req.url().endsWith(`/works/${saved.id}`));await page.getByRole('button',{name:'确认结果',exact:true}).click();const request=await confirmation;expect(request.headers()['idempotency-key']).toBe(original.headers()['idempotency-key']);expect(request.postData()).toBe(original.postData());expect(JSON.parse(request.postData())).not.toHaveProperty('workshopInput');const confirmed=await savedMath(page);expect(confirmed.workshopInput).toEqual({formula:'x^2+7',expression:'A=('});expect(confirmed.version).toBe(automatic.version+1);
   await module(page,'资源库');await module(page,'数学工坊');await pendingFormula(page,'x^2+7');await expect(page.getByLabel('图形表达式',{exact:true})).toHaveValue('A=(');await page.reload();await pendingFormula(page,'x^2+7');await expect(page.getByLabel('图形表达式',{exact:true})).toHaveValue('A=(');expect((await deviceMath(page)).draft.id).toBe(saved.id);expect((await deviceMath(page)).draft.version).toBe(confirmed.version);
-  await page.getByRole('button',{name:'返回工坊',exact:true}).click();await page.getByRole('dialog').getByRole('button',{name:'取消',exact:true}).click();await pendingFormula(page,'x^2+7');await expect(page.getByLabel('图形表达式',{exact:true})).toHaveValue('A=(');
+  await page.getByRole('button',{name:'返回工坊',exact:true}).click();await page.getByRole('alertdialog').getByRole('button',{name:'取消',exact:true}).click();await pendingFormula(page,'x^2+7');await expect(page.getByLabel('图形表达式',{exact:true})).toHaveValue('A=(');
 });
 
 test('步骤文本延迟不覆盖立即修改的参数与视图',async({page},info)=>{
@@ -43,7 +43,7 @@ test('历史下载确认阻止底层保存，Escape仅关闭顶层且还焦点�
   await page.clock.install();await page.clock.pauseAt(await page.evaluate(()=>Date.now()+1000));await page.keyboard.press('Escape');await expect(page.getByRole('dialog',{name:'历史版本',exact:true})).toHaveCount(0);
   await page.getByRole('button',{name:'下载',exact:true}).click();const download=page.getByRole('dialog',{name:'下载作品',exact:true});
   await page.clock.runFor(200);await page.clock.resume();await expect(download.getByRole('combobox',{name:'内容',exact:true})).toBeFocused();await noSaveShortcut(page,saved.id);const auxWasVisible=await page.getByRole('complementary',{name:'辅助栏',exact:true}).isVisible();await page.keyboard.press('Escape');await expect(download).toHaveCount(0);await expect(page.getByRole('button',{name:'下载',exact:true})).toBeFocused();expect(await page.getByRole('complementary',{name:'辅助栏',exact:true}).isVisible()).toBe(auxWasVisible);
-  await formula(page,'x^2+7');await page.getByRole('button',{name:'返回工坊',exact:true}).click();await expect(page.getByRole('dialog')).toContainText('还有内容未加入作品');await noSaveShortcut(page,saved.id);await page.keyboard.press('Escape');await expect(page.getByRole('dialog')).toHaveCount(0);await pendingFormula(page,'x^2+7');await page.screenshot({path:info.outputPath('modal-layer-fixed.png')});
+  await formula(page,'x^2+7');await page.getByRole('button',{name:'返回工坊',exact:true}).click();await expect(page.getByRole('alertdialog')).toContainText('还有内容未加入作品');await noSaveShortcut(page,saved.id);await page.keyboard.press('Escape');await expect(page.getByRole('alertdialog')).toHaveCount(0);await pendingFormula(page,'x^2+7');await page.screenshot({path:info.outputPath('modal-layer-fixed.png')});
 });
 
 test('真实参数播放101帧静态公式持续可见，停止后公式修改仍更新',async({page},info)=>{
@@ -58,7 +58,7 @@ test('历史恢复取消确认后焦点回到历史弹窗',async({page},info)=>{
   await page.getByLabel('作品名',{exact:true}).fill('未保存的作品名');
   await page.getByLabel('更多作品操作',{exact:true}).click();await page.clock.runFor(200);await page.getByRole('menuitem',{name:'历史版本',exact:true}).click();await page.clock.runFor(50);
   const history=page.getByRole('dialog',{name:'历史版本',exact:true});const restore=history.getByRole('button',{name:'恢复版本',exact:true});await restore.click();await page.clock.runFor(200);
-  const confirm=page.getByRole('dialog',{name:'确认操作',exact:true});await expect(confirm).toContainText('恢复将替换未保存修改。是否继续？');await page.screenshot({path:info.outputPath('nested-confirm.png'),animations:'disabled'});await confirm.getByRole('button',{name:'取消',exact:true}).click();await page.clock.runFor(200);
+  const confirm=page.getByRole('alertdialog',{name:'确认操作',exact:true});await expect(confirm).toContainText('恢复将替换未保存修改。是否继续？');await page.screenshot({path:info.outputPath('nested-confirm.png'),animations:'disabled'});await confirm.getByRole('button',{name:'取消',exact:true}).click();await page.clock.runFor(200);
   await expect(confirm).toHaveCount(0);await expect(history).toBeVisible();await expect(restore).toBeFocused();
   await page.keyboard.press('Escape');await page.clock.runFor(200);await expect(history).toHaveCount(0);await page.clock.resume();
 });

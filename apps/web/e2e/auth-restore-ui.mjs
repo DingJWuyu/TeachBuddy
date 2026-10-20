@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { chromium, expect } from '@playwright/test';
+import { confirmLogout } from './teaching-time-auth/helpers.mjs';
 import { createIntegration } from '../../api/test/fixtures/auth-integration/harness.js';
 
 const evidence = path.resolve(process.env.AUTH_RESTORE_EVIDENCE || 'test-results/restore-auth');
@@ -30,7 +31,7 @@ try {
     for (const mode of ['login', 'register', 'recovery']) {
       for (const current of [page]) {
         await current.locator('.ae-form').waitFor();
-        if (mode === 'register') await current.getByRole('button', { name: '创建账户', exact: true }).click();
+        if (mode === 'register') await current.getByRole('button', { name: /^创建账户(?: ›)?$/ }).click();
         if (mode === 'recovery') {
           await current.locator('.ae-switch button').click();
           await current.getByRole('button', { name: '忘记密码？' }).click();
@@ -47,7 +48,7 @@ try {
     await page.locator('.ae-switch button').click();
     await page.getByRole('button', { name: '登录', exact: true }).click();
     await expect(page.getByRole('alert')).toContainText('邮箱');
-    await page.getByRole('button', { name: '创建账户', exact: true }).click();
+    await page.getByRole('button', { name: /^创建账户(?: ›)?$/ }).click();
     const email = `restore-${viewport.width}@example.test`;
     await page.getByLabel('昵称', { exact: true }).fill('恢复验收');
     await page.getByLabel('邮箱', { exact: true }).fill(email);
@@ -67,9 +68,11 @@ try {
     await page.getByRole('button', { name: '注册', exact: true }).click();
     await expect(page.locator('.wb-shell')).toBeVisible();
     assert.ok((await context.cookies()).some(cookie => cookie.name === '__Host-teachbuddy_session' && cookie.secure && cookie.httpOnly));
-    await page.getByRole('button', { name: '知道了', exact: true }).click();
+    const coach = page.locator('.tb-coach-scrim');
+    if (await coach.isVisible()) await coach.click({ position: { x: 1, y: 1 } });
     await page.goto(`${world.origin}/settings`);
     await page.getByRole('button', { name: '退出登录', exact: true }).click();
+    await confirmLogout(page);
     await expect(page.locator('.ae-form')).toBeVisible();
     await page.getByRole('button', { name: '忘记密码？' }).click();
     await page.getByLabel('邮箱', { exact: true }).fill(email);

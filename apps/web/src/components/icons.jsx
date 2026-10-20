@@ -25,6 +25,20 @@ const LEGACY_PATHS = {
 
 /* Shared outline icons on a 24x24 grid, with a 2-unit stroke. */
 export const ICON_PATHS = {
+  // MiniCalendar's original calendar grid, distinct from the four-tile view.
+  calendarGrid: <><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M16 3v4M8 3v4M3 11h18M7 15h.01M12 15h.01M17 15h.01M7 18h.01M12 18h.01M17 18h.01" /></>,
+  // Agent glyphs retain the fixed prototype geometry.
+  chat: <path d="M20.5 11.6a8.1 8.1 0 0 1-11.8 7.2L3.8 20l1.3-4.4A8.1 8.1 0 1 1 20.5 11.6Z" />,
+  spark: <path d="M12 3.5c.5 3.9 2.6 6 6.5 6.5-3.9.5-6 2.6-6.5 6.5-.5-3.9-2.6-6-6.5-6.5 3.9-.5 6-2.6 6.5-6.5Z" />,
+  stop: <path d="M8 8h8v8H8z" />,
+  chevronRight: <path d="m10 7.5 4.5 4.5-4.5 4.5" />,
+  alert: <path d="M12 8.5v4.5M12 16.4h.01M10.3 4 2.8 17a2 2 0 0 0 1.7 3h15a2 2 0 0 0 1.7-3L13.7 4a2 2 0 0 0-3.4 0Z" />,
+  retry: <path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3M4.5 4.5v3.8h3.8" />,
+  compose: <path d="M12 4.5H6.5a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V12M17.8 3.8l2.4 2.4-7.7 7.7-3.1.7.7-3.1 7.7-7.7Z" />,
+  pin: <path d="M9 4.5h6M10 4.5v5.2l-3 3.3h10l-3-3.3V4.5M12 13v6.5" />,
+  at: <path d="M15.5 12a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Zm0 0v1.3a2.7 2.7 0 0 0 5.2 1A8.6 8.6 0 1 0 17 19" />,
+  open: <path d="M14 4.5h5.5V10M19.5 4.5 11 13M17 13.5v4a2 2 0 0 1-2 2H6.5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h4" />,
+  quote: <path d="M5 11.5h4.5V17H5zM5 11.5C5 8.5 6.5 6.6 9 6M14.5 11.5H19V17h-4.5zM14.5 11.5c0-3 1.5-4.9 4-5.5" />,
   sun: <path d="M12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8ZM12 3v1.5M12 19.5V21M3 12h1.5M19.5 12H21M5.6 5.6l1.1 1.1M17.3 17.3l1.1 1.1M5.6 18.4l1.1-1.1M17.3 6.7l1.1-1.1" />,
   move: <path d="M14 4.5h5.5V10M19.5 4.5 11 13M17 13.5v4a2 2 0 0 1-2 2H6.5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h4" />,
   clock: <path d="M12 20.5a8.5 8.5 0 1 1 0-17 8.5 8.5 0 0 1 0 17ZM12 7.5V12l3 2" />,

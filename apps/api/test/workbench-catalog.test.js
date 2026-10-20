@@ -38,15 +38,18 @@ const catalogEntry = (overrides = {}) => ({
   ...overrides
 });
 
-test('the shared catalog matches the current five-module contract', () => {
-  const sample = JSON.parse(fs.readFileSync(path.join(repoRoot,'apps/api/test/fixtures/contracts/math-samples.json'))).find(s=>s.id==='catalog-combined-target');
-  const expected = structuredClone(sample.value.items);
-  assert.deepEqual(moduleCatalog, expected);
+test('the shared catalog exposes the five implemented product pages', () => {
+  assert.deepEqual(moduleCatalog.map(({ id, path, navigation, webEnabled }) => ({ id, path, navigation, webEnabled })), [
+    { id: 'questions', path: '/questions', navigation: 'sidebar', webEnabled: true },
+    { id: 'math', path: '/math', navigation: 'sidebar', webEnabled: true },
+    { id: 'resources', path: '/resources', navigation: 'sidebar', webEnabled: true },
+    { id: 'schedule', path: '/calendar', navigation: 'top', webEnabled: true },
+    { id: 'classroom', path: '/classroom', navigation: 'sidebar', webEnabled: true },
+  ]);
   assert.equal(validateModuleCatalog(moduleCatalog).length, 0);
-  assert.equal(moduleCatalog.find(entry => entry.id === 'classroom').webEnabled, false);
-  assert.equal(defaultNavigation().groups.flatMap(group => group.moduleIds).includes('classroom'), false);
+  assert.equal(defaultNavigation().groups.flatMap(group => group.moduleIds).includes('classroom'), true);
   const empty = defaultNavigation([]);
-  assert.equal(includeNewNavigationModules(empty).groups.flatMap(group => group.moduleIds).includes('classroom'), false);
+  assert.equal(includeNewNavigationModules(empty).groups.flatMap(group => group.moduleIds).includes('classroom'), true);
 });
 
 test('catalog validation reports duplicates, missing dependencies and cycles', () => {
@@ -82,7 +85,7 @@ test('catalog projection enables only implemented modules and rejects orphans', 
   const scheduleOnly = projectModuleCatalog(['schedule']);
   assert.deepEqual(scheduleOnly.items.map(entry => entry.id), ['schedule']);
   assert.deepEqual(scheduleOnly.items[0].requires, []);
-  assert.equal(projectModuleCatalog(['classroom']).items[0].webEnabled, false);
+  assert.equal(projectModuleCatalog(['classroom']).items[0].webEnabled, true);
 
   assert.throws(
     () => projectModuleCatalog(['questions', 'unknown-module']),

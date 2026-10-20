@@ -2,3 +2,12 @@
 :root[data-workbench-theme="dark"] { color-scheme: dark; }
 .tb-account-row .tb-avatar img { width: 100%; height: 100%; border-radius: inherit; object-fit: cover; }
 .wb-shell[data-reading-size="large"] .wb-main { font-size: 16px; }
+
+/* The shell owns the canvas inset; module cards own their internal layout. */
+.wb-shell[data-route='help'] .wb-main { padding: var(--app-workspace-padding); }
+.wb-shell.tb-prototype:is([data-route='questions'], [data-route='question'], [data-route='schedule'], [data-route='math']) .wb-workspace {
+  padding: var(--app-workspace-padding);
+  gap: 16px;
+}
+.wb-shell.tb-prototype:is([data-route='questions'], [data-route='question'], [data-route='schedule'], [data-route='math']) .wb-main,
+.wb-shell.tb-prototype[data-route='schedule'] .cal-page { padding: 0; }

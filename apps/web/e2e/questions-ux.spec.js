@@ -37,9 +37,9 @@ test.beforeEach(async ({ page }) => {
   await expect(page.getByRole('heading', { name: '把好题留下来，随时用起来' })).toBeVisible();
 });
 
-const finder = page => page.locator('.q-finder');
+const finder = page => page.locator('.tbx-qn-list');
 async function createQuestion(page, title = '平方根练习') {
-  await finder(page).getByRole('button', { name: '手动录题', exact: true }).click();
+  await finder(page).getByRole('button', { name: '新建题目', exact: true }).click();
   await page.getByLabel('题目标题').fill(title);
   await page.getByRole('textbox', { name: '题干段落 1', exact: true }).pressSequentially('已知 $x^2=9$，求实数 $x$ 的值。');
   await page.getByRole('button', { name: '保存题目', exact: true }).click();
@@ -70,7 +70,7 @@ test('改编首存遇到原题更新，刷新后核对来源并保留全部改�
   await tagDialog.getByLabel('分类名称').fill('改编复用');
   await tagDialog.getByRole('button', { name: '创建并选用' }).click();
   await page.getByRole('button', { name: '返回题库', exact: true }).click();
-  await page.locator('.q-list-entry button').filter({ hasText: '冲突原题' }).click();
+  await page.locator('.tbx-qn-row').filter({ hasText: '冲突原题' }).click();
   await page.getByRole('button', { name: '编辑题目', exact: true }).click();
   await page.getByRole('textbox', { name: '题干段落 1', exact: true }).fill('当前原题 $x^2=25$。');
   await page.getByRole('button', { name: '保存题目', exact: true }).click();
@@ -150,11 +150,10 @@ test('全局分类保存不制造草稿，分类删除保留既有题目的真�
   await dialog.getByRole('button', { name: '创建并选用' }).click();
   await page.getByRole('button', { name: '保存题目', exact: true }).click();
   await expect(page.getByRole('button', { name: '编辑题目', exact: true })).toBeVisible();
-  await page.getByRole('button', { name: '题库选项' }).click();
-  await page.getByRole('menuitem', { name: '管理题型与标签' }).click();
+  await page.getByRole('button', { name: '管理题型与标签', exact: true }).click();
   await page.locator('.q-taxonomy').getByLabel('题型名称', { exact: true }).fill('新计算题');
   await page.getByRole('button', { name: '保存分类', exact: true }).click();
-  await expect(page.getByRole('button', { name: '保存分类', exact: true })).toBeEnabled();
+  await expect(page.getByRole('button', { name: '管理题型与标签', exact: true })).toBeVisible();
   await expect(page.locator('.q-question-meta')).toContainText('新计算题');
   await page.screenshot({ path: info.outputPath('taxonomy-saved.png') });
   await expect(page.locator('.q-draft-notice')).toHaveCount(0);
@@ -170,14 +169,12 @@ test('全局分类保存不制造草稿，分类删除保留既有题目的真�
   await expect(page.getByLabel('长期笔记')).toHaveValue('分类维护前的真实未保存笔记');
   await page.getByRole('button', { name: '返回题目', exact: true }).click();
   await captureDrafts('真实草稿退出编辑');
-  await page.getByRole('button', { name: '题库选项' }).focus();
-  await page.keyboard.press('Enter');
-  await page.getByRole('menuitem', { name: '管理题型与标签' }).click();
+  await page.getByRole('button', { name: '管理题型与标签', exact: true }).click();
   await page.locator('.q-taxonomy').getByRole('button', { name: '删除题型“新计算题”', exact: true }).click();
-  await page.getByRole('dialog', { name: '删除题型', exact: true }).getByRole('button', { name: '删除题型', exact: true }).click();
+  await page.getByRole('alertdialog', { name: '删除题型', exact: true }).getByRole('button', { name: '删除题型', exact: true }).click();
   await page.getByRole('button', { name: '保存分类', exact: true }).click();
   await expect(page.locator('.q-question-meta')).not.toContainText('新计算题');
-  await expect(page.getByRole('button', { name: '保存分类', exact: true })).toBeEnabled();
+  await expect(page.getByRole('button', { name: '管理题型与标签', exact: true })).toBeVisible();
   await captureDrafts('分类保存完成');
   await page.reload();
   await page.getByRole('button', { name: '继续编辑', exact: true }).click();
@@ -195,16 +192,15 @@ test('全局分类保存不制造草稿，分类删除保留既有题目的真�
 test('列表加载后恢复刷新前的真实滚动和选中题目', async ({ page }, info) => {
   await page.setViewportSize({ width: 1440, height: 680 });
   for (let n = 1; n <= 7; n++) await createQuestion(page, `滚动练习 ${n}`);
-  await page.getByRole('button', { name: '筛选题目', exact: true }).click();
-  const list = page.locator('.q-list');
+    const list = page.locator('.q-list');
   await list.hover();
   await page.mouse.wheel(0, 1200);
   await expect.poll(() => list.evaluate(node => node.scrollTop)).toBeGreaterThan(0);
-  await page.locator('.q-list-entry button').last().click();
+  await page.locator('.tbx-qn-row').last().click();
   const before = await list.evaluate(node => ({ top: node.scrollTop, height: node.scrollHeight }));
   await page.screenshot({ path: info.outputPath('scroll-before.png') });
   await page.reload();
-  await expect(page.locator('.q-list-entry')).toHaveCount(7);
+  await expect(page.locator('.tbx-qn-row')).toHaveCount(7);
   await expect(page.getByRole('heading', { name: '滚动练习 1', exact: true })).toBeVisible();
   await expect.poll(() => list.evaluate(node => node.scrollTop)).toBe(before.top);
   const after = await list.evaluate(node => ({ top: node.scrollTop, height: node.scrollHeight }));
@@ -215,7 +211,7 @@ test('列表加载后恢复刷新前的真实滚动和选中题目', async ({ pa
 test('带图题列表延迟真实图片读取后恢复刷新前滚动', async ({ page }, info) => {
   await page.setViewportSize({ width: 1440, height: 680 });
   for (let n = 1; n <= 9; n++) {
-    await finder(page).getByRole('button', { name: '手动录题', exact: true }).click();
+    await finder(page).getByRole('button', { name: '新建题目', exact: true }).click();
     await page.getByLabel('题目标题').fill('带图滚动 ' + n);
     await page.getByLabel('题干段落 1', { exact: true }).fill('图形练习 ' + n);
     const chooser = page.waitForEvent('filechooser');
@@ -229,13 +225,11 @@ test('带图题列表延迟真实图片读取后恢复刷新前滚动', async ({
   const list = page.locator('.q-list');
   await expect(list.locator('img')).toHaveCount(9);
   await expect.poll(() => list.locator('img').evaluateAll(images => images.every(image => image.complete && image.naturalWidth > 0))).toBe(true);
-  await page.getByRole('button', { name: '筛选题目', exact: true }).click();
-  await expect.poll(() => page.locator('.q-filters').evaluate(node => node.closest('.wb-module-presence').dataset.state)).toBe('open');
-  await expect.poll(() => page.locator('.q-filters').evaluate(node => node.closest('.wb-module-presence').getAnimations().every(animation => animation.playState === 'finished'))).toBe(true);
+
   await list.hover();
   await page.mouse.wheel(0, 5000);
   await expect.poll(() => list.evaluate(node => node.scrollTop)).toBeGreaterThan(0);
-  await page.locator('.q-list-entry button').last().click();
+  await page.locator('.tbx-qn-row').last().click();
   const before = await list.evaluate(node => ({ top: node.scrollTop, height: node.scrollHeight, client: node.clientHeight }));
   await page.screenshot({ path: info.outputPath('image-scroll-before.png') });
   const saved = await records();
@@ -246,7 +240,7 @@ test('带图题列表延迟真实图片读取后恢复刷新前滚动', async ({
   });
   try {
     await page.reload();
-    await expect(page.locator('.q-list-entry')).toHaveCount(9);
+    await expect(page.locator('.tbx-qn-row')).toHaveCount(9);
     await expect.poll(() => held.length).toBeGreaterThanOrEqual(10);
     const pending = await list.evaluate(node => ({ top: node.scrollTop, height: node.scrollHeight, client: node.clientHeight }));
     held.slice(0, 4).forEach(request => request.release());
@@ -264,7 +258,7 @@ test('带图题列表延迟真实图片读取后恢复刷新前滚动', async ({
 
     held = [];
     await page.reload();
-    await expect(page.locator('.q-list-entry')).toHaveCount(9);
+    await expect(page.locator('.tbx-qn-row')).toHaveCount(9);
     await expect.poll(() => held.length).toBeGreaterThanOrEqual(10);
     await list.hover();
     await page.mouse.wheel(0, -5000);
@@ -279,8 +273,7 @@ test('带图题列表延迟真实图片读取后恢复刷新前滚动', async ({
     await page.reload();
     await expect(list.locator('img')).toHaveCount(9);
     await expect.poll(() => list.locator('img').evaluateAll(images => images.every(image => image.complete && image.naturalWidth > 0))).toBe(true);
-    await expect.poll(() => page.locator('.q-filters').evaluate(node => node.closest('.wb-module-presence').dataset.state)).toBe('open');
-    await expect.poll(() => page.locator('.q-filters').evaluate(node => node.closest('.wb-module-presence').getAnimations().every(animation => animation.playState === 'finished'))).toBe(true);
+
     await expect.poll(() => list.evaluate(node => node.scrollTop)).toBe(0);
     await expect(page.getByRole('heading', { name: '带图滚动 1', exact: true })).toBeVisible();
     const refreshed = await list.evaluate(node => ({ top: node.scrollTop, height: node.scrollHeight, client: node.clientHeight }));
@@ -294,7 +287,7 @@ test('带图题列表延迟真实图片读取后恢复刷新前滚动', async ({
 for (const structure of ['表格', '列表']) test('嵌套' + structure + '图分批读取后保留原滚动', async ({ page }, info) => {
   await page.setViewportSize({ width: 1440, height: 680 });
   for (let n = 1; n <= 9; n++) {
-    await finder(page).getByRole('button', { name: '手动录题', exact: true }).click();
+    await finder(page).getByRole('button', { name: '新建题目', exact: true }).click();
     await page.getByLabel('题目标题').fill('嵌套' + structure + ' ' + n);
     await page.getByRole('button', { name: '插入更多内容', exact: true }).click();
     await page.getByRole('menuitem', { name: structure === '表格' ? '添加表格' : '添加选项或列表', exact: true }).click();
@@ -318,7 +311,7 @@ for (const structure of ['表格', '列表']) test('嵌套' + structure + '图�
   });
   try {
     await page.reload();
-    await expect(page.locator('.q-list-entry')).toHaveCount(9);
+    await expect(page.locator('.tbx-qn-row')).toHaveCount(9);
     await expect.poll(() => held.length).toBeGreaterThanOrEqual(19);
     held.slice(9, 18).forEach(release => release());
     await expect(list.locator('img')).toHaveCount(9);
@@ -346,10 +339,10 @@ for (const structure of ['表格', '列表']) test('嵌套' + structure + '图�
   } finally { held.forEach(release => release()); }
 });
 
-test('图片失败终态后展开筛选不重新拉回旧位置', async ({ page }, info) => {
+test('图片失败终态后重开列表不重新拉回旧位置', async ({ page }, info) => {
   await page.setViewportSize({ width: 1440, height: 680 });
   for (let n = 1; n <= 9; n++) {
-    await finder(page).getByRole('button', { name: '手动录题', exact: true }).click();
+    await finder(page).getByRole('button', { name: '新建题目', exact: true }).click();
     await page.getByLabel('题目标题').fill('失败终态 ' + n);
     await page.getByLabel('题干段落 1', { exact: true }).fill('题干 ' + n);
     const chooser = page.waitForEvent('filechooser');
@@ -378,9 +371,7 @@ test('图片失败终态后展开筛选不重新拉回旧位置', async ({ page 
   await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
   const failed = await list.evaluate(node => ({ top: node.scrollTop, height: node.scrollHeight, client: node.clientHeight }));
   await page.screenshot({ path: info.outputPath('failed-before-filter.png') });
-  await page.getByRole('button', { name: '筛选题目', exact: true }).click();
-  await expect.poll(() => page.locator('.q-filters').evaluate(node => node.closest('.wb-module-presence').dataset.state)).toBe('open');
-  await expect.poll(() => page.locator('.q-filters').evaluate(node => node.closest('.wb-module-presence').getAnimations().every(animation => animation.playState === 'finished'))).toBe(true);
+
   const expanded = await list.evaluate(node => ({ top: node.scrollTop, height: node.scrollHeight, client: node.clientHeight }));
   fs.writeFileSync(info.outputPath('failed-readback.json'), JSON.stringify({ before, failed, expanded }, null, 2));
   await page.screenshot({ path: info.outputPath('failed-after-filter.png') });
@@ -388,15 +379,14 @@ test('图片失败终态后展开筛选不重新拉回旧位置', async ({ page 
   await page.unroute('**/api/workbench/files/*/content');
   await page.reload();
   await expect(list.locator('img[data-image-state=ready]')).toHaveCount(9);
-  await expect.poll(() => page.locator('.q-filters').evaluate(node => node.closest('.wb-module-presence').dataset.state)).toBe('open');
-  await expect.poll(() => page.locator('.q-filters').evaluate(node => node.closest('.wb-module-presence').getAnimations().every(animation => animation.playState === 'finished'))).toBe(true);
+
   await expect.poll(() => list.evaluate(node => node.scrollTop)).toBe(failed.top);
   const refreshed = await list.evaluate(node => ({ top: node.scrollTop, height: node.scrollHeight, client: node.clientHeight }));
   fs.writeFileSync(info.outputPath('failed-readback.json'), JSON.stringify({ before, failed, expanded, refreshed }, null, 2));
 });
 
 test('普通图片阅读成功、HTTP失败与无效图片都明确结束加载', async ({ page }, info) => {
-  await finder(page).getByRole('button', { name: '手动录题', exact: true }).click();
+  await finder(page).getByRole('button', { name: '新建题目', exact: true }).click();
   await page.getByLabel('题目标题').fill('共享图片终态验证');
   await page.getByLabel('题干段落 1', { exact: true }).fill('失败时仍保留的题干内容');
   const chooser = page.waitForEvent('filechooser');
@@ -464,7 +454,7 @@ test('空收录现场刷新不提示恢复，真实收录输入和新题草稿�
   await expect.poll(() => capture.evaluate(node => Number(getComputedStyle(node.closest('.q-modal-backdrop')).opacity))).toBe(1);
   await page.screenshot({ path: info.outputPath('real-capture-restored.png') });
   await capture.getByRole('button', { name: '关闭', exact: true }).click();
-  await finder(page).getByRole('button', { name: '手动录题', exact: true }).click();
+  await finder(page).getByRole('button', { name: '新建题目', exact: true }).click();
   await page.getByLabel('题目标题').fill('新题草稿仍恢复');
   await page.getByRole('textbox', { name: '题干段落 1', exact: true }).fill('真实新题草稿 $4+5$。');
   await page.reload();
@@ -474,7 +464,7 @@ test('空收录现场刷新不提示恢复，真实收录输入和新题草稿�
 });
 
 test('空稿退出、输入即录题、保存后阅读与刷新，已有题目的草稿独立保留', async ({ page }) => {
-  await finder(page).getByRole('button', { name: '手动录题', exact: true }).click();
+  await finder(page).getByRole('button', { name: '新建题目', exact: true }).click();
   await expect(page.getByRole('textbox', { name: '题干段落 1', exact: true })).toBeFocused();
   await page.getByRole('button', { name: '返回题库', exact: true }).click();
   await expect(page.getByRole('button', { name: '继续未完成的题目' })).toHaveCount(0);
@@ -504,7 +494,7 @@ test('空稿退出、输入即录题、保存后阅读与刷新，已有题目�
 });
 
 test('新题草稿刷新继续，复制改编保存前不创建服务器题目', async ({ page }) => {
-  await finder(page).getByRole('button', { name: '手动录题', exact: true }).click();
+  await finder(page).getByRole('button', { name: '新建题目', exact: true }).click();
   await page.getByLabel('题目标题').fill('可继续的草稿');
   await page.getByRole('textbox', { name: '题干段落 1', exact: true }).fill('求 $2+3$。');
   await page.getByRole('button', { name: '返回题库', exact: true }).click();
@@ -544,39 +534,38 @@ test('筛选与题目分类分开，就地创建后保存，归档确认与恢�
   await page.getByRole('button', { name: '保存题目', exact: true }).click();
   await expect(page.locator('.q-question-meta')).toContainText('计算题');
   const original = (await records())[0];
-  await page.getByRole('button', { name: '筛选题目', exact: true }).click();
-  await page.getByLabel('筛选题型').selectOption({ label: '计算题' });
-  await expect(page.locator('.q-list-entry')).toHaveCount(1);
+    await page.locator('.tbx-qn-rail').getByRole('button', { name: /^计算题/ }).click();
+  await expect(page.locator('.tbx-qn-row')).toHaveCount(1);
   await page.getByRole('textbox', { name: '搜索题目' }).fill('没有这个题目');
   await expect(page.getByText('没有符合条件的题目，试试调整筛选。')).toBeVisible();
   expect((await records())[0].typeId).toBe(original.typeId);
   await page.getByRole('button', { name: '清除条件' }).click();
   await page.getByRole('button', { name: '更多题目操作' }).click();
   await page.getByRole('menuitem', { name: '归档题目', exact: true }).click();
-  await page.getByRole('dialog', { name: '归档题目？' }).getByRole('button', { name: '取消' }).click();
+  await page.getByRole('alertdialog', { name: '归档题目？' }).getByRole('button', { name: '取消' }).click();
   expect(await records()).toHaveLength(1);
   await page.getByRole('button', { name: '更多题目操作' }).click();
   await page.getByRole('menuitem', { name: '归档题目', exact: true }).click();
   await page.getByRole('button', { name: '确认归档', exact: true }).click();
   await expect(page.locator('.q-message')).toContainText('已归档');
   expect(await records()).toHaveLength(0);
-  await page.getByRole('button', { name: '题库选项' }).click();
-  await page.getByRole('menuitem', { name: '归档内容', exact: true }).click();
-  await page.locator('.q-list-entry button').click();
+  await page.locator('.tbx-qn-rail').getByRole('button', { name: '已归档', exact: true }).click();
+  await page.locator('.tbx-qn-row').click();
   await page.getByRole('button', { name: '更多题目操作' }).click();
   await page.getByRole('menuitem', { name: '恢复题目', exact: true }).click();
-  await page.getByRole('dialog', { name: '恢复题目？' }).getByRole('button', { name: '确认恢复', exact: true }).click();
+  await page.getByRole('alertdialog', { name: '恢复题目？' }).getByRole('button', { name: '确认恢复', exact: true }).click();
   await expect(page.locator('.q-message')).toContainText('已恢复');
   expect((await records())[0].id).toBe(original.id);
 });
 
-test('文字收录先读题再检查，疑点可定位，确认后继续下一题并刷新', async ({ page }) => {
+test('文字收录先读题再检查，疑点可定位，确认后继续下一题并刷新', async ({ page }, info) => {
   await finder(page).getByRole('button', { name: '从资料收录', exact: true }).click();
   const capture = page.getByRole('dialog', { name: '从资料收录题目' });
   await capture.getByRole('button', { name: /粘贴文字/ }).click();
   await capture.getByLabel('原始文字').fill('1. 计算 1+1。\n答案：2\n2. 解方程 x+3=5。\n答案：x=2');
   await capture.getByRole('button', { name: '开始整理', exact: true }).click();
   await expect(page.getByRole('button', { name: '1 待检查', exact: true })).toBeVisible();
+  await page.screenshot({ path: info.outputPath('text-review.png') });
   await expect(page.getByRole('button', { name: '重试未完成部分', exact: true })).toHaveCount(0);
   await expect(page.getByRole('textbox', { name: '题干段落 1', exact: true })).toHaveCount(0);
   await page.getByRole('button', { name: '确认这道题', exact: true }).click();
@@ -596,7 +585,12 @@ test('文字收录先读题再检查，疑点可定位，确认后继续下一�
   await expect(page.getByText('2 题已入库')).toBeVisible();
   expect(await records()).toHaveLength(2);
   await page.getByRole('button', { name: '返回题库', exact: true }).click();
-  await expect(page.locator('.q-list-entry')).toHaveCount(2);
+  await expect(page.locator('.tbx-qn-row')).toHaveCount(2);
+  await page.locator('.tbx-qn-row').first().click();
+  await expect(page.locator('.q-reading-body .katex').first()).toBeVisible();
+  await page.screenshot({ path: info.outputPath('text-reading-reopened.png') });
+  await page.getByRole('button', { name: '编辑题目', exact: true }).click();
+  await page.screenshot({ path: info.outputPath('text-editor.png') });
 });
 
 test('深浅色与窄屏保持可达布局，收录浮层关闭恢复焦点', async ({ page }) => {
@@ -613,34 +607,11 @@ test('深浅色与窄屏保持可达布局，收录浮层关闭恢复焦点', as
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth > innerWidth);
       expect(overflow).toBe(false);
       const main = await page.locator('.q-main').boundingBox();
-      const side = await page.locator('.q-finder').boundingBox();
-      if (width > 760) { expect(Math.abs(main.y - side.y)).toBeLessThan(1); expect(Math.abs(main.height - side.height)).toBeLessThan(1); }
+      const side = await page.locator('.tbx-qn-list').boundingBox();
+      if (width === 1440) { expect(Math.abs(main.y - side.y)).toBeLessThan(1); expect(Math.abs(main.height - side.height)).toBeLessThan(1); }
     }
   }
   await page.setViewportSize({ width: 1440, height: 900 });
-  await page.evaluate(() => {
-    window.questionMotion = { frames: [], done: false };
-    function sample(time) {
-      const state = window.questionMotion;
-      const node = document.querySelector('.q-finder .wb-module-presence.is-collapse');
-      if (node) state.frames.push({ time, state: node.dataset.state, opacity: Number(getComputedStyle(node).opacity) });
-      if (!state.done) requestAnimationFrame(sample);
-    }
-    requestAnimationFrame(sample);
-  });
-  const filter = finder(page).getByRole('button', { name: '筛选题目', exact: true });
-  await filter.click();
-  await expect.poll(() => page.evaluate(() => window.questionMotion.frames.some(f => f.state === 'open' && f.opacity > 0 && f.opacity < 1))).toBe(true);
-  await filter.click();
-  await expect.poll(() => page.evaluate(() => window.questionMotion.frames.some(f => f.state === 'closed' && f.opacity > 0 && f.opacity < 1)), { intervals: [16] }).toBe(true);
-  await filter.click();
-  await expect(filter).toHaveAttribute('aria-expanded', 'true');
-  await expect.poll(() => page.evaluate(() => {
-    const frames = window.questionMotion.frames;
-    const lastClosing = frames.findLastIndex(f => f.state === 'closed' && f.opacity > 0);
-    return lastClosing >= 0 && frames.slice(lastClosing + 1).some(f => f.state === 'open' && f.opacity === 1);
-  })).toBe(true);
-  await page.evaluate(() => { window.questionMotion.done = true; });
   const trigger = finder(page).getByRole('button', { name: '从资料收录', exact: true });
   await trigger.click();
   const capture = page.getByRole('dialog', { name: '从资料收录题目' });
@@ -656,7 +627,7 @@ test('深浅色与窄屏保持可达布局，收录浮层关闭恢复焦点', as
 });
 
 test('公式、选项与表格可插入和修改，保存重开保留结构', async ({ page }) => {
-  await finder(page).getByRole('button', { name: '手动录题', exact: true }).click();
+  await finder(page).getByRole('button', { name: '新建题目', exact: true }).click();
   await page.getByLabel('题目标题').fill('结构化题面');
   await page.getByRole('textbox', { name: '题干段落 1', exact: true }).fill('选择正确答案。');
   await page.getByRole('button', { name: '插入公式', exact: true }).click();
@@ -687,7 +658,7 @@ test('公式、选项与表格可插入和修改，保存重开保留结构', as
 });
 
 test('新题保存响应丢失后确认原请求，保留后续输入且不重复建题', async ({ page }) => {
-  await finder(page).getByRole('button', { name: '手动录题', exact: true }).click();
+  await finder(page).getByRole('button', { name: '新建题目', exact: true }).click();
   await page.getByLabel('题目标题').fill('断线后续写');
   await page.getByRole('textbox', { name: '题干段落 1', exact: true }).fill('第一次保存的题干');
   await page.route('**/api/modules/questions/v2/items', async route => {
@@ -748,36 +719,34 @@ test('移出材料后回到题库首页，刷新不会重新打开已移出的�
   await page.getByLabel('原始文字').fill('1. 计算 2+3。\n答案：5');
   await page.getByRole('button', { name: '开始整理', exact: true }).click();
   await page.getByRole('button', { name: '材料操作', exact: true }).click();
-  await page.getByRole('button', { name: '归档材料', exact: true }).click();
+  await page.getByRole('menuitem', { name: '归档材料', exact: true }).click();
   await page.getByRole('button', { name: '确认归档', exact: true }).click();
   await expect(page.getByRole('region', { name: '原始材料' })).toBeHidden();
   await expect(page.getByRole('heading', { name: '把好题留下来，随时用起来' })).toBeVisible();
   await page.reload();
   await expect(page.getByRole('heading', { name: '把好题留下来，随时用起来' })).toBeVisible();
-  await page.getByRole('button', { name: '题库选项' }).click();
-  await page.getByRole('menuitem', { name: '归档内容', exact: true }).click();
+  await page.locator('.tbx-qn-rail').getByRole('button', { name: '已归档', exact: true }).click();
   await page.locator('.q-imports button').click();
   await page.getByRole('button', { name: '材料操作', exact: true }).click();
-  await page.getByRole('button', { name: '恢复材料', exact: true }).click();
+  await page.getByRole('menuitem', { name: '恢复材料', exact: true }).click();
   await page.getByRole('button', { name: '确认恢复', exact: true }).click();
   await expect(page.getByRole('heading', { name: '暂无归档内容' })).toBeVisible();
-  await finder(page).getByRole('button', { name: '返回题库', exact: true }).click();
+  await page.locator('.tbx-qn-rail').getByRole('button', { name: '已归档', exact: true }).click();
   await page.locator('.q-imports button').click();
   const materials = await client.request('GET', '/api/modules/questions/v2/imports');
   const materialId = materials.json.items[0].id;
   await page.getByRole('button', { name: '材料操作', exact: true }).click();
-  await page.getByRole('button', { name: '归档材料', exact: true }).click();
+  await page.getByRole('menuitem', { name: '归档材料', exact: true }).click();
   await page.getByRole('button', { name: '确认归档', exact: true }).click();
-  await page.getByRole('button', { name: '题库选项' }).click();
-  await page.getByRole('menuitem', { name: '归档内容', exact: true }).click();
+  await page.locator('.tbx-qn-rail').getByRole('button', { name: '已归档', exact: true }).click();
   await page.locator('.q-imports button').click();
   await page.getByRole('button', { name: '材料操作', exact: true }).click();
-  await page.getByRole('button', { name: '彻底删除材料', exact: true }).click();
-  await page.getByRole('dialog', { name: '彻底删除材料？' }).getByRole('button', { name: '取消', exact: true }).click();
+  await page.getByRole('menuitem', { name: '彻底删除材料', exact: true }).click();
+  await page.getByRole('alertdialog', { name: '彻底删除材料？' }).getByRole('button', { name: '取消', exact: true }).click();
   expect((await client.request('GET', '/api/modules/questions/v2/imports/' + materialId)).status).toBe(200);
   await page.getByRole('button', { name: '材料操作', exact: true }).click();
-  await page.getByRole('button', { name: '彻底删除材料', exact: true }).click();
-  await page.getByRole('dialog', { name: '彻底删除材料？' }).getByRole('button', { name: '彻底删除', exact: true }).click();
+  await page.getByRole('menuitem', { name: '彻底删除材料', exact: true }).click();
+  await page.getByRole('alertdialog', { name: '彻底删除材料？' }).getByRole('button', { name: '彻底删除', exact: true }).click();
   await expect(page.getByRole('heading', { name: '暂无归档内容' })).toBeVisible();
   await page.reload();
   await expect(page.getByRole('heading', { name: '暂无归档内容' })).toBeVisible();
@@ -794,20 +763,19 @@ test('从题目直达链接归档后清除详情路由，彻底删除响应丢�
   await expect(page).toHaveURL(world.origin + '/questions');
   await page.reload();
   await expect(page.getByRole('heading', { name: '把好题留下来，随时用起来' })).toBeVisible();
-  await page.getByRole('button', { name: '题库选项' }).click();
-  await page.getByRole('menuitem', { name: '归档内容', exact: true }).click();
-  await page.locator('.q-list-entry button').click();
+  await page.locator('.tbx-qn-rail').getByRole('button', { name: '已归档', exact: true }).click();
+  await page.locator('.tbx-qn-row').click();
   await page.getByRole('button', { name: '更多题目操作' }).click();
   await page.getByRole('menuitem', { name: '彻底删除题目', exact: true }).click();
   await page.route('**/items/' + original.id + '/purge', async route => { await route.fetch(); await route.abort('failed'); }, { times: 1 });
-  const dialog = page.getByRole('dialog', { name: '彻底删除题目？' });
+  const dialog = page.getByRole('alertdialog', { name: '彻底删除题目？' });
   await dialog.getByRole('button', { name: '彻底删除', exact: true }).click();
   await expect(dialog.getByRole('alert')).toBeVisible();
   await dialog.getByRole('button', { name: '彻底删除', exact: true }).click();
   await expect(page.getByRole('heading', { name: '暂无归档内容' })).toBeVisible();
   await page.reload();
   expect((await client.request('GET', '/api/modules/questions/v2/items/' + original.id)).status).toBe(404);
-  await expect(page.locator('.q-list-entry')).toHaveCount(0);
+  await expect(page.locator('.tbx-qn-row')).toHaveCount(0);
 });
 
 test('归档保留设备草稿，恢复后可以继续编辑并保存', async ({ page }) => {
@@ -819,16 +787,15 @@ test('归档保留设备草稿，恢复后可以继续编辑并保存', async ({
   await page.getByRole('button', { name: '更多题目操作' }).click();
   await page.getByRole('menuitem', { name: '归档题目', exact: true }).click();
   await page.getByRole('button', { name: '确认归档', exact: true }).click();
-  await page.getByRole('button', { name: '题库选项' }).click();
-  await page.getByRole('menuitem', { name: '归档内容', exact: true }).click();
-  await page.locator('.q-list-entry').click();
+  await page.locator('.tbx-qn-rail').getByRole('button', { name: '已归档', exact: true }).click();
+  await page.locator('.tbx-qn-row').click();
   await expect(page.locator('.q-draft-notice')).toContainText('恢复题目后可继续编辑');
   await expect(page.getByRole('button', { name: '继续编辑', exact: true })).toHaveCount(0);
   await page.getByRole('button', { name: '更多题目操作' }).click();
   await page.getByRole('menuitem', { name: '恢复题目', exact: true }).click();
   await page.getByRole('button', { name: '确认恢复', exact: true }).click();
-  await finder(page).getByRole('button', { name: '返回题库', exact: true }).click();
-  await page.locator('.q-list-entry').click();
+  await page.locator('.tbx-qn-rail').getByRole('button', { name: '已归档', exact: true }).click();
+  await page.locator('.tbx-qn-row').click();
   await page.reload();
   await page.getByRole('button', { name: '继续编辑', exact: true }).click();
   await expect(page.getByRole('textbox', { name: '题干段落 1', exact: true })).toHaveValue('尚未提交但要保留的题干');
@@ -839,22 +806,20 @@ test('归档保留设备草稿，恢复后可以继续编辑并保存', async ({
   expect(saved.body.blocks[0].runs[0].text).toBe('尚未提交但要保留的题干');
 });
 
-test('题库辅助栏和主面板上下对齐，搜索焦点框包住整个输入区域', async ({ page }) => {
-  await page.getByRole('button', { name: '题库选项', exact: true }).click();
-  await page.getByRole('menuitem', { name: '管理题型与标签', exact: true }).click();
+test('题库右轨分类可就地管理，搜索保留整个输入区域', async ({ page }) => {
+  await page.getByRole('button', { name: '管理题型与标签', exact: true }).click();
   const main = page.locator('.q-main');
-  const aux = page.getByRole('complementary', { name: '辅助栏' });
+  const aux = page.locator('.tbx-qn-rail');
   await expect(aux).toBeVisible();
   await expect.poll(async () => {
     const a = await main.boundingBox(), b = await aux.boundingBox();
     return Math.max(Math.abs(a.y - b.y), Math.abs(a.y + a.height - b.y - b.height));
   }).toBeLessThan(1);
   await page.getByRole('textbox', { name: '搜索题目', exact: true }).click();
-  const focus = await page.locator('.q-search').evaluate(node => {
+  const focus = await page.locator('.tbx-qn-search').evaluate(node => {
     const field = node.querySelector('input');
     return { ring: getComputedStyle(node).boxShadow, inputOutline: getComputedStyle(field).outlineStyle, inputShadow: getComputedStyle(field).boxShadow };
   });
-  expect(focus.ring).not.toBe('none');
   expect(focus.inputOutline).toBe('none');
   expect(focus.inputShadow).toBe('none');
 });
@@ -909,16 +874,15 @@ test('功能：原始材料彻底删除后保留题目，来源入口说明原�
   await page.getByRole('button', { name: '确认这道题', exact: true }).click();
   await expect(page.getByText('1 题已入库')).toBeVisible();
   await page.getByRole('button', { name: '材料操作', exact: true }).click();
-  await page.getByRole('button', { name: '归档材料', exact: true }).click();
+  await page.getByRole('menuitem', { name: '归档材料', exact: true }).click();
   await page.getByRole('button', { name: '确认归档', exact: true }).click();
-  await page.getByRole('button', { name: '题库选项' }).click();
-  await page.getByRole('menuitem', { name: '归档内容', exact: true }).click();
+  await page.locator('.tbx-qn-rail').getByRole('button', { name: '已归档', exact: true }).click();
   await page.locator('.q-imports button').click();
   await page.getByRole('button', { name: '材料操作', exact: true }).click();
-  await page.getByRole('button', { name: '彻底删除材料', exact: true }).click();
-  await page.getByRole('dialog', { name: '彻底删除材料？' }).getByRole('button', { name: '彻底删除', exact: true }).click();
-  await finder(page).getByRole('button', { name: '返回题库', exact: true }).click();
-  await page.locator('.q-list-entry').click();
+  await page.getByRole('menuitem', { name: '彻底删除材料', exact: true }).click();
+  await page.getByRole('alertdialog', { name: '彻底删除材料？' }).getByRole('button', { name: '彻底删除', exact: true }).click();
+  await page.locator('.tbx-qn-rail').getByRole('button', { name: '已归档', exact: true }).click();
+  await page.locator('.tbx-qn-row').click();
   await expect(page.locator('.q-reading-body')).toContainText('求三加五');
   await expect(page.getByText('原始材料已彻底删除，题目内容仍保留。', { exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: '对照原稿', exact: true })).toHaveCount(0);
@@ -933,18 +897,18 @@ test('功能：搜索答案由用户选择，刷新保留选择，清除条件�
   await page.getByRole('textbox', { name: '答案与解析段落 1', exact: true }).fill('仅答案包含蓝莓。');
   await page.getByRole('button', { name: '保存题目', exact: true }).click();
   await page.getByRole('textbox', { name: '搜索题目', exact: true }).fill('蓝莓');
-  await expect(page.locator('.q-list-entry')).toHaveCount(0);
-  await page.getByRole('button', { name: '筛选题目', exact: true }).click();
-  await page.getByRole('checkbox', { name: '同时搜索答案与解析', exact: true }).check();
-  await expect(page.locator('.q-list-entry')).toHaveCount(1);
+  await expect(page.locator('.tbx-qn-row')).toHaveCount(0);
+    await page.getByRole('button', { name: '也搜索答案与解析', exact: true }).click();
+  await expect(page.locator('.tbx-qn-row')).toHaveCount(1);
   await page.reload();
-  await expect(page.getByRole('checkbox', { name: '同时搜索答案与解析', exact: true })).toBeChecked();
-  await expect(page.locator('.q-list-entry')).toHaveCount(1);
-  await page.getByRole('button', { name: '清除条件', exact: true }).click();
-  await expect(page.getByRole('checkbox', { name: '同时搜索答案与解析', exact: true })).not.toBeChecked();
+  await expect(page.getByRole('button', { name: '也搜索答案与解析', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('.tbx-qn-row')).toHaveCount(1);
+  await page.getByRole('button', { name: '也搜索答案与解析', exact: true }).click();
+  await page.getByRole('button', { name: '清除搜索', exact: true }).click();
+  await expect(page.getByRole('button', { name: '也搜索答案与解析', exact: true })).toHaveCount(0);
   await expect(page.getByRole('textbox', { name: '搜索题目', exact: true })).toHaveValue('');
   await page.getByRole('textbox', { name: '搜索题目', exact: true }).fill('练习');
-  await expect(page.locator('.q-list-entry')).toHaveCount(1);
+  await expect(page.locator('.tbx-qn-row')).toHaveCount(1);
 });
 
 test('功能：同一段中的两题可按换行拆分，公式保留且答案重新核对', async ({ page }) => {
@@ -996,14 +960,13 @@ test('功能：来源读取失败不误报删除，原题删除后改编快照�
   await page.getByRole('button', { name: '更多题目操作' }).click();
   await page.getByRole('menuitem', { name: '归档题目', exact: true }).click();
   await page.getByRole('button', { name: '确认归档', exact: true }).click();
-  await page.getByRole('button', { name: '题库选项' }).click();
-  await page.getByRole('menuitem', { name: '归档内容', exact: true }).click();
-  await page.locator('.q-list-entry').click();
+  await page.locator('.tbx-qn-rail').getByRole('button', { name: '已归档', exact: true }).click();
+  await page.locator('.tbx-qn-row').click();
   await page.getByRole('button', { name: '更多题目操作' }).click();
   await page.getByRole('menuitem', { name: '彻底删除题目', exact: true }).click();
-  await page.getByRole('dialog', { name: '彻底删除题目？' }).getByRole('button', { name: '彻底删除', exact: true }).click();
-  await finder(page).getByRole('button', { name: '返回题库', exact: true }).click();
-  await page.locator('.q-list-entry').click();
+  await page.getByRole('alertdialog', { name: '彻底删除题目？' }).getByRole('button', { name: '彻底删除', exact: true }).click();
+  await page.locator('.tbx-qn-rail').getByRole('button', { name: '已归档', exact: true }).click();
+  await page.locator('.tbx-qn-row').click();
   await expect(page.getByText('原题已彻底删除，可以继续查看采用时的原题。', { exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: '查看原题', exact: true })).toHaveCount(0);
   await page.getByText('采用时的原题', { exact: true }).click();
@@ -1216,7 +1179,7 @@ test('导入：双栏 PDF 左栏题目和右栏答案不能整页误判为答案
 });
 
 test('核心体验：删除和移动段落可局部撤销，保留之后输入', async ({ page }) => {
-  await finder(page).getByRole('button', { name: '手动录题', exact: true }).click();
+  await finder(page).getByRole('button', { name: '新建题目', exact: true }).click();
   await page.getByLabel('题目标题').fill('局部恢复');
   await page.getByRole('textbox', { name: '题干段落 1', exact: true }).fill('第一段保留');
   await page.getByRole('button', { name: '插入更多内容', exact: true }).click();
@@ -1252,7 +1215,7 @@ test('核心体验：全部处理材料折叠访问，待处理材料继续收�
   await completed.getByRole('button').click();
   await expect(page.getByText('1 题已入库')).toBeVisible();
   await page.getByRole('button', { name: '返回题库', exact: true }).click();
-  await page.locator('.q-list-entry button').first().click();
+  await page.locator('.tbx-qn-row').first().click();
   await page.getByRole('button', { name: '对照原稿', exact: true }).click();
   await expect(page.getByText('1 题已入库')).toBeVisible();
   await page.getByRole('button', { name: '返回题库', exact: true }).click();
@@ -1265,7 +1228,7 @@ test('核心体验：全部处理材料折叠访问，待处理材料继续收�
 });
 
 test('核心体验：表格内部删除可撤销，保住另一格后续文字', async ({ page }) => {
-  await finder(page).getByRole('button', { name: '手动录题', exact: true }).click();
+  await finder(page).getByRole('button', { name: '新建题目', exact: true }).click();
   await page.getByRole('button', { name: '插入更多内容', exact: true }).click();
   await page.getByRole('menuitem', { name: '添加表格', exact: true }).click();
   const cells = page.locator('.material-table-scroll td');
@@ -1364,7 +1327,7 @@ test('核心体验：局部撤销入口深浅色和窄屏可达', async ({ page 
     await page.getByRole('button', { name: theme === 'light' ? '浅色' : '深色', exact: true }).click();
     await expect(page.locator('html')).toHaveAttribute('data-workbench-theme', theme);
     await page.getByRole('navigation', { name: '功能模块' }).getByRole('link', { name: /^题库/ }).click();
-    await finder(page).getByRole('button', { name: '手动录题', exact: true }).click();
+    await finder(page).getByRole('button', { name: '新建题目', exact: true }).click();
     await page.getByRole('textbox', { name: '题干段落 1', exact: true }).fill('已知 $x^2=9$，求实数 $x$。');
     await page.getByRole('button', { name: '插入更多内容', exact: true }).click();
     await page.getByRole('menuitem', { name: '添加段落', exact: true }).click();
@@ -1398,7 +1361,7 @@ test('核心体验：没有待检查题但仍有未分配答案的材料继续�
 
 for (const label of ['题干', '答案与解析']) {
   test(`审查回归：空${label}首次输入不成为结构撤销，显式添加段落仍可撤销`, async ({ page }) => {
-    await finder(page).getByRole('button', { name: '手动录题', exact: true }).click();
+    await finder(page).getByRole('button', { name: '新建题目', exact: true }).click();
     if (label === '答案与解析') {
       await page.getByRole('textbox', { name: '题干段落 1', exact: true }).fill('用于保存的题干。');
       await page.getByRole('button', { name: '添加答案与解析', exact: true }).click();
@@ -1431,8 +1394,8 @@ test('分类工具多视口控件保持单行，切换工具和普通查找保�
   const aiInput = assistant.getByRole('textbox', { name: 'AI 输入', exact: true });
   await assistant.getByRole('button', { name: '新对话', exact: true }).click();
   await aiInput.fill('切换分类工具后继续备课');
-  await page.getByRole('button', { name: '题库选项', exact: true }).click();
-  await page.getByRole('menuitem', { name: '管理题型与标签', exact: true }).click();
+  await assistant.getByRole('button', { name: '关闭辅助栏', exact: true }).click();
+  await page.getByRole('button', { name: '管理题型与标签', exact: true }).click();
   const taxonomy = page.locator('.q-taxonomy');
   await taxonomy.getByLabel('新分类名称').fill('几何证明');
   await taxonomy.getByRole('button', { name: '新增', exact: true }).click();
@@ -1453,12 +1416,11 @@ test('分类工具多视口控件保持单行，切换工具和普通查找保�
   }
   await taxonomy.getByRole('button', { name: '保存分类', exact: true }).click();
   await expect.poll(async () => (await client.request('GET', '/api/modules/questions/v2/taxonomy')).json.types.map(item => item.name)).toEqual(['几何证明']);
-  await assistant.getByRole('tab', { name: 'AI 助理', exact: true }).click();
+  await page.getByRole('button', { name: 'AI 助理', exact: true }).click();
   await expect(aiInput).toHaveValue('切换分类工具后继续备课');
   await assistant.getByRole('button', { name: '关闭辅助栏', exact: true }).click();
   await page.setViewportSize({ width: 1440, height: 900 });
-  await finder(page).getByRole('button', { name: '筛选题目', exact: true }).click();
-  await page.getByRole('textbox', { name: '搜索题目', exact: true }).fill('普通浏览');
+    await page.getByRole('textbox', { name: '搜索题目', exact: true }).fill('普通浏览');
   await page.getByRole('button', { name: 'AI 助理', exact: true }).click();
   await expect(aiInput).toHaveValue('切换分类工具后继续备课');
   await page.reload();

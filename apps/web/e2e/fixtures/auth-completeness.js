@@ -26,7 +26,7 @@ export function deferred() {
 
 export async function registrationForm(page, world, email = 'teacher@example.test') {
   await page.goto(world.origin);
-  await page.getByRole('button', { name: '创建账户', exact: true }).click();
+  await page.getByRole('button', { name: /^创建账户(?: ›)?$/ }).click();
   await page.getByLabel('昵称', { exact: true }).fill('核查教师');
   await page.getByLabel('邮箱', { exact: true }).fill(email);
   await page.getByLabel('密码', { exact: true }).fill(password);
@@ -50,18 +50,18 @@ export async function signIn(page, email, options = {}) {
   await page.getByLabel('邮箱', { exact: true }).fill(email);
   await page.getByLabel('密码', { exact: true }).fill(options.password ?? password);
   await page.getByLabel('记住我', { exact: true }).setChecked(options.remember ?? true);
-  await page.getByRole('button', { name: '登录', exact: true }).click();
+  await page.getByRole('button', { name: /^登录(?: ›)?$/ }).click();
   await expect(page.locator('.wb-shell')).toBeVisible();
 }
 
 export async function openSettings(page) {
   await page.getByRole('link', { name: /^账户：/ }).click();
-  await expect(page.getByRole('button', { name: '删除账户', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: '删除账户…', exact: true })).toBeVisible();
 }
 
 export async function removeAccount(page, email) {
   await openSettings(page);
-  await page.getByRole('button', { name: '删除账户', exact: true }).click();
+  await page.getByRole('button', { name: '删除账户…', exact: true }).click();
   const dialog = page.getByRole('dialog', { name: '删除账户？', exact: true });
   await dialog.getByLabel('输入账户邮箱以确认').fill(email);
   await dialog.getByRole('button', { name: '永久删除账户', exact: true }).click();

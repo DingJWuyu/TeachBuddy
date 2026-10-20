@@ -3,13 +3,15 @@ import { ConfirmMenuItem } from '../../components/ui/confirm.jsx';
 import { Icon } from '../../components/icons.jsx';
 import { cx } from '../../components/ui/classNames.js';
 import { tx, useLocale, isEnglish, monthDay } from '../../i18n/presentation.js';
-import { workbenchGet } from '../../platform/http/apiClient.js';
+import { workbenchGet, workbenchPost } from '../../platform/http/apiClient.js';
 import { isDeletedAccount } from '../../platform/device/storage.js';
 import { navigate } from '../workbench/routes.js';
 import { usePresentationAgent as useAgent } from './AgentPresentation.jsx';
 import { Prose, Inline } from './Prose.jsx';
 import { whenLabel } from './demoScript.js';
 import { ToolCard } from './ToolCard.jsx';
+import { useAuth } from '../auth/index.jsx';
+import { seedSampleWeek } from '../workbench/demo/seed.js';
 import './agent.css';
 /*
  * The teaching assistant, shared by the home page and the side panel.
@@ -45,7 +47,7 @@ export function Glyph({ name, size = 18, stroke = 1.75 }) { return <Icon name={n
 
 /* ---------- small helpers ---------- */
 const uuid = () => crypto.randomUUID();
-const call = async (method, path) => { if (method !== 'GET') throw new Error('Unsupported operation'); return (await workbenchGet(path)).body; };
+const call = async (method, path, body) => (method === 'GET' ? await workbenchGet(path) : await workbenchPost(path, body, uuid())).body;
 const toDoc = (text) => ({ version: 2, blocks: String(text).split('\n').filter(Boolean).map((line) => {
   const runs = [];
   let end = 0;
@@ -377,11 +379,34 @@ function WorkLog({ calls, turn, answered }) {
 }
 
 /* ---------- result cards ---------- */
-const done = new Map();
-function useDone(key) {
-  const [state, setState] = useState(done.get(key) ?? 'idle');
-  const set = (v) => { done.set(key, v); setState(v); };
-  return [state, set];
+function useCardAction(agent, cardKey) {
+  const storageKey = agent.prefix + 'card-action:' + cardKey;
+  const record = useRef(null);
+  if (!record.current) {
+    try { record.current = JSON.parse(localStorage.getItem(storageKey)); } catch { /* A new card starts without an action. */ }
+    record.current ??= { state: 'idle', requests: {} };
+  }
+  const [state, setState] = useState(record.current.state);
+  function persist(next) {
+    if (isDeletedAccount(agent.accountKey)) throw new Error('Account unavailable');
+    localStorage.setItem(storageKey, JSON.stringify(next));
+    record.current = next;
+  }
+  async function write(slot, path, body) {
+    let pending = record.current.requests[slot];
+    if (!pending) {
+      pending = { key: uuid(), path, body };
+      persist({ ...record.current, requests: { ...record.current.requests, [slot]: pending } });
+    }
+    return (await workbenchPost(pending.path, pending.body, pending.key)).body;
+  }
+  async function run(task) {
+    if (state === 'busy' || state === 'done') return;
+    setState('busy');
+    try { await task(write); persist({ ...record.current, state: 'done' }); setState('done'); }
+    catch { setState('error'); }
+  }
+  return [state, run];
 }
 function CardHead({ glyph, hue, title, meta, children }) {
   return (
@@ -411,7 +436,7 @@ function QuestionRows({ items, agent }) {
     <div className="tbx-card-rows">
       {items.map((q, i) => (
         <div className="tbx-card-row" key={q.id} style={{ '--i': i }}>
-          <button className="tbx-card-row-main" onClick={() => { if (q.id.startsWith('demo-')) void agent.openDemoObject('question', q.id); else navigate(`/questions/${q.id}`); }}>
+          <button className="tbx-card-row-main" onClick={() => navigate(`/questions/${q.id}`)}>
             <span className="tbx-card-row-title">{q.title}</span>
             {q.excerpt && <span className="tbx-card-row-text"><Inline text={q.excerpt} /></span>}
           </button>
@@ -423,9 +448,8 @@ function QuestionRows({ items, agent }) {
   );
 }
 function ResultCard({ card, cardKey, agent }) {
-  const [state, setState] = useDone(agent.prefix + cardKey);
+  const [state, run] = useCardAction(agent, cardKey);
   const [expanded, setExpanded] = useState(false);
-  const run = async (task) => { setState('busy'); try { await task(); setState('done'); } catch { setState('error'); } };
 
   if (card.kind === 'questions') {
     return (
@@ -439,7 +463,7 @@ function ResultCard({ card, cardKey, agent }) {
     return (
       <div className="tbx-card">
         <CardHead glyph="list" hue="indigo" title={card.title} meta={card.meta}>
-          <ActionButton state={state} idle={tx('加到日程')} doneLabel={tx('已加到待安排')} doneTo={agent.isDemo ? undefined : "/calendar"} onRun={() => run(() => agent.saveDemoResult('entry', {
+          <ActionButton state={state} idle={tx('加到日程')} doneLabel={tx('已加到待安排')} doneTo="/calendar" onRun={() => run(write => write('plan', '/api/modules/schedule/entries', {
             title: card.entryTitle,
             items: card.steps.map((text) => ({ id: uuid(), text, priority: 'normal', completed: false })),
             time: null, repeat: null, reminder: null,
@@ -456,9 +480,9 @@ function ResultCard({ card, cardKey, agent }) {
     return (
       <div className="tbx-card">
         <CardHead glyph="layers" hue="orange" title={card.title} meta={card.meta}>
-          <ActionButton state={state} idle={card.kind === 'variant' ? tx('存进题库') : tx('存进题库 · {{n}} 道', { n: items.length })} doneLabel={tx('已存进题库')} doneTo={agent.isDemo ? undefined : "/questions"} onRun={() => run(async () => {
-            for (const q of items) {
-              await agent.saveDemoResult('question', { title: q.title, body: toDoc(q.body), solution: toDoc(q.solution), answerStatus: 'present', typeId: q.typeId ?? null, tagIds: q.tagIds ?? [] });
+          <ActionButton state={state} idle={card.kind === 'variant' ? tx('存进题库') : tx('存进题库 · {{n}} 道', { n: items.length })} doneLabel={tx('已存进题库')} doneTo="/questions" onRun={() => run(async write => {
+            for (const [index, q] of items.entries()) {
+              await write(`question:${index}`, '/api/modules/questions/v2/items', { title: q.title, body: toDoc(q.body), solution: toDoc(q.solution), answerStatus: 'present', note: '', starred: false, source: { kind: 'manual' }, typeId: q.typeId ?? null, tagIds: q.tagIds ?? [] });
             }
           })} />
         </CardHead>
@@ -512,7 +536,6 @@ function RefChip({ r, onRemove, suggest, onAdd }) {
   const agent = useAgent();
   const kind = KIND[r.kind] ?? KIND.question;
   const open = () => {
-    if (r.id?.startsWith('demo-')) { void agent.openDemoObject(r.kind, r.id); return; }
     if (r.kind === 'question') navigate(`/questions/${r.id}`);
     else if (r.kind === 'resource') navigate(`/resources/${r.id}`);
     else navigate('/calendar');
@@ -749,7 +772,7 @@ function Composer({ agent, running, ready, variant, autoFocus, focusKey, context
             </button>
           )}
         </div>
-      <span className="tbx-composer-hint" role="status">{agent.status}</span>
+      {!agent.isDemo && <span className="tbx-composer-hint" role="status">{agent.status}</span>}
       </form>
       {(refs.length > 0 || suggest) && (
         <div className="tbx-drawer">
@@ -860,7 +883,25 @@ function PanelWelcome({ context, onPrompt, busy }) {
 }
 
 /* Prototype convenience: every reload starts empty, so offer a full sample week. */
-function DemoSeed() { const agent = useAgent(); return <p className="tbx-demo">{tx('第一次来？')}<button onClick={() => agent.startDemo()}>{tx('载入一周的示例数据')}</button>{tx('，看看工作台装满时的样子。')}</p>; }
+function DemoSeed({ onSeeded }) {
+  const agent = useAgent();
+  const { request: transport } = useAuth();
+  const controller = useRef(null);
+  useEffect(() => () => controller.current?.abort(), []);
+  const seededKey = agent.prefix + 'sample-seeded';
+  const [state, setState] = useState(() => { try { return localStorage.getItem(seededKey) === 'true' ? 'done' : 'idle'; } catch { return 'idle'; } });
+  async function run() {
+    setState('running');
+    try {
+      controller.current = new AbortController();
+      await seedSampleWeek({ accountKey: agent.accountKey, transport, signal: controller.current.signal });
+      if (!isDeletedAccount(agent.accountKey)) localStorage.setItem(seededKey, 'true');
+      setState('done'); onSeeded?.();
+    } catch { setState('error'); }
+  }
+  if (state === 'done') return <p className="tbx-demo is-done"><Glyph name="check" size={15} />{tx('示例数据已就绪：7 道题、4 份资料和一周的课表。')}<button onClick={() => navigate('/questions')}>{tx('去题库')}</button><button onClick={() => navigate('/calendar')}>{tx('看日程')}</button></p>;
+  return <p className="tbx-demo">{tx('第一次来？')}<button onClick={run} disabled={state === 'running'}>{state === 'running' ? tx('正在载入…') : tx('载入一周的示例数据')}</button>{tx('，看看工作台装满时的样子。')}{state === 'error' ? tx('载入没有完成，请再试一次。') : ''}</p>;
+}
 
 function Suggestions({ items, busy, onPrompt }) {
   return (
@@ -919,7 +960,7 @@ export function AgentWorkspace({ variant = 'panel' }) {
   const [newMessages, setNewMessages] = useState(false);
   const [focusComposer, setFocusComposer] = useState(0);
   const [dockH, setDockH] = useState(140);
-  const [lessons] = useLessons(agent.businessRevision, agent);
+  const [lessons, refreshLessons] = useLessons(agent.businessRevision, agent);
   const [lesson, setLesson] = useState(null);
   const context = useCurrentContext(variant === 'panel', agent.accountKey);
   const { snapshot, draft } = agent;
@@ -997,7 +1038,6 @@ export function AgentWorkspace({ variant = 'panel' }) {
   const lastTurn = snapshot?.turns[snapshot.turns.length - 1];
   const dock = (
     <div className="tbx-dock" ref={dockRef}>
-      {agent.isDemo && <span className="tbx-composer-note">{tx("本地示例对话")} · {tx("仅保留在此设备")}</span>}
       {agent.sendPending && (
         <div className="tbx-notice">{ta('发送结果待确认')}<button className="tbx-btn is-small" onClick={agent.send} disabled={agent.busy}>{ta('确认发送结果')}</button></div>
       )}
@@ -1032,7 +1072,6 @@ export function AgentWorkspace({ variant = 'panel' }) {
 
   return (
     <section className={cx('tbx-agent', empty && 'is-empty')} data-region="ai-workspace" data-variant={variant} style={{ '--dock-h': `${dockH}px` }}>
-      {agent.preview && <DemoPreview agent={agent} />}
       {variant === 'panel' && <PanelHead agent={agent} />}
 
       {empty && variant === 'home' ? (
@@ -1040,7 +1079,7 @@ export function AgentWorkspace({ variant = 'panel' }) {
           <Hero lessons={lessons} lesson={lesson} setLesson={next => { setLesson(next); if (next && !agent.isDemo) void agent.startDemo('', [{ kind: 'entry', id: next.id }]); }} />
           {dock}
           <Suggestions items={heroSuggestions} busy={agent.busy} onPrompt={(text) => prompt(text)} />
-          <DemoSeed />
+          <DemoSeed onSeeded={refreshLessons} />
         </div>
       ) : (
         <Fragment>
@@ -1134,11 +1173,4 @@ export function Home({ returnPath }) {
       </div>
     </div>
   );
-}
-
-function DemoPreview({ agent }) {
-  const dialog = useRef(null);
-  useEffect(() => { dialog.current?.showModal(); }, []);
-  const text = doc => (doc?.blocks ?? []).map(block => (block.runs ?? []).map(run => run.type === 'math' ? `$${run.latex}$` : run.text ?? '').join('')).join('\n\n');
-  return <dialog ref={dialog} className="tbx-demo-preview" onCancel={agent.closeDemoObject} onClick={event => { if (event.target === dialog.current) agent.closeDemoObject(); }}><header><strong>{agent.preview.title}</strong><button className="tbx-icon-btn" aria-label={tx('关闭')} onClick={agent.closeDemoObject}><Glyph name="close" /></button></header><Prose text={text(agent.preview.body) || agent.preview.note || tx('本地示例对话')} />{agent.preview.solution && <Prose text={text(agent.preview.solution)} />}</dialog>;
 }

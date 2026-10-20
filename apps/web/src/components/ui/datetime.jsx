@@ -34,7 +34,7 @@ const yearName = (y) => (isEnglish() ? String(y) : `${y}年`);
  * opens a page of twelve years, so any date is two clicks away instead of a
  * long run of arrow presses. Picking a year or month drills back down.
  */
-export function DatePicker({ value, min, today, onChange }) {
+export function DatePicker({ value, min, max, today, onChange }) {
   const [month, setMonth] = useState((value || today).slice(0, 7));
   const [level, setLevel] = useState('days'); // days → months → years
   const [y, m] = month.split('-').map(Number);
@@ -51,6 +51,19 @@ export function DatePicker({ value, min, today, onChange }) {
   const weekdays = isEnglish() ? ['M', 'T', 'W', 'T', 'F', 'S', 'S'] : ['一', '二', '三', '四', '五', '六', '日'];
   const pickedMonth = value?.slice(0, 7);
   const minMonth = min?.slice(0, 7);
+  const maxMonth = max?.slice(0, 7);
+  const minYear = min ? Number(min.slice(0, 4)) : null;
+  const maxYear = max ? Number(max.slice(0, 4)) : null;
+  const canShift = (direction) => {
+    if (level === 'days') {
+      const date = new Date(Date.UTC(y, m - 1 + direction, 1));
+      const target = `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}`;
+      return !(minMonth && target < minMonth) && !(maxMonth && target > maxMonth);
+    }
+    const firstYear = level === 'months' ? y + direction : pageStart + direction * 12;
+    const lastYear = level === 'months' ? firstYear : firstYear + 11;
+    return !(minYear !== null && lastYear < minYear) && !(maxYear !== null && firstYear > maxYear);
+  };
   const title = level === 'days' ? monthTitle(month) : level === 'months' ? yearName(y) : `${pageStart} – ${pageStart + 11}`;
   return (
     <div className="tbx-datepicker" data-level={level}>
@@ -60,8 +73,8 @@ export function DatePicker({ value, min, today, onChange }) {
           {level !== 'years' && <Glyph name="chevron" size={13} />}
         </button>
         <span>
-          <button type="button" aria-label={tx(level === 'days' ? '上个月' : '上一页')} onClick={() => shift(-step)}><Glyph name="chevron" size={15} /></button>
-          <button type="button" aria-label={tx(level === 'days' ? '下个月' : '下一页')} onClick={() => shift(step)}><Glyph name="chevron" size={15} /></button>
+          <button type="button" aria-label={tx(level === 'days' ? '上个月' : '上一页')} disabled={!canShift(-1)} onClick={() => shift(-step)}><Glyph name="chevron" size={15} /></button>
+          <button type="button" aria-label={tx(level === 'days' ? '下个月' : '下一页')} disabled={!canShift(1)} onClick={() => shift(step)}><Glyph name="chevron" size={15} /></button>
         </span>
       </header>
       {level === 'days' && (
@@ -71,7 +84,7 @@ export function DatePicker({ value, min, today, onChange }) {
             <button
               key={d}
               type="button"
-              disabled={Boolean(min && d < min)}
+              disabled={Boolean((min && d < min) || (max && d > max))}
               className={cx(d.slice(0, 7) !== month && 'is-outside', d === today && 'is-today', d === value && 'is-selected')}
               aria-pressed={d === value}
               aria-label={d}
@@ -87,7 +100,7 @@ export function DatePicker({ value, min, today, onChange }) {
           {Array.from({ length: 12 }, (_, i) => {
             const key = `${y}-${pad(i + 1)}`;
             return (
-              <button key={key} type="button" disabled={Boolean(minMonth && key < minMonth)} className={cx(key === pickedMonth && 'is-selected', key === today?.slice(0, 7) && 'is-today')} onClick={() => { setMonth(key); setLevel('days'); }}>
+              <button key={key} type="button" disabled={Boolean((minMonth && key < minMonth) || (maxMonth && key > maxMonth))} className={cx(key === pickedMonth && 'is-selected', key === today?.slice(0, 7) && 'is-today')} onClick={() => { setMonth(key); setLevel('days'); }}>
                 {monthName(i + 1)}
               </button>
             );
@@ -99,7 +112,7 @@ export function DatePicker({ value, min, today, onChange }) {
           {Array.from({ length: 12 }, (_, i) => {
             const year = pageStart + i;
             return (
-              <button key={year} type="button" disabled={Boolean(min && year < Number(min.slice(0, 4)))} className={cx(year === Number(value?.slice(0, 4)) && 'is-selected', year === Number(today?.slice(0, 4)) && 'is-today')} onClick={() => { setMonth(`${year}-${pad(m)}`); setLevel('months'); }}>
+              <button key={year} type="button" disabled={Boolean((minYear !== null && year < minYear) || (maxYear !== null && year > maxYear))} className={cx(year === Number(value?.slice(0, 4)) && 'is-selected', year === Number(today?.slice(0, 4)) && 'is-today')} onClick={() => { setMonth(`${year}-${pad(m)}`); setLevel('months'); }}>
                 {year}
               </button>
             );
@@ -108,7 +121,7 @@ export function DatePicker({ value, min, today, onChange }) {
       )}
       {today && (
         <footer>
-          <button type="button" onClick={() => onChange(today)} disabled={Boolean(min && today < min)}>{tx('今天')}</button>
+          <button type="button" onClick={() => onChange(today)} disabled={Boolean((min && today < min) || (max && today > max))}>{tx('今天')}</button>
         </footer>
       )}
     </div>

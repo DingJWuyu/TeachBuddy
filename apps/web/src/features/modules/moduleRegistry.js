@@ -21,7 +21,7 @@ const localRegistry = {
   schedule: { Page: SchedulePage, icon: 'calendar' },
   questions: { Page: QuestionsPage, icon: 'book' },
   resources: { Page: ResourceRoute, icon: 'folder' },
-  math: { Page: MathWorkbench, icon: 'graph' }
+  math: { Page: MathWorkbench, icon: 'math' }
 };
 
 const PORT_PROVIDERS = Object.fromEntries(Object.entries(modulePorts).map(([name, descriptor]) => [name, descriptor.provider]));

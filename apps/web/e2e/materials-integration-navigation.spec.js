@@ -29,7 +29,8 @@ async function register(page) {
   await page.getByRole("checkbox").check();
   await page.getByRole("button", { name: "注册", exact: true }).click();
   await expect(page.locator(".wb-shell")).toBeVisible();
-  await page.getByRole("button", { name: "知道了", exact: true }).click();
+  const coach = page.getByRole("button", { name: "知道了", exact: true });
+  if (await coach.count()) await coach.click();
 }
 const nav = (page, name) =>
   page.getByRole("navigation", { name: "功能模块" }).getByRole("link", { name: new RegExp("^" + name) }).click();

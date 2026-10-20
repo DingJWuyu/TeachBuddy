@@ -163,7 +163,7 @@ function TagFilter({ labels, value, onChange, title }) {
   );
 }
 
-function Column({ title, count, total, tone, children, onNew, empty, filter, onClearFilter }) {
+function Column({ title, count, total, tone, children, onNew, empty, filter, onClearFilter, bodyRef, onScroll }) {
   const filtered = total > 0 && count === 0;
   return (
     <section className={cx('tbx-col', tone && `is-${tone}`)}>
@@ -178,7 +178,7 @@ function Column({ title, count, total, tone, children, onNew, empty, filter, onC
           )}
         </span>
       </header>
-      <div className="tbx-col-body">
+      <div className="tbx-col-body" ref={bodyRef} onScroll={onScroll}>
         {filtered ? (
           <div className="tbx-col-empty is-filtered">
             {tx('没有符合筛选的任务')}
@@ -190,9 +190,17 @@ function Column({ title, count, total, tone, children, onNew, empty, filter, onC
   );
 }
 
-export function TaskBoard({ entries, occurrences, daily, labels, zone, now, today, draft, draftId, onOpen, onClose, onNew, onToggle, accountKey, helpers }) {
+export function TaskBoard({ entries, occurrences, daily, labels, zone, now, today, draft, draftId, onOpen, onClose, onNew, onToggle, accountKey, helpers, scroll, onScroll }) {
   useLocale();
   const { localParts, formatClock } = helpers;
+  const todayBody = useRef(null);
+  const laterBody = useRef(null);
+  const inboxBody = useRef(null);
+  useLayoutEffect(() => {
+    for (const [key, ref] of [['today', todayBody], ['later', laterBody], ['inbox', inboxBody]]) {
+      if (ref.current) ref.current.scrollTop = scroll?.[key] || 0;
+    }
+  }, [scroll, entries, occurrences, daily]);
   const clock = (iso) => formatClock(localParts(zone, Date.parse(iso)).minutes);
   const range = (o) => (o.calendar?.allDay ? tx('全天') : `${clock(o.startsAt)} – ${clock(o.endsAt)}`);
   const dateOf = (iso) => localParts(zone, Date.parse(iso)).date;
@@ -270,10 +278,10 @@ export function TaskBoard({ entries, occurrences, daily, labels, zone, now, toda
   return (
     <div className={cx('tbx-board', settled && 'is-settled')}>
       <div className="tbx-columns">
-        <Column title={tx('今天')} count={shownToday.length} total={todayItems.length} tone="today" onNew={() => onNew(false)} empty={tx('今天的安排都结束了，喝口水吧。')} filter={filterFor('today', tx('今天'))} onClearFilter={() => setFilter('today', [])}>
+        <Column bodyRef={todayBody} onScroll={event => onScroll?.('today', event.currentTarget.scrollTop)} title={tx('今天')} count={shownToday.length} total={todayItems.length} tone="today" onNew={() => onNew(false)} empty={tx('今天的安排都结束了，喝口水吧。')} filter={filterFor('today', tx('今天'))} onClearFilter={() => setFilter('today', [])}>
           {shownToday.map((o) => card(o, range(o), `${o.key.entryId}:${o.key.originDate}`))}
         </Column>
-        <Column title={tx('接下来')} count={laterCount} total={laterTotal} empty={tx('这几天还没有别的安排。')} filter={filterFor('later', tx('接下来'))} onClearFilter={() => setFilter('later', [])}>
+        <Column bodyRef={laterBody} onScroll={event => onScroll?.('later', event.currentTarget.scrollTop)} title={tx('接下来')} count={laterCount} total={laterTotal} empty={tx('这几天还没有别的安排。')} filter={filterFor('later', tx('接下来'))} onClearFilter={() => setFilter('later', [])}>
           {shownLater.map((g) => (
             <div className="tbx-day" key={g.date}>
               <h4>{dayLabel(g.date).name}<span>{dayLabel(g.date).md}</span></h4>
@@ -281,7 +289,7 @@ export function TaskBoard({ entries, occurrences, daily, labels, zone, now, toda
             </div>
           ))}
         </Column>
-        <Column title={tx('待安排')} count={shownInbox.length} total={unscheduled.length} tone="inbox" onNew={() => onNew(true)} empty={tx('收件箱空了。想到要做的事，随手记在这里。')} filter={filterFor('inbox', tx('待安排'))} onClearFilter={() => setFilter('inbox', [])}>
+        <Column bodyRef={inboxBody} onScroll={event => onScroll?.('inbox', event.currentTarget.scrollTop)} title={tx('待安排')} count={shownInbox.length} total={unscheduled.length} tone="inbox" onNew={() => onNew(true)} empty={tx('收件箱空了。想到要做的事，随手记在这里。')} filter={filterFor('inbox', tx('待安排'))} onClearFilter={() => setFilter('inbox', [])}>
           {shownInbox.map((e) => card(e, null, e.id))}
         </Column>
       </div>

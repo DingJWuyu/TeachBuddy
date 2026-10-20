@@ -414,7 +414,26 @@
 }
 
 /* ---------- the editor: one card, a quiet canvas inside it ---------- */
+.wb-shell.tb-prototype[data-route="math"]:has(.math-workshop) .wb-workspace {
+  --math-workspace-inset: 32px;
+  padding: var(--math-workspace-inset);
+  gap: 16px;
+  container: math-workspace / inline-size;
+}
+.wb-shell.tb-prototype[data-route="math"]:has(.math-workshop) .wb-main {
+  padding: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+@media (max-width: 1180px) {
+  .wb-shell.tb-prototype[data-route="math"]:has(.math-workshop) .wb-workspace { --math-workspace-inset: 24px; }
+}
+@media (max-width: 700px) {
+  .wb-shell.tb-prototype[data-route="math"]:has(.math-workshop) .wb-workspace { --math-workspace-inset: 12px; }
+}
+
 :is(.wb-shell, .tbx-portal-host) .math-workshop {
+  padding: 0;
   --mw-line: var(--tb-line-soft);
   --mw-muted: var(--tb-muted);
   --mw-stage: #f7f7f9;
@@ -520,9 +539,9 @@
 :is(.wb-shell, .tbx-portal-host) .mw-heading-actions > .mw-button:first-child:hover:not(:disabled) { background: color-mix(in oklab, var(--tb-accent) 88%, black); }
 :is(.wb-shell, .tbx-portal-host) .mw-heading-actions .mw-work-actions > .mw-icon { background: var(--tb-fill); color: var(--tb-ink); }
 :is(.wb-shell, .tbx-portal-host) .mw-heading-actions .mw-work-actions > .mw-icon:hover { background: var(--tb-fill-hover); }
-:is(.wb-shell, .tbx-portal-host) .mw-heading-actions .wb-popover { min-width: 190px; padding: 6px; border: 0; border-radius: 14px; box-shadow: var(--tb-shadow-3); }
-:is(.wb-shell, .tbx-portal-host) .mw-heading-actions .wb-popover [role=menuitem] { min-height: 34px; padding: 6px 10px; border: 0; border-radius: 9px; background: transparent; font-size: 14px; }
-:is(.wb-shell, .tbx-portal-host) .mw-heading-actions .wb-popover [role=menuitem]:hover:not(:disabled) { background: var(--tb-fill); }
+:is(.wb-shell, .tbx-portal-host) .mw-work-menu { min-width: 190px; padding: 6px; border: 0; border-radius: 14px; box-shadow: var(--tb-shadow-3); }
+:is(.wb-shell, .tbx-portal-host) .mw-work-menu [role=menuitem] { min-height: 34px; padding: 6px 10px; border: 0; border-radius: 9px; background: transparent; font-size: 14px; }
+:is(.wb-shell, .tbx-portal-host) .mw-work-menu [role=menuitem]:hover:not(:disabled) { background: var(--tb-fill); }
 :is(.wb-shell, .tbx-portal-host) .math-workshop > .mw-notice,
 :is(.wb-shell, .tbx-portal-host) .math-workshop > .math-message {
   display: flex;
@@ -1045,21 +1064,19 @@
 /* ---------- other kinds of work (imported pages, earlier works): the same card ---------- */
 :is(.wb-shell, .tbx-portal-host) .math-workbench.wb-module:has(> .math-main) { gap: 10px; padding: 0; background: transparent; font-family: var(--tb-font); }
 :is(.wb-shell, .tbx-portal-host) .math-workbench .math-main {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  grid-template-rows: auto minmax(0, 1fr);
-  align-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
   border-radius: 24px;
   background: var(--tb-surface);
   color: var(--tb-ink);
   box-shadow: var(--tb-shadow-1);
 }
-:is(.wb-shell, .tbx-portal-host) .math-workbench .math-main > * { grid-column: 1 / -1; }
-:is(.wb-shell, .tbx-portal-host) .math-main .math-workspace-header { display: contents; }
+:is(.wb-shell, .tbx-portal-host) .math-main .math-workspace-header { display: flex; flex: none; align-items: center; flex-wrap: wrap; gap: 0; min-height: 0; padding: 0; border: 0; }
 :is(.wb-shell, .tbx-portal-host) .math-main .math-workspace-identity { display: none; }
 :is(.wb-shell, .tbx-portal-host) .math-main .math-workspace-header > input { display: none; }
-:is(.wb-shell, .tbx-portal-host) .math-main .math-workspace-actions { grid-row: 1; grid-column: 2; display: flex; align-items: center; gap: 6px; padding: 14px 14px 10px 0; }
-:is(.wb-shell, .tbx-portal-host) .math-main .math-document-bar { grid-row: 1; grid-column: 1; gap: 10px; padding: 14px 10px 10px 14px; border: 0; background: transparent; }
+:is(.wb-shell, .tbx-portal-host) .math-main .math-workspace-actions { flex: none; display: flex; align-items: center; gap: 6px; padding: 14px 14px 10px 0; }
+:is(.wb-shell, .tbx-portal-host) .math-main .math-document-bar { flex: 1; min-width: 0; gap: 10px; padding: 14px 10px 10px 14px; border: 0; background: transparent; }
 :is(.wb-shell, .tbx-portal-host) .math-workbench .math-main :is(.math-workspace-actions, .math-document-bar) button {
   display: inline-flex;
   align-items: center;
@@ -1103,6 +1120,8 @@
 :is(.wb-shell, .tbx-portal-host) .math-main .math-workspace-status { padding: 3px 10px; border-radius: 999px; background: var(--tb-fill); color: var(--tb-muted); font-size: 12px; font-weight: 600; }
 :is(.wb-shell, .tbx-portal-host) .math-main .math-undo-actions { margin-left: auto; }
 :is(.wb-shell, .tbx-portal-host) .math-main .math-canvas {
+  flex: 1;
+  min-height: 0;
   align-self: stretch;
   margin: 0 10px 10px;
   border-radius: 18px;

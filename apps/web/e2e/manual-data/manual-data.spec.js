@@ -48,10 +48,10 @@ test("题目恢复、个人资料离线阅读与部署备份恢复", async ({ pa
   await page
     .locator('a[href^="/questions"]').first()
     .click();
-  await page.locator(".q-finder").getByRole("button", { name: "手动录题", exact: true }).click();
+  await page.locator(".q-finder").getByRole("button", { name: "新建题目", exact: true }).click();
   await page.getByLabel("题目标题", { exact: true }).fill("需要恢复的函数题");
   await page
-    .locator(".q-question textarea")
+    .getByRole("textbox", { name: "题干段落 1", exact: true })
     .first()
     .fill("求函数 f(x)=x² 的最小值。");
   await page.getByRole("button", { name: "保存题目", exact: true }).click();
@@ -59,9 +59,8 @@ test("题目恢复、个人资料离线阅读与部署备份恢复", async ({ pa
   await page.getByRole("menuitem", { name: "归档题目", exact: true }).click();
   await page.getByRole("button", { name: "确认归档", exact: true }).click();
   await expect(page.locator(".q-message")).toContainText("已归档");
-  await page.getByRole("button", { name: "题库选项" }).click();
-  await page.getByRole("menuitem", { name: "归档内容", exact: true }).click();
-  await page.locator(".q-list-entry button").click();
+  await page.getByRole("button", { name: "已归档", exact: true }).click();
+  await page.locator(".tbx-qn-row").filter({ hasText: "需要恢复的函数题" }).click();
   await page.getByRole("button", { name: "恢复题目", exact: true }).click();
   await page.getByRole("button", { name: "确认恢复", exact: true }).click();
   await expect(page.locator(".q-message")).toContainText("已恢复");
@@ -89,10 +88,10 @@ test("题目恢复、个人资料离线阅读与部署备份恢复", async ({ pa
       .get().n,
   ).toBe(1);
   await expect(
-    page.getByRole("button", { name: "下载资料包", exact: true }),
+    page.getByRole("button", { name: "下载", exact: true }),
   ).toBeVisible();
   const waiting = page.waitForEvent("download");
-  await page.getByRole("button", { name: "下载资料包", exact: true }).click();
+  await page.getByRole("button", { name: "下载", exact: true }).click();
   const download = await waiting;
   const archive = await JSZip.loadAsync(fs.readFileSync(await download.path()));
   const manifest = JSON.parse(
@@ -114,7 +113,7 @@ test("题目恢复、个人资料离线阅读与部署备份恢复", async ({ pa
   await expect(offline.getByText('求函数 f(x)=x² 的最小值。',{exact:true})).toBeVisible();
   await offline.close();
 
-  await page.getByRole("dialog", { name: "导出个人资料" }).locator(".settings-dialog-close").click();
+  await page.getByRole("dialog", { name: "导出个人资料" }).getByRole("button", { name: "关闭", exact: true }).click();
   await page.reload();
   await expect(page.getByRole("button", { name: "导出数据", exact: true })).toBeVisible();
   await page.screenshot({
@@ -124,8 +123,8 @@ test("题目恢复、个人资料离线阅读与部署备份恢复", async ({ pa
   await page
     .locator('a[href^="/questions"]').first()
     .click();
-  await page.getByRole("button", { name: "返回题库", exact: true }).click();
-  await page.locator(".q-list-entry button").click();
+  await page.locator(".tbx-qn-rail").getByRole("button", { name: /^全部题目/ }).click();
+  await page.locator(".tbx-qn-row").filter({ hasText: "需要恢复的函数题" }).click();
   await expect(page.getByRole("heading", { name: "需要恢复的函数题", exact: true })).toBeVisible();
   const directory = world.directory;
   const originalPort = Number(new URL(world.origin).port);

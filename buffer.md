@@ -14,11 +14,16 @@
 | --- | --- | --- |
 | 自定义背景仅保存在设备 | 新设计允许上传背景图；[偏好实现](apps/api/src/workbench/preferences.js)仅接受四种预设背景，不接收 `backgroundImage`。前端按账户保留本地自定义背景，预设背景继续正常保存。 | 是否增加图片存储与跨设备偏好支持。 |
 | 资源标签颜色没有持久接口 | 新设计标签有颜色；[材料契约](apps/api/src/contracts/materials.openapi.yaml)的 `Term` 只含 `id/name`。颜色在前端按账户保留，名称与排序继续使用真实 taxonomy。 | 是否扩展标签颜色契约。 |
-| 删除资源文件夹的归属语义不同 | 原型移除整棵文件夹树并将其中资料放入未分组；[资源实现](apps/api/src/modules/resources/index.js)的 taxonomy 更新会把资料移至最近保留祖先。 | 产品应采用哪一种归属语义；本轮不改后端规则。 |
+| 删除资源文件夹的归属语义不同 | 原型移除整棵文件夹树并将其中资料放入未分组；[资源实现](apps/api/src/modules/resources/service.js)的 taxonomy 更新会把资料移至最近保留祖先。 | 产品应采用哪一种归属语义；本轮不改后端规则。 |
 | 导出资料包没有删除接口 | 新设计提供删除操作；[导出路由](apps/api/src/workbench/reliability/index.js)提供生成、查询和下载，没有单个资料包 DELETE。前端只在本账户设备列表隐藏该项，服务器文件仍保留。 | 是否增加实际删除与文件回收能力。 |
 | 助理会话管理仅本地呈现 | 新设计提供重命名、置顶、删除；[会话路由](apps/api/src/agent/index.js)没有这些更新或删除端口。前端按账户保留标题、置顶与隐藏状态，真实对话仍在服务器。 | 是否增加会话管理与跨设备状态。 |
 | 助理新增引用类型未被契约支持 | 原型可以引用日程和资源；[助理契约](apps/api/src/contracts/agent.openapi.json)的 `ReferenceInput` 当前只支持题目。新增类型只能用于隔离的本地演示，不能作为真实模型已取得的数据。 | 是否扩展引用快照和相应数据访问工具。 |
-| 助理结构化结果卡缺少真实生成与执行协议 | 原型的安排、练习和变式卡包含动作；现有[助理实现](apps/api/src/agent/index.js)与契约没有这些完整结果类型及动作日志。已有日程或题目写接口本身不能证明助理支持此流程。 | 是否增加相应模型输出、执行、确认和恢复能力；本轮仅保留局部演示。 |
+| 助理结构化结果卡缺少真实生成与执行协议 | 原型的安排、练习和变式卡包含动作；现有[助理实现](apps/api/src/agent/index.js)与契约没有这些完整结果类型及动作日志。前端保留模拟回答，用户明确点击存题或加日程时调用现有业务写接口并保留真实结果；不能据此宣称真实模型已生成或执行。 | 是否增加相应模型输出、工具执行、确认和恢复协议。 |
 | 班级成绩导入的后端准入更严格 | 原型允许不附原卷、只录总分、只用学号匹配和不选总分列；[确认实现](apps/api/src/modules/classroom/assessment.js)要求考试有原卷且至少一道题，[映射校验](apps/api/src/modules/classroom/schema.js)要求姓名列和总分列。当前前端保留原型入口，真实提交仍受这些约束。 | 是否放宽对应业务规则；不能把后端拒绝的输入描述为已保存。 |
 | 班级归档视图不能独立列出已归档父对象下的子项 | 原型归档可分别查看学生与记录；[名单与记录实现](apps/api/src/modules/classroom/roster.js)要求指定活动班级或活动记录主体，当前只能聚合可查询主体下的归档项。 | 是否支持跨归档主体查询和独立恢复；本轮不绕过查询约束。 |
 | 学期与反馈附件仍为本地状态 | 原型的学期创建、复制和切换由[外壳场景](apps/web/src/features/workbench/chrome/SidebarHead.jsx)维护，不隔离真实业务数据；[反馈面板](apps/web/src/features/workbench/chrome/TopbarSurfaces.jsx)保存本地记录及附件元数据，没有远端投递。 | 是否建设真正的学期数据范围、复制及反馈收件能力。 |
+| 原型班级导入校对的未记录学生卡片换行 | 在原型实际导入页，学生胶囊为 `span` 且 `display:block`，34px 高度内姓名落在头像下方；[班级样式](docs/design-system/teachbuddy-app/ui/tbx/styles/classroom.css)的同状态已实际复现。迁移保持原样。 | 是否调整这处原型布局；本轮不自行改变设计。 |
+| 原型题库编辑器的工具栏与手机头部拥挤 | 原型中文编辑页的“插入图片/插入更多内容”相邻贴叠，390px 英文编辑头部返回与保存文字越界；[题库样式](docs/design-system/teachbuddy-app/ui/tbx/styles/questions.css)对应运行状态已核对。 | 是否修改设计；本轮只补迁移遗漏，不新增换行布局。 |
+| 原型资源详情窄屏资料信息遮占正文 | 原型 768px 详情中的资料信息轨道占据上方大块区域，压缩文件预览与正文；[资源视图](docs/design-system/teachbuddy-app/ui/tbx/src/resources/ResourceLibrary.jsx)及最终样式是当前复刻依据。 | 是否重新设计窄屏信息入口；不擅自恢复原型已隐藏的按钮。 |
+| 资源检索的细分状态在新设计中不再单列 | 原型搜索界面不显示不可用文件数及未识别、识别失败的页数细分；[资源检索呈现](apps/web/src/features/resources/Library.jsx)只展示新版通用提示，服务端状态仍保留。 | 是否在后续设计中恢复这些状态的区分；本轮不添加原型以外的提示控件。 |
+| 一周示例的成绩确认需要补原卷 | 原型种子创建的考试没有原卷，但真实成绩确认有上述准入要求；[原型种子](docs/design-system/teachbuddy-app/ui/tbx/src/demo/seed.js)与[确认实现](apps/api/src/modules/classroom/assessment.js)不一致。 | 本轮沿既有接口载入样例时需提供演示原卷，因此文件输入与原型空原卷状态有差异；后续是否放宽准入与前项一起判断。 |

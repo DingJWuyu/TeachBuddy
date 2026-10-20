@@ -333,14 +333,6 @@ export default function LegacyWorkspace({ session, font, fontError, fontAttempt,
       {confirmationDialog}
       <section className="math-main">
         <header className="math-workspace-header">
-          {!home && <WorkspaceToolbar draft={draft} busy={busy} readOnly={readOnly} pending={pending} empty={session.empty}
-            exportOpen={!!viewScene.exportOpen} onHome={goHome} onSave={() => save()} onCopy={() => save(true)}
-            onHistory={() => setHistoryOpen(true)} onDynamic={makeDynamicCopy}
-            onDelete={() => deletion()} onPurge={() => deletion(true)} onExport={() => patchView({ exportOpen: !viewScene.exportOpen })}/>}
-          <input ref={importFile} type="file" accept=".html,.htm" aria-label={t("导入 HTML 文件")} hidden onChange={e => { importHtml(e.target.files[0]); e.target.value = ''; }}/>
-          <input ref={sourceFile} type="file" accept=".json,application/json" aria-label={t("导入制作源文件")} hidden onChange={e => { importSource(e.target.files[0]); e.target.value = ''; }}/>
-          {importPending && <button disabled={busy} onClick={() => importHtml()}>{importPending.requiresReselection ? t("重选原文件并确认上传") : t("重试原文件上传")}</button>}
-        </header>
         {!home && <div className="math-document-bar">
           <button className="math-return" onClick={goHome}><Icon name="back"/><span>{t("返回工坊")}</span></button>
           <input className="math-work-title" aria-label={t("作品名称")} readOnly={!!draft.deletedAt} value={draft.title} onChange={e => edit({ ...draft, title: e.target.value })}/>
@@ -351,6 +343,15 @@ export default function LegacyWorkspace({ session, font, fontError, fontAttempt,
             </button>)}
           </div>}
         </div>}
+
+          {!home && <WorkspaceToolbar draft={draft} busy={busy} readOnly={readOnly} pending={pending} empty={session.empty}
+            exportOpen={!!viewScene.exportOpen} onHome={goHome} onSave={() => save()} onCopy={() => save(true)}
+            onHistory={() => setHistoryOpen(true)} onDynamic={makeDynamicCopy}
+            onDelete={() => deletion()} onPurge={() => deletion(true)} onExport={() => patchView({ exportOpen: !viewScene.exportOpen })}/>}
+          <input ref={importFile} type="file" accept=".html,.htm" aria-label={t("导入 HTML 文件")} hidden onChange={e => { importHtml(e.target.files[0]); e.target.value = ''; }}/>
+          <input ref={sourceFile} type="file" accept=".json,application/json" aria-label={t("导入制作源文件")} hidden onChange={e => { importSource(e.target.files[0]); e.target.value = ''; }}/>
+          {importPending && <button disabled={busy} onClick={() => importHtml()}>{importPending.requiresReselection ? t("重选原文件并确认上传") : t("重试原文件上传")}</button>}
+        </header>
         {fontError && (
           <div role="alert" className="math-message">
             {fontError}

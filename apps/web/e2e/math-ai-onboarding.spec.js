@@ -71,7 +71,7 @@ test.beforeEach(async ({ page, world }, info) => {
   await register(page, world, `onboarding-${info.testId.replace(/[^a-z0-9]/gi, '').slice(0, 24)}@example.test`);
   const tutorial = page.getByRole('button', { name: '知道了', exact: true }); if (await tutorial.isVisible()) await tutorial.click();
   await page.getByRole('navigation', { name: '功能模块', exact: true }).getByRole('link', { name: /^数学工坊/ }).click();
-  if (!await page.locator('.math-web-assistant').isVisible()) await page.getByRole('banner').getByRole('button', { name: 'AI 助理', exact: true }).click();
+  if (!await page.locator('.math-web-assistant').isVisible()) await page.getByRole('banner').getByRole('button', { name: /^(打开|收起) AI 助理$/ }).click();
   await expect(page.locator('.math-ai-provider .math-ai-connection')).toHaveClass(/is-missing/);
 });
 test.afterEach(async ({ page }, info) => {
@@ -186,7 +186,7 @@ test('未发布与不支持浏览器：中英窄屏、焦点、热安装和登�
   await enterMath(page, 'f(x)=x^2', 'f'); await savedMath(page);
   await page.getByRole('button', { name: '关闭辅助栏', exact: true }).last().click();
   await page.setViewportSize({ width: 1280, height: 800 }); await screenshot(page, info, 'store-material-1280x800.png');
-  await page.getByRole('banner').getByRole('button', { name: 'AI 助理', exact: true }).click();
+  await page.getByRole('banner').getByRole('button', { name: /^(打开|收起) AI 助理$/ }).click();
   await expect(page.locator('.math-ai-provider .math-ai-connection')).toHaveClass(/is-ready/);
   await expect(page.locator('.math-ai-message.is-assistant').last()).toContainText('离线完成');
   await screenshot(page, info, 'store-extension-purpose-1280x800.png');

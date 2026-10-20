@@ -1,50 +1,29 @@
+import fs from 'node:fs';
 import { expect, test } from '@playwright/test';
-import { accountFor, registerTeacher } from './helpers.js';
+import { createIntegration } from '../../api/test/fixtures/auth-integration/harness.js';
+import { register } from './teaching-time-auth/helpers.mjs';
 
-const API_BASE = 'http://127.0.0.1:4100/api';
-
-async function apiCall(page, requestPath, options = {}) {
-  return page.evaluate(async ({ apiBase, path, method, body }) => {
-    const response = await fetch(apiBase + path, {
-      method,
-      headers: {
-        ...(body === undefined ? {} : { 'Content-Type': 'application/json' })
-      },
-      body: body === undefined ? undefined : JSON.stringify(body)
-    });
-    return {
-      status: response.status,
-      body: await response.json()
-    };
-  }, {
-    apiBase: API_BASE,
-    path: requestPath,
-    method: options.method || 'GET',
-    body: options.body
-  });
-}
-
-test('a teacher can enter an empty home, open settings, and persist layout data', async ({ page }, testInfo) => {
-  await registerTeacher(page, accountFor('empty-workspace', testInfo, 'empty workspace password'));
-
-  await expect(page.locator('main')).toBeVisible();
-  await expect(page.locator('.workspace-home')).toBeVisible();
-  await expect(page.getByText('暂无模块')).toHaveCount(0);
-  await expect(page.getByText('选择下一步')).toHaveCount(0);
-
-  // The old bearer module directory endpoint is retired (`GET /api/modules` is
-  // the same-origin workbench catalog now), so this shell reads no server module
-  // list; the layout contract below is what it still owns.
-  const layout = {
-    hiddenModuleIds: [],
-    groups: [{ id: 'daily', name: '日常', moduleIds: [] }],
-    ungroupedModuleIds: []
-  };
-  const savedLayout = await apiCall(page, '/workspace/layout', { method: 'PUT', body: layout });
-  expect(savedLayout).toEqual({ status: 200, body: layout });
-
-  await page.getByRole('button', { name: '设置' }).click();
-  await expect(page.getByRole('heading', { name: '工作台设置' })).toBeVisible();
-  await page.getByRole('button', { name: '工作台首页' }).click();
-  await expect(page.locator('.workspace-home')).toBeVisible();
+test('真实工作台设置在模块导航和刷新后保持已保存外观', async ({ page, context }) => {
+  const world = await createIntegration();
+  let passed = false;
+  try {
+    await register(page, world);
+    const coach = page.getByRole('button', { name: '知道了', exact: true });
+    if (await coach.count()) await coach.click();
+    await page.goto(world.origin + '/settings');
+    await page.getByRole('button', { name: '深色', exact: true }).click();
+    await expect(page.locator('.settings-save-status')).toHaveText('已保存');
+    await page.getByRole('navigation', { name: '功能模块' }).getByRole('link', { name: /^题库/ }).click();
+    await expect(page.locator('.wb-shell')).toHaveAttribute('data-theme', 'dark');
+    await page.reload();
+    await expect(page.locator('.wb-shell')).toHaveAttribute('data-theme', 'dark');
+    await page.goto(world.origin + '/settings');
+    await expect(page.getByRole('button', { name: '深色', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    passed = true;
+  } finally {
+    await context.close();
+    await world.close();
+    if (passed) fs.rmSync(world.directory, { recursive: true, force: true });
+    else console.error(`保留工作台失败现场: ${world.directory}`);
+  }
 });

@@ -16,6 +16,11 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+/* The prototype workspace establishes its own reading rhythm beneath the shell. */
+.wb-shell.tb-prototype .wb-workspace {
+  font-size: 13px;
+  line-height: 1.65;
+}
 :where(:root:has(.wb-shell)) :is(body, input, select, textarea, button) {
   color: var(--tb-ink);
 }

@@ -1,0 +1,161 @@
+import { test, expect } from '@playwright/test';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { createIntegration } from '../../api/test/fixtures/auth-integration/harness.js';
+import { scoreWorkbook } from '../../api/test/fixtures/classroom/workbooks.mjs';
+import { register, headers } from './teaching-time-auth/helpers.mjs';
+
+let world, failed = false;
+test.beforeAll(async () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'classroom-ui-'));
+  world = await createIntegration({ directory, workbench: { filesDir: path.join(directory, 'files') } });
+});
+test.afterEach(async ({}, info) => { failed ||= info.status !== info.expectedStatus; });
+test.afterAll(async () => {
+  await world?.close();
+  if (world && !failed) fs.rmSync(world.directory, { recursive: true });
+  else if (world) console.error('保留班级验收现场：' + world.directory);
+});
+
+async function read(page, suffix) {
+  const response = await page.request.get(`${world.origin}/api/modules/classroom/${suffix}`, { headers: headers(page) });
+  expect(response.status()).toBe(200);
+  return response.json();
+}
+async function dragStudent(page, from, to) {
+  const source = await from.boundingBox(), destination = await to.boundingBox();
+  expect(source).toBeTruthy(); expect(destination).toBeTruthy();
+  await page.mouse.move(source.x + source.width / 2, source.y + source.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(destination.x + destination.width / 2, destination.y + destination.height / 2, { steps: 16 });
+  await page.mouse.up();
+}
+
+// A teacher's saved workflow, using the existing real workbook bytes and HTTP backend.
+test('班级真实保存：座位、记录、Excel校对和成绩观察在刷新后保留，并可归档恢复', async ({ page }, info) => {
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await register(page, world, 'classroom-flow@example.test');
+  const coach = page.getByRole('button', { name: /知道了/ });
+  if (await coach.count()) await coach.first().click();
+  await page.goto(world.origin + '/classroom');
+  await expect(page.getByRole('heading', { name: '把你教的班级放在这里' })).toBeVisible();
+  await page.locator('.cr-empty').getByRole('button', { name: '新建班级', exact: true }).click();
+  let dialog = page.getByRole('dialog', { name: '新建班级', exact: true });
+  await dialog.getByLabel('班级名称', { exact: true }).fill('初三（2）班');
+  await dialog.getByLabel('学期', { exact: false }).fill('2026 秋季');
+  await dialog.getByRole('button', { name: '创建班级', exact: true }).click();
+  await expect(page.getByRole('heading', { name: '初三（2）班', exact: true })).toBeVisible();
+  const cls = (await read(page, 'classes')).items[0];
+  await page.getByRole('tab', { name: '学生', exact: true }).click();
+  await page.locator('.cr-toolbar').getByRole('button', { name: '添加学生', exact: true }).click();
+  dialog = page.getByRole('dialog', { name: '添加学生', exact: true });
+  for (const [i, [name, number]] of [['张明', '001'], ['张明', '002'], ['李华', '003'], ['王阳', '101']].entries()) {
+    await dialog.getByLabel('姓名', { exact: true }).fill(name);
+    await dialog.getByLabel('学号', { exact: false }).fill(number);
+    if (i === 0) {
+      await dialog.getByRole('button', { name: '生日、兴趣与性格', exact: true }).click();
+      await dialog.getByLabel('兴趣', { exact: false }).fill('篮球');
+      await dialog.getByLabel('性格', { exact: false }).fill('安静，愿意分享解题过程');
+    }
+    await dialog.getByRole('button', { name: i === 3 ? '添加' : '保存并继续添加', exact: true }).click();
+    if (i < 3) await expect(dialog.getByLabel('姓名', { exact: true })).toHaveValue('');
+  }
+  await expect(dialog).toHaveCount(0);
+  const students = (await read(page, `students?classId=${cls.id}`)).items;
+  const first = students.find(s => s.studentNumber === '001');
+  expect(first.description).toContain('分享解题');
+  await page.getByRole('tab', { name: '座位', exact: true }).click();
+  const seat = page.locator('[data-seat="0:0"]');
+  await dragStudent(page, page.locator(`.cr-tray [data-student="${first.id}"]`), seat);
+  await expect.poll(async () => (await read(page, `classes/${cls.id}`)).seating.seats).toEqual([{ row: 1, column: 1, studentId: first.id }]);
+  await seat.locator('[data-student]').click();
+  await expect(page.getByRole('heading', { name: '张明', exact: true })).toBeVisible();
+  const journal = page.locator('.cr-journal');
+  await journal.locator('textarea').fill('课后主动讲清了零分题的原因，约好下次带草稿。');
+  await journal.getByRole('button', { name: '记下', exact: true }).click();
+  await expect(journal.locator('.cr-entry-card')).toContainText('约好下次带草稿');
+  await page.reload();
+  await expect(page.locator('.cr-entry-card')).toContainText('约好下次带草稿');
+  await page.locator('.tbx-rail').getByRole('button', { name: /考试/ }).click();
+  await page.getByRole('button', { name: '新建考试', exact: true }).first().click();
+  dialog = page.getByRole('dialog', { name: '新建考试', exact: true });
+  await dialog.getByLabel('考试名称').fill('期中数学');
+  await dialog.getByLabel('题数', { exact: true }).fill('3');
+  await dialog.getByLabel('每题满分').fill('4');
+  await dialog.locator('.cr-qadd').getByRole('button', { name: '添加', exact: true }).click();
+  await dialog.getByLabel('题号', { exact: true }).nth(2).fill('3(1)');
+  await dialog.getByRole('button', { name: '创建考试', exact: true }).click();
+  await expect(page.getByRole('heading', { name: '期中数学', exact: true })).toBeVisible();
+  await page.locator('.cr-panel').filter({ has: page.getByRole('heading', { name: '原卷', exact: true }) }).locator('input[type=file]').setInputFiles(path.resolve('test/fixtures/questions/figure.png'));
+  await expect(page.locator('.cr-files')).toContainText('figure.png');
+  await page.getByRole('button', { name: '导入成绩', exact: true }).click();
+  dialog = page.getByRole('dialog', { name: '导入成绩', exact: true });
+  await dialog.locator('input[type=file]').setInputFiles({ name: 'scores.xlsx', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', buffer: scoreWorkbook() });
+  await expect(dialog.getByRole('button', { name: '生成校对表', exact: true })).toBeVisible();
+  await dialog.getByLabel('到第几行', { exact: true }).fill('6');
+  await dialog.getByRole('button', { name: '生成校对表', exact: true }).click();
+  await expect(dialog.locator('.cr-review')).toBeVisible();
+  await expect(dialog.getByRole('button', { name: '确认入库', exact: true })).toBeDisabled();
+  await expect(dialog.locator('.cr-issues')).toContainText(['请校对参考状态']);
+  const reviewRow = dialog.locator('.cr-review-row').filter({ has: page.locator('.cr-review-num', { hasText: /^4$/ }) });
+  await reviewRow.getByLabel('对应学生', { exact: true }).selectOption(first.id);
+  await expect(dialog.getByRole('button', { name: '确认入库', exact: true })).toBeEnabled();
+  await dialog.getByRole('tab', { name: '全部', exact: true }).click();
+  await expect(dialog.locator('.cr-review-row').filter({ has: page.locator('.cr-review-num', { hasText: /^6$/ }) })).toContainText('缺考');
+  await page.screenshot({ path: info.outputPath('excel-review.png'), animations: 'disabled' });
+  await page.reload();
+  dialog = page.getByRole('dialog', { name: '导入成绩', exact: true });
+  await expect(dialog.locator('.cr-review')).toBeVisible();
+  await expect(dialog.getByRole('button', { name: '确认入库', exact: true })).toBeEnabled();
+  await dialog.getByRole('button', { name: '确认入库', exact: true }).click();
+  await expect(dialog.getByRole('heading', { name: '成绩已保存', exact: true })).toBeVisible();
+  await dialog.getByRole('button', { name: '看看成绩', exact: true }).click();
+  await expect(page.getByRole('heading', { name: '全班的变化', exact: true })).toBeVisible();
+  await expect(page.locator('.cr-ranking')).toContainText('张明');
+  const [result] = (await read(page, `results?classId=${cls.id}`)).items;
+  expect(result.rows.find(r => r.studentId === first.id).totalScore).toBe(6);
+  const [recordedExam] = (await read(page, 'exams')).items;
+  expect(result.rows.find(r => r.studentId === first.id).scores[recordedExam.questions.find(q => q.label === '1').id]).toBe(0);
+  expect(result.rows.find(r => r.studentSnapshot.studentNumber === '003').status).toBe('absent');
+  expect(result.rows.find(r => r.studentSnapshot.studentNumber === '101').status).toBe('unrecorded');
+  await page.reload();
+  await expect(page.getByRole('heading', { name: '全班的变化', exact: true })).toBeVisible();
+  await expect(page.locator('.cr-hist-label')).toHaveText(['0', '10', '20', '30', '40', '50', '60', '70', '80', '90']);
+  await page.screenshot({ path: info.outputPath('class-scores-light.png'), animations: 'disabled' });
+  await page.getByRole('button', { name: '试卷与同场比较', exact: true }).click();
+  await expect(page.locator('.cr-compare li')).toContainText('初三（2）班');
+  await expect(page.locator('.cr-compare-num').first()).toContainText('5');
+  await expect(page.locator('.cr-qcompare-row').filter({ has: page.locator('b', { hasText: /^1$/ }) })).toContainText('38%');
+  await page.screenshot({ path: info.outputPath('exam-comparison.png'), animations: 'disabled' });
+  await page.locator('.tbx-rail').getByRole('button', { name: /初三（2）班/ }).click();
+  await page.locator('.cr-ranking button').filter({ hasText: '张明' }).first().click();
+  await page.getByRole('tab', { name: '成绩', exact: true }).click();
+  await expect(page.getByRole('heading', { name: '历次得分率', exact: true })).toBeVisible();
+  await expect(page.locator('.cr-exam-row-rank')).toContainText('第 1 / 2');
+  await page.screenshot({ path: info.outputPath('student-scores.png'), animations: 'disabled' });
+  await page.goto(world.origin + '/settings');
+  await page.getByRole('button', { name: '深色', exact: true }).click();
+  await page.goto(world.origin + '/classroom');
+  await page.getByRole('button', { name: '打开 AI 助理', exact: true }).click();
+  await page.screenshot({ path: info.outputPath('classroom-dark-assistant.png'), animations: 'disabled' });
+  await page.setViewportSize({ width: 600, height: 1000 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({ path: info.outputPath('classroom-dark-narrow.png'), animations: 'disabled' });
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.getByRole('button', { name: '关闭辅助栏', exact: true }).click();
+  await page.locator('.tbx-rail').getByRole('button', { name: /初三（2）班/ }).click();
+  await page.getByRole('button', { name: '班级操作', exact: true }).click();
+  await page.getByRole('menuitem', { name: '归档班级', exact: true }).click();
+  await page.getByRole('alertdialog').getByRole('button', { name: '归档', exact: true }).click();
+  await expect(page.getByRole('heading', { name: '把你教的班级放在这里' })).toBeVisible();
+  await page.locator('.tbx-rail').getByRole('button', { name: '已归档', exact: true }).click();
+  await expect(page.locator('.cr-archive')).toContainText('初三（2）班');
+  await page.locator('.cr-archive li').filter({ hasText: '初三（2）班' }).getByRole('button', { name: '恢复', exact: true }).click();
+  expect((await read(page, `classes/${cls.id}`)).deletedAt).toBeNull();
+  expect((await read(page, `classes/${cls.id}`)).seating.seats[0].studentId).toBe(first.id);
+  expect((await read(page, `records?scope=student&subjectId=${first.id}`)).items[0].text).toContain('约好下次带草稿');
+  expect((await read(page, `results?classId=${cls.id}`)).items).toHaveLength(1);
+  expect(errors).toEqual([]);
+});

@@ -100,7 +100,7 @@ test('real classroom personal files, backup restore and account deletion preserv
     const oldQuestion = await write(b.client, 'POST', '/api/modules/questions/items', manualQuestionSample());
     const catalog = await a.client.request('GET', '/api/modules');
     assert.equal(catalog.json.version, 4);
-    assert.equal(catalog.json.items.find(item => item.id === 'classroom').webEnabled, false);
+    assert.equal(catalog.json.items.find(item => item.id === 'classroom').webEnabled, true);
     assert.equal((await b.client.request('GET', `${base}/exams/${facts.exam.id}`)).status, 404);
     const zip = await exportZip(world, a.client);
     const manifest = JSON.parse(await zip.file('manifest.json').async('string'));

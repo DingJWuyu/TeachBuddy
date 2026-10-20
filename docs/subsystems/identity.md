@@ -17,7 +17,7 @@ Web [apps/web/src/features/auth/](../../apps/web/src/features/auth)，API [apps/
 
 ## 页面资源与清理
 
-`AuthEntryLayout.jsx` 组织入口布局，`AuthCharacters.jsx` 负责装饰动效；新增样式限定在 `.ae-entry` 内，保留认证规则、Provider、API 与工作台内部样式。表单切换不重建角色，卸载释放指针、媒体偏好、可见性监听和动画帧。
+`AuthEntryLayout.jsx` 组织入口布局，`AuthCharacters.jsx` 负责装饰动效；新增样式限定在 `.ae-entry` 内，保留认证规则、Provider、API 与工作台内部样式。表单切换不重建角色。可见光标位置由即时 canvas 测量得出，隐藏密码仅按长度测圆点，显示密码时测可见文本宽度；角色层不持久保存文本或新增请求。卸载释放指针、媒体偏好、可见性监听和动画帧。
 
 ## 恢复与账户生命周期
 

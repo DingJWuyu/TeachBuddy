@@ -1,7 +1,6 @@
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { useAgent } from './AgentProvider.jsx';
 import { createDemoScript } from './demoScript.js';
-import { createSampleWeek } from './sampleWeek.js';
 import { tx } from '../../i18n/presentation.js';
 import { workbenchGet } from '../../platform/http/apiClient.js';
 import { isDeletedAccount } from '../../platform/device/storage.js';
@@ -22,7 +21,6 @@ export function AgentPresentationProvider({ children }) {
   const live = useRef(true);
   const runs = useRef(new Map());
   const [error, setError] = useState('');
-  const [preview, setPreview] = useState(null);
   function update(next) {
     if (!live.current || isDeletedAccount(real.accountKey)) return;
     current.current = next; setState(next);
@@ -59,27 +57,12 @@ export function AgentPresentationProvider({ children }) {
     if (reply) doc.conversation.preview = reply.text.replace(/[#>*_`|$\\]/g, '').slice(0, 60);
     update({ ...current.current, docs: { ...current.current.docs, [doc.conversation.id]: structuredClone(doc) } });
   }
-  async function demoRead(path) {
-    const data = current.current.data;
-    if (!data) throw new Error('No local example');
-    if (path.includes('/taxonomy')) return data.taxonomy;
-    const collection = path.includes('/questions/') ? data.questions : path.includes('/resources/') ? data.resources : path.endsWith('/labels') ? data.labels : data.entries;
-    const tail = path.split('?')[0].split('/').pop();
-    if (['items', 'entries', 'labels'].includes(tail)) {
-      const q = new URL(path, window.location.origin).searchParams.get('q');
-      return { items: q ? collection.filter(item => `${item.title} ${JSON.stringify(item.body ?? '')}`.includes(q)) : collection };
-    }
-    const object = collection.find(item => item.id === tail);
-    if (object) return object;
-    // Explicitly selected saved references are readable, never writable by demo.
-    return (await workbenchGet(path)).body;
-  }
+  const demoRead = async path => (await workbenchGet(path)).body;
   async function startDemo(text = '', references = []) {
-    const data = current.current.data ?? await createSampleWeek();
     if (!live.current) return;
     const id = uuid();
-    const doc = { conversation: { id, title: tx('本地示例对话'), updatedAt: stamp() }, draft: { version: 1, text, references }, messages: [], turns: [], toolCalls: [], operations: [], lastEventSeq: 0 };
-    update({ ...current.current, data, active: id, docs: { ...current.current.docs, [id]: doc } });
+    const doc = { conversation: { id, title: tx('新对话'), updatedAt: stamp() }, draft: { version: 1, text, references }, messages: [], turns: [], toolCalls: [], operations: [], lastEventSeq: 0 };
+    update({ ...current.current, active: id, docs: { ...current.current.docs, [id]: doc } });
   }
   function finish(doc, turn, stopped = false) {
     turn.state = stopped ? 'interrupted' : 'completed'; turn.reason = stopped ? 'user-stop' : null; turn.endedAt = stamp();
@@ -98,7 +81,7 @@ export function AgentPresentationProvider({ children }) {
     }));
     const turn = { id, conversationId: doc.conversation.id, userMessageId: messageId, modelId: real.model, state: 'running', createdAt: stamp() };
     doc.turns.push(turn); doc.messages.push({ id: messageId, turnId: id, role: 'user', text: doc.draft.text, references, createdAt: stamp() });
-    if (doc.turns.length === 1) doc.conversation.title = tx('本地示例对话') + ' · ' + doc.draft.text.slice(0, 24);
+    if (doc.turns.length === 1) doc.conversation.title = doc.draft.text.slice(0, 32);
     const prompt = doc.draft.text; doc.draft = { ...doc.draft, version: doc.draft.version + 1, text: '', references: [] }; putDoc(doc);
     try {
       await createDemoScript(demoRead).run({ doc, turn, prompt, references, emit: () => {}, updated: () => putDoc(doc, true), finish, stamp, id: uuid, runs: runs.current });
@@ -112,8 +95,7 @@ export function AgentPresentationProvider({ children }) {
     status: isDemo ? tx('仅保留在此设备') : real.status,
     sendPending: !isDemo && real.sendPending, conflict: !isDemo && real.conflict, busy: !isDemo && real.busy,
     addReference: async (kind, id) => { update({ ...current.current, active: null }); await real.addReference(kind, id); },
-    select, patchThread, startDemo, preview, closeDemoObject: () => setPreview(null),
-    openDemoObject: async (kind, id) => { const path = kind === 'question' ? '/api/modules/questions/v2/items/' : kind === 'entry' ? '/api/modules/schedule/entries/' : '/api/modules/resources/items/'; setPreview(await demoRead(path + id)); },
+    select, patchThread, startDemo,
     create: async () => { update({ ...current.current, active: null }); await real.create(); },
     deleteThread: id => {
       const doc = current.current.docs?.[id];
@@ -124,11 +106,6 @@ export function AgentPresentationProvider({ children }) {
     edit: patch => { if (isDemo) { const doc = structuredClone(current.current.docs[selected.conversation.id]); doc.draft = { ...doc.draft, ...patch }; putDoc(doc); } else real.edit(patch); },
     send: isDemo ? send : real.send,
     stop: isDemo ? turn => { const doc = current.current.docs[turn.conversationId]; const active = doc?.turns.find(t => t.id === turn.id); if (!active) return; const run = runs.current.get(turn.id); run?.cancel?.(); const source = run?.doc ?? doc; const target = source.turns.find(t => t.id === turn.id); finish(source, target, true); } : real.stop,
-    saveDemoResult: async (kind, object) => {
-      if (!isDemo) throw new Error('Demo actions require a demo conversation');
-      const field = kind === 'question' ? 'questions' : 'entries';
-      update({ ...current.current, data: { ...current.current.data, [field]: [...current.current.data[field], { ...object, id: uuid(), version: 1 }] } });
-    },
     read: isDemo ? demoRead : async path => (await workbenchGet(path)).body,
   };
   return <Context.Provider value={value}>{children}</Context.Provider>;

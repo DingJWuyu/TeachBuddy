@@ -26,6 +26,6 @@
 
 先按[隔离环境](../SETUP.md#新的隔离环境)安装锁定依赖。`apps/api/test/classroom-core.test.js`、`classroom-assessment.test.js`、`classroom-import.test.js`、`classroom-statistics.test.js`、`classroom-lifecycle.test.js`、`classroom-workbook.test.js` 使用真实 HTTP/SQLite 或真实工作簿；固定生成器在 `apps/api/test/fixtures/classroom/`，测试不读取 docs 作为输入。`classroom-paper.test.js` 使用公共转换器及真实原卷；它和 assessment、lifecycle 的预览场景均需按[文件转换工具](../SETUP.md#文件转换工具)配置工具，由 CI 的文件输出组运行。
 
-导航用 `apps/web/e2e/catalog-navigation.spec.js`，构建和 CI 分工沿[CI 与本地验证](../agents/github-workflow.md#ci-与本地验证)，不要为 API 另建 UI 单元测试。测试自行生成隔离数据，产物与清理沿[验证指南](README.md#隔离与产物)。
+教师完整流程使用 `apps/web/e2e/classroom.config.mjs` 与 `classroom.spec.js`，以 `WORKBENCH_WEB_DIST` 指定隔离生产构建，已纳入 CI 收集；覆盖名单、座位、记录、原卷与 Excel 校对确认、统计和归档恢复，仍须区分固定候选的实际结果。导航另用 `apps/web/e2e/catalog-navigation.spec.js`，构建和 CI 分工沿[CI 与本地验证](../agents/github-workflow.md#ci-与本地验证)，不要为 API 另建 UI 单元测试。测试自行生成隔离数据，产物与清理沿[验证指南](README.md#隔离与产物)。
 
 构造输入证明固定契约及处理行为，不能证明任意学校成绩表和复杂原卷均可识别。真实教师样例尚未提供；首份真实样例按实际版式核对匹配、校对负担和原题定位。真实邮件、教师设备上的 Word/WPS、前端观感和实际 AI 模型不由这些后端测试代签。

@@ -1,3 +1,4 @@
+import { moduleRow, navigationGroup, pointerDrag } from './catalog-navigation.helpers.mjs';
 import fs from 'node:fs';
 import { test, expect } from '@playwright/test';
 import { createIntegration } from '../../api/test/fixtures/auth-integration/harness.js';
@@ -19,31 +20,31 @@ test.afterEach(async ({ context }, info) => {
   await world.close();
   if (info.status === info.expectedStatus) fs.rmSync(world.directory, { recursive: true, force: true });
 });
-const row = (page, id) => page.locator(`[data-drop-module="${id}"]`);
+const row = (page, id) => moduleRow(page, id);
 async function route(page, path, name) {
   await page.goto(world.origin + path);
   await expect(page.locator('.wb-shell')).toHaveAttribute('data-route', name);
 }
 
-test('四模块真实外壳、辅助栏、前进后退、未知及非法深链接', async ({ page }, info) => {
+test('五模块真实外壳、辅助栏、前进后退、未知及非法深链接', async ({ page }, info) => {
   const catalogResponse = await page.request.get(world.origin + '/api/modules', { headers: headers(page) });
   expect(catalogResponse.status()).toBe(200);
   const catalog = await catalogResponse.json();
   expect(catalog.version).toBe(4);
-  expect(catalog.items.find(item => item.id === 'classroom')).toMatchObject({ webEnabled: false });
-  await expect(row(page, 'classroom')).toHaveCount(0);
-  await expect(page.locator('a[href^="/classroom"]')).toHaveCount(0);
-  for (const [id, path] of [['questions', '/questions'], ['math', '/math'], ['resources', '/resources'], ['schedule', '/calendar']]) {
+  expect(catalog.items.find(item => item.id === 'classroom')).toMatchObject({ webEnabled: true });
+  await expect(row(page, 'classroom')).toBeVisible();
+  await expect(page.locator('.tbx-side-nav a[href="/classroom"]')).toBeVisible();
+  for (const [id, path] of [['questions', '/questions'], ['math', '/math'], ['resources', '/resources'], ['schedule', '/calendar'], ['classroom', '/classroom']]) {
     await route(page, path, id);
     if (id !== 'schedule') await expect(row(page, id)).toHaveAttribute('aria-current', 'page');
     else {
       await expect(row(page, 'schedule')).toHaveCount(0);
       await expect(page.locator('.tb-global-nav').getByRole('link', { name: '日程' })).toHaveClass(/is-current/);
     }
-    await page.getByRole('button', { name: 'AI 助理', exact: true }).click();
+    await page.locator('.tbx-panel-toggle').click();
     await expect(page.locator('.wb-shell')).toHaveClass(/has-panel/);
     await page.screenshot({ path: info.outputPath(`${id}.png`) });
-    await page.getByRole('button', { name: 'AI 助理', exact: true }).click();
+    await page.locator('.tbx-panel-toggle').click();
     await expect(page.locator('.wb-shell')).not.toHaveClass(/has-panel/);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     expect(await page.evaluate(() => document.body.scrollHeight <= innerHeight + 1)).toBe(true);
@@ -54,7 +55,7 @@ test('四模块真实外壳、辅助栏、前进后退、未知及非法深链�
   await expect(page.locator('.wb-shell')).toHaveAttribute('data-route', 'questions');
   await page.goForward();
   await expect(page.locator('.wb-shell')).toHaveAttribute('data-route', 'resources');
-  for (const path of ['/classroom', '/classroom/items', '/missing', '/resources/%E0%A4%A', '/questions/%ZZ', '/lessons/%FF', '/classes/%E0%A4%A/records/x', '/math/unknown']) {
+  for (const path of ['/classroom/items', '/missing', '/resources/%E0%A4%A', '/questions/%ZZ', '/lessons/%FF', '/classes/%E0%A4%A/records/x', '/math/unknown']) {
     await route(page, path, 'unknown');
     await expect(page.getByText('未找到内容', { exact: true })).toBeVisible();
   }
@@ -66,23 +67,23 @@ test('四模块真实外壳、辅助栏、前进后退、未知及非法深链�
 
 test('侧栏分组、拖动、隐藏恢复和刷新保留', async ({ page }, info) => {
   await route(page, '/questions', 'questions');
-  await page.locator('[data-new-group-toggle]').click();
+  await page.getByRole('button', { name: '新建分组', exact: true }).click();
   await page.getByRole('textbox', { name: '新分组名称' }).fill('备课分组');
   await page.getByRole('textbox', { name: '新分组名称' }).press('Enter');
-  const target = page.locator('[data-drop-group]').filter({ has: page.getByText('备课分组', { exact: true }) });
-  await row(page, 'math').dragTo(target);
-  await expect(target.locator('[data-drop-module="math"]')).toBeVisible();
+  const target = page.locator('[data-group]').filter({ has: page.getByText('备课分组', { exact: true }) });
+  await pointerDrag(page, row(page, 'math'), target.locator('.tbx-drop-hint'));
+  await expect(target.locator('[data-row="math"]')).toBeVisible();
   await row(page, 'resources').focus();
   await page.keyboard.press('Delete');
   await expect(row(page, 'resources')).toHaveCount(0);
   await page.reload();
-  await expect(target.locator('[data-drop-module="math"]')).toBeVisible();
+  await expect(target.locator('[data-row="math"]')).toBeVisible();
   await expect(row(page, 'resources')).toHaveCount(0);
-  await page.locator('[data-trash-toggle]').click();
-  await page.getByRole('button', { name: '资源库。点击恢复到未分组，或拖到其他分组' }).click();
+  await page.getByRole('button', { name: /^垃圾桶/ }).click();
+  await page.getByRole('button', { name: '恢复 资源库', exact: true }).click();
   await expect(row(page, 'resources')).toBeVisible();
   await page.reload();
-  await expect(page.locator('[data-drop-group="ungrouped"] [data-drop-module="resources"]')).toBeVisible();
+  await expect(page.locator('[data-group="ungrouped"] [data-row="resources"]')).toBeVisible();
   await page.screenshot({ path: info.outputPath('layout-restored.png') });
   expect(errors).toEqual([]);
 });
@@ -116,7 +117,7 @@ test('题目数学详情、资源一次消费与 Agent 返回现场', async ({ p
   await expect(page.getByRole('button', { name: '返回资源库', exact: true })).toHaveCount(0);
   await route(page, `/questions/%${q.id.charCodeAt(0).toString(16)}${q.id.slice(1)}`, 'question');
   await expect(page.locator('[data-region=main]')).toContainText('目录题目');
-  await page.getByRole('button', { name: 'AI 助理', exact: true }).click();
+  await page.locator('.tbx-panel-toggle').click();
   await expect(page.locator('.wb-shell')).toHaveClass(/has-panel/);
   await page.locator('.tb-global-nav').getByRole('link', { name: '首页', exact: true }).click();
   await expect(page.locator('.wb-shell')).toHaveAttribute('data-route', 'home');
@@ -125,17 +126,17 @@ test('题目数学详情、资源一次消费与 Agent 返回现场', async ({ p
   await expect(page.locator('.wb-shell')).toHaveClass(/has-panel/);
   const entry = await create(page, '/api/modules/schedule/entries', { title: '目录日程详情', items: [], time: { date: '2026-09-28', startTime: '10:00', durationMinutes: 45, timeZone: 'Asia/Shanghai' }, repeat: null, reminder: null });
   await route(page, `/calendar?entry=${entry.id}`, 'schedule');
-  await expect(page.locator('[name=entry-title]')).toHaveValue('目录日程详情');
+  await expect(page.locator('#calendar-entry-title')).toHaveValue('目录日程详情');
   await page.reload();
-  await expect(page.locator('[name=entry-title]')).toHaveValue('目录日程详情');
+  await expect(page.locator('#calendar-entry-title')).toHaveValue('目录日程详情');
   await page.screenshot({ path: info.outputPath('schedule-detail.png') });
   expect(errors).toEqual([]);
 });
 
 test('教程搜索消费目录，窄屏日程入口和侧栏高亮', async ({ page }, info) => {
   await page.getByRole('button', { name: '使用教程', exact: true }).click();
-  await expect(page.getByRole('progressbar', { name: '教程完成进度' })).toHaveAttribute('aria-valuemax', '3');
-  await expect(page.locator('.tb-popover-tutorial')).not.toContainText('班级教学');
+  await expect(page.getByRole('progressbar', { name: '教程完成进度' })).toHaveAttribute('aria-valuemax', '4');
+  await expect(page.locator('.tb-popover-tutorial')).toContainText('班级');
   await page.keyboard.press('Escape');
   await page.getByRole('button', { name: '全局搜索', exact: true }).click();
   await page.getByRole('searchbox').fill('日程');
@@ -143,7 +144,7 @@ test('教程搜索消费目录，窄屏日程入口和侧栏高亮', async ({ pa
   await expect(page.locator('.wb-shell')).toHaveAttribute('data-route', 'schedule');
   await page.setViewportSize({ width: 390, height: 844 });
   await page.getByRole('button', { name: '打开工作台导航', exact: true }).click();
-  await expect(page.locator('.tb-mobile-nav').getByRole('link', { name: '日程', exact: true })).toHaveAttribute('aria-current', 'page');
+  await expect(page.locator('.tbx-side-mobile-nav').getByRole('link', { name: '日程', exact: true })).toHaveAttribute('aria-current', 'page');
   await row(page, 'questions').click();
   await expect(page.locator('.wb-shell')).toHaveAttribute('data-route', 'questions');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
@@ -151,23 +152,24 @@ test('教程搜索消费目录，窄屏日程入口和侧栏高亮', async ({ pa
   expect(errors).toEqual([]);
 });
 
-for (const [name, path, main] of [['schedule', '/calendar', '.cal-board']]) {
-  test(`${name} 主面板和辅助栏上下对齐`, async ({ page }, info) => {
-    await route(page, path, name);
-    await page.getByRole('button', { name: 'AI 助理', exact: true }).click();
-    await expect(page.locator('[data-region=auxiliary]')).toBeVisible();
-    for (const width of [1440, 1200, 820, 390]) {
+test('辅助栏覆盖模块右栏，宽窄视口均保持在工作区内', async ({ page }, info) => {
+  for (const path of ['/calendar', '/questions', '/resources', '/classroom']) {
+    await page.goto(world.origin + path);
+    if (!await page.locator('.wb-shell').getAttribute('class').then(value => value.includes('has-panel'))) await page.locator('.tbx-panel-toggle').click();
+    const panel = page.locator('[data-region=auxiliary]');
+    await expect(panel).toHaveClass(/is-open/);
+    for (const width of [1440, 820, 390]) {
       await page.setViewportSize({ width, height: 900 });
       await expect.poll(async () => {
-        const mainBox = await page.locator(main).first().boundingBox();
-        const panelBox = await page.locator('[data-region=auxiliary]').boundingBox();
-        return Math.max(Math.abs(mainBox.y - panelBox.y), Math.abs(mainBox.y + mainBox.height - panelBox.y - panelBox.height));
-      }).toBeLessThanOrEqual(1);
+        const box = await panel.boundingBox();
+        return Boolean(box && box.x >= 0 && box.x + box.width <= width + 1 && box.y >= 0 && box.y + box.height <= 901);
+      }).toBe(true);
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-      await page.screenshot({ path: info.outputPath(`aligned-panel-${width}.png`) });
     }
-  });
-}
+    await page.screenshot({ path: info.outputPath(`panel-${path.slice(1)}.png`) });
+    await page.setViewportSize({ width: 1440, height: 900 });
+  }
+});
 
 test('外壳反馈草稿、教程进度和学期在刷新后保留', async ({ page }, info) => {
   const original = page.url();
@@ -207,19 +209,17 @@ test('外壳反馈草稿、教程进度和学期在刷新后保留', async ({ pa
 test('首页建议建立真实草稿并聚焦，跨模块和刷新保留输入', async ({ page }, info) => {
   await route(page, '/', 'home');
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.getByRole('button', { name: '梳理一节课的讲解顺序', exact: true }).click();
+  await page.getByRole('button', { name: /^梳理一节课的讲解顺序 / }).click();
   const input = page.getByRole('textbox', { name: 'AI 输入', exact: true });
-  await expect(input).toHaveValue('梳理一节课的讲解顺序');
+  await expect(input).toHaveValue('帮我梳理一节二次函数图像与性质的讲解顺序');
   await expect(input).toBeFocused();
-  await expect(page.getByRole('button', { name: '新对话', exact: true })).toBeHidden();
-  await expect(page.getByRole('button', { name: '对话历史', exact: true })).toBeHidden();
   await page.screenshot({ path: info.outputPath('home-mobile-draft.png') });
   await page.setViewportSize({ width: 1680, height: 910 });
   await row(page, 'resources').click();
   await page.locator('.tb-global-nav').getByRole('link', { name: '首页', exact: true }).click();
-  await expect(input).toHaveValue('梳理一节课的讲解顺序');
+  await expect(input).toHaveValue('帮我梳理一节二次函数图像与性质的讲解顺序');
   await page.reload();
-  await expect(input).toHaveValue('梳理一节课的讲解顺序');
+  await expect(input).toHaveValue('帮我梳理一节二次函数图像与性质的讲解顺序');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   expect(errors).toEqual([]);
 });

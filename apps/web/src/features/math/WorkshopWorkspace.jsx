@@ -242,7 +242,7 @@ export default function WorkshopWorkspace({ draft, accountKey, takeAssistantRequ
 
         </>}
         <button className="mw-button" disabled={busy || state.busy || !draft.id} onClick={() => setDownloadOpen(value => !value)}><Icon name="arrowDown" size={15}/>{t('下载')}</button>
-        <MathMenu buttonClassName="mw-icon" label={t('更多作品操作')} className="mw-work-actions">{({ close }) => <>
+        <MathMenu buttonClassName="mw-icon" menuClassName="mw-work-menu" label={t('更多作品操作')} className="mw-work-actions">{({ close }) => <>
           <MenuItem disabled={busy || state.busy} onClick={() => { close(); onSave(); }}>{t(pending ? '确认结果' : '立即保存')}</MenuItem>
           <MenuItem disabled={!ready || busy || state.busy} onClick={() => { close(); void preview(true); }}>{t('课堂展示')}</MenuItem>
           <MenuItem disabled={!draft.id || busy || state.busy} onClick={() => { close(); onHistory(); }}>{t('历史版本')}</MenuItem>
@@ -273,7 +273,7 @@ export default function WorkshopWorkspace({ draft, accountKey, takeAssistantRequ
           <h2>{tx('从一个公式或一张图开始')}</h2><p>{tx('用下面的工具动手做，或在右侧助理里说说你的想法。')}</p>
           <div className="mw-empty-actions">
             <button type="button" disabled={editingBlocked || !ready} onClick={() => { setAddingFormula(true); setTool(null); }}><span className="mw-empty-glyph">ƒ</span><span><strong>{tx('写公式')}</strong><small>{tx('分式、根式、上下标')}</small></span></button>
-            <button type="button" disabled={editingBlocked || !ready} onClick={() => beginTool('graph')}><span className="mw-empty-glyph"><Icon name="graph" size={18}/></span><span><strong>{tx('画图形')}</strong><small>{tx('函数、点线圆、立体')}</small></span></button>
+            <button type="button" disabled={editingBlocked || !ready} onClick={() => beginTool('graph')}><span className="mw-empty-glyph"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" aria-hidden="true"><path d="M3 3v14h14M5 6c3 12 6 12 10 0"/></svg></span><span><strong>{tx('画图形')}</strong><small>{tx('函数、点线圆、立体')}</small></span></button>
             <button type="button" disabled={editingBlocked || !ready} onClick={() => beginTool('parameter')}><span className="mw-empty-glyph"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><path d="M3 6h4m4 0h6M3 14h8m4 0h2"/><circle cx="9" cy="6" r="2"/><circle cx="13" cy="14" r="2"/></svg></span><span><strong>{tx('加参数')}</strong><small>{tx('拖动滑杆，让图动起来')}</small></span></button>
           </div>
         </div>}

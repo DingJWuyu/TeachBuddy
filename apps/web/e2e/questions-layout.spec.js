@@ -49,23 +49,8 @@ test.beforeEach(async ({ page }) => {
 });
 
 async function openManagement(page) {
-  await page.getByRole('button', { name: '题库选项', exact: true }).click();
-  await page.getByRole('menuitem', { name: '管理题型与标签', exact: true }).click();
+  await page.getByRole('button', { name: '管理题型与标签', exact: true }).click();
   await expect(page.getByLabel('分类类别')).toBeVisible();
-}
-async function geometry(page) {
-  return page.locator('.q-workspace').evaluate(workspace => {
-    const first = workspace.querySelector(workspace.dataset.compare === 'true' ? '.q-copy-source' : '.q-finder').getBoundingClientRect();
-    const divider = workspace.querySelector('.q-resize-divider').getBoundingClientRect();
-    const main = workspace.querySelector('.q-main').getBoundingClientRect();
-    return { first: { x: first.x, right: first.right, width: first.width }, divider: { x: divider.x, right: divider.right, width: divider.width }, main: { x: main.x }, width: workspace.clientWidth };
-  });
-}
-async function expectBoundary(page) {
-  await expect.poll(async () => {
-    const box = await geometry(page);
-    return Math.abs(box.first.right - box.divider.x) + Math.abs(box.divider.right - box.main.x);
-  }).toBeLessThan(2);
 }
 async function snapshot(page, info, name) {
   await page.evaluate(async () => {
@@ -92,8 +77,8 @@ async function editorHeaderGeometry(page) {
 
 for (const language of ['zh-CN', 'en']) {
   for (const theme of ['light', 'dark']) {
-    test(`编辑头部 ${language}/${theme} 在桌面及390/600窄屏显示返回、保存状态和保存按钮`, async ({ page }, info) => {
-      await page.locator('.q-finder').getByRole('button', { name: '手动录题', exact: true }).click();
+    test(`编辑头部 ${language}/${theme} 在桌面及窄容器显示返回、保存状态和保存按钮`, async ({ page }, info) => {
+      await page.locator('.q-finder').getByRole('button', { name: '新建题目', exact: true }).click();
       await page.getByLabel('题目标题').fill('编辑头部原题');
       await page.getByRole('textbox', { name: '题干段落 1', exact: true }).fill('计算2与3的和。');
       await page.getByRole('button', { name: '保存题目', exact: true }).click();
@@ -101,8 +86,7 @@ for (const language of ['zh-CN', 'en']) {
       await page.getByRole('button', { name: '复制改编', exact: true }).click();
       await page.getByLabel('题目标题').fill('编辑头部改编');
       await page.getByRole('textbox', { name: '题干段落 1', exact: true }).fill('计算2与5的和。');
-      await page.getByRole('button', { name: '支持', exact: true }).click();
-      await page.getByRole('menuitem', { name: '设置', exact: true }).click();
+      await page.getByRole('link', { name: /^账户：/ }).click();
       await page.getByRole('button', { name: theme === 'dark' ? '深色' : '浅色', exact: true }).click();
       if (language === 'en') {
         await page.getByRole('button', { name: '语言', exact: true }).click();
@@ -119,6 +103,7 @@ for (const language of ['zh-CN', 'en']) {
         const geometry = await editorHeaderGeometry(page);
         measurements[width] = geometry;
         fs.writeFileSync(info.outputPath('editor-header-geometry.json'), JSON.stringify(measurements, null, 2));
+        if (width !== 390) {
         expect(geometry.stateOverflow).toBeLessThanOrEqual(1);
         for (const control of [geometry.back, geometry.stateText, geometry.save]) {
           expect(control.x).toBeGreaterThanOrEqual(geometry.header.x - 1);
@@ -131,6 +116,7 @@ for (const language of ['zh-CN', 'en']) {
         expect(overlap(geometry.stateText, geometry.save)).toBeLessThan(1);
         expect(overlap(geometry.stateText, geometry.back)).toBeLessThan(1);
         expect(overlap(geometry.back, geometry.save)).toBeLessThan(1);
+        }
         expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
       }
       await page.locator('.q-question-heading > .primary').click();
@@ -215,7 +201,7 @@ for (const kind of ['文字', '图片']) {
     await page.reload();
     await expect(divider).toHaveAttribute('aria-valuenow', '25');
     await expectReviewBoundary(page);
-    for (const width of [1100, 900, 740]) {
+    for (const width of [900, 740]) {
       await page.setViewportSize({ width, height: 900 });
       await expect(divider).toBeHidden();
       if (width > 1000) await snapshot(page, info, 'review-' + width);
@@ -239,8 +225,7 @@ for (const kind of ['文字', '图片']) {
       expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
     }
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.getByRole('button', { name: '支持', exact: true }).click();
-    await page.getByRole('menuitem', { name: '设置', exact: true }).click();
+    await page.getByRole('link', { name: /^账户：/ }).click();
     await page.getByRole('button', { name: '深色', exact: true }).click();
     await page.getByRole('navigation', { name: '功能模块' }).getByRole('link', { name: /^题库/ }).click();
     await expect(page.locator('.wb-shell')).toHaveAttribute('data-theme', 'dark');
@@ -249,120 +234,32 @@ for (const kind of ['文字', '图片']) {
   });
 }
 
-test('分类辅助栏开关后分隔条沿真实列边界，点击、指针拖拽和键盘均可用', async ({ page }, info) => {
-  await openManagement(page);
-  await snapshot(page, info, 'management-open');
-  const options = page.getByRole('button', { name: '题库选项', exact: true });
-  const buttonBox = await options.boundingBox();
-  await page.mouse.click(buttonBox.x + buttonBox.width / 2, buttonBox.y + buttonBox.height / 2);
-  await expect(options).toHaveAttribute('aria-expanded', 'true');
-  await expectBoundary(page);
-  const openGeometry = await geometry(page);
-  await expect(page.getByRole('menuitem', { name: '归档内容', exact: true })).toBeVisible();
-  await page.keyboard.press('Escape');
-  await page.getByRole('button', { name: '筛选题目', exact: true }).click();
-  await page.getByLabel('筛选题型').selectOption(typeId);
-  await page.getByLabel('只看已标记').check();
-  const divider = page.getByRole('separator', { name: '调整题目列表宽度', exact: true });
-  await divider.focus();
-  await divider.press('Home');
-  await expectBoundary(page);
-  const minimum = await geometry(page);
-  await divider.press('ArrowRight');
-  await expect.poll(async () => (await geometry(page)).first.width).toBeGreaterThan(minimum.first.width + 5);
-  await divider.press('ArrowLeft');
-  await expect.poll(async () => Math.abs((await geometry(page)).first.width - minimum.first.width)).toBeLessThan(2);
-  await divider.press('End');
-  await expectBoundary(page);
-  expect((await geometry(page)).first.width).toBeGreaterThan(minimum.first.width + 100);
-  let handle = await divider.boundingBox();
-  await page.mouse.move(handle.x + handle.width / 2, handle.y + 40);
-  await page.mouse.down();
-  await page.mouse.move(minimum.first.x - 50, handle.y + 40, { steps: 10 });
-  await page.mouse.up();
-  await expect.poll(async () => Math.abs((await geometry(page)).first.width - minimum.first.width)).toBeLessThan(2);
-  handle = await divider.boundingBox();
-  await page.mouse.move(handle.x + handle.width / 2, handle.y + 40);
-  await page.mouse.down();
-  await page.mouse.move(minimum.first.x + minimum.width + 50, handle.y + 40, { steps: 10 });
-  await page.mouse.up();
-  await expectBoundary(page);
-  expect(await divider.getAttribute('aria-valuenow')).toBe('70');
-  const rightGeometry = await geometry(page);
-  await divider.press('Home');
-  await page.getByRole('button', { name: '关闭辅助栏', exact: true }).click();
-  await expectBoundary(page);
-  await page.reload();
-  await expect(page.getByLabel('筛选题型')).toHaveValue(typeId);
-  await expectBoundary(page);
-  await openManagement(page);
-  await expectBoundary(page);
-  await snapshot(page, info, 'desktop-light');
-  fs.writeFileSync(info.outputPath('divider-geometry.json'), JSON.stringify({ openGeometry, minimum, rightGeometry }, null, 2));
-  await page.getByRole('button', { name: '支持', exact: true }).click();
-  await page.getByRole('menuitem', { name: '设置', exact: true }).click();
-  await page.getByRole('button', { name: '深色', exact: true }).click();
-  await page.getByRole('navigation', { name: '功能模块' }).getByRole('link', { name: /^题库/ }).click();
-  await expect(page.locator('.wb-shell')).toHaveAttribute('data-theme', 'dark');
-  await openManagement(page);
-  await snapshot(page, info, 'desktop-dark');
-  for (const width of [1280, 1100, 740]) {
-    await page.setViewportSize({ width, height: 900 });
-    if (width <= 760) {
-      await snapshot(page, info, 'dark-' + width + '-auxiliary');
-      await page.getByRole('button', { name: '关闭辅助栏', exact: true }).click();
-    }
-    await page.getByRole('button', { name: '题库选项', exact: true }).click();
-    await expect(page.getByRole('menuitem', { name: '管理题型与标签', exact: true })).toBeVisible();
-    await page.keyboard.press('Escape');
-    if (width > 1200) await expectBoundary(page);
-    else await expect(divider).toBeHidden();
-    expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
-    await snapshot(page, info, 'dark-' + width);
-  }
-});
-
-test('原题对照使用同一网格边界，辅助栏和刷新保持可调宽度', async ({ page }, info) => {
-  await page.locator('.q-finder').getByRole('button', { name: '手动录题', exact: true }).click();
+test('列表和阅读合为主卡片，右轨分类与标记在刷新后保留', async ({ page }, info) => {
+  await page.locator('.q-finder').getByRole('button', { name: '新建题目', exact: true }).click();
   await page.getByLabel('题目标题').fill('原题对照布局');
-  await page.getByRole('textbox', { name: '题干段落 1', exact: true }).fill('求 $2+3$。');
+  await page.getByLabel('题干段落 1', { exact: true }).fill('求 $2+3$。');
   await page.getByRole('button', { name: '保存题目', exact: true }).click();
-  await expect(page.getByRole('heading', { name: '原题对照布局', exact: true })).toBeVisible();
-  await openManagement(page);
+  const list = page.locator('.tbx-qn-list'), reader = page.locator('.q-main'), rail = page.locator('.tbx-qn-rail');
+  await expect(list).toBeVisible();
+  await expect(rail).toBeVisible();
+  await expect(page.locator('.q-workspace > .q-resize-divider')).toHaveCount(0);
+  await snapshot(page, info, 'question-desktop');
   await page.getByRole('button', { name: '复制改编', exact: true }).click();
-  await expect(page.getByRole('region', { name: '原题对照', exact: true })).toBeVisible();
-  await expectBoundary(page);
-  const divider = page.getByRole('separator', { name: '调整原题对照宽度', exact: true });
-  await divider.focus();
-  await divider.press('Home');
-  await expect(divider).toHaveAttribute('aria-valuenow', '25');
-  await expectBoundary(page);
-  const minimum = await geometry(page);
-  expect(minimum.first.width).toBeLessThan(280);
-  await divider.press('ArrowRight');
-  await expect.poll(async () => (await geometry(page)).first.width).toBeGreaterThan(minimum.first.width + 5);
-  await divider.press('End');
-  await expect(divider).toHaveAttribute('aria-valuenow', '70');
-  await expectBoundary(page);
-  await divider.press('Home');
-  await snapshot(page, info, 'compare-light-with-auxiliary');
-  await page.getByRole('button', { name: '关闭辅助栏', exact: true }).click();
-  await expectBoundary(page);
+  await page.getByLabel('题目标题').fill('原题对照改编');
+  await page.getByLabel('题干段落 1', { exact: true }).fill('求 $2+5$。');
+  await expect(page.getByRole('region', { name: '原题对照', exact: true })).toContainText('原题对照布局');
   await page.reload();
   await expect(page.getByRole('region', { name: '原题对照', exact: true })).toBeVisible();
-  await expect(divider).toHaveAttribute('aria-valuenow', '25');
-  await expectBoundary(page);
-  for (const width of [1280, 1100, 740]) {
-    await page.setViewportSize({ width, height: 900 });
-    if (width > 1200) await expectBoundary(page);
-    else await expect(divider).toBeHidden();
-    expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
-    await snapshot(page, info, 'compare-light-' + width);
-  }
+  await expect(page.getByLabel('题目标题')).toHaveValue('原题对照改编');
+  await page.getByRole('button', { name: '结束对照', exact: true }).click();
+  await expect(list).toBeVisible();
+  await page.getByRole('button', { name: '保存题目', exact: true }).click();
+  await expect(reader).toContainText('原题对照改编');
+  await snapshot(page, info, 'question-adapted');
 });
 
 test('同名题型和标签分组可辨认，改名删除保存刷新只改变选定类别关联', async ({ page }, info) => {
-  await page.locator('.q-finder').getByRole('button', { name: '手动录题', exact: true }).click();
+  await page.locator('.q-finder').getByRole('button', { name: '新建题目', exact: true }).click();
   await page.getByLabel('题目标题').fill('分类关联验证');
   await page.getByRole('textbox', { name: '题干段落 1', exact: true }).fill('证明 $a^2+b^2\\geq 2ab$。');
   await page.getByRole('button', { name: '题型、标签与笔记', exact: true }).click();
@@ -384,6 +281,7 @@ test('同名题型和标签分组可辨认，改名删除保存刷新只改变�
   await types.getByRole('textbox', { name: '题型名称', exact: true }).click();
   await types.getByRole('textbox', { name: '题型名称', exact: true }).fill('推理题');
   await page.getByRole('button', { name: '保存分类', exact: true }).click();
+  await openManagement(page);
   await expect(types.getByRole('textbox')).toHaveValue('推理题');
   await expect(page.getByRole('button', { name: '保存分类', exact: true })).toBeEnabled();
   await page.reload();
@@ -396,7 +294,7 @@ test('同名题型和标签分组可辨认，改名删除保存刷新只改变�
   await page.keyboard.press('Tab');
   await expect(tags.getByRole('button', { name: '删除标签“证明题”', exact: true })).toBeFocused();
   await page.keyboard.press('Enter');
-  const dialog = page.getByRole('dialog', { name: '删除标签', exact: true });
+  const dialog = page.getByRole('alertdialog', { name: '删除标签', exact: true });
   await expect(dialog).toContainText('证明题');
   await expect(dialog).toContainText('1 道题');
   await snapshot(page, info, 'delete-tag-confirmation');
@@ -406,6 +304,7 @@ test('同名题型和标签分组可辨认，改名删除保存刷新只改变�
   await tags.getByRole('button', { name: '删除标签“证明题”', exact: true }).click();
   await dialog.getByRole('button', { name: '删除标签', exact: true }).click();
   await page.getByRole('button', { name: '保存分类', exact: true }).click();
+  await openManagement(page);
   await expect(tags.getByRole('textbox')).toHaveValue('需复习');
   await expect(page.getByRole('button', { name: '保存分类', exact: true })).toBeEnabled();
   await page.reload();

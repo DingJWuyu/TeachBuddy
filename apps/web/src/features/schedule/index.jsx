@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useWorkbenchShell } from '../workbench/shellContext.js';
 import { useScene } from '../../platform/device/useScene.js';
 import { useIdempotentSubmit } from '../../platform/saving/useIdempotentSubmit.js';
@@ -62,12 +62,14 @@ function TaskSection({ title, icon, items, labels, grouped, onGroup, onNew, onOp
   </section>;
 }
 
-function DailyTasks({ entries, occurrences, labels, grouped, unscheduledGrouped, onGroup, onUnscheduledGroup, onNew, onOpen, zone, now }) {
+function DailyTasks({ entries, occurrences, labels, grouped, unscheduledGrouped, onGroup, onUnscheduledGroup, onNew, onOpen, zone, now, scroll, onScroll }) {
   const { t } = useTranslation("schedule");
   const items = occurrences.filter(value => Date.parse(value.endsAt) > now).sort((a, b) => a.startsAt.localeCompare(b.startsAt)
     || a.key.entryId.localeCompare(b.key.entryId) || (a.key.originDate ?? '').localeCompare(b.key.originDate ?? ''));
   const unscheduled = entries.filter(entry => !entry.time).sort((a, b) => a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id));
-  return <div className="cal-upcoming">
+  const listRef = useRef(null);
+  useLayoutEffect(() => { if (listRef.current) listRef.current.scrollTop = scroll || 0; }, [scroll, entries, occurrences]);
+  return <div className="cal-upcoming" ref={listRef} onScroll={event => onScroll(event.currentTarget.scrollTop)}>
     <TaskSection title={t("即将到来")} icon="clock" items={items} labels={labels} grouped={grouped} onGroup={onGroup} onNew={() => onNew(false)} onOpen={onOpen} zone={zone}/>
     <TaskSection title={t("待安排")} icon="inbox" items={unscheduled} labels={labels} grouped={unscheduledGrouped} onGroup={onUnscheduledGroup} onNew={() => onNew(true)} onOpen={onOpen} zone={zone} unscheduled/>
   </div>;
@@ -82,7 +84,7 @@ export default function SchedulePage({ route }) {
   const [systemZone, setSystemZone] = useState(systemTimeZone);
   const initialToday = todayInZone(systemZone);
   const [scene, patchScene] = useScene(shell.accountKey, 'schedule-calendar', {
-    anchor: initialToday, view: { kind: 'days', days: 7 }, focus: 'calendar', month: initialToday.slice(0, 7), scroll: 0, grouped: false, unscheduledGrouped: false, draft: null
+    anchor: initialToday, view: { kind: 'days', days: 7 }, focus: 'calendar', month: initialToday.slice(0, 7), scroll: 7 * 104, grouped: false, unscheduledGrouped: false, draft: null
   });
   const sceneRef = useRef(scene); sceneRef.current = scene;
   const mounted = useRef(true);
@@ -562,7 +564,7 @@ export default function SchedulePage({ route }) {
   return <div className={`cal-page${mobileSidebar ? ' sidebar-open' : ''}${shell.isPanelOpen ? ' has-ai' : ''}`} data-region="schedule" data-focus={scene.focus || 'calendar'} data-editing={draft ? 'true' : 'false'}>
     {(loadError || (op.problem && !draft && !reminderRejected)) && <div className="cal-load-error" role="alert">{loadError || op.problem.message}<button onClick={() => op.pending ? perform(null, true) : reload()}>{t("重试")}</button></div>}
     <section className="cal-board" aria-label={t("日历")}><header className="cal-toolbar"><div className="cal-calendar-title"><MonthTitle date={scene.view.kind === 'month' ? `${displayMonth}-01` : scene.anchor}/><span className="cal-time-zone" title={zone}>{zoneLabel}</span></div><div className="cal-toolbar-actions"><FocusToggle value={scene.focus || 'calendar'} onChange={focus => updateScene({ focus })}/><ViewMenu view={scene.view} onChange={changeView}/><button className="cal-today-button" onClick={() => { setDisplayMonth(today.slice(0, 7)); updateScene({ anchor: scene.view.kind === 'week' ? monday(today) : today, month: today.slice(0, 7), monthScroll: null, monthJump: (scene.monthJump || 0) + 1 }); }}>{t("今天")}</button><IconButton name="left" label={t("上一段")} onClick={() => navigate(-1)}/><IconButton name="right" label={t("下一段")} onClick={() => navigate(1)}/><span className="cal-mobile-toggle"><IconButton name="grid" label={t("打开月份与任务")} onClick={() => setMobileSidebar(true)}/></span></div></header>
-      {scene.focus === 'tasks' ? <TaskBoard entries={data.entries} occurrences={data.occurrences} daily={data.daily} labels={data.labels} zone={zone} now={now} today={today} draft={draft} draftId={draft?.id} onOpen={openEntry} onClose={closeEditor} onNew={unscheduled => create(undefined, undefined, false, unscheduled)} onToggle={toggleBoardItem} accountKey={shell.accountKey} helpers={{ localParts, formatClock }}/>
+      {scene.focus === 'tasks' ? <TaskBoard entries={data.entries} occurrences={data.occurrences} daily={data.daily} labels={data.labels} zone={zone} now={now} today={today} draft={draft} draftId={draft?.id} onOpen={openEntry} onClose={closeEditor} onNew={unscheduled => create(undefined, undefined, false, unscheduled)} onToggle={toggleBoardItem} accountKey={shell.accountKey} helpers={{ localParts, formatClock }} scroll={scene.boardScroll} onScroll={(column, top) => updateScene({ boardScroll: { ...sceneRef.current.boardScroll, [column]: top } })}/>
       : <TimeGrid key={scene.view.kind === 'month' ? `${zone}:${scene.anchor}:${scene.monthJump}` : `time:${zone}`} view={scene.view} anchor={scene.anchor} zone={zone} occurrences={data.occurrences} labels={data.labels} selected={draft}
         onRange={(from, to) => {
           from = from < '1900-01-01' ? '1900-01-01' : from;
@@ -592,7 +594,7 @@ export default function SchedulePage({ route }) {
         labels={data.labels} onLabels={labelsChanged} accountKey={shell.accountKey} status={op.status} error={saveError}
         onRetry={() => op.pending ? perform(null, true) : flush({ explicit: true, confirmConflict: true })} onAdoptServer={adoptServer}
         onReload={op.problem?.kind === 'conflict' ? reloadConflict : null}/>
-        : <DailyTasks entries={data.entries} occurrences={data.daily} labels={data.labels} zone={zone} now={now} grouped={scene.grouped} onGroup={() => updateScene({ grouped: !scene.grouped })} onNew={unscheduled => create(undefined, undefined, false, unscheduled)} onOpen={openEntry} unscheduledGrouped={Boolean(scene.unscheduledGrouped)} onUnscheduledGroup={() => updateScene({ unscheduledGrouped: !scene.unscheduledGrouped })}/>}
+        : <DailyTasks scroll={scene.sidebarScroll} onScroll={sidebarScroll => updateScene({ sidebarScroll })} entries={data.entries} occurrences={data.daily} labels={data.labels} zone={zone} now={now} grouped={scene.grouped} onGroup={() => updateScene({ grouped: !scene.grouped })} onNew={unscheduled => create(undefined, undefined, false, unscheduled)} onOpen={openEntry} unscheduledGrouped={Boolean(scene.unscheduledGrouped)} onUnscheduledGroup={() => updateScene({ unscheduledGrouped: !scene.unscheduledGrouped })}/>}
     </aside>
     <CalendarOverlay present={Boolean(reminderAttempt)}>
       {reminderAttempt && <CalendarDialog title={t("提醒时间已过去")} onEscape={discardReminderChange}>

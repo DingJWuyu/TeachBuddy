@@ -71,10 +71,10 @@
 | 共享保存/资料包/恢复 | `savable-document-recovery.config.mjs`、`manual-support/playwright.config.mjs`、`manual-data/manual-data.config.mjs`；`reliability.test.js`；[保存案例](workbench-cases.md)、[数据验收](data.md) | 历史专用 fixture 与当前主入口分开；恢复 UI 未接入时如实记录，不恢复已删除设置 |
 | 题库/收录 | `questions-ux.config.mjs`、`questions-recognition.config.mjs`、`questions-tables.spec.js`；`first-flow-questions.test.js`、`materials-questions*.test.js`、`materials-question-notes*.test.js` | 固定录制证明消费；实际 OCR、外部原件和新提取质量另验；详见[题库专项](#题库专项) |
 | 资源/预览/识别 | `resources-ui.config.mjs`、`manual-resources.config.mjs`；`materials-resources.test.js`；[材料案例](materials-cases.md) | 真实 Office/PDF 工具与真实 GPU 分开，预览需实际解码每页；[资源专项](#资源专项) |
-| 数学/网页桥/离线 | `math-unified.config.mjs`、`math-unified-repair.config.mjs`、`math-geogebra.config.mjs`；`math-workshop*.test.js`、`math-dynamic.test.js`、`math-isolation.test.js`；[数学案例](math-cases.md) | 浏览器替身不代签真实网页模型，离线必须下载冷启动；[数学专项](#数学专项) |
+| 数学/网页桥/离线 | `math-workspace.config.mjs`、`math-unified.config.mjs`、`math-unified-repair.config.mjs`、`math-geogebra.config.mjs`；`math-workshop*.test.js`、`math-dynamic.test.js`、`math-isolation.test.js`；[数学案例](math-cases.md) | 浏览器替身不代签真实网页模型，离线必须下载冷启动；[数学专项](#数学专项) |
 | 日程 | `schedule/playwright.config.mjs` 按 capabilities/interaction/keyboard/consistency/time-zone spec 选择；`teaching-time-*.test.js`；[日程案例](schedule-cases.md) | 日常 CI 仅选择 capabilities；具体范围以配置为准，不以 CI 通过替代全部专项；[日程专项](#日程专项) |
-| 班级后端 | [班级验收](classroom.md)内真实 HTTP/Excel/原卷与生命周期入口 | 无教师页面/实际 AI，不以目录注册冒充前端完成 |
-| AI 助理 | `agent.test.js`、`agent-rendering.config.mjs`、[agent.feature](agent.feature)；live 另用 `fixtures/c26/live.mjs` 与 `c26/agent.spec.js` | rendering 与 c26 的非 live 场景使用受控 SDK/真实 HTTP/UI，已纳入 CI；live 需要同候选保留库与明确真实调用授权，扩展暂停仍有效 |
+| 班级 | `classroom.config.mjs` / `classroom.spec.js` 及[班级验收](classroom.md)内真实 HTTP/Excel/原卷与生命周期入口 | 浏览器检查完整教师页面与刷新读回，独立核对实际 AI 工具，不能用后端通过代签 |
+| AI 助理 | `agent.test.js`、`agent-rendering.config.mjs`、[agent.feature](agent.feature)；live 另用 `fixtures/c26/live.mjs` 与 `c26/agent.spec.js` | rendering 与 c26 的非 live 场景使用受控 SDK/真实 HTTP/UI，已纳入 CI；live 需要同候选保留库与明确真实调用授权，新增引用与结果卡的能力差异查根 buffer |
 
 API 文件名相对 `apps/api/test/`，浏览器入口相对 `apps/web/e2e/`。表中的通配名用于检索，不能当作配置已经全量收集；命令仍从 package scripts 与对应 Playwright 配置取。
 
@@ -142,6 +142,8 @@ node apps/api/test/fixtures/questions/server.mjs "$questionsFixtureData" 48339
 
 ## 数学专项
 
+当前完整应用的旧源兼容、公式与几何成果、参数动态、HTML 隔离及身份/未知结果回归沿 `apps/web/e2e/math-workspace.config.mjs` / `math-workspace.spec.js` 选择，统一制作与网页桥另沿各自配置。固定 HTML/JSON 及 API 仍消费的 `fixtures/math-static/` 源码和 build 保留为输入，不能因旧页面专项退役而删除它们。
+
 统一制作浏览器回归使用 `apps/web/e2e/math-unified.config.mjs`，连续输入、弹窗与播放使用 `math-unified-repair.config.mjs`；保存保护和取消分别使用 `math-geogebra.config.mjs` 中的具名场景；旧源保存/会话保护复用现有 `math-workspace.config.mjs`，按真实旧源导入建场。API 核验入口为 `apps/api/test/math-workshop.test.js`、`math-workshop-view.test.js` 和既有 `math-*.test.js`，固定输入在 `apps/api/test/fixtures/math-workshop/`。网页桥回归按[扩展说明](../../extensions/math-web-ai/README.md)执行。
 
 验收须操作真实界面、刷新读回并打开实际文件，区分作者自验、独立核验和用户目标环境。运行与必要回归只依赖仓库内源码、固定输入及按运行指南准备的工具；preview 的 `test-results/math-handoff/math-unified/` 只提供既有执行证据，不是安装或接手前置。整体完成条件与剩余验证在[项目状态](../plans/run-state.md)维护。
@@ -166,7 +168,7 @@ node apps/api/test/fixtures/c26/live.mjs z-ai/glm-5.3-flash
 npx playwright test -c apps/web/e2e/c26/agent.config.mjs -g live
 ```
 
-三次执行保持同一 `AGENT_EVIDENCE_DIR`；已有报告不覆盖。保留报告指向的数据库与文件，核对 `kind=live`、`status=completed` 后浏览器才可验证重启和成果打开。缺报告/数据库会明确跳过，不能当作模型通过；非 live 的草稿、重连、未知结果及业务编辑冲突场景使用受控 SDK，可单独执行，也由 CI 的 agentIntegration project 持续保护。Agent 扩展开发仍沿运行台账暂停，本节不授权额外产品开发或模型调用。
+三次执行保持同一 `AGENT_EVIDENCE_DIR`；已有报告不覆盖。保留报告指向的数据库与文件，核对 `kind=live`、`status=completed` 后浏览器才可验证重启和成果打开。缺报告/数据库会明确跳过，不能当作模型通过；非 live 的草稿、重连、未知结果及业务编辑冲突场景使用受控 SDK，可单独执行，也由 CI 的 agentIntegration project 持续保护。实际开发范围与模型调用授权沿运行台账，本节只提供验证入口。
 
 ## 共用测试输入与建场
 

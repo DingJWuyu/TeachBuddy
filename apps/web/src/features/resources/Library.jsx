@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { cx } from '../../components/ui/classNames.js';
 import { tx, useLocale, monthDay } from '../../i18n/presentation.js';
 import { Icon as SharedIcon } from '../../components/icons.jsx';
@@ -78,7 +78,7 @@ function useFileUrl(client, id) {
     }).catch(() => {});
     return () => { live = false; if (url) URL.revokeObjectURL(url); };
   }, [client, id]);
-  return value?.id === id && value.client === client ? value.url : '';
+  return value?.id === id && value?.client === client ? value.url : '';
 }
 
 function UploadButton({ onUpload, disabled, big }) {
@@ -163,7 +163,7 @@ function TagDialog({ tag, tax, busy, onWrite, onClose }) {
   );
 }
 
-/* Tags for the picked files: every tag with its state across the selection —
+/* Tags for the picked files: every tag with its state across the selection -
    on all (✓), on some (–), on none. A click puts it on all of them, or takes it
    off all of them when they all have it. */
 function SelectionTags({ anchor, open, onClose, picked, tax, busy, onAdd, onRemove, onNew }) {
@@ -245,7 +245,7 @@ export function Library(props) {
   /* ---------- search: typed here, sent when the typing pauses ---------- */
   const [q, setQ] = useState(scene.q);
   const sent = useRef(scene.q);
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (scene.q !== sent.current) { sent.current = scene.q; setQ(scene.q); }
   }, [scene.q]);
   useEffect(() => {

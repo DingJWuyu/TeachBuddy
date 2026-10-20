@@ -77,6 +77,8 @@ async function expectNoHorizontalOverflow(page) {
 }
 
 async function expectActionsInsideViewport(page, locator) {
+  // The reference lets long registration forms scroll naturally on small screens.
+  await locator.scrollIntoViewIfNeeded();
   await expect(locator).toBeVisible();
   const box = await locator.boundingBox();
   const viewport = page.viewportSize();
@@ -95,7 +97,7 @@ async function openEntry(page, query = '') {
 async function signInRemotely(page) {
   await page.getByLabel('邮箱', { exact: true }).fill(TEACHER.email);
   await page.getByLabel('密码', { exact: true }).fill(TEACHER.password);
-  await page.getByRole('button', { name: '登录', exact: true }).click();
+  await page.getByRole('button', { name: /^登录(?: ›)?$/ }).click();
   await expect(page.locator('[data-harness-nickname]')).toHaveText(TEACHER.nickname);
 }
 
@@ -108,17 +110,17 @@ for (const viewport of VIEWPORTS) {
 
       await openEntry(page);
       await shoot(page, `${viewport.name}-login`);
-      await expectActionsInsideViewport(page, page.getByRole('button', { name: '登录', exact: true }));
+      await expectActionsInsideViewport(page, page.getByRole('button', { name: /^登录(?: ›)?$/ }));
       await expectNoHorizontalOverflow(page);
 
-      await page.getByRole('button', { name: '登录', exact: true }).click();
+      await page.getByRole('button', { name: /^登录(?: ›)?$/ }).click();
       await expect(page.getByText('请填写邮箱。')).toBeVisible();
       await shoot(page, `${viewport.name}-field-error`);
       await expectNoHorizontalOverflow(page);
 
       await page.getByLabel('邮箱', { exact: true }).fill(TEACHER.email);
       await page.getByLabel('密码', { exact: true }).fill('wrong password');
-      await page.getByRole('button', { name: '登录', exact: true }).click();
+      await page.getByRole('button', { name: /^登录(?: ›)?$/ }).click();
       await expect(page.getByRole('alert').filter({ hasText: '邮箱或密码不正确，请重试。' })).toBeVisible();
       await shoot(page, `${viewport.name}-banner`);
       await expectNoHorizontalOverflow(page);
@@ -129,7 +131,7 @@ for (const viewport of VIEWPORTS) {
       await page.getByLabel('邮箱', { exact: true }).fill(TEACHER.email);
       await page.getByLabel('密码', { exact: true }).fill(TEACHER.password);
       await armFault(PORT, { operation: 'login', kind: 'delay', ms: 3000, times: 1 });
-      await page.getByRole('button', { name: '登录', exact: true }).click();
+      await page.getByRole('button', { name: /^登录(?: ›)?$/ }).click();
       const waiting = page.getByRole('button', { name: '登录中' });
       await expect(waiting).toBeVisible();
       await expect(waiting).toBeDisabled();
@@ -147,7 +149,7 @@ for (const viewport of VIEWPORTS) {
       });
       await page.getByLabel('邮箱', { exact: true }).fill(TEACHER.email);
       await page.getByLabel('密码', { exact: true }).fill(TEACHER.password);
-      await page.getByRole('button', { name: '登录', exact: true }).click();
+      await page.getByRole('button', { name: /^登录(?: ›)?$/ }).click();
       await expect(page.getByRole('heading', { name: '保存登录状态' })).toBeVisible();
       await shoot(page, `${viewport.name}-s45`);
       await expectActionsInsideViewport(page, page.getByRole('button', { name: '继续进入工作台' }));

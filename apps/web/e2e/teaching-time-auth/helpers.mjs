@@ -35,9 +35,17 @@ export async function login(page, email = 'teacher-a@example.test') {
   await expect(page.locator('.wb-shell')).toBeVisible();
 }
 export async function logout(page) {
-  const settings = page.locator('.wb-sidebar').getByRole('link', { name: '设置', exact: true });
+  const settings = page.getByRole('link', { name: /^账户：|^Account:/ });
   if (!await settings.isVisible()) await page.getByRole('button', { name: '展开侧栏', exact: true }).click();
   await settings.click();
   await page.getByRole('button', { name: '退出登录', exact: true }).click();
+  await confirmLogout(page);
   await expect(page.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
+}
+
+// The settings action opens the shared confirmation before the real I07 call.
+export async function confirmLogout(page) {
+  const dialog = page.locator('dialog.settings-logout-dialog');
+  await dialog.getByRole('button', { name: /^(退出登录|Sign out)$/ }).click();
+  await expect(dialog).toHaveCount(0);
 }

@@ -97,6 +97,14 @@ Job 内部 Interface：`jobs.enqueue({principal, kind, target}, mutation)` 在�
 
 语言词库在 [i18n/locales/](../../apps/web/src/i18n/locales)，界面迁移文案在 [presentationResources.js](../../apps/web/src/i18n/presentationResources.js)，均由 i18next/react-i18next 消费。[presentation.js](../../apps/web/src/i18n/presentation.js) 提供 `tx`、语言与日期 helpers；教师正文及导出内容不参与翻译。
 
+## 显式载入示例
+
+工作台的“载入一周的示例数据”由用户明确触发。[seedSampleWeek](../../apps/web/src/features/workbench/demo/seed.js) 顺序调用 [workspace](../../apps/web/src/features/workbench/demo/workspace.js) 的题目、资源、日程与数学准备及 [classroom](../../apps/web/src/features/workbench/demo/classroom.js) 的班级、考试、Excel 校对确认。示例 JSON、xlsx 与 PDF 资产归该源码目录，通过正常模块及资产导入构建，不从 docs 或 E2E fixture 加载运行代码。
+
+示例内容的权威输入为 [question-data.js](../../apps/web/src/features/workbench/demo/question-data.js) 与 [classroom-data.json](../../apps/web/src/features/workbench/demo/classroom-data.json)。修改这些内容后，从仓库根目录运行 `node scripts/demo/generate-sample-assets.mjs`，由[生成器](../../scripts/demo/generate-sample-assets.mjs)通过已安装的 xlsx、KaTeX 与 Playwright Chromium 重建三份原卷 PDF 和五份成绩 xlsx；随代码保留这些可重建资产，正常启动不执行生成器。
+
+每步保留账户范围的原请求体、幂等键与已确认对象 ID，失败接续继续原步骤；上传字节独立保留在 `teachbuddy-sample-week` IndexedDB，删号确认后由 `accountDeviceData` 调用 `clearSampleWeekDeviceData` 清理；时间点恢复由 `deviceRecovery` 按 `pending:sample-week:*` 指针转入原有恢复隔离，不自动重发。已确认步骤不因重复点击或恢复而新建。业务记录通过普通真实 API 保存，既有账户内容继续保留。它与助理脚本回答的本地模拟是两种职责，不能将示例数据标为仅存在于内存，也不能以示例回答证明真实模型能力。当前候选的完整载入与恢复验证查任务记录。
+
 ## 验证入口
 
 按[模块与底座验证选择](../acceptance/README.md#模块与底座入口)选择真实 HTTP/数据库、固定构建浏览器与输出回归；公共保存的交换条件见[基础案例](../acceptance/workbench-cases.md)，文件/Job 见[材料案例](../acceptance/materials-cases.md)，恢复与资料包见[数据验收](../acceptance/data.md)。入口存在不代表当前候选已通过。
@@ -106,7 +114,7 @@ Job 内部 Interface：`jobs.enqueue({principal, kind, target}, mutation)` 在�
 - [platform/http](../../apps/web/src/platform/http) 的 `apiClient.js`、`problems.js`、`request.js` 统一请求/问题语义；账户 transport 附加可信身份，平台层不拥有登录表单或模块业务。
 - [platform/device](../../apps/web/src/platform/device) 的 `storage.js`、`deviceRequestStore.js`、`useScene.js`、`uuid.js` 拥有设备存储、未决请求、场景与 ID 原语；账户隔离和迟到响应由使用这些原语的模块保持。
 - [platform/saving](../../apps/web/src/platform/saving) 的 `useSavableDocument.js`、`useIdempotentSubmit.js`、`saveStates.js` 承担公共保存状态与幂等提交机制，不解释题目/作品业务内容。
-- [components/ui](../../apps/web/src/components/ui) 提供确认、浮层、分段、日期时间、筛选与模块右轨；`motion.js`、`colors.js`、`classNames.js` 提供公共呈现原语。共享图标统一由 `components/icons.jsx` 导出，产品通过正常 imports 消费，不使用原型全局桥接。
-- [components/materials](../../apps/web/src/components/materials) 聚合 `DocumentView`、`DocumentEditor`、`MathFormula`、documents、样式及公开入口；[components/interaction](../../apps/web/src/components/interaction) 聚合 ModuleMotion/ModuleOverlays、overlays、useForegroundRefresh、useScrollRestore；[icons](../../apps/web/src/components/icons.jsx) 提供共享图标。设置特有 SettingsControls 留在 workbench。
+- [components/ui](../../apps/web/src/components/ui) 提供确认、浮层、分段、日期时间、筛选与模块右轨；`menu.jsx` 的 Menu/MenuItem 与 `dialog.jsx` 的 Dialog/Overlay 统一业务菜单和对话框的 portal、键盘及焦点；`motion.js`、`colors.js`、`classNames.js` 提供公共呈现原语。共享图标统一由 `components/icons.jsx` 导出，产品通过正常 imports 消费，不使用原型全局桥接。
+- [components/materials](../../apps/web/src/components/materials) 聚合 `DocumentView`、`DocumentEditor`、`MathFormula`、documents、样式及公开入口；[components/interaction](../../apps/web/src/components/interaction) 聚合 ModuleMotion、useForegroundRefresh、useScrollRestore 等动效与现场 hooks；[icons](../../apps/web/src/components/icons.jsx) 提供共享图标。设置特有 SettingsControls 留在 workbench。
 
 后端通用文稿读取在 [content/document](../../apps/api/src/workbench/content/document.js) 的 documentText/walkBlocks/images；不承担数学 Source 协议。数学协议由 [math/contract](../../apps/api/src/modules/math/contract.js) 拥有；共用 casefold 在 [workbench/text](../../apps/api/src/workbench/text.js)。材料 Problem 沿 [workbench/problems](../../apps/api/src/workbench/problems.js)，HTTP JSON/错误适配沿 [workbench/http](../../apps/api/src/workbench/http.js)，不为每个业务路由重复实现。

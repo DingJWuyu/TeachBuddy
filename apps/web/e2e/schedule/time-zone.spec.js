@@ -1,3 +1,4 @@
+import { setScheduleField, expectScheduleField, openRepeat, scheduleAction } from './controls.mjs';
 import { test, expect } from '@playwright/test';
 import fs from 'node:fs';
 import { randomUUID } from 'node:crypto';
@@ -17,7 +18,7 @@ test.describe('系统时区同步与时间显示', () => {
     expect(r.status, JSON.stringify(r.json)).toBeLessThan(300); return r.json;
   }
 
-  async function open(page, title) { await page.locator('.cal-upcoming-row').filter({ hasText: title }).click(); }
+  async function open(page, title) { const row = page.locator('.cal-upcoming-row').filter({ hasText: title }); if (!await row.isVisible() && await page.getByRole('button', { name: '打开月份与任务', exact: true }).isVisible()) await page.getByRole('button', { name: '打开月份与任务', exact: true }).click(); await row.click(); }
 
   test.beforeEach(async ({ page, context }) => {
     cdp=await context.newCDPSession(page);await cdp.send('Emulation.setTimezoneOverride',{timezoneId:'Asia/Shanghai'});
@@ -32,7 +33,7 @@ test.describe('系统时区同步与时间显示', () => {
     await closeScheduleWorld(context, world, errors, info);
   });
 
-  async function closed(page) { await page.getByRole('button',{name:'关闭任务',exact:true}).click(); await expect(page.locator('.cal-editor')).toHaveCount(0); }
+  async function closed(page) { await page.getByRole('button',{name:'关闭',exact:true}).click(); await expect(page.locator('.tbx-sheet')).toHaveCount(0); }
 
   test('运行中系统时区改变后，当前时间线跟随当地钟点',async({page,context})=>{
    await expect(page.locator('.cal-now-time')).toHaveText('22:00');
@@ -69,7 +70,7 @@ test.describe('系统时区同步与时间显示', () => {
    await page.getByRole('textbox',{name:'备注',exact:true}).fill('第一次输入');await started;await switchZone(page,'America/New_York');
    await page.getByRole('textbox',{name:'备注',exact:true}).fill('保存期间继续输入');release();await inSystemZone(page,'America/New_York');
    await expect(page.getByRole('textbox',{name:'备注',exact:true})).toHaveText('保存期间继续输入');await page.keyboard.press('ControlOrMeta+s');
-   await expect.poll(async()=>(await call('GET',`${E}/${task.id}`)).calendar.notes).toBe('保存期间继续输入');await expect(page.locator('.cal-save-feedback')).toHaveCount(0);
+   await expect.poll(async()=>(await call('GET',`${E}/${task.id}`)).calendar.notes).toBe('保存期间继续输入');await expect(page.locator('.tbx-sheet-error')).toHaveCount(0);
    await closed(page);expect((await call('GET',`${E}/${task.id}`)).time.timeZone).toBe('America/New_York');
   });
 
@@ -111,7 +112,7 @@ test.describe('系统时区同步与时间显示', () => {
   test('保存结果未确认时先确认原保存，再同步时区且不丢备注',async({page})=>{
    const task=await call('POST',E,entry('待确认的任务保存',{time:futureTime()}));await page.reload();await open(page,task.title);let first=true;
    await page.route(`**${E}/${task.id}`,async route=>{if(route.request().method()!=='PUT'||!first)return route.continue();first=false;await route.fetch();await route.abort('failed');});
-   await page.getByRole('textbox',{name:'备注',exact:true}).fill('保留未确认保存的备注');await page.keyboard.press('ControlOrMeta+s');await expect(page.locator('.cal-save-feedback')).toContainText('确认');
+   await page.getByRole('textbox',{name:'备注',exact:true}).fill('保留未确认保存的备注');await page.keyboard.press('ControlOrMeta+s');await expect(page.locator('.tbx-sheet-error')).toContainText('确认');
    await switchZone(page,'America/New_York');await expect(page.locator('.cal-load-error')).toContainText('先重试确认');
    await page.locator('.cal-load-error').getByRole('button',{name:'重试',exact:true}).click();await inSystemZone(page,'America/New_York');
    await closed(page);const saved=await call('GET',`${E}/${task.id}`);expect(saved.calendar.notes).toBe('保留未确认保存的备注');expect(saved.time.timeZone).toBe('America/New_York');
@@ -128,7 +129,7 @@ test.describe('系统时区同步与时间显示', () => {
    await page.mouse.move(x,rect.y+rect.height*6-2,{steps:8});
    await expect(page.locator('.cal-selection-time')).toHaveText('04:00 - 05:30');
    await page.screenshot({path:test.info().outputPath('selection-hour.png')});await page.mouse.up();
-   await expect(page.locator('[name=entry-start]')).toHaveValue('04:00');await expect(page.locator('[name=entry-end]')).toHaveValue('05:30');
+   await expectScheduleField(page, '开始时间', '04:00');await expectScheduleField(page, '结束时间', '05:30');
    await closed(page);await expect(page.locator('.cal-selection-time')).toHaveCount(0);
    await page.mouse.move(x,rect.y+rect.height*4-2);await page.mouse.down();
    await page.mouse.move(x,rect.y+2,{steps:15});await expect(page.locator('.cal-selection-time')).toHaveText('04:00 - 05:00');await page.mouse.up();await closed(page);
@@ -143,9 +144,9 @@ test.describe('系统时区同步与时间显示', () => {
   test('系统采用纽约时区时，夏令时结束按实际分钟显示和保存',async({page})=>{
    await switchZone(page,'America/New_York');await inSystemZone(page,'America/New_York');
    const dst=await call('POST',E,entry('夏令时课堂',{time:{date:'2026-11-01',startTime:'00:30',durationMinutes:120,timeZone:'America/New_York'}}));
-   await page.goto(`${world.origin}/calendar?entry=${dst.id}`);await expect(page.locator('[name=entry-end]')).toHaveValue('01:30');
-   await page.locator('[name=entry-end]').fill('03:30');await expect.poll(async()=>(await call('GET',`${E}/${dst.id}`)).time.durationMinutes).toBe(240);
-   await page.reload();await expect(page.locator('[name=entry-end]')).toHaveValue('03:30');
+   await page.goto(`${world.origin}/calendar?entry=${dst.id}`);await expectScheduleField(page, '结束时间', '01:30');
+   await setScheduleField(page, '结束时间', '03:30');await expect.poll(async()=>(await call('GET',`${E}/${dst.id}`)).time.durationMinutes).toBe(240);
+   await page.reload();await expectScheduleField(page, '结束时间', '03:30');
   });
 
   test('窄网格中的拖选时间不越过选区宽度，灰色提示在深色主题仍清楚',async({page})=>{
@@ -200,7 +201,7 @@ test.describe('操作期间切换系统时区', () => {
       expect(r.status, JSON.stringify(r.json)).toBeLessThan(300); return r.json;
     }
 
-  async function open(page, title) { await page.locator('.cal-upcoming-row').filter({ hasText: title }).click(); }
+  async function open(page, title) { const row = page.locator('.cal-upcoming-row').filter({ hasText: title }); if (!await row.isVisible() && await page.getByRole('button', { name: '打开月份与任务', exact: true }).isVisible()) await page.getByRole('button', { name: '打开月份与任务', exact: true }).click(); await row.click(); }
 
   test.beforeEach(async ({ page,context }) => {
       cdp=await context.newCDPSession(page);await cdp.send('Emulation.setTimezoneOverride',{timezoneId:'Asia/Shanghai'});
@@ -227,24 +228,24 @@ test.describe('操作期间切换系统时区', () => {
   for(const scope of ['待安排','普通任务','重复任务'])test(`R4 移动事项保存中切换时区，${scope}目标不会锁死日程`,async({page},info)=>{
      const source=await call('POST',E,entry('源任务',{items:row()}));const target=await call('POST',E,entry('目标任务',{...(scope==='待安排'?{time:null}:{}),...(scope==='重复任务'?{repeat:{until:'2026-10-09'}}:{})}));await reloadOpen(page,source);
      let release,hit;const gate=new Promise(r=>release=r),started=new Promise(r=>hit=r);await page.route('**/api/modules/schedule/item-moves',async route=>{const response=await route.fetch();hit();await gate;await route.fulfill({response});});
-     await page.getByRole('button',{name:'事项 1 操作',exact:true}).click();await page.getByRole('menuitem',{name:'移到其他安排…',exact:true}).click();const d=page.getByRole('dialog',{name:'移动事项',exact:true});await d.getByLabel('移到',{exact:true}).selectOption(target.id);if(scope==='重复任务')await d.getByRole('radio',{name:'每次重复都需要',exact:true}).check();await d.getByRole('button',{name:'移动事项',exact:true}).click();await started;
+     await page.locator('.tbx-item:not(.is-add)').nth(0).getByRole('button', { name: '事项选项', exact: true }).click();await page.getByRole('menuitem',{name:'移到其他安排…',exact:true}).click();const d=page.getByRole('dialog',{name:'移动事项',exact:true});await d.getByLabel('移到',{exact:true}).selectOption(target.id);if(scope==='重复任务')await d.getByRole('radio',{name:'每次重复都需要',exact:true}).check();await d.getByRole('button',{name:'移动事项',exact:true}).click();await started;
      await cdp.send('Emulation.setTimezoneOverride',{timezoneId:'America/New_York'});await page.evaluate(()=>window.dispatchEvent(new Event('focus')));release();
-     try { await expect(page.locator('.cal-time-zone')).toHaveAttribute('title','America/New_York'); } finally {const observed=await page.evaluate(()=>({nativeZone:Intl.DateTimeFormat().resolvedOptions().timeZone,shownZone:document.querySelector('.cal-time-zone')?.title,editorText:document.querySelector('.cal-editor')?.innerText,dialogText:document.querySelector('.cal-dialog')?.innerText}));if(observed.shownZone!==observed.nativeZone){await page.getByRole('button',{name:'关闭任务',exact:true}).click({timeout:2000}).catch(()=>{});try{await expect(page.locator('.cal-editor')).toHaveCount(0,{timeout:2000});observed.closeWorked=true;}catch{observed.closeWorked=false;}}fs.writeFileSync(info.outputPath('move-zone-observed.json'),JSON.stringify(observed,null,2));}await expect(d).toHaveCount(0);await expect(page.getByText('正在移动事项',{exact:true})).toHaveCount(0);
+     try { await expect(page.locator('.cal-time-zone')).toHaveAttribute('title','America/New_York'); } finally {const observed=await page.evaluate(()=>({nativeZone:Intl.DateTimeFormat().resolvedOptions().timeZone,shownZone:document.querySelector('.cal-time-zone')?.title,editorText:document.querySelector('.tbx-sheet')?.innerText,dialogText:document.querySelector('.cal-dialog')?.innerText}));if(observed.shownZone!==observed.nativeZone){await page.getByRole('button',{name:'关闭',exact:true}).click({timeout:2000}).catch(()=>{});try{await expect(page.locator('.tbx-sheet')).toHaveCount(0,{timeout:2000});observed.closeWorked=true;}catch{observed.closeWorked=false;}}fs.writeFileSync(info.outputPath('move-zone-observed.json'),JSON.stringify(observed,null,2));}await expect(d).toHaveCount(0);await expect(page.getByText('正在移动事项',{exact:true})).toHaveCount(0);
      expect((await call('GET',`${E}/${source.id}`)).items).toHaveLength(0);expect((await call('GET',`${E}/${target.id}`)).items).toHaveLength(1);
     });
 
   for(const [zone,offset,clock] of [['UTC','UTC+00:00','6:00'],['Asia/Kathmandu','UTC+05:45','11:45'],['Australia/Lord_Howe','UTC+10:30','16:30'],['Pacific/Apia','UTC+13:00','19:00']])test(`Z1 系统切换${zone}，偏移与当前红线一致而任务钟点不变`,async({page})=>{
-     const task=await call('POST',E,entry('特殊偏移任务',{time:{...entry('').time,startTime:'23:00'}}));await reloadOpen(page,task);await cdp.send('Emulation.setTimezoneOverride',{timezoneId:zone});const canonical=await page.evaluate(()=>Intl.DateTimeFormat().resolvedOptions().timeZone);await page.evaluate(()=>window.dispatchEvent(new Event('focus')));await expect(page.locator('.cal-time-zone')).toHaveAttribute('title',canonical);await expect(page.locator('.cal-time-zone')).toContainText(offset);await dayView(page);const saved=await call('GET',`${E}/${task.id}`);expect(saved.time).toEqual({...task.time,timeZone:canonical});await expect(page.locator('[name=entry-start]')).toHaveValue('23:00');await expect(page.locator('.cal-now-time')).toHaveText(clock.padStart(5,'0'));
+     const task=await call('POST',E,entry('特殊偏移任务',{time:{...entry('').time,startTime:'23:00'}}));await reloadOpen(page,task);await cdp.send('Emulation.setTimezoneOverride',{timezoneId:zone});const canonical=await page.evaluate(()=>Intl.DateTimeFormat().resolvedOptions().timeZone);await page.evaluate(()=>window.dispatchEvent(new Event('focus')));await expect(page.locator('.cal-time-zone')).toHaveAttribute('title',canonical);await expect(page.locator('.cal-time-zone')).toContainText(offset);await dayView(page);const saved=await call('GET',`${E}/${task.id}`);expect(saved.time).toEqual({...task.time,timeZone:canonical});await expectScheduleField(page, '开始时间', '23:00');await expect(page.locator('.cal-now-time')).toHaveText(clock.padStart(5,'0'));
     });
 
   for(const [zone,date,start,actual,end,instant]of [['America/New_York','2026-03-08','02:30','03:30','04:00','2026-03-08T07:30:00.000Z'],['Australia/Lord_Howe','2026-10-04','02:15','02:45','03:15','2026-10-03T15:45:00.000Z']])test(`Z2 ${zone}夏令时缺失钟点保留输入、显示实际时间并按实际开始提醒`,async({page})=>{
-     now=date==='2026-03-08'?'2026-03-08T05:00:00Z':'2026-10-03T14:00:00Z';await page.clock.setFixedTime(new Date(now));await cdp.send('Emulation.setTimezoneOverride',{timezoneId:zone});await page.evaluate(()=>window.dispatchEvent(new Event('focus')));await expect(page.locator('.cal-time-zone')).toHaveAttribute('title',zone);const task=await call('POST',E,entry('夏令时缺失时刻',{time:{date,startTime:start,durationMinutes:30,timeZone:zone},reminder:{anchor:'start',side:'before',minutes:0}}));await page.goto(`${world.origin}/calendar?entry=${task.id}`);await expect(page.locator('[name=entry-start]')).toHaveValue(start);await expect(page.locator('[name=entry-end]')).toHaveValue(end);await expect(page.getByText(/夏令时跳时/)).toContainText(actual);now=instant;await page.clock.setFixedTime(new Date(now));const notices=(await call('GET',N)).items;expect(notices).toHaveLength(1);expect(Date.parse(notices[0].dueAt)).toBe(Date.parse(instant));expect((await call('GET',`${E}/${task.id}`)).time.startTime).toBe(start);
+     now=date==='2026-03-08'?'2026-03-08T05:00:00Z':'2026-10-03T14:00:00Z';await page.clock.setFixedTime(new Date(now));await cdp.send('Emulation.setTimezoneOverride',{timezoneId:zone});await page.evaluate(()=>window.dispatchEvent(new Event('focus')));await expect(page.locator('.cal-time-zone')).toHaveAttribute('title',zone);const task=await call('POST',E,entry('夏令时缺失时刻',{time:{date,startTime:start,durationMinutes:30,timeZone:zone},reminder:{anchor:'start',side:'before',minutes:0}}));await page.goto(`${world.origin}/calendar?entry=${task.id}`);await expectScheduleField(page, '开始时间', start);await expectScheduleField(page, '结束时间', end);await expect(page.getByText(/夏令时跳时/)).toContainText(actual);now=instant;await page.clock.setFixedTime(new Date(now));const notices=(await call('GET',N)).items;expect(notices).toHaveLength(1);expect(Date.parse(notices[0].dueAt)).toBe(Date.parse(instant));expect((await call('GET',`${E}/${task.id}`)).time.startTime).toBe(start);
     });
 
   test('Z3 事项移动期间由实际定时器检测时区变化，不依赖合成焦点事件且不会锁死',async({page},info)=>{
-     const source=await call('POST',E,entry('定时检测的移动源',{items:row()}));const target=await call('POST',E,entry('定时检测的移动目标',{time:null}));await reloadOpen(page,source);let release,hit;const gate=new Promise(r=>release=r),started=new Promise(r=>hit=r);await page.route('**/api/modules/schedule/item-moves',async route=>{const response=await route.fetch();hit();await gate;await route.fulfill({response});});await page.getByRole('button',{name:'事项 1 操作',exact:true}).click();await page.getByRole('menuitem',{name:'移到其他安排…',exact:true}).click();const d=page.getByRole('dialog',{name:'移动事项',exact:true});await d.getByLabel('移到',{exact:true}).selectOption(target.id);await d.getByRole('button',{name:'移动事项',exact:true}).click();await started;await cdp.send('Emulation.setTimezoneOverride',{timezoneId:'America/New_York'});
+     const source=await call('POST',E,entry('定时检测的移动源',{items:row()}));const target=await call('POST',E,entry('定时检测的移动目标',{time:null}));await reloadOpen(page,source);let release,hit;const gate=new Promise(r=>release=r),started=new Promise(r=>hit=r);await page.route('**/api/modules/schedule/item-moves',async route=>{const response=await route.fetch();hit();await gate;await route.fulfill({response});});await page.locator('.tbx-item:not(.is-add)').nth(0).getByRole('button', { name: '事项选项', exact: true }).click();await page.getByRole('menuitem',{name:'移到其他安排…',exact:true}).click();const d=page.getByRole('dialog',{name:'移动事项',exact:true});await d.getByLabel('移到',{exact:true}).selectOption(target.id);await d.getByRole('button',{name:'移动事项',exact:true}).click();await started;await cdp.send('Emulation.setTimezoneOverride',{timezoneId:'America/New_York'});
      // This duration deliberately crosses the product's real 15-second detector.
      // Date is fixed; timers remain real. No synthetic focus/visibility event.
-     await page.waitForTimeout(16000);release();try{await expect(page.locator('.cal-time-zone')).toHaveAttribute('title','America/New_York');}finally{const observed=await page.evaluate(()=>({nativeZone:Intl.DateTimeFormat().resolvedOptions().timeZone,shownZone:document.querySelector('.cal-time-zone')?.title}));observed.detection='real 15-second timer';await page.getByRole('button',{name:'关闭任务',exact:true}).click({timeout:2000}).catch(()=>{});try{await expect(page.locator('.cal-editor')).toHaveCount(0,{timeout:2000});observed.closeWorked=true;}catch{observed.closeWorked=false;}fs.writeFileSync(info.outputPath('move-zone-observed.json'),JSON.stringify(observed,null,2));}
+     await page.waitForTimeout(16000);release();try{await expect(page.locator('.cal-time-zone')).toHaveAttribute('title','America/New_York');}finally{const observed=await page.evaluate(()=>({nativeZone:Intl.DateTimeFormat().resolvedOptions().timeZone,shownZone:document.querySelector('.cal-time-zone')?.title}));observed.detection='real 15-second timer';await page.getByRole('button',{name:'关闭',exact:true}).click({timeout:2000}).catch(()=>{});try{await expect(page.locator('.tbx-sheet')).toHaveCount(0,{timeout:2000});observed.closeWorked=true;}catch{observed.closeWorked=false;}fs.writeFileSync(info.outputPath('move-zone-observed.json'),JSON.stringify(observed,null,2));}
     });
 });

@@ -125,7 +125,7 @@ export function MiniCalendar({ month, from, to, today, onMonth, onSelect }) {
     onSelect(selection.start < selection.end ? selection.start : selection.end, selection.start < selection.end ? selection.end : selection.start, selection.start !== selection.end);
   };
   return <section className="cal-mini" aria-label={t("选择日期范围")}>
-    <header><MonthTitle date={`${month}-01`} icon="grid"/><div className="cal-mini-nav"><IconButton name="left" label={t("上个月")} disabled={month <= '1900-01'} onClick={() => onMonth(shiftMonth(month, -1))}/><IconButton name="right" label={t("下个月")} disabled={month >= '2100-12'} onClick={() => onMonth(shiftMonth(month, 1))}/></div></header>
+    <header><MonthTitle date={`${month}-01`} icon="calendarGrid"/><div className="cal-mini-nav"><IconButton name="left" label={t("上个月")} disabled={month <= '1900-01'} onClick={() => onMonth(shiftMonth(month, -1))}/><IconButton name="right" label={t("下个月")} disabled={month >= '2100-12'} onClick={() => onMonth(shiftMonth(month, 1))}/></div></header>
     <div className="cal-mini-grid" ref={gridRef} onPointerMove={event => {
       if (!dragRef.current) return;
       const cell = document.elementFromPoint(event.clientX, event.clientY)?.closest('[data-date]');

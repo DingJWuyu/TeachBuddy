@@ -15,6 +15,7 @@ import catalog from './catalog-navigation.config.mjs';
 import resources from './resources-ui.config.mjs';
 import questions from './questions-ux.config.mjs';
 import recognition from './questions-recognition.config.mjs';
+import classroom from './classroom.config.mjs';
 
 // Reuse each suite's viewport, timezone, assertions and evidence location.
 export default defineConfig({
@@ -23,7 +24,7 @@ export default defineConfig({
     agentIntegration: { ...agentIntegration, testMatch: 'c26/agent.spec.js', grepInvert: /live模型结果/ }, math, mathCompatibility,
     mathPersistence: { ...mathPersistence, testMatch: 'math-geogebra.spec.js' }, support: { ...support, testMatch: 'manual-support/support.spec.js' }, protection, calendar: { ...calendar, testMatch: 'schedule/capabilities.spec.js' }, development, retirement, catalog,
     resources: { ...resources, grepInvert: /真实 OCR 运行链/ },
-    questions, recognition,
+    questions, recognition, classroom,
   }).map(
     ([name, { testMatch, timeout, expect, use, outputDir, grepInvert }]) =>
       ({ name, testMatch, timeout, expect, use, outputDir, grepInvert }),

@@ -17,9 +17,8 @@ export async function importMathSource(page, source, title = '兼容作品') {
   return imported.json();
 }
 export async function chooseFile(page, action, file) {
-  await page.getByRole('button', { name: '作品操作', exact: true }).click();
   const chooser = page.waitForEvent('filechooser');
-  await page.getByRole('menuitem', { name: action, exact: true }).click();
+  await page.getByRole('complementary', { name: '数学工坊导航', exact: true }).getByRole('button', { name: new RegExp(`^${action}`) }).click();
   await (await chooser).setFiles(file);
 }
 

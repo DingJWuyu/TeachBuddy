@@ -8,6 +8,7 @@ const stores = [
   ["teachbuddy.math.uploads", "pending", "pending:math-upload"],
   ["teachbuddy.questions.uploads", "pending", "pending:questions-upload"],
   ["teachbuddy-classroom-pending", "requests", "pending:classroom-upload"],
+  ["teachbuddy-sample-week", "requests", "pending:sample-week:"],
 ];
 function database(name, store) {
   return new Promise((resolve, reject) => {
@@ -117,8 +118,11 @@ export async function archivedUploads(account, recoveryId) {
     // New requests keep immutable binary records behind legacy or branch pointers.
     // Read the archived pointers, including restores completed before this reader existed.
     for (const [recordName, raw] of Object.entries(archive?.records ?? {})) {
-      if (!recordName.startsWith(`tb.workbench.v1:${account}:`) ||
-          !recordName.endsWith(`:${logicalName}`)) continue;
+      if (!recordName.startsWith(`tb.workbench.v1:${account}:`)) continue;
+      const ownsPointer = logicalName.endsWith(":")
+        ? recordName.includes(`:${logicalName}`)
+        : recordName.endsWith(`:${logicalName}`);
+      if (!ownsPointer) continue;
       try {
         const record = JSON.parse(raw);
         const pointer = record?.formatVersion === 2 ? record.value : record;

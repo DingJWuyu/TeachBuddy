@@ -67,7 +67,7 @@ function Pill({ type, value, onChange, invalid, min, children, label, today }) {
       </button>
       <Popover anchor={ref} open={open} onClose={() => setOpen(false)} align="end" label={label}>
         {type === 'date'
-          ? <DatePicker value={value} min={min} today={today} onChange={(v) => { onChange(v); setOpen(false); }} />
+          ? <DatePicker value={value} min={min || '1900-01-01'} max="2100-12-31" today={today} onChange={(v) => { onChange(v); setOpen(false); }} />
           : <TimePicker value={value} onChange={onChange} onDone={() => setOpen(false)} />}
       </Popover>
     </>
@@ -486,6 +486,7 @@ export function EntryEditor(props) {
         <textarea
           ref={titleRef}
           id="calendar-entry-title"
+          aria-label={tx('标题')}
           className="tbx-sheet-title"
           rows={1}
           maxLength={300}
