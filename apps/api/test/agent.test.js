@@ -419,14 +419,22 @@ test.after(() => {
 });
 
 test('WB-AG-024: 会话管理真实保存、账户隔离、删除及原键重放', async () => {
- const w = await createCapabilitiesIntegration();
+ const model = await provider([[{ type: 'text', text: '已回答明确命名的对话。' }], [{ type: 'text', text: '已回答自动命名的对话。' }]]);
+ const w = await createCapabilitiesIntegration({ agent: model.config });
  try {
   const c = await register(w);
   const created = await write(c, 'POST', '/api/agent/conversations', {});
   const path = '/api/agent/conversations/' + created.json.conversation.id;
+  assert.equal(Object.hasOwn(created.json.conversation, 'titleEdited'), false);
+  const legacy = (await c.request('GET', path)).json;
+  assert.equal(Object.hasOwn(legacy.conversation, 'titleEdited'), false);
+  assert.equal(valid('Snapshot', legacy), true);
+  const pinOnly = await write(c, 'PATCH', path, { pinned: false });
+  assert.equal(Object.hasOwn(pinOnly.json, 'titleEdited'), false);
   const key = randomUUID();
   const patch = await write(c, 'PATCH', path, { title: '  新标题  ', pinned: true }, key);
   assert.equal(patch.status, 200, patch.text);
+  assert.equal(patch.json.titleEdited, true);
   assert.equal(patch.json.title, '新标题'); assert.equal(patch.json.pinned, true);
   assert.equal(valid('Conversation', patch.json), true);
   assert.equal((await c.request('GET', path)).json.conversation.title, '新标题');
@@ -437,6 +445,18 @@ test('WB-AG-024: 会话管理真实保存、账户隔离、删除及原键重放
   await write(c, 'PATCH', path, { title: '后来标题', pinned: false });
   assert.deepEqual((await write(c, 'PATCH', path, { title: '  新标题  ', pinned: true }, key)).json, patch.json);
   assert.equal((await c.request('GET', path)).json.conversation.title, '后来标题');
+  const savedDraft = await write(c, 'PUT', path + '/draft', { baseVersion: 1, text: '这条消息不能覆盖明确标题', references: [] });
+  assert.equal(savedDraft.status, 200);
+  assert.equal((await write(c, 'POST', path + '/turns', { draftVersion: 2, modelId: 'deepseek/deepseek-v4.1-flash' })).status, 202);
+  const named = await finished(c, path);
+  assert.equal(named.conversation.title, '后来标题');
+  assert.equal(named.conversation.titleEdited, true);
+  const automaticPath = await start(c, '自动命名应来自首条消息');
+  const automatic = await finished(c, automaticPath);
+  assert.equal(automatic.conversation.title, '自动命名应来自首条消息');
+  assert.equal(Object.hasOwn(automatic.conversation, 'titleEdited'), false);
+  await write(c, 'DELETE', automaticPath, {});
+  assert.equal(model.requests(), 2);
   const other = await register(w, 'other-management@example.test');
   assert.equal((await write(other, 'PATCH', path, { pinned: true })).status, 404);
   assert.equal((await write(other, 'DELETE', path, {})).status, 404);

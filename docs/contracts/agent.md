@@ -14,7 +14,7 @@ Agent 当前契约，开发暂停和实现边界见[当前状态](../plans/run-s
 
 创建对话返回持久 snapshot，初始草稿 version=1、空文字/引用、空消息/turn/工具调用/操作、lastEventSeq=0。列表返回本账户全部对话，updatedAt 降序、id 升序；当前设备优先恢复其本地 active conversationId，否则选择列表首项，空列表提供新对话入口。列表、snapshot 与 conversation 事件的 preview 均从最近一条非空助理消息派生，去除 Markdown 标记后取首个非空段的前 60 字符；旧会话无需打开即可恢复摘要，不另存设备摘要。选择、浏览、重命名和置顶不更新活动排序。草稿保存、发送与新增消息/工具状态更新对话 updatedAt。
 
-PATCH 会话只接受 title 或 pinned，标题 trim 后非空且最多 80 字符；写入经账户幂等事务并发布 conversation 事件。DELETE 经同一身份与幂等保护移除会话及所属事件，成功返回 deleted ID；同键重放保留原成功结果。running turn 拒绝为 turn-active，prepared/executing/unconfirmed Operation 拒绝为 pending-operation，保留原 journal 核实入口。删除不撤销已经保存的业务对象。
+PATCH 会话只接受 title 或 pinned，标题 trim 后非空且最多 80 字符；只有请求明确包含 title 时保存 titleEdited=true，单独修改 pinned 不设置该标志。Conversation 的 titleEdited 可缺失，缺失与 false 均表示没有服务端明确改名，旧会话无需迁移。首次发送只在未明确改名时自动生成标题，不能覆盖老师预先设置的标题；写入经账户幂等事务并发布 conversation 事件。DELETE 经同一身份与幂等保护移除会话及所属事件，成功返回 deleted ID；同键重放保留原成功结果。running turn 拒绝为 turn-active，prepared/executing/unconfirmed Operation 拒绝为 pending-operation，保留原 journal 核实入口。删除不撤销已经保存的业务对象。
 
 草稿是服务器上每对话一份的版本对象。PUT 是整份替换，成功 version+1；同键重放不再增加版本。两设备旧版写入返回 draft-conflict，含服务器 currentVersion。客户端必须保留本地输入和请求快照，读取最新后让老师选择，不自动覆盖。未上传草稿和 UI 现场按可信 accountKey 留本设备；换设备只恢复已确认持久内容。对话滚动锚点、活动对话、右栏模式/宽度在同一设备跨刷新保存，其他设备按其屏幕使用默认布局；不承诺把桌面像素坐标复制到 Pad。业务模块现场仍按原首流策略维护。
 
@@ -90,6 +90,8 @@ reconcile 是受当前身份保护的零模型操作：读取原 operation 及�
 HTTP 接受事务只创建或复用 prepared Operation，200 表示已接受，不能据此显示已保存；事务提交后才进入 executing 并调用业务，随后持久 confirmed/rejected/unconfirmed 和 SSE。相同槽重试复用原 operation/key/body；confirmed/rejected 保持原终态，unconfirmed 只提供现有 reconcile。重启后的 cancelled 表示从未开始，老师再次点击可重新启用同一槽和原键原体。业务已提交而结果记录失败时保留 unconfirmed，禁止继续下一槽；多题已成功部分保留，不回滚。
 
 正常启动恢复同时处理已结束 turn 的提案操作：prepared 转 cancelled，executing 转 unconfirmed；不自动执行模型或业务。备份冻结与恢复隔离由数据管理底座处理，不能用正常启动自动裁决代替冻结。后续新 turn 将已确认的提案执行结果作为数据加入模型上下文，不伪造新的工具调用或宣称未执行的内容已保存。
+
+旧设备示例卡不是服务端提案。设备已保存的 card-action 完成状态和原请求仍可读取；老师明确核实时只重放已存在槽位的原业务路径、原幂等键与原体，不从卡片重建请求，不生成缺失槽位。部分已确认不等于整卡完成，损坏记录不得当成空记录重建。恢复归档中的设备记录保持隔离，不能由此兼容入口重新激活。
 
 ## pi 错误映射、用量与失败边界
 

@@ -4,7 +4,11 @@
 
 ## 装配与持久化
 
-[AgentProvider](../../apps/web/src/features/agent/AgentProvider.jsx) 的 `useAgent` 仍是会话、草稿、发送、SSE、停止及真实工具结果的业务入口；点击发送时固定文字、引用与模型，再等待草稿持久化并提交固定版本。等待期间的新输入独立保留，发送未决期间暂停自动上传，不禁止编辑。[AgentPresentation](../../apps/web/src/features/agent/AgentPresentation.jsx) 只叠加显式选择的设备示例对话；真实会话管理由 AgentProvider 调用 PATCH/DELETE，状态保存到会话 store，删除前保护生成与未决 journal。旧设备示例仅保留历史查看，不再生成脚本回答或执行其卡片；“载入一周的示例数据”仍经真实 API 保存业务记录，接线见[外壳示例入口](foundation.md#显式载入示例)。真实引用由 Agent 接受事务捕获 question/resource/entry 公开快照；教学提案由持久 ToolCall 保存，点击执行由 Operation.proposalSource 定位，详见[契约](../contracts/agent.md#教学提案与点击执行)。
+[AgentProvider](../../apps/web/src/features/agent/AgentProvider.jsx) 的 `useAgent` 是会话、草稿、发送、SSE、停止及真实工具结果的业务入口；点击发送时固定文字、引用与模型，再等待草稿持久化并提交固定版本。等待期间的新输入独立保留，发送未决期间暂停自动上传，不禁止编辑。真实会话管理由 AgentProvider 调用 PATCH/DELETE，状态保存到会话 store，删除前保护生成与未决 journal。
+
+[AgentPresentation](../../apps/web/src/features/agent/AgentPresentation.jsx) 投影既有设备偏好和示例历史。真实会话 titleEdited=true 时服务器标题优先，pinned 字段存在时服务器置顶选择优先；其余读取旧 meta 兜底，hidden 只保留设备过滤。titleEdited 只由明确改名的 PATCH 设置，首次发送据此保护标题；旧记录缺字段无需迁移。旧卡接续由助理前端的专用兼容读取处理，只读取当前账户 active 命名空间中的 card-action 原请求，逐槽沿原键、原路径、原体核实，不生成新请求或重新激活部署恢复归档。
+
+“载入一周的示例数据”仍经真实 API 保存业务记录，接线见[外壳示例入口](foundation.md#显式载入示例)。真实引用由 Agent 接受事务捕获 question/resource/entry 公开快照；教学提案由持久 ToolCall 保存，点击执行由 Operation.proposalSource 定位，详见[契约](../contracts/agent.md#教学提案与点击执行)。
 
 Web [apps/web/src/features/agent/](../../apps/web/src/features/agent)，API [apps/api/src/agent/](../../apps/api/src/agent)；入口由 WorkbenchApp 组合。
 

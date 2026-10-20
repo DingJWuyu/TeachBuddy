@@ -66,7 +66,10 @@ export function createAgent({ db, mutations, identity, trustedOrigins, operation
   });
   router.patch('/conversations/:conversationId', write('ConversationPatch', req => ({ status: 200,
     body: store.update(account(req), req.params.conversationId, d => {
-      if (req.body.title !== undefined) d.snapshot.conversation.title = req.body.title.trim();
+      if (req.body.title !== undefined) {
+        d.snapshot.conversation.title = req.body.title.trim();
+        d.snapshot.conversation.titleEdited = true;
+      }
       if (req.body.pinned !== undefined) d.snapshot.conversation.pinned = req.body.pinned;
       return d.snapshot.conversation;
     }, { touch: false })
@@ -96,7 +99,7 @@ export function createAgent({ db, mutations, identity, trustedOrigins, operation
       const refs = references(req.workbenchPrincipal, draft.references, true); const now = timestamp(); const turnId = randomUUID();
       const message = { id: randomUUID(), turnId, role: 'user', text: draft.text, references: refs, state: 'complete', createdAt: now };
       const turn = { id: turnId, conversationId: req.params.conversationId, userMessageId: message.id, modelId: req.body.modelId, state: 'running', reason: null, createdAt: now, endedAt: null, usage: emptyUsage() };
-      if (!d.snapshot.messages.length) d.snapshot.conversation.title = Array.from(draft.text).slice(0,32).join('');
+      if (!d.snapshot.messages.length && !d.snapshot.conversation.titleEdited) d.snapshot.conversation.title = Array.from(draft.text).slice(0,32).join('');
       d.snapshot.messages.push(message); d.snapshot.turns.push(turn);
       d.snapshot.draft = { version: draft.version + 1, text: '', references: [], updatedAt: now };
       emit('message', message); emit('turn', turn); emit('draft', d.snapshot.draft);

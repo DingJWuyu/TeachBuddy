@@ -16,16 +16,16 @@ test.afterEach(async ({ context }, info) => {
   if (info.status === info.expectedStatus) for (const directory of directories) fs.rmSync(directory, { recursive: true, force: true });
   else console.error('Agent浏览器失败现场保留：' + [...directories].join(', '));
 });
-async function register(page) {
+async function register(page, email = 'c26@example.test') {
   await page.goto(world.origin);
   await page.getByRole('button', { name: '创建账户' }).click();
   await page.getByLabel('昵称', { exact: true }).fill('C26老师');
-  await page.getByLabel('邮箱', { exact: true }).fill('c26@example.test');
+  await page.getByLabel('邮箱', { exact: true }).fill(email);
   await page.getByLabel('密码', { exact: true }).fill('password-c26');
   await page.getByLabel('确认密码', { exact: true }).fill('password-c26');
   await page.getByRole('button', { name: '发送验证码' }).click();
-  await expect.poll(() => world.mailer.lastCode('registration', 'c26@example.test')).toBeTruthy();
-  await page.getByLabel('邮箱验证码').fill(world.mailer.lastCode('registration', 'c26@example.test'));
+  await expect.poll(() => world.mailer.lastCode('registration', email)).toBeTruthy();
+  await page.getByLabel('邮箱验证码').fill(world.mailer.lastCode('registration', email));
   await page.getByRole('checkbox').check();
   await page.getByRole('button', { name: '注册', exact: true }).click();
   await expect(page.locator('.wb-shell')).toBeVisible();
@@ -478,6 +478,111 @@ for (const kind of ['resource', 'entry']) test(`真实${kind}引用与原题目�
   await page.reload();
   await expect(page.locator('.tbx-msg.is-user .tbx-chip')).toContainText(['原来引用的题目', kind === 'resource' ? '期中复习提纲' : '明天的数学课']);
   expect(model.requests()).toBe(1);
+});
+
+test('旧设备会话metadata保留本地隐藏并服从服务端明确选择', async ({ page }) => {
+  let pageId;
+  page.on('request', request => { pageId = request.headers()['x-teachbuddy-page'] ?? pageId; });
+  await register(page);
+  await page.locator('.tbx-composer.is-placeholder').click();
+  const headers = () => ({ Origin: world.origin, 'X-TeachBuddy-Request': '1', 'X-TeachBuddy-Page': pageId, 'Idempotency-Key': crypto.randomUUID() });
+  const history = await (await page.request.get(world.origin + '/api/agent/conversations', { headers: headers() })).json();
+  const fallbackId = history.items[0].id;
+  const explicit = await (await page.request.post(world.origin + '/api/agent/conversations', { headers: headers(), data: {} })).json();
+  const hidden = await (await page.request.post(world.origin + '/api/agent/conversations', { headers: headers(), data: {} })).json();
+  const explicitId = explicit.conversation.id, hiddenId = hidden.conversation.id;
+  for (const row of world.workbench.db.prepare('SELECT id, document FROM agent_conversations').all()) {
+    const doc = JSON.parse(row.document);
+    if (row.id === fallbackId) {
+      delete doc.snapshot.conversation.pinned; delete doc.snapshot.conversation.titleEdited;
+      const turnId = crypto.randomUUID(), messageId = crypto.randomUUID(), now = new Date().toISOString();
+      doc.snapshot.messages.push({ id: messageId, turnId, role: 'assistant', text: '原来的课堂备课回答', references: [], state: 'complete', createdAt: now });
+      doc.snapshot.turns.push({ id: turnId, conversationId: fallbackId, userMessageId: messageId, modelId: 'deepseek/deepseek-v4.1-flash', state: 'completed', createdAt: now, endedAt: now });
+    }
+    if (row.id === explicitId) Object.assign(doc.snapshot.conversation, { title: '服务器明确标题', titleEdited: true, pinned: false });
+    if (row.id === hiddenId) doc.snapshot.conversation.title = '本地已隐藏的会话';
+    world.workbench.db.prepare('UPDATE agent_conversations SET document=? WHERE id=?').run(JSON.stringify(doc), row.id);
+  }
+  await page.evaluate(({ fallbackId, explicitId, hiddenId }) => {
+    const active = Object.keys(localStorage).find(key => key.startsWith('teachbuddy:agent:') && key.endsWith(':active'));
+    const prefix = active.slice(0, -'active'.length);
+    localStorage.setItem(active, JSON.stringify(hiddenId));
+    localStorage.setItem(prefix + 'presentation', JSON.stringify({ meta: {
+      [fallbackId]: { title: '旧设备课堂标题', pinned: true },
+      [explicitId]: { title: '旧设备过时标题', pinned: true },
+      [hiddenId]: { hidden: true },
+    } }));
+  }, { fallbackId, explicitId, hiddenId });
+  const automaticWrites = [];
+  page.on('request', request => { if (['PATCH', 'DELETE'].includes(request.method()) && request.url().includes('/api/agent/conversations/')) automaticWrites.push(request.method()); });
+  await page.reload();
+  await expect(page.locator('.tbx-thread-title')).toHaveText(['旧设备课堂标题', '服务器明确标题']);
+  await expect(page.locator('.tbx-thread-group').filter({ hasText: '已置顶' }).locator('.tbx-thread-title')).toHaveText('旧设备课堂标题');
+  await expect(page.locator('.tbx-home-title')).not.toHaveText('本地已隐藏的会话');
+  await page.locator('.tbx-thread').filter({ hasText: '旧设备课堂标题' }).click();
+  await expect(page.locator('.tbx-home-title')).toHaveText('旧设备课堂标题');
+  expect(automaticWrites).toEqual([]);
+  const response = await page.request.patch(world.origin + '/api/agent/conversations/' + fallbackId, { headers: headers(), data: { title: '新设备保存的标题', pinned: false } });
+  expect(response.status()).toBe(200);
+  await page.reload();
+  await expect.poll(async () => (await page.locator('.tbx-thread-title').allTextContents()).sort()).toEqual(['新设备保存的标题', '服务器明确标题'].sort());
+  await expect(page.locator('.tbx-thread-group h3')).not.toContainText(['已置顶']);
+  const remaining = await (await page.request.get(world.origin + '/api/agent/conversations', { headers: headers() })).json();
+  expect(remaining.items).toHaveLength(3);
+});
+
+test('旧卡恢复完成状态且只以原键核实现有槽，新账户不读取旧请求', async ({ page, context }) => {
+  let pageId;
+  page.on('request', request => { pageId = request.headers()['x-teachbuddy-page'] ?? pageId; });
+  await register(page);
+  await page.locator('.tbx-composer.is-placeholder').click();
+  const headers = () => ({ Origin: world.origin, 'X-TeachBuddy-Request': '1', 'X-TeachBuddy-Page': pageId, 'Idempotency-Key': crypto.randomUUID() });
+  const key = crypto.randomUUID(), path = '/api/modules/questions/v2/items';
+  const paragraph = text => ({ version: 2, blocks: [{ type: 'paragraph', runs: [{ type: 'text', text }] }] });
+  const body = { title: '旧卡已经提交的题', body: paragraph('1+1'), solution: paragraph('2'), answerStatus: 'present', note: '', starred: false, source: { kind: 'manual' }, typeId: null, tagIds: [] };
+  const original = await page.request.post(world.origin + path, { headers: { ...headers(), 'Idempotency-Key': key }, data: body });
+  expect(original.status()).toBe(201); const savedId = (await original.json()).id;
+  const stored = await page.evaluate(({ key, path, body }) => {
+    const prefix = Object.keys(localStorage).find(name => name.startsWith('teachbuddy:agent:') && name.endsWith(':active')).slice(0, -'active'.length);
+    const id = 'demo-old-cards', messageId = 'old-answer', now = new Date().toISOString();
+    const cards = [
+      { kind: 'plan', title: '已完成的旧安排', entryTitle: '旧安排', steps: ['备课'] },
+      { kind: 'practice', title: '只发送过第一槽的旧练习', items: [1, 2].map(n => ({ title: '旧题' + n, body: String(n), solution: String(n) })) },
+      { kind: 'variant', title: '从未发起的旧变式', item: { title: '未发起', body: '3', solution: '3' } },
+      { kind: 'plan', title: '记录损坏的旧安排', entryTitle: '损坏安排', steps: ['备课'] },
+    ];
+    const doc = { conversation: { id, title: '旧示例卡片历史', updatedAt: now }, draft: { version: 1, text: '', references: [] }, messages: [{ id: messageId, turnId: 'old-turn', role: 'assistant', text: '旧示例历史', state: 'complete', createdAt: now, cards }], turns: [{ id: 'old-turn', state: 'completed', createdAt: now, endedAt: now }], toolCalls: [], operations: [], lastEventSeq: 0 };
+    localStorage.setItem(prefix + 'presentation', JSON.stringify({ active: id, docs: { [id]: doc } }));
+    localStorage.setItem(prefix + 'card-action:' + messageId + ':0', JSON.stringify({ state: 'done', requests: {} }));
+    const recordKey = prefix + 'card-action:' + messageId + ':1';
+    localStorage.setItem(recordKey, JSON.stringify({ state: 'idle', requests: { 'question:0': { key, path, body } } }));
+    const corruptKey = prefix + 'card-action:' + messageId + ':3';
+    localStorage.setItem(corruptKey, '{invalid-json');
+    return { recordKey, corruptKey };
+  }, { key, path, body });
+  const writes = [];
+  page.on('request', request => { if (request.method() === 'POST' && request.url().endsWith(path)) writes.push({ key: request.headers()['idempotency-key'], body: request.postDataJSON() }); });
+  await page.reload();
+  const done = page.locator('.tbx-card').filter({ hasText: '已完成的旧安排' });
+  await expect(done.getByRole('button', { name: '已加到待安排', exact: true })).toBeVisible();
+  const pending = page.locator('.tbx-card').filter({ hasText: '只发送过第一槽的旧练习' });
+  await pending.getByRole('button', { name: '确认结果', exact: true }).click();
+  await expect(pending).toContainText('已保存');
+  expect(writes).toEqual([{ key, body }]);
+  await expect(pending.getByRole('button', { name: '存进题库 · 2 道', exact: true })).toBeDisabled();
+  await expect(pending.getByRole('button', { name: '确认结果', exact: true })).toHaveCount(0);
+  await expect(page.locator('.tbx-card').filter({ hasText: '从未发起的旧变式' }).getByRole('button')).toBeDisabled();
+  await expect(page.locator('.tbx-card').filter({ hasText: '记录损坏的旧安排' }).getByRole('button')).toBeDisabled();
+  expect(await page.evaluate(name => localStorage.getItem(name), stored.corruptKey)).toBe('{invalid-json');
+  await page.reload();
+  await expect(page.locator('.tbx-card').filter({ hasText: '只发送过第一槽的旧练习' })).toContainText('已保存');
+  const items = await (await page.request.get(world.origin + path, { headers: headers() })).json();
+  expect(items.items.map(item => item.id)).toEqual([savedId]);
+  await page.screenshot({ path: `${evidence}/legacy-card-recovery.png`, animations: 'disabled' });
+  await context.clearCookies();
+  await register(page, 'c26-second@example.test');
+  await expect(page.locator('.tbx-card')).toHaveCount(0);
+  expect(writes).toEqual([{ key, body }]);
 });
 
 test('WB-AG-024: 会话改名置顶在独立设备恢复，删除后真实历史消失', async ({ page, browser }) => {

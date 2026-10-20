@@ -9,6 +9,7 @@ import { navigate } from '../workbench/routes.js';
 import { usePresentationAgent as useAgent } from './AgentPresentation.jsx';
 import { Prose, Inline } from './Prose.jsx';
 import { ToolCard } from './ToolCard.jsx';
+import { useLegacyCardAction } from './useLegacyCardAction.js';
 import { useAuth } from '../auth/index.jsx';
 import { seedSampleWeek } from '../workbench/demo/seed.js';
 import './agent.css';
@@ -431,8 +432,10 @@ function QuestionRows({ items, agent }) {
     </div>
   );
 }
-function ResultCard({ card, proposalId, agent }) {
-  const action = useCardAction(agent, proposalId, card.kind === 'practice' ? card.items.length : 1);
+function ResultCard({ card, cardKey, proposalId, agent }) {
+  const proposalAction = useCardAction(agent, proposalId, card.kind === 'practice' ? card.items.length : 1);
+  const legacyAction = useLegacyCardAction(agent, cardKey, card, !proposalId);
+  const action = proposalId ? proposalAction : legacyAction;
   const { state, run } = action;
   const [expanded, setExpanded] = useState(false);
 
@@ -470,7 +473,7 @@ function ResultCard({ card, proposalId, agent }) {
               {q.tier && <span className="tbx-card-tier">{q.tier.split(' · ')[0]}</span>}
               <span className="tbx-card-row-title"><Inline text={q.body} /></span>
               <span className="tbx-card-answer"><Inline text={q.solution} /></span>
-              {proposalId && <ProposalSlot operations={action.operations} slot={i} />}
+              <ProposalSlot operations={action.operations} slot={i} />
             </div>
           ))}
         </div>
@@ -521,6 +524,7 @@ function ProposalSlot({ operations, slot }) {
 function ProposalStatus({ action, agent }) {
   return <>
     {action.problem && <p className="tbx-composer-note" role="status">{action.problem.title || tx('操作未完成，请查看结果')}</p>}
+    {action.legacyPending && <p className="tbx-composer-note" role="status">{tx('结果待确认')} <button className="tbx-pill" disabled={action.confirming} onClick={action.confirm}>{tx('确认结果')}</button></p>}
     {action.unconfirmed && <p className="tbx-composer-note" role="status">{tx('结果待确认')} <button className="tbx-pill" onClick={() => agent.reconcile(action.unconfirmed.id)}>{tx('确认结果')}</button></p>}
   </>;
 }
@@ -580,7 +584,7 @@ function AssistantMessage({ m, agent, last, onRegenerate, model }) {
       {streaming && <span className="tbx-typing" aria-hidden="true" />}
       {(m.cards ?? []).length > 0 && (
         <div className="tbx-cards">
-          {m.cards.map((c, i) => <ResultCard key={i} card={c} agent={agent} />)}
+          {m.cards.map((c, i) => <ResultCard key={i} card={c} cardKey={`${m.id}:${i}`} agent={agent} />)}
         </div>
       )}
       {m.state === 'partial' && <p className="tbx-msg-note">{tx('回答被停止了，只保留了前面的部分。')}</p>}

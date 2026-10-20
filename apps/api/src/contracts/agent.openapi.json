@@ -1257,6 +1257,10 @@
           "preview": {
             "type": "string",
             "maxLength": 60
+          },
+          "titleEdited": {
+            "type": "boolean",
+            "description": "只有老师通过PATCH明确修改标题才设为true；缺失表示未明确改名。"
           }
         },
         "required": [

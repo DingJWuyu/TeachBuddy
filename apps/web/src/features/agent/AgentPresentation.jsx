@@ -29,12 +29,27 @@ export function AgentPresentationProvider({ children }) {
     };
   }, [real.accountKey]);
   const docs = state.docs ?? {};
-  const selected = docs[state.active];
-  const isDemo = Boolean(selected);
   const meta = state.meta ?? {};
+  const selected = !meta[state.active]?.hidden && docs[state.active];
+  const isDemo = Boolean(selected);
+  function project(conversation) {
+    const old = meta[conversation.id] ?? {};
+    if (docs[conversation.id]) return { ...conversation, ...old };
+    return {
+      ...conversation,
+      title: conversation.titleEdited === true ? conversation.title : old.title ?? conversation.title,
+      pinned: Object.hasOwn(conversation, 'pinned') ? conversation.pinned : old.pinned,
+    };
+  }
+  const activeAllowed = real.id && !meta[real.id]?.hidden;
+  useEffect(() => {
+    if (!isDemo && real.id && meta[real.id]?.hidden) {
+      real.select(real.list.find(item => !meta[item.id]?.hidden)?.id ?? null);
+    }
+  }, [real.id, real.list, isDemo, state.meta]);
   const list = [...real.list, ...Object.values(docs).map(d => d.conversation)]
-    .filter(item => !docs[item.id] || !meta[item.id]?.hidden)
-    .map(item => docs[item.id] ? ({ ...item, ...meta[item.id], title: meta[item.id]?.title ?? item.title }) : item)
+    .filter(item => !meta[item.id]?.hidden)
+    .map(project)
     .sort((a, b) => Number(Boolean(b.pinned)) - Number(Boolean(a.pinned)) || String(b.updatedAt).localeCompare(String(a.updatedAt)));
   async function patchThread(id, patch) {
     if (!current.current.docs?.[id]) return real.patchThread(id, patch);
@@ -44,10 +59,11 @@ export function AgentPresentationProvider({ children }) {
     update({ ...current.current, active: id.startsWith('demo-') ? id : null });
     if (!id.startsWith('demo-')) real.select(id);
   }
-  const snapshot = selected ? { ...selected, conversation: { ...selected.conversation, ...meta[selected.conversation.id] } } : real.snapshot ? { ...real.snapshot, conversation: real.snapshot.conversation } : null;
+  const source = selected || (activeAllowed && real.snapshot?.conversation.id === real.id ? real.snapshot : null);
+  const snapshot = source ? { ...source, conversation: project(source.conversation) } : null;
   const value = { ...real, list, snapshot, isDemo, error: error || (!isDemo ? real.error : ''),
-    id: isDemo ? selected.conversation.id : real.id,
-    draft: isDemo ? selected.draft : real.draft,
+    id: isDemo ? selected.conversation.id : activeAllowed ? real.id : null,
+    draft: isDemo ? selected.draft : activeAllowed ? real.draft : null,
     status: isDemo ? tx('仅保留在此设备') : real.status,
     sendPending: !isDemo && real.sendPending, conflict: !isDemo && real.conflict, busy: !isDemo && real.busy,
     addReference: async (kind, id) => { update({ ...current.current, active: null }); await real.addReference(kind, id); },
