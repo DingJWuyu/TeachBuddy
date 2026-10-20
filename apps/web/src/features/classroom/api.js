@@ -82,9 +82,9 @@ export function createClassroomApi({ accountKey, transport, getSignal, onIdentit
     const rows = d.rows.map(row => {
       const source = d.workbook.sheets[m?.sheetIndex || 0].rows.find(r => r.rowNumber === row.sourceRow);
       const display = col => source?.cells.find(c => c.column === col)?.display || '';
-      return { ...row, total: row.totalScore, source: { name: display(m?.nameColumn), studentNo: display(m?.studentNumberColumn) }, issues: issues.filter(i => i.sourceRow == null || i.sourceRow === row.sourceRow).map(importIssueView) };
+      return { ...row, total: row.totalScore, source: { name: display(m?.nameColumn), studentNo: display(m?.studentNumberColumn) }, issues: issues.filter(i => i.sourceRow === row.sourceRow).map(importIssueView) };
     });
-    return { ...d, mapping: m ? { sheet: m.sheetIndex, headerRow: m.headerRow, firstRow: m.firstDataRow, lastRow: m.lastDataRow, nameCol: m.nameColumn, numberCol: m.studentNumberColumn, totalCol: m.totalColumn, absentCol: m.attendanceColumn, questionCols: Object.fromEntries(m.questionColumns.map(q => [q.questionId, q.column])) } : null, fileName: files.get(d.sourceFileId)?.name || '', workbook: { ...d.workbook, sheets }, rows,
+    return { ...d, issues: issues.map(importIssueView), mapping: m ? { sheet: m.sheetIndex, headerRow: m.headerRow, firstRow: m.firstDataRow, lastRow: m.lastDataRow, nameCol: m.nameColumn, numberCol: m.studentNumberColumn, totalCol: m.totalColumn, absentCol: m.attendanceColumn, questionCols: Object.fromEntries(m.questionColumns.map(q => [q.questionId, q.column])) } : null, fileName: files.get(d.sourceFileId)?.name || '', workbook: { ...d.workbook, sheets }, rows,
       unrecorded: roster.filter(s => !rows.some(r => !r.ignored && r.studentId === s.id)).map(s => s.id),
       summary: { rows: rows.length, errors: issues.filter(i => i.severity === 'error').length, warnings: issues.filter(i => i.severity === 'warning').length, ignored: rows.filter(r => r.ignored).length } };
   }
@@ -92,7 +92,16 @@ export function createClassroomApi({ accountKey, transport, getSignal, onIdentit
     if (path.endsWith('/confirmation') || path.endsWith('/merge')) return value;
     const kind = path.split('/')[1];
     const one = async item => kind === 'classes' ? { ...item, seating: seatView(item.seating) } : kind === 'students' ? studentView(item) : kind === 'records' ? recordView(item) : kind === 'exams' ? examView(item) : kind === 'imports' ? (await fileInfo(item.sourceFileId), importView(item)) : item;
-    if (value.items) return { ...value, items: await Promise.all(value.items.map(one)) };
+    if (value.items) {
+      const items = await Promise.all(value.items.map(one));
+      // HTTP lists prioritise updates; the classroom presents the prototype's
+      // stable class chronology, student numbers, tag names and exam dates.
+      if (kind === 'classes') items.sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+      if (kind === 'students') items.sort((a, b) => (a.studentNo || '~').localeCompare(b.studentNo || '~') || a.name.localeCompare(b.name, 'zh'));
+      if (kind === 'tags') items.sort((a, b) => a.name.localeCompare(b.name, 'zh'));
+      if (kind === 'exams') items.sort((a, b) => b.date.localeCompare(a.date));
+      return { ...value, items };
+    }
     return one(value);
   }
   async function execute(pending) {
@@ -157,7 +166,7 @@ export function createClassroomApi({ accountKey, transport, getSignal, onIdentit
     if (params.state === 'deleted') { params = { ...params, deleted: 'deleted' }; delete params.state; }
     if (path === '/students' && !params.classId && !params.deleted) {
       const groups = await Promise.all(classes.map(c => rawGet(path, { ...params, classId: c.id })));
-      const items = groups.flatMap(g => g.items).map(studentView);
+      const items = (await adapt(path, { items: groups.flatMap(g => g.items) })).items;
       if (!params.deleted) students = items;
       return { items };
     }
@@ -165,8 +174,9 @@ export function createClassroomApi({ accountKey, transport, getSignal, onIdentit
       params = { ...params, scope: params.classId ? 'class' : 'student', subjectId: params.classId || params.studentId }; delete params.classId; delete params.studentId;
     }
     const value = await rawGet(path, params);
-    if (path === '/classes' && !params.deleted) classes = value.items;
-    return adapt(path, value);
+    const adapted = await adapt(path, value);
+    if (path === '/classes' && !params.deleted) classes = adapted.items;
+    return adapted;
   }
   async function bodyFor(path, body) {
     const b = { ...body }, kind = path.split('/')[1], id = path.split('/')[2];

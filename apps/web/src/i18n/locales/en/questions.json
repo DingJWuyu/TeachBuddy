@@ -208,7 +208,7 @@
   "原题已彻底删除，可以继续查看采用时的原题。": "The original question was permanently deleted. You can still view the version used.",
   "查看原题": "View original question",
   "采用时的原题": "Original version used",
-  "改编题：": "Adapted questions:",
+  "改编题：{{title}}": "Adapted question: {{title}}",
   "未命名": "Untitled",
   "复制文字或下载图片": "Copy text or download images",
   "把题目放进你自己的课件。图片采用透明背景，可直接插入 PPT。": "Use the question in your own slides. Images have transparent backgrounds for inserting into PowerPoint.",
@@ -331,7 +331,7 @@
   "保存选区定位": "Save selection position",
   "裁图加入题面": "Add crop to question text",
   "重新生成预览": "Regenerate preview",
-  "定位": "Locate",
+  "定位{{role}}": "Locate {{role}}",
   " · 第 {{page}} 页": " · Page {{page}}",
   "直接输入或粘贴内容…": "Type or paste content…",
   "图片未能保存，请重试。": "Could not save image. Please retry.",
@@ -458,5 +458,12 @@
   "已选用当前原题作为来源，改编内容仍保留，请再次保存。": "The current original is now the source. Your edits are kept. Save again.",
   "请先选择可定位的原稿页或段落": "Select an original page or paragraph with a saved location first",
   "原稿段落": "Original paragraph",
-  "选择原稿段落": "Choose an original paragraph"
+  "选择原稿段落": "Choose an original paragraph",
+  "归档题目？": "Archive this question?",
+  "恢复题目？": "Restore this question?",
+  "彻底删除题目？": "Permanently delete this question?",
+  "归档材料？": "Archive this material?",
+  "恢复材料？": "Restore this material?",
+  "彻底删除材料？": "Permanently delete this material?",
+  "归档材料_action": "Archive material"
 }

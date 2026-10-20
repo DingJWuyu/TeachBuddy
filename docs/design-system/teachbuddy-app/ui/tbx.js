@@ -5,7 +5,7 @@
       __defProp(target, name, { get: all[name], enumerable: true });
   };
 
-  // project/teachbuddy-app/ui/tbx/src/shim.js
+  // docs/design-system/teachbuddy-app/ui/tbx/src/shim.js
   function h(type, props, ...children) {
     return globalThis.__tb.React.createElement(type, props, ...children);
   }
@@ -13,7 +13,7 @@
     return props.children ?? null;
   }
 
-  // project/teachbuddy-app/ui/tbx/src/react.js
+  // docs/design-system/teachbuddy-app/ui/tbx/src/react.js
   var R = () => globalThis.__tb.React;
   var tb = () => globalThis.__tb;
   var useState = (...a) => R().useState(...a);
@@ -37,7 +37,7 @@
   var monthDay = (date) => isEnglish() ? dayUTC(date).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" }) : `${Number(date.slice(5, 7))}\u6708${Number(date.slice(8, 10))}\u65E5`;
   var weekdayName = (date) => isEnglish() ? dayUTC(date).toLocaleDateString("en-US", { weekday: "short", timeZone: "UTC" }) : `\u5468${"\u65E5\u4E00\u4E8C\u4E09\u56DB\u4E94\u516D"[dayUTC(date).getUTCDay()]}`;
 
-  // project/teachbuddy-app/ui/tbx/src/auth/Cast.jsx
+  // docs/design-system/teachbuddy-app/ui/tbx/src/auth/Cast.jsx
   var ACTORS = ["teacher", "black", "yellow", "orange"];
   var STUDENTS = ["black", "yellow", "orange"];
   var LINES = {
@@ -204,7 +204,7 @@
     return /* @__PURE__ */ h("div", { className: "ae-characters tc-cast", "aria-hidden": "true" }, /* @__PURE__ */ h("div", { className: "tc-frame" }, speech && /* @__PURE__ */ h("div", { key: speech.key, className: `tc-speech is-${speech.who}` }, speech.text), /* @__PURE__ */ h("svg", { className: "tc-scene", viewBox: "-28 -28 560 500", fill: "none", focusable: "false", ref: sceneRef, "data-pose": pose }, /* @__PURE__ */ h("ellipse", { className: "tc-ground", cx: "246", cy: "446", rx: "262", ry: "12" }), /* @__PURE__ */ h("g", { className: "tc-enter tc-enter-teacher" }, /* @__PURE__ */ h("g", { ...actor("teacher") }, /* @__PURE__ */ h("g", { className: "tc-hop" }, /* @__PURE__ */ h("g", { className: "tc-char tc-char-teacher" }, /* @__PURE__ */ h("g", { className: "tc-bun" }, /* @__PURE__ */ h("circle", { cx: "246", cy: "30", r: "21" }), /* @__PURE__ */ h("path", { className: "tc-bun-band", d: "M228 42Q246 50 264 42" })), /* @__PURE__ */ h("path", { className: "tc-shape tc-teacher-shape", d: "M124 444C124 300 124 150 124 64C124 46 138 32 156 32L284 32C302 32 316 46 316 64C316 150 316 300 316 444Z" }), /* @__PURE__ */ h("g", { className: "tc-face tc-teacher-face" }, /* @__PURE__ */ h("g", { className: "tc-eyes" }, /* @__PURE__ */ h("circle", { className: "tc-eye-white", cx: "218", cy: "62", r: "6.5" }), /* @__PURE__ */ h("circle", { className: "tc-eye-white", cx: "274", cy: "62", r: "6.5" }), /* @__PURE__ */ h("g", { className: "tc-pupils" }, /* @__PURE__ */ h("circle", { cx: "218", cy: "62", r: "3.2" }), /* @__PURE__ */ h("circle", { cx: "274", cy: "62", r: "3.2" }))), /* @__PURE__ */ h("path", { className: "tc-closed", d: "M212 63q6 -5 12 0m44 0q6 -5 12 0" }), /* @__PURE__ */ h("g", { className: "tc-glasses" }, /* @__PURE__ */ h("circle", { cx: "218", cy: "62", r: "14" }), /* @__PURE__ */ h("circle", { cx: "274", cy: "62", r: "14" }), /* @__PURE__ */ h("path", { d: "M232 60Q246 52 260 60" }), /* @__PURE__ */ h("path", { className: "tc-glint", d: "M208 56l6 -6M264 56l6 -6" })), /* @__PURE__ */ h("circle", { className: "tc-blush", cx: "206", cy: "86", r: "7" }), /* @__PURE__ */ h("circle", { className: "tc-blush", cx: "286", cy: "86", r: "7" }), /* @__PURE__ */ h("path", { className: "tc-mouth tc-teacher-mouth", d: "M234 84Q246 93 258 84Q246 100 234 84Z" }), /* @__PURE__ */ h("path", { className: "tc-sweat", d: "M300 34q7 10 0 15q-7 -5 0 -15Z" })))))), /* @__PURE__ */ h("g", { className: "tc-enter tc-enter-black" }, /* @__PURE__ */ h("g", { ...actor("black") }, /* @__PURE__ */ h("g", { className: "tc-hop" }, /* @__PURE__ */ h("g", { className: "tc-char tc-char-black" }, /* @__PURE__ */ h("path", { className: "tc-shape tc-black-shape", d: "M260 444L260 174C260 161 271 150 284 150L352 150C365 150 376 161 376 174L376 444Z" }), /* @__PURE__ */ h("g", { className: "tc-scarf" }, /* @__PURE__ */ h("path", { d: "M294 214L342 214L318 232Z" }), /* @__PURE__ */ h("path", { d: "M312 228L300 262L318 252Z" }), /* @__PURE__ */ h("path", { d: "M324 228L338 260L318 252Z" })), /* @__PURE__ */ h("g", { className: "tc-face tc-black-face" }, /* @__PURE__ */ h("g", { className: "tc-eyes" }, /* @__PURE__ */ h("circle", { className: "tc-eye-white", cx: "304", cy: "182", r: "9.5" }), /* @__PURE__ */ h("circle", { className: "tc-eye-white", cx: "336", cy: "182", r: "9.5" }), /* @__PURE__ */ h("g", { className: "tc-pupils" }, /* @__PURE__ */ h("circle", { cx: "304", cy: "182", r: "5" }), /* @__PURE__ */ h("circle", { cx: "336", cy: "182", r: "5" }))), /* @__PURE__ */ h("path", { className: "tc-closed is-light", d: "M297 183q7 -6 14 0m18 0q7 -6 14 0" }), /* @__PURE__ */ h("circle", { className: "tc-blush", cx: "294", cy: "200", r: "5.5" }), /* @__PURE__ */ h("circle", { className: "tc-blush", cx: "346", cy: "200", r: "5.5" }), /* @__PURE__ */ h("path", { className: "tc-mouth tc-black-mouth", d: "M312 200Q320 207 328 200" })))))), /* @__PURE__ */ h("g", { className: "tc-enter tc-enter-yellow" }, /* @__PURE__ */ h("g", { ...actor("yellow") }, /* @__PURE__ */ h("g", { className: "tc-hop" }, /* @__PURE__ */ h("g", { className: "tc-char tc-char-yellow" }, /* @__PURE__ */ h("path", { className: "tc-cowlick", d: "M414 234C410 220 416 210 426 212C434 214 432 224 424 224" }), /* @__PURE__ */ h("path", { className: "tc-shape tc-yellow-shape", d: "M348 444V298A67 67 0 0 1 482 298V444Z" }), /* @__PURE__ */ h("g", { className: "tc-face tc-yellow-face" }, /* @__PURE__ */ h("circle", { className: "tc-eyes tc-dot-eye", cx: "400", cy: "281", r: "5" }), /* @__PURE__ */ h("path", { className: "tc-closed", d: "M394 282q6 -5 12 0" }), /* @__PURE__ */ h("circle", { className: "tc-blush", cx: "388", cy: "300", r: "6" }), /* @__PURE__ */ h("path", { className: "tc-mouth tc-yellow-mouth", d: "M424 305H504" })))))), /* @__PURE__ */ h("g", { className: "tc-enter tc-enter-orange" }, /* @__PURE__ */ h("g", { ...actor("orange") }, /* @__PURE__ */ h("g", { className: "tc-hop" }, /* @__PURE__ */ h("g", { className: "tc-char tc-char-orange" }, /* @__PURE__ */ h("g", { className: "tc-sprout" }, /* @__PURE__ */ h("path", { className: "tc-stem", d: "M170 292C170 280 172 270 176 262" }), /* @__PURE__ */ h("path", { className: "tc-leaf", d: "M174 268C164 256 150 256 146 264C154 272 166 272 174 268Z" }), /* @__PURE__ */ h("path", { className: "tc-leaf", d: "M176 264C182 250 196 246 204 252C198 262 186 268 176 264Z" })), /* @__PURE__ */ h("path", { className: "tc-shape tc-orange-shape", d: "M0 444A158 158 0 0 1 316 444Z" }), /* @__PURE__ */ h("g", { className: "tc-face tc-orange-face" }, /* @__PURE__ */ h("g", { className: "tc-eyes" }, /* @__PURE__ */ h("circle", { cx: "154", cy: "378", r: "8" }), /* @__PURE__ */ h("circle", { cx: "228", cy: "378", r: "8" })), /* @__PURE__ */ h("path", { className: "tc-closed", d: "M146 380q8 -8 16 0m58 0q8 -8 16 0" }), /* @__PURE__ */ h("circle", { className: "tc-blush", cx: "134", cy: "398", r: "9" }), /* @__PURE__ */ h("circle", { className: "tc-blush", cx: "248", cy: "398", r: "9" }), /* @__PURE__ */ h("path", { className: "tc-mouth tc-orange-mouth", d: "M177 392H208A15.5 15.5 0 0 1 177 392Z" })))))), /* @__PURE__ */ h("g", { className: "tc-confetti" }, /* @__PURE__ */ h("rect", { x: "96", y: "120", width: "10", height: "16", rx: "3", style: { "--dx": "-60px", "--dy": "-90px", "--r": "-120deg" } }), /* @__PURE__ */ h("rect", { x: "200", y: "60", width: "10", height: "16", rx: "3", style: { "--dx": "-20px", "--dy": "-110px", "--r": "160deg" } }), /* @__PURE__ */ h("circle", { cx: "300", cy: "110", r: "6", style: { "--dx": "30px", "--dy": "-120px", "--r": "0deg" } }), /* @__PURE__ */ h("rect", { x: "380", y: "150", width: "10", height: "16", rx: "3", style: { "--dx": "70px", "--dy": "-80px", "--r": "200deg" } }), /* @__PURE__ */ h("circle", { cx: "450", cy: "200", r: "6", style: { "--dx": "90px", "--dy": "-60px", "--r": "0deg" } }), /* @__PURE__ */ h("rect", { x: "150", y: "200", width: "8", height: "14", rx: "3", style: { "--dx": "-90px", "--dy": "-40px", "--r": "90deg" } }), /* @__PURE__ */ h("circle", { cx: "250", cy: "180", r: "5", style: { "--dx": "10px", "--dy": "-150px", "--r": "0deg" } }), /* @__PURE__ */ h("rect", { x: "330", y: "90", width: "8", height: "14", rx: "3", style: { "--dx": "50px", "--dy": "-130px", "--r": "-200deg" } })))));
   }
 
-  // project/teachbuddy-app/ui/tbx/src/auth/EntryLayout.jsx
+  // docs/design-system/teachbuddy-app/ui/tbx/src/auth/EntryLayout.jsx
   var SUBTITLES = {
     login: "\u6559\u5B66\u7684\u4E00\u5207\uFF0C\u90FD\u5728\u8FD9\u91CC\u3002",
     register: "\u4E00\u4E2A\u8D26\u6237\uFF0C\u5F00\u542F\u4F60\u7684\u5168\u90E8\u6559\u5B66\u3002",
@@ -232,7 +232,7 @@
     )));
   }
 
-  // project/teachbuddy-app/ui/tbx/src/shell/BrandMark.jsx
+  // docs/design-system/teachbuddy-app/ui/tbx/src/shell/BrandMark.jsx
   var SPARK = "M32 9.2C32.9 16.3 34.2 17.6 41.3 18.5C34.2 19.4 32.9 20.7 32 27.8C31.1 20.7 29.8 19.4 22.7 18.5C29.8 17.6 31.1 16.3 32 9.2Z";
   var PAGE_L = "M11.5 33.2C18.6 29.9 25.6 30 30.6 34.3V52.6C25.6 48.8 18.6 48.6 11.5 51.6Z";
   var PAGE_R = "M52.5 33.2C45.4 29.9 38.4 30 33.4 34.3V52.6C38.4 48.8 45.4 48.6 52.5 51.6Z";
@@ -245,7 +245,7 @@
     return /* @__PURE__ */ h("span", { className: "ae-brand-lockup tbx-lockup" }, /* @__PURE__ */ h(Mark, { size: 48 }), wordmark ? /* @__PURE__ */ h("span", { className: "ae-brand-wordmark tbx-wordmark" }, wordmark) : null);
   }
 
-  // project/teachbuddy-app/ui/tbx/src/shell/Celebration.jsx
+  // docs/design-system/teachbuddy-app/ui/tbx/src/shell/Celebration.jsx
   var PALETTES = [
     ["#ffd60a", "#ff9f0a", "#fff4c2"],
     ["#0a84ff", "#64d2ff", "#e1f3ff"],
@@ -432,7 +432,7 @@
     return /* @__PURE__ */ h("div", { className: "tbx-celebrate", role: "dialog", "aria-modal": "true", "aria-labelledby": "tbx-celebrate-title" }, /* @__PURE__ */ h("div", { className: "tbx-celebrate-scrim", onPointerDown: onClose }), /* @__PURE__ */ h("canvas", { className: "tbx-celebrate-sky", ref: canvasRef, "aria-hidden": "true" }), /* @__PURE__ */ h("div", { className: "tbx-celebrate-card" }, /* @__PURE__ */ h("span", { className: "tbx-celebrate-mark", "aria-hidden": "true" }, /* @__PURE__ */ h("svg", { viewBox: "0 0 24 24", width: "28", height: "28", fill: "none", stroke: "currentColor", strokeWidth: "2.2", strokeLinecap: "round", strokeLinejoin: "round" }, /* @__PURE__ */ h("path", { d: "m5 12.5 4.5 4.5L19 7.5" }))), /* @__PURE__ */ h("h2", { id: "tbx-celebrate-title" }, tx("\u4E00\u5207\u5C31\u7EEA\u3002")), /* @__PURE__ */ h("p", null, tx("TeachBuddy \u7684\u6BCF\u4E2A\u89D2\u843D\uFF0C\u4F60\u90FD\u53BB\u8FC7\u4E86\u3002")), /* @__PURE__ */ h("button", { type: "button", className: "tbx-celebrate-go", ref: buttonRef, onClick: onClose }, tx("\u5F00\u59CB\u5427"))));
   }
 
-  // project/teachbuddy-app/ui/tbx/src/shell/Topbar.jsx
+  // docs/design-system/teachbuddy-app/ui/tbx/src/shell/Topbar.jsx
   var tw = tx;
   function useSlidingThumb(navRef, deps) {
     const [thumb, setThumb] = useState(null);
@@ -547,7 +547,7 @@
     ), /* @__PURE__ */ h("span", { className: "tb-tooltip", "aria-hidden": "true" }, assistantOpen ? tw("\u6536\u8D77 AI \u52A9\u7406") : tw("\u6253\u5F00 AI \u52A9\u7406"))) : null)), surface === "search" && /* @__PURE__ */ h(SearchModal, { onClose: () => setSurface(null), onAnnounce: announce }), !scene.coachDismissed && /* @__PURE__ */ h("span", { className: "tb-coach-scrim", onPointerDown: dismissCoach }), celebrating && /* @__PURE__ */ h(Celebration, { onClose: () => celebrate(false) }), /* @__PURE__ */ h("span", { className: "sr-only", role: "status" }, announcement));
   }
 
-  // project/teachbuddy-app/ui/tbx/src/kit/motion.js
+  // docs/design-system/teachbuddy-app/ui/tbx/src/kit/motion.js
   var EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
   function useFlip(signature, { duration = 300 } = {}) {
     const els = useRef(/* @__PURE__ */ new Map());
@@ -590,7 +590,7 @@
     return ref;
   }
 
-  // project/teachbuddy-app/ui/tbx/src/kit/confirm.jsx
+  // docs/design-system/teachbuddy-app/ui/tbx/src/kit/confirm.jsx
   var ARM_MS = 3200;
   function Glyph({ name, size = 16, stroke = 1.9 }) {
     const { Icon2: Icon22 } = tb();
@@ -772,7 +772,7 @@
     return /* @__PURE__ */ h(ConfirmDialog, { ...req, onConfirm: () => done3(true), onCancel: () => done3(false) });
   }
 
-  // project/teachbuddy-app/ui/tbx/src/shell/Sidebar.jsx
+  // docs/design-system/teachbuddy-app/ui/tbx/src/shell/Sidebar.jsx
   var tw2 = tx;
   var DRAG_SLOP = 5;
   var TOUCH_HOLD = 320;
@@ -1438,7 +1438,7 @@
     ), /* @__PURE__ */ h(ConfirmHost, null), railCollapsed && tip && /* @__PURE__ */ h("span", { className: "tb-rail-tooltip tbx-tip", role: "tooltip", style: { left: tip.left, top: tip.top } }, tip.label));
   }
 
-  // project/teachbuddy-app/ui/tbx/src/demo/seed.js
+  // docs/design-system/teachbuddy-app/ui/tbx/src/demo/seed.js
   async function seedDemo() {
     const uid2 = () => crypto.randomUUID();
     const log = [];
@@ -1798,7 +1798,7 @@
     return log.length ? log.join("\n") : "ok";
   }
 
-  // project/teachbuddy-app/ui/tbx/src/agent/Prose.jsx
+  // docs/design-system/teachbuddy-app/ui/tbx/src/agent/Prose.jsx
   function splitBlocks(text) {
     const lines = text.split("\n");
     const out = [];
@@ -1836,7 +1836,7 @@
     return /* @__PURE__ */ h("div", { className }, blocks.map((b, i) => b.type === "table" ? /* @__PURE__ */ h("div", { className: "tbx-table", key: i }, /* @__PURE__ */ h("table", null, /* @__PURE__ */ h("thead", null, /* @__PURE__ */ h("tr", null, b.head.map((c, j) => /* @__PURE__ */ h("th", { key: j }, /* @__PURE__ */ h(Inline, { text: c }))))), /* @__PURE__ */ h("tbody", null, b.rows.map((r, k) => /* @__PURE__ */ h("tr", { key: k }, r.map((c, j) => /* @__PURE__ */ h("td", { key: j }, /* @__PURE__ */ h(Inline, { text: c })))))))) : /* @__PURE__ */ h(Markdown, { key: i, remarkPlugins: [remarkMath], rehypePlugins: [[rehypeKatex, { throwOnError: false, strict: false }]], skipHtml: true }, agentMarkdown(b.text))));
   }
 
-  // project/teachbuddy-app/ui/tbx/src/agent/script.js
+  // docs/design-system/teachbuddy-app/ui/tbx/src/agent/script.js
   var sleep = (run, ms) => new Promise((resolve) => {
     run.timer = setTimeout(resolve, ms);
   });
@@ -2226,7 +2226,7 @@ ${text}`),
     }
   };
 
-  // project/teachbuddy-app/ui/tbx/src/agent/AgentWorkspace.jsx
+  // docs/design-system/teachbuddy-app/ui/tbx/src/agent/AgentWorkspace.jsx
   var ta = tx;
   var MODELS = [
     { id: "deepseek/deepseek-v4.1-flash", name: "DeepSeek", get note() {
@@ -3097,7 +3097,7 @@ ${text}`),
     return /* @__PURE__ */ h("div", { className: cx("tbx-home", threadsOpen && "is-threads-open") }, /* @__PURE__ */ h(ThreadList, { onPick: () => setThreadsOpen(false) }), /* @__PURE__ */ h("div", { className: "tbx-home-main" }, /* @__PURE__ */ h("div", { className: "tbx-home-bar" }, /* @__PURE__ */ h("button", { className: "tbx-icon-btn tbx-threads-toggle", onClick: () => setThreadsOpen(!threadsOpen), "aria-label": tx("\u5BF9\u8BDD\u5217\u8868") }, /* @__PURE__ */ h(Glyph3, { name: "list", size: 17 })), /* @__PURE__ */ h("span", { className: "tbx-home-title" }, hasMessages ? threadTitle(agent.snapshot.conversation.title) : ""), returnPath && /* @__PURE__ */ h("button", { className: "tbx-btn is-ghost is-small", onClick: () => navigate(returnPath) }, /* @__PURE__ */ h(Glyph3, { name: "back", size: 14 }), tx("\u8FD4\u56DE\u5DE5\u4F5C"))), /* @__PURE__ */ h(AgentWorkspace, { variant: "home" })));
   }
 
-  // project/teachbuddy-app/ui/tbx/src/shell/AuxPanel.jsx
+  // docs/design-system/teachbuddy-app/ui/tbx/src/shell/AuxPanel.jsx
   var tw3 = tx;
   function AuxPanel({ hidden = false, available = true }) {
     useLocale();
@@ -3120,7 +3120,7 @@ ${text}`),
     );
   }
 
-  // project/teachbuddy-app/ui/tbx/src/shell/glyphs.jsx
+  // docs/design-system/teachbuddy-app/ui/tbx/src/shell/glyphs.jsx
   function buildGlyphs() {
     const sidebarLeft = /* @__PURE__ */ h(Fragment, null, /* @__PURE__ */ h("rect", { x: "3", y: "4.5", width: "18", height: "15", rx: "3.5" }), /* @__PURE__ */ h("path", { d: "M9.5 4.5v15" }), /* @__PURE__ */ h("path", { d: "M5.6 8.2h1.5M5.6 10.9h1.5M5.6 13.6h1.5" }));
     const sidebarRight = /* @__PURE__ */ h(Fragment, null, /* @__PURE__ */ h("rect", { x: "3", y: "4.5", width: "18", height: "15", rx: "3.5" }), /* @__PURE__ */ h("path", { d: "M14.5 4.5v15" }), /* @__PURE__ */ h("path", { d: "M16.9 8.2h1.5M16.9 10.9h1.5M16.9 13.6h1.5" }));
@@ -3169,7 +3169,7 @@ ${text}`),
     };
   }
 
-  // project/teachbuddy-app/ui/tbx/src/kit/popover.jsx
+  // docs/design-system/teachbuddy-app/ui/tbx/src/kit/popover.jsx
   var MARGIN = 12;
   function shellRoot2() {
     return document.querySelector(".wb-shell") || document.body;
@@ -3251,7 +3251,7 @@ ${text}`),
     return createPortal ? createPortal(node, shellRoot2()) : node;
   }
 
-  // project/teachbuddy-app/ui/tbx/src/kit/filter.jsx
+  // docs/design-system/teachbuddy-app/ui/tbx/src/kit/filter.jsx
   var Check = () => {
     const { Icon2: Icon22 } = tb();
     return /* @__PURE__ */ h("span", { className: "tbx-pop-check" }, /* @__PURE__ */ h(Icon22, { name: "check", size: 14, strokeWidth: 2.4 }));
@@ -3279,7 +3279,7 @@ ${text}`),
     ), /* @__PURE__ */ h(Popover, { anchor: ref, open, onClose: () => setOpen(false), align: "end", role: "menu", label: menuLabel || label, className: menuClassName || "tbx-filter-menu" }, /* @__PURE__ */ h("button", { type: "button", role: "menuitemradio", "aria-checked": !active, onClick: () => onChange([]) }, allLabel, !active && tick), /* @__PURE__ */ h("div", { className: "tbx-popover-sep" }), options.map((o) => /* @__PURE__ */ h("button", { key: o.id, type: "button", role: "menuitemcheckbox", "aria-checked": value.includes(o.id), onClick: () => toggle(o.id) }, o.mark, o.name, value.includes(o.id) && tick))));
   }
 
-  // project/teachbuddy-app/ui/tbx/src/kit/datetime.jsx
+  // docs/design-system/teachbuddy-app/ui/tbx/src/kit/datetime.jsx
   var pad = (n) => String(n).padStart(2, "0");
   var toDate = (s) => /* @__PURE__ */ new Date(`${s}T12:00:00Z`);
   var iso = (d) => `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`;
@@ -3359,7 +3359,7 @@ ${text}`),
     }, tx("\u5206")));
   }
 
-  // project/teachbuddy-app/ui/tbx/src/schedule/EntryEditor.jsx
+  // docs/design-system/teachbuddy-app/ui/tbx/src/schedule/EntryEditor.jsx
   var PRIORITIES = [
     { id: "high", label: "\u91CD\u8981" },
     { id: "normal", label: "\u666E\u901A" },
@@ -3701,7 +3701,9 @@ ${text}`),
       copy.style.width = `${sheet.offsetWidth}px`;
       copy.style.animation = "none";
       const typed = sheet.querySelectorAll("textarea, input");
-      copy.querySelectorAll("textarea, input").forEach((el, i) => { el.value = typed[i]?.value ?? ""; });
+      copy.querySelectorAll("textarea, input").forEach((el, i) => {
+        el.value = typed[i]?.value ?? "";
+      });
       host.appendChild(copy);
       (sheet.closest(".wb-shell") || document.body).appendChild(host);
       side.classList.add("is-leaving");
@@ -3714,11 +3716,13 @@ ${text}`),
           [{ width: `${r.width}px`, left: `${r.left}px` }, { width: "0px", left: `${r.right}px` }],
           { duration: 460, easing: ease, fill: "forwards" }
         );
-        const content = copy.animate(
+        const content3 = copy.animate(
           [{ transform: "none", opacity: 1 }, { transform: "translateX(28px)", opacity: 1, offset: 0.55 }, { transform: "translateX(28px)", opacity: 0 }],
           { duration: 460, easing: ease, fill: "forwards" }
         );
-        await Promise.all([narrowing.finished.catch(() => {}), content.finished.catch(() => {})]);
+        await Promise.all([narrowing.finished.catch(() => {
+        }), content3.finished.catch(() => {
+        })]);
       } finally {
         host.remove();
         side.classList.remove("is-leaving");
@@ -3813,7 +3817,7 @@ ${text}`),
     ));
   }
 
-  // project/teachbuddy-app/ui/tbx/src/schedule/TaskBoard.jsx
+  // docs/design-system/teachbuddy-app/ui/tbx/src/schedule/TaskBoard.jsx
   function FocusToggle({ value = "calendar", onChange }) {
     useLocale();
     const ref = useRef(null);
@@ -4054,7 +4058,7 @@ ${text}`),
     return /* @__PURE__ */ h("div", { className: cx("tbx-board", settled && "is-settled") }, /* @__PURE__ */ h("div", { className: "tbx-columns" }, /* @__PURE__ */ h(Column, { title: tx("\u4ECA\u5929"), count: shownToday.length, total: todayItems.length, tone: "today", onNew: () => onNew(false), empty: tx("\u4ECA\u5929\u7684\u5B89\u6392\u90FD\u7ED3\u675F\u4E86\uFF0C\u559D\u53E3\u6C34\u5427\u3002"), filter: filterFor("today", tx("\u4ECA\u5929")), onClearFilter: () => setFilter("today", []) }, shownToday.map((o) => card(o, range(o), `${o.key.entryId}:${o.key.originDate}`))), /* @__PURE__ */ h(Column, { title: tx("\u63A5\u4E0B\u6765"), count: laterCount, total: laterTotal, empty: tx("\u8FD9\u51E0\u5929\u8FD8\u6CA1\u6709\u522B\u7684\u5B89\u6392\u3002"), filter: filterFor("later", tx("\u63A5\u4E0B\u6765")), onClearFilter: () => setFilter("later", []) }, shownLater.map((g) => /* @__PURE__ */ h("div", { className: "tbx-day", key: g.date }, /* @__PURE__ */ h("h4", null, dayLabel(g.date).name, /* @__PURE__ */ h("span", null, dayLabel(g.date).md)), g.items.map((o) => card(o, range(o), `${o.key.entryId}:${o.key.originDate}`))))), /* @__PURE__ */ h(Column, { title: tx("\u5F85\u5B89\u6392"), count: shownInbox.length, total: unscheduled.length, tone: "inbox", onNew: () => onNew(true), empty: tx("\u6536\u4EF6\u7BB1\u7A7A\u4E86\u3002\u60F3\u5230\u8981\u505A\u7684\u4E8B\uFF0C\u968F\u624B\u8BB0\u5728\u8FD9\u91CC\u3002"), filter: filterFor("inbox", tx("\u5F85\u5B89\u6392")), onClearFilter: () => setFilter("inbox", []) }, shownInbox.map((e) => card(e, null, e.id)))));
   }
 
-  // project/teachbuddy-app/ui/tbx/src/help/content.zh.js
+  // docs/design-system/teachbuddy-app/ui/tbx/src/help/content.zh.js
   var content_zh_exports = {};
   __export(content_zh_exports, {
     HOME: () => HOME,
@@ -4421,7 +4425,7 @@ ${text}`),
     searches: ["\u91CD\u590D\u8BFE\u7A0B", "\u5BFC\u51FA\u8D44\u6599", "\u516C\u5F0F", "\u63D0\u9192", "\u6536\u5F55"]
   };
 
-  // project/teachbuddy-app/ui/tbx/src/help/content.en.js
+  // docs/design-system/teachbuddy-app/ui/tbx/src/help/content.en.js
   var content_en_exports = {};
   __export(content_en_exports, {
     HOME: () => HOME2,
@@ -4749,7 +4753,7 @@ ${text}`),
     searches: ["repeat", "export", "formula", "reminder", "import"]
   };
 
-  // project/teachbuddy-app/ui/tbx/src/help/Figure.jsx
+  // docs/design-system/teachbuddy-app/ui/tbx/src/help/Figure.jsx
   var W = 640;
   var H = 360;
   var Line = ({ x, y, w, h: ht = 7, o = 1, accent }) => /* @__PURE__ */ h("rect", { x, y, width: w, height: ht, rx: ht / 2, fill: accent ? "var(--fig-accent)" : "var(--fig-ink)", opacity: accent ? 0.9 : 0.16 * o });
@@ -4789,7 +4793,7 @@ ${text}`),
     return /* @__PURE__ */ h("svg", { className: "tbx-fig-thumb", viewBox: `0 0 ${W} ${H}`, "aria-hidden": "true", preserveAspectRatio: "xMidYMid slice" }, /* @__PURE__ */ h(Scene, null));
   }
 
-  // project/teachbuddy-app/ui/tbx/src/help/HelpCenter.jsx
+  // docs/design-system/teachbuddy-app/ui/tbx/src/help/HelpCenter.jsx
   var content = () => isEnglish() ? content_en_exports : content_zh_exports;
   var topicPath = (t2) => `/help/${t2.id}`;
   var articlePath = (t2, a) => `/help/${t2.id}/${a.id}`;
@@ -5069,7 +5073,7 @@ ${text}`),
     return /* @__PURE__ */ h("div", { className: "tbx-help", "data-region": "help" }, /* @__PURE__ */ h("button", { type: "button", className: "tbx-help-mobile", "aria-expanded": Boolean(scene.mobileOpen), onClick: () => patch({ mobileOpen: !scene.mobileOpen }) }, /* @__PURE__ */ h(Icon, { name: "menu", size: 17 }), topic ? topic.title : tx("\u5E2E\u52A9\u9996\u9875"), /* @__PURE__ */ h(Icon, { name: "chevron", size: 14 })), /* @__PURE__ */ h("aside", { className: "tbx-help-dir", "data-open": Boolean(scene.mobileOpen) }, /* @__PURE__ */ h(Directory, { topic, article, expanded, toggle, openSearch: setSearch, onNavigate: () => patch({ mobileOpen: false }) })), /* @__PURE__ */ h("main", { className: "tbx-help-main", ref: scroller }, /* @__PURE__ */ h("div", { className: "tbx-help-page", key: route.path }, invalid ? /* @__PURE__ */ h("div", { className: "tbx-help-missing" }, /* @__PURE__ */ h("span", { className: "tbx-hs-empty-icon" }, /* @__PURE__ */ h(Icon, { name: "search", size: 22 })), /* @__PURE__ */ h("h1", null, tx("\u6CA1\u6709\u627E\u5230\u8FD9\u7BC7\u6587\u7AE0")), /* @__PURE__ */ h("p", null, tx("\u5B83\u53EF\u80FD\u6362\u4E86\u4F4D\u7F6E\u3002\u8BD5\u8BD5\u641C\u7D22\uFF0C\u6216\u8005\u56DE\u5230\u5E2E\u52A9\u9996\u9875\u3002")), /* @__PURE__ */ h("div", null, /* @__PURE__ */ h("button", { type: "button", className: "tbx-help-btn is-primary", onClick: () => setSearch("") }, tx("\u641C\u7D22\u5E2E\u52A9")), /* @__PURE__ */ h(Link, { to: "/help", className: "tbx-help-btn" }, tx("\u5E2E\u52A9\u9996\u9875")))) : article ? /* @__PURE__ */ h(Article, { topic, article, scroller }) : topic ? /* @__PURE__ */ h(Topic, { topic }) : /* @__PURE__ */ h(Home2, { openSearch: setSearch }))), search !== null && /* @__PURE__ */ h(Search, { initial: search, onClose: () => setSearch(null) }));
   }
 
-  // project/teachbuddy-app/ui/tbx/src/kit/rail.jsx
+  // docs/design-system/teachbuddy-app/ui/tbx/src/kit/rail.jsx
   var Icon2 = ({ name, size = 16, stroke = 2 }) => {
     const { Icon2: Icon22 } = tb();
     return /* @__PURE__ */ h(Icon22, { name, size, strokeWidth: stroke });
@@ -5101,7 +5105,7 @@ ${text}`),
     return /* @__PURE__ */ h("button", { type: "button", className: cx("tbx-primary", compact && "is-compact"), disabled, onClick, "aria-label": compact ? label : void 0, title: compact ? label : void 0 }, /* @__PURE__ */ h(Icon2, { name: icon, size: 16, stroke: 2.3 }), !compact && /* @__PURE__ */ h("span", null, label));
   }
 
-  // project/teachbuddy-app/ui/tbx/src/kit/segmented.jsx
+  // docs/design-system/teachbuddy-app/ui/tbx/src/kit/segmented.jsx
   function useSlidingThumb2(ref, selector, deps) {
     const [thumb, setThumb] = useState(null);
     useLayoutEffect(() => {
@@ -5124,11 +5128,11 @@ ${text}`),
     return /* @__PURE__ */ h("div", { className: cx("tbx-seg", iconOnly && "is-icons", className), ref, role: "group", "aria-label": label }, thumb && /* @__PURE__ */ h("span", { className: "tbx-seg-thumb", style: { transform: `translateX(${thumb.left}px)`, width: `${thumb.width}px` }, "aria-hidden": "true" }), options.map((o) => /* @__PURE__ */ h("button", { key: o.value, type: "button", "aria-pressed": o.value === value, "aria-label": iconOnly ? o.label : void 0, title: iconOnly ? o.label : void 0, onClick: () => o.value !== value && onChange(o.value) }, o.icon, !iconOnly && /* @__PURE__ */ h("span", null, o.label))));
   }
 
-  // project/teachbuddy-app/ui/tbx/src/kit/colors.js
+  // docs/design-system/teachbuddy-app/ui/tbx/src/kit/colors.js
   var LABEL_COLORS = ["#ff6b75", "#3edc81", "#5b9cf5", "#a78bfa", "#ffb454", "#f27ab8", "#43c6c6", "#9ba0aa"];
   var colorOf = (item, index = 0) => item?.color || LABEL_COLORS[(index % LABEL_COLORS.length + LABEL_COLORS.length) % LABEL_COLORS.length];
 
-  // project/teachbuddy-app/ui/tbx/src/resources/ResourceLibrary.jsx
+  // docs/design-system/teachbuddy-app/ui/tbx/src/resources/ResourceLibrary.jsx
   var ROOT = "/api/modules/resources";
   var KINDS = [
     { id: "pdf", name: "PDF", hue: "#e0352b" },
@@ -5409,17 +5413,17 @@ ${text}`),
     const [folderMenu, setFolderMenu] = useState(null);
     const [folderMove, setFolderMove] = useState(null);
     const folderPath = (f) => {
-      const path = [f.name];
-      const visited = new Set([f.id]);
+      const path2 = [f.name];
+      const visited = /* @__PURE__ */ new Set([f.id]);
       let parent = f.parentId;
       while (parent && !visited.has(parent)) {
         visited.add(parent);
         const p = tax.folders.find((x) => x.id === parent);
         if (!p) break;
-        path.unshift(p.name);
+        path2.unshift(p.name);
         parent = p.parentId;
       }
-      return path.join(" / ");
+      return path2.join(" / ");
     };
     const canMoveFolder = (f, parentId) => {
       if (inside(f.id).has(parentId)) return false;
@@ -5438,7 +5442,7 @@ ${text}`),
     };
     const archiveFolder = async (f) => {
       const branch = inside(f.id);
-      const contents = active.filter((item2) => branch.has(item2.folderId));
+      const contents = active.filter((item) => branch.has(item.folderId));
       if (contents.length && !await organize("archive", contents)) return;
       const ok = await writeTax(tax.folders.filter((x) => !branch.has(x.id)), tax.tags);
       if (ok && branch.has(scene.folderId)) go({ folderId: "", unfiled: false });
@@ -5475,7 +5479,7 @@ ${text}`),
           const hit = document.elementFromPoint(ev.clientX, ev.clientY)?.closest("[data-drop]");
           const where = hit?.dataset.drop;
           const id = where?.startsWith("folder:") ? where.slice(7) : null;
-          const allowed = where === "archive" || (id !== null && !blocked.has(id) && id !== (item.parentId ?? "") && canMoveFolder(item, id || null));
+          const allowed = where === "archive" || id !== null && !blocked.has(id) && id !== (item.parentId ?? "") && canMoveFolder(item, id || null);
           mark(hit && allowed ? hit : null);
         } else {
           const box = tagList.current;
@@ -5556,9 +5560,9 @@ ${text}`),
     const isPicked = (id) => selected.includes(id);
     const picked = scene.selected.map((id) => byId.get(id)).filter(Boolean);
     async function downloadPicked() {
-      for (const item2 of picked) {
+      for (const item of picked) {
         try {
-          await client.download(item2.fileId, files[item2.fileId]?.name || item2.title);
+          await client.download(item.fileId, files[item.fileId]?.name || item.title);
         } catch (error) {
           console.error("Resource download failed:", error);
           break;
@@ -5880,30 +5884,20 @@ ${text}`),
         )
       ),
       railDrag && /* @__PURE__ */ h("div", { className: "tbx-drag-ghost", style: { transform: `translate(${railDrag.x - railDrag.dx}px, ${railDrag.y - railDrag.dy}px)` }, "aria-hidden": "true" }, railDrag.kind === "folder" ? /* @__PURE__ */ h("span", { className: "tbx-rail-icon" }, /* @__PURE__ */ h(Icon3, { name: "folder", size: 15, stroke: 2 })) : /* @__PURE__ */ h("i", { className: "tbx-rail-dot", style: { "--hue": colorOf(railDrag.item, tagIndex(railDrag.item.id)) } }), /* @__PURE__ */ h("span", null, railDrag.item.name)),
-      /* @__PURE__ */ h(Popover, { anchor: folderMenu?.anchor || { current: null }, open: Boolean(folderMenu), onClose: () => setFolderMenu(null), align: "start", role: "menu", label: tx("\u6587\u4EF6\u5939\u9009\u9879") }, folderMenu && /* @__PURE__ */ h(Fragment, null,
-        /* @__PURE__ */ h("button", { type: "button", role: "menuitem", onClick: () => {
-          const f = folderMenu.folder;
-          setFolderMenu(null);
-          startNew(f.id);
-        } }, /* @__PURE__ */ h(Icon3, { name: "plus", size: 16, stroke: 1.9 }), tx("\u65B0\u5EFA\u5B50\u6587\u4EF6\u5939")),
-        /* @__PURE__ */ h("button", { type: "button", role: "menuitem", onClick: () => {
-          const value = folderMenu;
-          setFolderMenu(null);
-          setFolderMove(value);
-        } }, /* @__PURE__ */ h(Icon3, { name: "folder", size: 16, stroke: 1.9 }), tx("\u79FB\u5230\u5176\u4ED6\u6587\u4EF6\u5939")),
-        /* @__PURE__ */ h("button", { type: "button", role: "menuitem", onClick: () => {
-          const f = folderMenu.folder;
-          setFolderMenu(null);
-          startRename(f);
-        } }, /* @__PURE__ */ h(Icon3, { name: "pencil", size: 16, stroke: 1.9 }), tx("\u91CD\u547D\u540D\u6587\u4EF6\u5939")),
-        /* @__PURE__ */ h(ConfirmMenuItem, { icon: /* @__PURE__ */ h(Icon3, { name: "trash", size: 16, stroke: 1.9 }), label: tx("\u5220\u9664\u6587\u4EF6\u5939"), confirmLabel: tx("\u786E\u8BA4\u5220\u9664"), onConfirm: () => deleteFolder(folderMenu.folder) })
-      )),
-      /* @__PURE__ */ h(Popover, { anchor: folderMove?.anchor || { current: null }, open: Boolean(folderMove), onClose: () => setFolderMove(null), align: "start", role: "menu", label: tx("\u79FB\u5230\u5176\u4ED6\u6587\u4EF6\u5939"), className: "tbx-res-folder-move" }, folderMove && /* @__PURE__ */ h(Fragment, null,
-        /* @__PURE__ */ h("div", { className: "tbx-popover-label" }, tx("\u79FB\u5230\u5176\u4ED6\u6587\u4EF6\u5939")),
-        /* @__PURE__ */ h("button", { type: "button", role: "menuitem", disabled: !canMoveFolder(folderMove.folder, null) || !folderMove.folder.parentId, onClick: () => moveFolder(folderMove.folder, null) }, /* @__PURE__ */ h(Icon3, { name: "folder", size: 16, stroke: 1.9 }), tx("\u6839\u76EE\u5F55"), !folderMove.folder.parentId && /* @__PURE__ */ h("span", { className: "tbx-pop-check" }, /* @__PURE__ */ h(Icon3, { name: "check", size: 14, stroke: 2.4 }))),
-        tax.folders.some((f) => !inside(folderMove.folder.id).has(f.id)) && /* @__PURE__ */ h("div", { className: "tbx-popover-sep" }),
-        tax.folders.filter((f) => !inside(folderMove.folder.id).has(f.id)).map((f) => /* @__PURE__ */ h("button", { key: f.id, type: "button", role: "menuitem", title: folderPath(f), disabled: !canMoveFolder(folderMove.folder, f.id) || folderMove.folder.parentId === f.id, onClick: () => moveFolder(folderMove.folder, f.id) }, /* @__PURE__ */ h(Icon3, { name: "folder", size: 16, stroke: 1.9 }), /* @__PURE__ */ h("span", { className: "tbx-res-folder-path" }, folderPath(f)), folderMove.folder.parentId === f.id && /* @__PURE__ */ h("span", { className: "tbx-pop-check" }, /* @__PURE__ */ h(Icon3, { name: "check", size: 14, stroke: 2.4 }))))
-      )),
+      /* @__PURE__ */ h(Popover, { anchor: folderMenu?.anchor || { current: null }, open: Boolean(folderMenu), onClose: () => setFolderMenu(null), align: "start", role: "menu", label: tx("\u6587\u4EF6\u5939\u9009\u9879") }, folderMenu && /* @__PURE__ */ h(Fragment, null, /* @__PURE__ */ h("button", { type: "button", role: "menuitem", onClick: () => {
+        const f = folderMenu.folder;
+        setFolderMenu(null);
+        startNew(f.id);
+      } }, /* @__PURE__ */ h(Icon3, { name: "plus", size: 16, stroke: 1.9 }), tx("\u65B0\u5EFA\u5B50\u6587\u4EF6\u5939")), /* @__PURE__ */ h("button", { type: "button", role: "menuitem", onClick: () => {
+        const value = folderMenu;
+        setFolderMenu(null);
+        setFolderMove(value);
+      } }, /* @__PURE__ */ h(Icon3, { name: "folder", size: 16, stroke: 1.9 }), tx("\u79FB\u5230\u5176\u4ED6\u6587\u4EF6\u5939")), /* @__PURE__ */ h("button", { type: "button", role: "menuitem", onClick: () => {
+        const f = folderMenu.folder;
+        setFolderMenu(null);
+        startRename(f);
+      } }, /* @__PURE__ */ h(Icon3, { name: "pencil", size: 16, stroke: 1.9 }), tx("\u91CD\u547D\u540D\u6587\u4EF6\u5939")), /* @__PURE__ */ h(ConfirmMenuItem, { icon: /* @__PURE__ */ h(Icon3, { name: "trash", size: 16, stroke: 1.9 }), label: tx("\u5220\u9664\u6587\u4EF6\u5939"), confirmLabel: tx("\u786E\u8BA4\u5220\u9664"), onConfirm: () => deleteFolder(folderMenu.folder) }))),
+      /* @__PURE__ */ h(Popover, { anchor: folderMove?.anchor || { current: null }, open: Boolean(folderMove), onClose: () => setFolderMove(null), align: "start", role: "menu", label: tx("\u79FB\u5230\u5176\u4ED6\u6587\u4EF6\u5939"), className: "tbx-res-folder-move" }, folderMove && /* @__PURE__ */ h(Fragment, null, /* @__PURE__ */ h("div", { className: "tbx-popover-label" }, tx("\u79FB\u5230\u5176\u4ED6\u6587\u4EF6\u5939")), /* @__PURE__ */ h("button", { type: "button", role: "menuitem", disabled: !canMoveFolder(folderMove.folder, null) || !folderMove.folder.parentId, onClick: () => moveFolder(folderMove.folder, null) }, /* @__PURE__ */ h(Icon3, { name: "folder", size: 16, stroke: 1.9 }), tx("\u6839\u76EE\u5F55"), !folderMove.folder.parentId && /* @__PURE__ */ h("span", { className: "tbx-pop-check" }, /* @__PURE__ */ h(Icon3, { name: "check", size: 14, stroke: 2.4 }))), tax.folders.some((f) => !inside(folderMove.folder.id).has(f.id)) && /* @__PURE__ */ h("div", { className: "tbx-popover-sep" }), tax.folders.filter((f) => !inside(folderMove.folder.id).has(f.id)).map((f) => /* @__PURE__ */ h("button", { key: f.id, type: "button", role: "menuitem", title: folderPath(f), disabled: !canMoveFolder(folderMove.folder, f.id) || folderMove.folder.parentId === f.id, onClick: () => moveFolder(folderMove.folder, f.id) }, /* @__PURE__ */ h(Icon3, { name: "folder", size: 16, stroke: 1.9 }), /* @__PURE__ */ h("span", { className: "tbx-res-folder-path" }, folderPath(f)), folderMove.folder.parentId === f.id && /* @__PURE__ */ h("span", { className: "tbx-pop-check" }, /* @__PURE__ */ h(Icon3, { name: "check", size: 14, stroke: 2.4 })))))),
       dragged && /* @__PURE__ */ h("div", { className: "tbx-drag-ghost is-file", style: { transform: `translate(${drag.x - 22}px, ${drag.y - 18}px)` }, "aria-hidden": "true" }, /* @__PURE__ */ h("span", { className: cx("tbx-res-ghost-thumb", drag.ids.length > 1 && "is-stack") }, /* @__PURE__ */ h(Icon3, { name: "file", size: 15, stroke: 2 })), /* @__PURE__ */ h("span", null, drag.ids.length > 1 ? tx("{{n}} \u4EFD\u8D44\u6599", { n: drag.ids.length }) : dragged.title)),
       K && /* @__PURE__ */ h(K.CalendarOverlay, { present: Boolean(tagDialog) }, tagDialog && /* @__PURE__ */ h(TagDialog, { tag: tagDialog.tag, tax, busy, onWrite, onClose: () => setTagDialog(null) })),
       purging && /* @__PURE__ */ h(
@@ -5920,7 +5914,7 @@ ${text}`),
     );
   }
 
-  // project/teachbuddy-app/ui/tbx/src/math/MathHome.jsx
+  // docs/design-system/teachbuddy-app/ui/tbx/src/math/MathHome.jsx
   var Icon4 = ({ name, size = 17, stroke = 1.9 }) => {
     const { Icon2: Icon22 } = tb();
     return /* @__PURE__ */ h(Icon22, { name, size, strokeWidth: stroke });
@@ -6060,7 +6054,7 @@ $$`)));
     ), !deleted && /* @__PURE__ */ h(PrimaryButton, { label: tx("\u65B0\u5EFA\u4F5C\u54C1"), disabled: busy, onClick: () => onNew() }))), /* @__PURE__ */ h("div", { className: cx("tbx-mw-scroll", `is-${view}`) }, starting && /* @__PURE__ */ h("section", { className: "tbx-mw-start", "aria-label": tx("\u5F00\u59CB\u5236\u4F5C") }, IDEAS.map(([kind, prompt, hue]) => /* @__PURE__ */ h("button", { key: prompt, type: "button", className: cx("tbx-mw-idea", hue), disabled: busy, onClick: () => onNew(tx(prompt)) }, /* @__PURE__ */ h("span", { className: "tbx-mw-idea-art" }, /* @__PURE__ */ h(Illustration, { kind })), /* @__PURE__ */ h("span", { className: "tbx-mw-idea-copy" }, /* @__PURE__ */ h("strong", null, tx(prompt)), /* @__PURE__ */ h("small", null, /* @__PURE__ */ h(Icon4, { name: "sparkles", size: 12, stroke: 2 }), tx("\u4EA4\u7ED9\u52A9\u7406\u8D77\u4E2A\u5934")))))), starting && shown.length > 0 && /* @__PURE__ */ h("h3", { className: "tbx-mw-section" }, tx("\u6700\u8FD1\u7F16\u8F91")), shown.length > 0 && view === "list" && /* @__PURE__ */ h("div", { className: "tbx-mw-thead", "aria-hidden": "true" }, /* @__PURE__ */ h("span", null, tx("\u540D\u79F0")), /* @__PURE__ */ h("span", null, tx("\u7C7B\u578B")), /* @__PURE__ */ h("span", null, deleted ? "" : tx("\u4FEE\u6539\u65E5\u671F"))), shown.length > 0 && /* @__PURE__ */ h("div", { className: "tbx-mw-items", key: view }, shown.map((item, i) => /* @__PURE__ */ h("article", { key: item.id, className: cx("tbx-mw-card", deleted && "is-archived"), style: { "--i": Math.min(i, 12) } }, /* @__PURE__ */ h("button", { type: "button", className: "tbx-mw-open", disabled: busy, onClick: () => onOpen(item) }, /* @__PURE__ */ h(Poster, { item, client, mini: view === "list" }), /* @__PURE__ */ h("span", { className: "tbx-mw-copy" }, /* @__PURE__ */ h("strong", { title: item.title }, item.title), /* @__PURE__ */ h("small", null, view === "list" ? tx(KIND_LABEL[kindOf2(item)]) : item.updatedAt ? tx(deleted ? "{{date}} \u5F52\u6863" : "{{date}} \u7F16\u8F91", { date: date(item.updatedAt) }) : tx("\u6570\u5B66\u4F5C\u54C1"))), view === "list" && /* @__PURE__ */ h("span", { className: "tbx-mw-col" }, tx(KIND_LABEL[kindOf2(item)])), view === "list" && !deleted && /* @__PURE__ */ h("span", { className: "tbx-mw-col tbx-num" }, date(item.updatedAt))), deleted && /* @__PURE__ */ h("div", { className: "tbx-mw-archive" }, /* @__PURE__ */ h("button", { type: "button", disabled: busy, onClick: () => onRestore(item) }, /* @__PURE__ */ h(Icon4, { name: "restore", size: 14, stroke: 2 }), tx("\u6062\u590D")), /* @__PURE__ */ h("button", { type: "button", className: "is-danger", disabled: busy, onClick: () => onPurge(item) }, tx("\u5F7B\u5E95\u5220\u9664")))))), !shown.length && /* @__PURE__ */ h("div", { className: cx("tbx-mw-empty", starting && "is-quiet") }, /* @__PURE__ */ h("span", { className: "tbx-mw-empty-icon" }, search ? /* @__PURE__ */ h(Icon4, { name: "search", size: 24, stroke: 1.8 }) : deleted ? /* @__PURE__ */ h(Icon4, { name: "trash", size: 24, stroke: 1.8 }) : /* @__PURE__ */ h(MathMark, { size: 26 })), /* @__PURE__ */ h("h3", null, tx(search ? "\u6CA1\u6709\u627E\u5230\u4F5C\u54C1" : deleted ? "\u6CA1\u6709\u5F52\u6863\u4F5C\u54C1" : starting ? "\u8FD8\u6CA1\u6709\u4F5C\u54C1" : "\u8FD9\u91CC\u8FD8\u662F\u7A7A\u7684")), /* @__PURE__ */ h("p", null, tx(search ? "\u8BD5\u8BD5\u5176\u4ED6\u540D\u79F0\u3002" : deleted ? "\u5F52\u6863\u7684\u4F5C\u54C1\u4F1A\u653E\u5728\u8FD9\u91CC\uFF0C\u968F\u65F6\u53EF\u4EE5\u6062\u590D\u3002" : starting ? "\u4ECE\u4E0A\u9762\u6311\u4E00\u79CD\u65B9\u5F0F\u5F00\u59CB\uFF0C\u505A\u597D\u7684\u4F5C\u54C1\u4F1A\u51FA\u73B0\u5728\u8FD9\u91CC\u3002" : "\u6362\u4E2A\u5206\u7C7B\u770B\u770B\uFF0C\u6216\u8005\u65B0\u5EFA\u4E00\u4E2A\u4F5C\u54C1\u3002")), search && /* @__PURE__ */ h("button", { type: "button", className: "tbx-mw-chipbtn", onClick: () => onSearch("") }, tx("\u6E05\u9664\u641C\u7D22"))))), /* @__PURE__ */ h(Rail, { label: tx("\u6570\u5B66\u5DE5\u574A\u5BFC\u822A"), footer: /* @__PURE__ */ h(RailItem, { icon: "trash", label: tx("\u5DF2\u5F52\u6863"), current: deleted, onClick: () => onDeleted(!deleted) }) }, /* @__PURE__ */ h(RailSection, { title: tx("\u6570\u5B66\u5DE5\u574A"), count: known.current.all || "" }, FILTERS.map(([key2, label, icon]) => /* @__PURE__ */ h(RailItem, { key: key2, icon, label: tx(label), count: known.current[key2], current: !deleted && filter === key2, onClick: () => go(key2) }))), /* @__PURE__ */ h(RailSection, { title: tx("\u5BFC\u5165") }, /* @__PURE__ */ h(RailItem, { icon: "upload", label: tx("\u5BFC\u5165\u4F5C\u54C1"), count: ".json", disabled: busy, onClick: onImportSource }), /* @__PURE__ */ h(RailItem, { icon: "link", label: tx("\u5BFC\u5165\u7F51\u9875"), count: ".html", disabled: busy, onClick: onImport })), /* @__PURE__ */ h(RailHint, { tone: "purple" }, tx("\u8BF4\u8BF4\u60F3\u505A\u4EC0\u4E48\uFF0C\u52A9\u7406\u4F1A\u5E2E\u4F60\u642D\u597D\u4F5C\u54C1\u3002"))));
   }
 
-  // project/teachbuddy-app/ui/tbx/src/questions/QuestionFinder.jsx
+  // docs/design-system/teachbuddy-app/ui/tbx/src/questions/QuestionFinder.jsx
   var Icon5 = ({ name, size = 17, stroke = 1.9 }) => {
     const { Icon2: Icon22 } = tb();
     return /* @__PURE__ */ h(Icon22, { name, size, strokeWidth: stroke });
@@ -6195,7 +6189,7 @@ $$`)));
     return /* @__PURE__ */ h("div", { className: "q-welcome tbx-qn-welcome" }, /* @__PURE__ */ h("div", { className: "tbx-qn-welcome-art", "aria-hidden": "true" }, /* @__PURE__ */ h("span", { className: "is-back" }), /* @__PURE__ */ h("span", { className: "is-mid" }), /* @__PURE__ */ h("span", { className: "is-front" }, /* @__PURE__ */ h("i", null), /* @__PURE__ */ h("i", null), /* @__PURE__ */ h("i", { className: "is-formula" }, "x\xB2 \u2212 4x + 3 = 0"), /* @__PURE__ */ h("i", null), /* @__PURE__ */ h("i", { className: "is-short" }))), /* @__PURE__ */ h("h2", null, hasItems ? tx("\u9009\u4E00\u9053\u9898\uFF0C\u5F00\u59CB\u51C6\u5907\u4E0B\u4E00\u8282\u8BFE") : tx("\u628A\u597D\u9898\u7559\u4E0B\u6765\uFF0C\u968F\u65F6\u7528\u8D77\u6765")), /* @__PURE__ */ h("p", null, hasItems ? tx("\u4ECE\u5217\u8868\u91CC\u9009\u4E00\u9053\u9898\uFF0C\u67E5\u770B\u7B54\u6848\u3001\u6539\u7F16\uFF0C\u6216\u5BFC\u51FA\u6210\u56FE\u7247\u653E\u8FDB\u8BFE\u4EF6\u3002") : tx("\u6536\u5F55\u8BD5\u5377\u3001\u622A\u56FE\u6216\u6587\u5B57\u91CC\u7684\u9898\u76EE\uFF0C\u4E4B\u540E\u968F\u65F6\u67E5\u627E\u3001\u6539\u7F16\u548C\u5BFC\u51FA\u3002")), !hasItems && /* @__PURE__ */ h("div", { className: "tbx-qn-welcome-actions" }, /* @__PURE__ */ h("button", { type: "button", className: "tbx-qn-btn is-primary", onClick: onCreate }, /* @__PURE__ */ h(Icon5, { name: "plus", size: 15, stroke: 2.2 }), tx("\u65B0\u5EFA\u9898\u76EE")), /* @__PURE__ */ h("button", { type: "button", className: "tbx-qn-btn", onClick: onCapture }, /* @__PURE__ */ h(Icon5, { name: "upload", size: 15, stroke: 2 }), tx("\u4ECE\u8D44\u6599\u6536\u5F55"))));
   }
 
-  // project/teachbuddy-app/ui/tbx/src/classroom/api.js
+  // docs/design-system/teachbuddy-app/ui/tbx/src/classroom/api.js
   var BASE = "/api/modules/classroom";
   var key = () => crypto.randomUUID();
   var ApiError = class extends Error {
@@ -6242,7 +6236,7 @@ $$`)));
     fileUrl: (id) => `/api/workbench/files/${id}/content`
   };
 
-  // project/teachbuddy-app/ui/tbx/src/classroom/util.js
+  // docs/design-system/teachbuddy-app/ui/tbx/src/classroom/util.js
   function initials(name = "") {
     const n = name.trim();
     if (!n) return "?";
@@ -6374,7 +6368,7 @@ $$`)));
   }
   var classMark = (name = "") => name.match(/[（(]\s*(\d+)\s*[)）]/)?.[1] || name.match(/\d+/)?.[0] || name.trim().slice(0, 1);
 
-  // project/teachbuddy-app/ui/tbx/src/classroom/ui.jsx
+  // docs/design-system/teachbuddy-app/ui/tbx/src/classroom/ui.jsx
   var Icon6 = ({ name, size = 17, stroke = 1.9 }) => {
     const { Icon2: Icon22 } = tb();
     return /* @__PURE__ */ h(Icon22, { name, size, strokeWidth: stroke });
@@ -6468,7 +6462,7 @@ $$`)));
     return [node, show2];
   }
 
-  // project/teachbuddy-app/ui/tbx/src/classroom/Seating.jsx
+  // docs/design-system/teachbuddy-app/ui/tbx/src/classroom/Seating.jsx
   var SPRING = "cubic-bezier(0.34, 1.32, 0.64, 1)";
   function Seating({ ctx, cls, students }) {
     const [seating, setSeating] = useState(cls.seating);
@@ -6630,7 +6624,7 @@ $$`)));
     ))), /* @__PURE__ */ h("div", { className: "cr-room" }, /* @__PURE__ */ h("div", { className: "cr-board" }, /* @__PURE__ */ h("span", null, tx("\u8BB2\u53F0"))), /* @__PURE__ */ h("div", { className: "cr-grid", style: { "--cols": seating.cols } }, cells)), /* @__PURE__ */ h("div", { className: cx("cr-tray", target === "tray" && "is-target", !unseated.length && "is-empty"), "data-tray": "" }, /* @__PURE__ */ h("div", { className: "cr-tray-head" }, /* @__PURE__ */ h("strong", null, tx("\u8FD8\u6CA1\u6709\u5EA7\u4F4D")), /* @__PURE__ */ h("span", null, unseated.length ? tx("{{n}} \u4EBA", { n: unseated.length }) : tx("\u6BCF\u4E2A\u4EBA\u90FD\u6709\u5EA7\u4F4D\u4E86"))), /* @__PURE__ */ h("div", { className: "cr-tray-list" }, unseated.map((s) => /* @__PURE__ */ h("button", { key: s.id, type: "button", className: cx("cr-chip-student", drag?.studentId === s.id && "is-lifted"), ...handlers(s.id) }, /* @__PURE__ */ h(Avatar, { name: s.name, id: s.id, size: "sm" }), /* @__PURE__ */ h("span", null, s.name))), !unseated.length && /* @__PURE__ */ h("p", { className: "cr-muted" }, tx("\u628A\u5B66\u751F\u62D6\u5230\u8FD9\u91CC\uFF0C\u5C31\u662F\u6682\u65F6\u4E0D\u6392\u5EA7\u3002")))), lifted && /* @__PURE__ */ h("div", { className: "cr-ghost", style: { transform: `translate(${drag.x}px, ${drag.y}px)`, width: drag.w, height: drag.h }, "aria-hidden": "true" }, /* @__PURE__ */ h("div", { className: "cr-desk is-ghost" }, /* @__PURE__ */ h(Avatar, { name: lifted.name, id: lifted.id }), /* @__PURE__ */ h("span", { className: "cr-desk-name" }, lifted.name))));
   }
 
-  // project/teachbuddy-app/ui/tbx/src/classroom/charts.jsx
+  // docs/design-system/teachbuddy-app/ui/tbx/src/classroom/charts.jsx
   function useWidth() {
     const ref = useRef(null);
     const [width, setWidth] = useState(0);
@@ -6709,7 +6703,7 @@ $$`)));
     return /* @__PURE__ */ h("div", { className: cx("cr-stat", tone && `is-${tone}`) }, /* @__PURE__ */ h("span", null, label), /* @__PURE__ */ h("strong", null, value), sub && /* @__PURE__ */ h("small", null, sub));
   }
 
-  // project/teachbuddy-app/ui/tbx/src/classroom/Records.jsx
+  // docs/design-system/teachbuddy-app/ui/tbx/src/classroom/Records.jsx
   var RANGES = [["all", "\u5168\u90E8\u65F6\u95F4"], ["7", "\u6700\u8FD1 7 \u5929"], ["30", "\u6700\u8FD1 30 \u5929"], ["90", "\u6700\u8FD1 3 \u4E2A\u6708"]];
   var daysAgo = (n) => {
     const d = /* @__PURE__ */ new Date();
@@ -6829,7 +6823,7 @@ $$`)));
     ), /* @__PURE__ */ h("span", { className: "cr-grow" }), items && /* @__PURE__ */ h("span", { className: "cr-muted" }, tx("{{n}} \u6761", { n: items.length }))), !items ? /* @__PURE__ */ h("div", { className: "cr-loading is-inline" }, /* @__PURE__ */ h(Spinner, null)) : !items.length ? filtered ? /* @__PURE__ */ h(Empty, { compact: true, icon: "search", title: tx("\u6CA1\u6709\u7B26\u5408\u6761\u4EF6\u7684\u8BB0\u5F55"), text: tx("\u6362\u4E2A\u5173\u952E\u8BCD\u6216\u65F6\u95F4\u8303\u56F4\u770B\u770B\u3002") }) : /* @__PURE__ */ h(Empty, { compact: true, icon: "pencil", title: tx("\u8FD8\u6CA1\u6709\u8BB0\u5F55"), text: subject.kind === "student" ? tx("\u4E00\u53E5\u8BDD\u3001\u4E00\u6B21\u8C08\u8BDD\u3001\u4E00\u4E2A\u7EA6\u5B9A\uFF0C\u90FD\u503C\u5F97\u8BB0\u4E0B\u6765\u3002") : tx("\u6559\u5230\u54EA\u91CC\u3001\u5171\u540C\u7684\u95EE\u9898\u3001\u4E0B\u4E00\u8282\u8BFE\u7684\u60F3\u6CD5\uFF0C\u5199\u6210\u4E00\u6761\u5C31\u597D\u3002") }) : /* @__PURE__ */ h("ol", { className: "cr-timeline" }, groups.map((g) => /* @__PURE__ */ h("li", { key: g.month, className: "cr-month" }, /* @__PURE__ */ h("h4", null, monthLabel(g.month)), /* @__PURE__ */ h("ol", null, g.items.map((item) => /* @__PURE__ */ h("li", { key: item.id, className: cx("cr-entry", fresh === item.id && "is-fresh") }, /* @__PURE__ */ h("div", { className: "cr-entry-date" }, /* @__PURE__ */ h("strong", null, Number(item.date.slice(8, 10))), /* @__PURE__ */ h("small", null, weekdayName(item.date))), editing === item.id ? /* @__PURE__ */ h(Composer2, { initial: item, autoFocus: true, onSave: (v) => update(item, v), onCancel: () => setEditing(null) }) : /* @__PURE__ */ h("article", { className: "cr-entry-card" }, /* @__PURE__ */ h("p", null, item.body), /* @__PURE__ */ h("div", { className: "cr-entry-actions" }, /* @__PURE__ */ h("button", { type: "button", className: "cr-icon-btn is-small", "aria-label": tx("\u7F16\u8F91"), title: tx("\u7F16\u8F91"), onClick: () => setEditing(item.id) }, /* @__PURE__ */ h(Icon6, { name: "pencil", size: 14, stroke: 2 })), /* @__PURE__ */ h("button", { type: "button", className: "cr-icon-btn is-small", "aria-label": tx("\u5F52\u6863"), title: tx("\u5F52\u6863"), onClick: () => archive(item) }, /* @__PURE__ */ h(Icon6, { name: "trash", size: 14, stroke: 2 })))))))))));
   }
 
-  // project/teachbuddy-app/ui/tbx/src/classroom/Students.jsx
+  // docs/design-system/teachbuddy-app/ui/tbx/src/classroom/Students.jsx
   function StudentForm({ ctx, classId, initial, onClose }) {
     const [form, setForm] = useState({
       name: initial?.name ?? "",
@@ -6940,7 +6934,7 @@ $$`)));
     )), /* @__PURE__ */ h("div", { className: "cr-exam-rows" }, [...stats.points].reverse().map((p) => /* @__PURE__ */ h("button", { key: p.exam.id, type: "button", className: cx("cr-exam-row", current.exam.id === p.exam.id && "is-on"), onClick: () => setOpen(p.exam.id) }, /* @__PURE__ */ h("span", { className: "cr-exam-row-title" }, /* @__PURE__ */ h("strong", null, p.exam.name), /* @__PURE__ */ h("small", null, [longDate(p.exam.date), p.exam.subject, p.className].filter(Boolean).join(" \xB7 "))), /* @__PURE__ */ h("span", { className: "cr-exam-row-score" }, p.status === "present" ? /* @__PURE__ */ h(Fragment, null, /* @__PURE__ */ h("b", null, fmt(p.total)), /* @__PURE__ */ h("small", null, "/ ", fmt(p.exam.fullScore))) : /* @__PURE__ */ h("em", null, p.status === "absent" ? tx("\u7F3A\u8003") : tx("\u672A\u8BB0\u5F55"))), /* @__PURE__ */ h("span", { className: "cr-exam-row-rank" }, p.rank ? tx("\u7B2C {{rank}} / {{n}}", { rank: p.rank, n: p.rankCount }) : "\u2014"), /* @__PURE__ */ h("span", { className: "cr-exam-row-mean" }, tx("\u73ED\u5747 {{v}}", { v: fmt(p.classMean) }))))), current.status === "present" && /* @__PURE__ */ h("div", { className: "cr-panel", key: current.exam.id }, /* @__PURE__ */ h("div", { className: "cr-panel-head" }, /* @__PURE__ */ h("h3", null, tx("{{name}} \xB7 \u5404\u9898", { name: current.exam.name })), /* @__PURE__ */ h("span", { className: "cr-legend-inline" }, /* @__PURE__ */ h("i", { className: "is-fill" }), tx("{{name}}\u7684\u5F97\u5206\u7387", { name: student.name }), /* @__PURE__ */ h("i", { className: "is-mark" }), tx("\u73ED\u7EA7\u5F97\u5206\u7387"))), /* @__PURE__ */ h(RateBars, { compareKey: "classRate", rows: current.questions.map((q) => ({ id: q.id, label: q.label, rate: q.score == null ? null : q.score / q.fullScore, classRate: q.classRate, meta: q.score == null ? tx("\u7F3A\u5206") : `${fmt(q.score)} / ${fmt(q.fullScore)}`, state: "missing-scores" })) }), current.tags.length > 0 && /* @__PURE__ */ h("div", { className: "cr-tagline" }, current.tags.map((t2) => /* @__PURE__ */ h("span", { key: t2.id, className: "cr-tagstat" }, /* @__PURE__ */ h(Icon6, { name: "tag", size: 12, stroke: 2.2 }), tagName.get(t2.id) || t2.name, /* @__PURE__ */ h("b", null, t2.rate == null ? tx("\u7F3A\u5206") : pct(t2.rate))))), /* @__PURE__ */ h("p", { className: "cr-footnote" }, tx("\u9898\u76EE\u5F97\u5206\u7387\u63CF\u8FF0\u7684\u662F\u8FD9\u573A\u8003\u8BD5\u7684\u8BC1\u636E\uFF0C\u4E0D\u7B49\u4E8E\u77E5\u8BC6\u638C\u63E1\u5EA6\u3002"))));
   }
 
-  // project/teachbuddy-app/ui/tbx/src/classroom/Scores.jsx
+  // docs/design-system/teachbuddy-app/ui/tbx/src/classroom/Scores.jsx
   function ClassScores({ ctx, cls }) {
     const [examIds, setExamIds] = useState([]);
     const [tagIds, setTagIds] = useState([]);
@@ -7012,7 +7006,7 @@ $$`)));
     ), none.length > 0 && /* @__PURE__ */ h("p", { className: "cr-footnote" }, tx("\u8FD8\u6CA1\u6709\u8FD9\u4E2A\u73ED\u6210\u7EE9\u7684\u8003\u8BD5\uFF1A{{list}}", { list: none.map((p) => p.exam.name).join("\u3001") }))), /* @__PURE__ */ h("div", { className: "cr-focus", key: current.exam.id }, /* @__PURE__ */ h("div", { className: "cr-focus-head" }, /* @__PURE__ */ h("div", null, /* @__PURE__ */ h("h3", null, current.exam.name), /* @__PURE__ */ h("span", { className: "cr-muted" }, [longDate(current.exam.date), current.exam.subject, tx("\u6EE1\u5206 {{n}}", { n: fmt(full) })].filter(Boolean).join(" \xB7 "))), /* @__PURE__ */ h("button", { type: "button", className: "cr-btn is-small", onClick: () => ctx.go({ view: "exams", examId: current.exam.id }) }, tx("\u8BD5\u5377\u4E0E\u540C\u573A\u6BD4\u8F83"), /* @__PURE__ */ h(Icon6, { name: "chevron", size: 13, stroke: 2.2 }))), /* @__PURE__ */ h("div", { className: "cr-stats" }, /* @__PURE__ */ h(Stat, { label: tx("\u5E73\u5747\u5206"), value: fmt(current.mean), sub: pct(current.mean / full), tone: "green" }), /* @__PURE__ */ h(Stat, { label: tx("\u4E2D\u4F4D\u6570"), value: fmt(current.median), sub: pct(current.median / full) }), /* @__PURE__ */ h(Stat, { label: tx("\u6700\u9AD8 / \u6700\u4F4E"), value: `${fmt(current.max)} / ${fmt(current.min)}` }), /* @__PURE__ */ h(Stat, { label: tx("\u53C2\u52A0"), value: tx("{{n}} \u4EBA", { n: current.present }), sub: [current.absent && tx("\u7F3A\u8003 {{n}}", { n: current.absent }), current.unrecorded && tx("\u672A\u8BB0\u5F55 {{n}}", { n: current.unrecorded }), current.missingTotal && tx("\u65E0\u603B\u5206 {{n}}", { n: current.missingTotal })].filter(Boolean).join(" \xB7 ") || tx("\u5168\u90E8\u5230\u9F50") })), /* @__PURE__ */ h("div", { className: "cr-split" }, /* @__PURE__ */ h("div", { className: "cr-panel" }, /* @__PURE__ */ h("div", { className: "cr-panel-head" }, /* @__PURE__ */ h("h3", null, tx("\u5F97\u5206\u7387\u5206\u5E03")), /* @__PURE__ */ h("span", { className: "cr-muted" }, tx("\u70B9\u4E00\u6863\u770B\u662F\u8C01"))), /* @__PURE__ */ h(Histogram, { label: tx("\u5F97\u5206\u7387\u5206\u5E03"), bins: current.distribution, selected: bin, onSelect: setBin }), /* @__PURE__ */ h("p", { className: "cr-axis-note" }, tx("\u5F97\u5206\u7387\uFF08%\uFF09\xB7 \u7F3A\u8003\u548C\u6CA1\u6709\u603B\u5206\u7684\u4E0D\u8BA1\u5165")), bin != null && /* @__PURE__ */ h("div", { className: "cr-bin-students" }, /* @__PURE__ */ h("strong", null, tx("{{from}}\u2013{{to}}% \xB7 {{n}} \u4EBA", { from: bin * 10, to: bin === 9 ? 100 : bin * 10 + 9, n: binStudents.length })), /* @__PURE__ */ h("div", null, binStudents.map((s) => /* @__PURE__ */ h("button", { key: s.studentId, type: "button", className: "cr-chip-student", onClick: () => ctx.go({ view: "class", tab: "scores", studentId: s.studentId }) }, /* @__PURE__ */ h(Avatar, { name: s.name, id: s.studentId, size: "sm" }), /* @__PURE__ */ h("span", null, s.name), /* @__PURE__ */ h("b", null, fmt(s.total))))))), /* @__PURE__ */ h("div", { className: "cr-panel" }, /* @__PURE__ */ h("div", { className: "cr-panel-head" }, /* @__PURE__ */ h("h3", null, tx("\u6392\u540D")), /* @__PURE__ */ h("span", { className: "cr-muted" }, tx("\u540C\u5206\u5E76\u5217"))), /* @__PURE__ */ h("ol", { className: "cr-ranking" }, current.students.map((s, i) => /* @__PURE__ */ h("li", { key: s.studentId, style: { "--i": Math.min(i, 20) } }, /* @__PURE__ */ h("button", { type: "button", onClick: () => ctx.go({ studentId: s.studentId }) }, /* @__PURE__ */ h("span", { className: cx("cr-rank", s.rank && s.rank <= 3 && `is-top is-${s.rank}`) }, s.rank ?? "\u2014"), /* @__PURE__ */ h(Avatar, { name: s.name, id: s.studentId, size: "sm" }), /* @__PURE__ */ h("span", { className: "cr-ranking-name" }, s.name), s.status === "present" ? /* @__PURE__ */ h("span", { className: "cr-ranking-score" }, /* @__PURE__ */ h("b", null, fmt(s.total)), /* @__PURE__ */ h("small", null, pct(s.rate))) : /* @__PURE__ */ h("em", null, s.status === "absent" ? tx("\u7F3A\u8003") : tx("\u672A\u8BB0\u5F55")))))))), /* @__PURE__ */ h("div", { className: "cr-split" }, /* @__PURE__ */ h("div", { className: "cr-panel" }, /* @__PURE__ */ h("div", { className: "cr-panel-head" }, /* @__PURE__ */ h("h3", null, tx("\u5404\u9898\u5F97\u5206\u7387")), lowest && /* @__PURE__ */ h("span", { className: "cr-muted" }, tx("\u6700\u4F4E\uFF1A{{q}} {{r}}", { q: lowest.label, r: pct(lowest.rate) }))), /* @__PURE__ */ h(RateBars, { rows: current.questions.map((q) => ({ id: q.id, label: q.group ? `${q.group} ${q.label}` : q.label, rate: q.rate, state: "missing-scores", meta: q.missing ? tx("\u5DF2\u77E5 {{k}} \xB7 \u7F3A {{m}}", { k: q.known, m: q.missing }) : null })) })), /* @__PURE__ */ h("div", { className: "cr-panel" }, /* @__PURE__ */ h("div", { className: "cr-panel-head" }, /* @__PURE__ */ h("h3", null, tx("\u6807\u7B7E")), /* @__PURE__ */ h("span", { className: "cr-muted" }, tx("\u591A\u4E2A\u6807\u7B7E\u6309\u9898\u76EE\u5408\u5E76\uFF0C\u540C\u4E00\u9898\u53EA\u7B97\u4E00\u6B21"))), current.tags.length ? /* @__PURE__ */ h(RateBars, { rows: current.tags.map((t2) => ({ id: t2.id, label: t2.name, rate: t2.rate, state: t2.state, meta: t2.state === "ok" ? tx("{{n}} \u9053\u9898", { n: t2.questionIds.length }) : null })) }) : /* @__PURE__ */ h("p", { className: "cr-muted cr-pad" }, tx("\u8FD9\u573A\u8003\u8BD5\u7684\u9898\u76EE\u8FD8\u6CA1\u6709\u6807\u7B7E\u3002\u7ED9\u9898\u76EE\u8D34\u4E0A\u6807\u7B7E\uFF0C\u5C31\u80FD\u770B\u5230\u8FD9\u4E00\u7C7B\u9898\u7684\u5F97\u5206\u3002")), /* @__PURE__ */ h("p", { className: "cr-footnote" }, tx("\u5F97\u5206\u7387\u63CF\u8FF0\u7684\u662F\u8FD9\u573A\u8003\u8BD5\u7684\u8BC1\u636E\uFF0C\u4E0D\u7B49\u4E8E\u77E5\u8BC6\u638C\u63E1\u5EA6\uFF1B\u6CA1\u8003\u5230\u7684\u6807\u7B7E\u4E0D\u8BB0\u96F6\u3002"))))));
   }
 
-  // project/teachbuddy-app/ui/tbx/src/classroom/Exams.jsx
+  // docs/design-system/teachbuddy-app/ui/tbx/src/classroom/Exams.jsx
   var imported = (imports) => {
     const map = /* @__PURE__ */ new Map();
     for (const i of imports) if (i.state === "confirmed") map.set(`${i.examId}:${i.classId}`, i);
@@ -7219,7 +7213,7 @@ $$`)));
     ] })))))));
   }
 
-  // project/teachbuddy-app/ui/tbx/src/classroom/Import.jsx
+  // docs/design-system/teachbuddy-app/ui/tbx/src/classroom/Import.jsx
   var STEPS = ["\u9009\u62E9\u6210\u7EE9\u8868", "\u5BF9\u5E94\u8868\u683C\u7684\u5217", "\u9010\u884C\u6821\u5BF9"];
   var letter = (n) => {
     let s = "";
@@ -7428,12 +7422,16 @@ $$`)));
     return /* @__PURE__ */ h(Dialog, { wide: true, className: "cr-import", title: tx("\u5BFC\u5165\u6210\u7EE9"), subtitle: exam && cls ? `${exam.name} \xB7 ${cls.name}` : null, onClose, footer: /* @__PURE__ */ h(Fragment, null, error && /* @__PURE__ */ h("span", { className: "cr-error is-inline" }, error), footer) }, step < 3 && /* @__PURE__ */ h("ol", { className: "cr-steps" }, STEPS.map((label, i) => /* @__PURE__ */ h("li", { key: label, className: cx(i === step && "is-current", i < step && "is-done") }, /* @__PURE__ */ h("span", null, i < step ? /* @__PURE__ */ h(Icon6, { name: "check", size: 11, stroke: 3 }) : i + 1), tx(label)))), /* @__PURE__ */ h("div", { className: "cr-step", key: step }, body));
   }
 
-  // project/teachbuddy-app/ui/tbx/src/classroom/Archive.jsx
+  // docs/design-system/teachbuddy-app/ui/tbx/src/classroom/Archive.jsx
   function Archive({ ctx }) {
     const [items, setItems] = useState(null);
     const load = async () => {
       const [c, s, e, r] = await Promise.all(["classes", "students", "exams", "records"].map((n) => api2.get(`/${n}`, { state: "deleted" })));
-      setItems({ classes: c.items, students: s.items, exams: e.items, records: r.items });
+      const recordStudents = new Map([...ctx.data.students, ...s.items].map((student) => [student.id, student]));
+      const missing = [...new Set(r.items.filter((record) => record.subject.kind === "student" && !recordStudents.has(record.subject.id)).map((record) => record.subject.id))];
+      const parents = await Promise.all(missing.map((id) => api2.get(`/students/${id}`)));
+      for (const student of parents) recordStudents.set(student.id, student);
+      setItems({ classes: c.items, students: s.items, exams: e.items, records: r.items, recordStudents });
     };
     useEffect(() => {
       load().catch(() => setItems({ classes: [], students: [], exams: [], records: [] }));
@@ -7448,12 +7446,19 @@ $$`)));
       }
     };
     const className = (id) => ctx.data.classes.find((c) => c.id === id)?.name || items?.classes.find((c) => c.id === id)?.name || "";
+    const restoreReason = (collection, item) => {
+      const student = collection === "students" ? item : collection === "records" && item.subject.kind === "student" ? items.recordStudents.get(item.subject.id) : null;
+      const classId = student?.classId || (collection === "records" && item.subject.kind === "class" ? item.subject.id : null);
+      if (classId && items.classes.some((cls) => cls.id === classId)) return tx("\u8BF7\u5148\u6062\u590D\u6240\u5C5E\u73ED\u7EA7");
+      if (collection === "records" && student?.deletedAt) return tx("\u8BF7\u5148\u6062\u590D\u6240\u5C5E\u5B66\u751F");
+      return "";
+    };
     const empty = items && !items.classes.length && !items.students.length && !items.exams.length && !items.records.length;
-    const section = (title, collection, list, render) => list.length > 0 && /* @__PURE__ */ h("section", { className: "cr-panel" }, /* @__PURE__ */ h("div", { className: "cr-panel-head" }, /* @__PURE__ */ h("h3", null, title), /* @__PURE__ */ h("span", { className: "cr-muted" }, list.length)), /* @__PURE__ */ h("ul", { className: "cr-archive" }, list.map((item) => /* @__PURE__ */ h("li", { key: item.id }, render(item), /* @__PURE__ */ h("button", { type: "button", className: "cr-btn is-small", onClick: () => restore(collection, item) }, /* @__PURE__ */ h(Icon6, { name: "restore", size: 13, stroke: 2 }), tx("\u6062\u590D"))))));
-    return /* @__PURE__ */ h("div", { className: "cr-page" }, /* @__PURE__ */ h("header", { className: "cr-head" }, /* @__PURE__ */ h("div", { className: "cr-head-title is-plain" }, /* @__PURE__ */ h("div", null, /* @__PURE__ */ h("h2", null, tx("\u5DF2\u5F52\u6863")), /* @__PURE__ */ h("span", null, tx("\u5F52\u6863\u7684\u5185\u5BB9\u90FD\u5728\u8FD9\u91CC\uFF0C\u5173\u7CFB\u548C\u5386\u53F2\u6210\u7EE9\u539F\u6837\u4FDD\u7559\u3002"))))), /* @__PURE__ */ h("div", { className: "cr-page-scroll" }, !items ? /* @__PURE__ */ h("div", { className: "cr-loading is-inline" }, /* @__PURE__ */ h(Spinner, null)) : empty ? /* @__PURE__ */ h(Empty, { icon: "trash", title: tx("\u6CA1\u6709\u5F52\u6863\u7684\u5185\u5BB9"), text: tx("\u5F52\u6863\u7684\u73ED\u7EA7\u3001\u5B66\u751F\u3001\u8003\u8BD5\u548C\u8BB0\u5F55\u4F1A\u653E\u5728\u8FD9\u91CC\uFF0C\u968F\u65F6\u53EF\u4EE5\u6062\u590D\u3002") }) : /* @__PURE__ */ h(Fragment, null, section(tx("\u73ED\u7EA7"), "classes", items.classes, (c) => /* @__PURE__ */ h("span", { className: "cr-archive-text" }, /* @__PURE__ */ h("strong", null, c.name), /* @__PURE__ */ h("small", null, c.term))), section(tx("\u5B66\u751F"), "students", items.students, (s) => /* @__PURE__ */ h(Fragment, null, /* @__PURE__ */ h(Avatar, { name: s.name, id: s.id, size: "sm" }), /* @__PURE__ */ h("span", { className: "cr-archive-text" }, /* @__PURE__ */ h("strong", null, s.name), /* @__PURE__ */ h("small", null, className(s.classId))))), section(tx("\u8003\u8BD5"), "exams", items.exams, (e) => /* @__PURE__ */ h("span", { className: "cr-archive-text" }, /* @__PURE__ */ h("strong", null, e.name), /* @__PURE__ */ h("small", null, longDate(e.date)))), section(tx("\u8BB0\u5F55"), "records", items.records, (r) => /* @__PURE__ */ h("span", { className: "cr-archive-text" }, /* @__PURE__ */ h("strong", { className: "is-clamp" }, r.body), /* @__PURE__ */ h("small", null, longDate(r.date)))))));
+    const section = (title, collection, list, render) => list.length > 0 && /* @__PURE__ */ h("section", { className: "cr-panel" }, /* @__PURE__ */ h("div", { className: "cr-panel-head" }, /* @__PURE__ */ h("h3", null, title), /* @__PURE__ */ h("span", { className: "cr-muted" }, list.length)), /* @__PURE__ */ h("ul", { className: "cr-archive" }, list.map((item) => /* @__PURE__ */ h("li", { key: item.id }, render(item), /* @__PURE__ */ h("button", { type: "button", className: "cr-btn is-small", disabled: Boolean(restoreReason(collection, item)), onClick: () => restore(collection, item) }, /* @__PURE__ */ h(Icon6, { name: "restore", size: 13, stroke: 2 }), tx("\u6062\u590D"))))));
+    return /* @__PURE__ */ h("div", { className: "cr-page" }, /* @__PURE__ */ h("header", { className: "cr-head" }, /* @__PURE__ */ h("div", { className: "cr-head-title is-plain" }, /* @__PURE__ */ h("div", null, /* @__PURE__ */ h("h2", null, tx("\u5DF2\u5F52\u6863")), /* @__PURE__ */ h("span", null, tx("\u5F52\u6863\u7684\u5185\u5BB9\u90FD\u5728\u8FD9\u91CC\uFF0C\u5173\u7CFB\u548C\u5386\u53F2\u6210\u7EE9\u539F\u6837\u4FDD\u7559\u3002"))))), /* @__PURE__ */ h("div", { className: "cr-page-scroll" }, !items ? /* @__PURE__ */ h("div", { className: "cr-loading is-inline" }, /* @__PURE__ */ h(Spinner, null)) : empty ? /* @__PURE__ */ h(Empty, { icon: "trash", title: tx("\u6CA1\u6709\u5F52\u6863\u7684\u5185\u5BB9"), text: tx("\u5F52\u6863\u7684\u73ED\u7EA7\u3001\u5B66\u751F\u3001\u8003\u8BD5\u548C\u8BB0\u5F55\u4F1A\u653E\u5728\u8FD9\u91CC\uFF0C\u968F\u65F6\u53EF\u4EE5\u6062\u590D\u3002") }) : /* @__PURE__ */ h(Fragment, null, section(tx("\u73ED\u7EA7"), "classes", items.classes, (c) => /* @__PURE__ */ h("span", { className: "cr-archive-text" }, /* @__PURE__ */ h("strong", null, c.name), /* @__PURE__ */ h("small", null, c.term))), section(tx("\u5B66\u751F"), "students", items.students, (s) => /* @__PURE__ */ h(Fragment, null, /* @__PURE__ */ h(Avatar, { name: s.name, id: s.id, size: "sm" }), /* @__PURE__ */ h("span", { className: "cr-archive-text" }, /* @__PURE__ */ h("strong", null, s.name), /* @__PURE__ */ h("small", null, className(s.classId)), restoreReason("students", s) && /* @__PURE__ */ h("small", null, restoreReason("students", s))))), section(tx("\u8003\u8BD5"), "exams", items.exams, (e) => /* @__PURE__ */ h("span", { className: "cr-archive-text" }, /* @__PURE__ */ h("strong", null, e.name), /* @__PURE__ */ h("small", null, longDate(e.date)))), section(tx("\u8BB0\u5F55"), "records", items.records, (r) => /* @__PURE__ */ h("span", { className: "cr-archive-text" }, /* @__PURE__ */ h("strong", { className: "is-clamp" }, r.body), /* @__PURE__ */ h("small", null, longDate(r.date)), restoreReason("records", r) && /* @__PURE__ */ h("small", null, restoreReason("records", r)))))));
   }
 
-  // project/teachbuddy-app/ui/tbx/src/classroom/ClassroomPage.jsx
+  // docs/design-system/teachbuddy-app/ui/tbx/src/classroom/ClassroomPage.jsx
   var memory = { view: "class", tab: "seats" };
   function useData() {
     const [data, setData] = useState({ classes: [], students: [], exams: [], tags: [], loaded: false, error: null });
@@ -7614,7 +7619,7 @@ $$`)));
     return /* @__PURE__ */ h("div", { className: "cr-art", "aria-hidden": "true" }, /* @__PURE__ */ h("span", { className: "cr-art-board" }), Array.from({ length: 9 }, (_, i) => /* @__PURE__ */ h("span", { key: i, className: cx("cr-art-desk", `is-${["blue", "green", "orange", "purple", "pink", "teal", "indigo", "yellow", "blue"][i]}`), style: { "--i": i } })));
   }
 
-  // project/teachbuddy-app/ui/tbx/src/settings/Settings.jsx
+  // docs/design-system/teachbuddy-app/ui/tbx/src/settings/Settings.jsx
   var Icon7 = ({ name, size = 18, stroke = 1.8 }) => {
     const { Icon2: Icon22 } = tb();
     return /* @__PURE__ */ h(Icon22, { name, size, strokeWidth: stroke });
@@ -7767,8 +7772,10 @@ $$`)));
     return /* @__PURE__ */ h("section", { className: "settings-sheet tbx-danger", "aria-labelledby": "tbx-danger-title" }, /* @__PURE__ */ h("header", { className: "tbx-danger-head" }, /* @__PURE__ */ h("span", { className: "tbx-danger-icon", "aria-hidden": "true" }, /* @__PURE__ */ h("svg", { width: "18", height: "18", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round" }, /* @__PURE__ */ h("path", { d: "M10.3 3.9 2.2 18a2 2 0 0 0 1.7 3h16.2a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" }), /* @__PURE__ */ h("path", { d: "M12 9v4m0 4h.01" }))), /* @__PURE__ */ h("div", null, /* @__PURE__ */ h("h2", { id: "tbx-danger-title" }, tx("\u5371\u9669\u64CD\u4F5C")), /* @__PURE__ */ h("p", null, tx("\u8FD9\u91CC\u7684\u64CD\u4F5C\u65E0\u6CD5\u64A4\u9500\uFF0C\u8BF7\u786E\u8BA4\u540E\u518D\u7EE7\u7EED\u3002")))), /* @__PURE__ */ h("div", { className: "tbx-danger-row" }, /* @__PURE__ */ h("div", { className: "tbx-danger-copy" }, /* @__PURE__ */ h("h3", null, tx("\u5220\u9664\u8D26\u6237")), /* @__PURE__ */ h("p", null, tx("\u6C38\u4E45\u5220\u9664\u8D26\u6237\u548C\u5168\u90E8\u6570\u636E\uFF0C\u5305\u62EC\u9898\u5E93\u3001\u65E5\u7A0B\u3001\u8D44\u6599\u4E0E\u52A9\u7406\u5BF9\u8BDD\u3002"))), /* @__PURE__ */ h("button", { type: "button", className: "tbx-danger-btn", onClick: onDelete }, /* @__PURE__ */ h(Icon7, { name: "trash", size: 16 }), tx("\u5220\u9664\u8D26\u6237\u2026"))));
   }
 
-  // project/teachbuddy-app/ui/tbx/src/locales/en.js
+  // docs/design-system/teachbuddy-app/ui/tbx/src/locales/en.js
   var EN = {
+    "\u8BF7\u5148\u6062\u590D\u6240\u5C5E\u73ED\u7EA7": "Restore the class first",
+    "\u8BF7\u5148\u6062\u590D\u6240\u5C5E\u5B66\u751F": "Restore the student first",
     /* ---------- date & time pickers ---------- */
     "\u9009\u62E9\u5E74\u6708": "Choose month and year",
     "\u9009\u62E9\u5E74\u4EFD": "Choose year",
@@ -8682,7 +8689,7 @@ $$`)));
     workbench: { "modules.classroom": "\u73ED\u7EA7" }
   };
 
-  // project/teachbuddy-app/ui/tbx/src/locales/install.js
+  // docs/design-system/teachbuddy-app/ui/tbx/src/locales/install.js
   var done2 = false;
   function installLocales(i18n) {
     if (done2 || !i18n?.addResourceBundle) return;
@@ -8693,7 +8700,7 @@ $$`)));
     for (const [ns, table] of Object.entries(APP_ZH)) i18n.addResourceBundle("zh-CN", ns, table, true, false);
   }
 
-  // project/teachbuddy-app/ui/tbx/src/index.js
+  // docs/design-system/teachbuddy-app/ui/tbx/src/index.js
   var FEEDBACK_REPLIES = {
     \u5EFA\u8BAE: { title: "\u597D\u4E3B\u610F\uFF0C\u6536\u5230\u4E86\u3002", note: "\u6BCF\u4E00\u6761\u5EFA\u8BAE\uFF0C\u6211\u4EEC\u90FD\u4F1A\u8BA4\u771F\u8BFB\u5B8C\u3002" },
     \u9519\u8BEF\u62A5\u544A: { title: "\u8C22\u8C22\u4F60\u5E2E\u6211\u4EEC\u627E\u5230\u5B83\u3002", note: "\u6211\u4EEC\u4F1A\u5C3D\u5FEB\u4FEE\u597D\u8FD9\u4E2A\u95EE\u9898\u3002" },

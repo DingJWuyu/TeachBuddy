@@ -821,7 +821,7 @@
 :is(.wb-shell, .tbx-portal-host) .math-workshop .mw-download > .is-primary { width: 100%; min-height: 40px; }
 
 /* classroom display */
-:is(.wb-shell, .tbx-portal-host) .math-workshop.is-presenting { inset: 0; padding: 14px; border-radius: 0; background: var(--tb-canvas); }
+:is(.wb-shell, .tbx-portal-host) .math-workshop.is-presenting { inset: 0; padding: 0; border-radius: 0; background: var(--tb-canvas); }
 
 /* ---------- the side panel ("编辑") ---------- */
 :is(.wb-shell, .tbx-portal-host) .mw-tool-host { color: var(--tb-ink); font-family: var(--tb-font); }
@@ -1062,7 +1062,7 @@
 
 /* classroom display: the card fills the screen; the canvas gets everything */
 :is(.wb-shell, .tbx-portal-host) .math-workshop:fullscreen { border-radius: 0; padding: 12px; background: var(--tb-canvas); box-shadow: none; }
-:is(.wb-shell, .tbx-portal-host) .math-workshop:fullscreen .mw-layout { margin: 0; }
+:is(.wb-shell, .tbx-portal-host) .math-workshop:is(:fullscreen, .is-presenting) .mw-layout { margin: 0; }
 :is(.wb-shell, .tbx-portal-host) .math-workshop.is-presenting .mw-formula-band { padding-top: 6vh; }
 :is(.wb-shell, .tbx-portal-host) .math-workshop.is-presenting .mw-formula-row { max-width: 1100px; min-height: 96px; box-shadow: none; }
 :is(.wb-shell, .tbx-portal-host) .math-workshop.is-presenting .mw-formula-select .math-formula-preview { justify-content: center; }

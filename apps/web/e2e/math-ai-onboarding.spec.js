@@ -71,7 +71,11 @@ test.beforeEach(async ({ page, world }, info) => {
   await register(page, world, `onboarding-${info.testId.replace(/[^a-z0-9]/gi, '').slice(0, 24)}@example.test`);
   const tutorial = page.getByRole('button', { name: '知道了', exact: true }); if (await tutorial.isVisible()) await tutorial.click();
   await page.getByRole('navigation', { name: '功能模块', exact: true }).getByRole('link', { name: /^数学工坊/ }).click();
-  if (!await page.locator('.math-web-assistant').isVisible()) await page.getByRole('banner').getByRole('button', { name: /^(打开|收起) AI 助理$/ }).click();
+  const auxiliary = page.locator('.wb-aux');
+  if (!await auxiliary.evaluate(element => element.classList.contains('is-open'))) {
+    await page.getByRole('banner').getByRole('button', { name: '打开 AI 助理', exact: true }).click();
+  }
+  await expect(auxiliary).toHaveClass(/is-open/);
   await expect(page.locator('.math-ai-provider .math-ai-connection')).toHaveClass(/is-missing/);
 });
 test.afterEach(async ({ page }, info) => {

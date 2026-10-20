@@ -397,6 +397,33 @@ test.describe('日历视图与编辑流程', () => {
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
   });
 
+  test('小月历拖选整周和整月采用对应视图，其他范围保留实际天数', async ({ page }) => {
+    const select = async (from, to) => {
+      const start = await page.locator(`.cal-mini [data-date="${from}"]`).boundingBox();
+      const end = await page.locator(`.cal-mini [data-date="${to}"]`).boundingBox();
+      await page.mouse.move(start.x + start.width / 2, start.y + start.height / 2);
+      await page.mouse.down();
+      await page.mouse.move(end.x + end.width / 2, end.y + end.height / 2, { steps: 20 });
+      await page.mouse.up();
+    };
+    const view = page.getByRole('button', { name: '日历视图', exact: true });
+    await select('2026-09-21', '2026-09-27');
+    await expect(view).toHaveText('周');
+    await expect(page.locator('.fc-col-header-cell')).toHaveCount(7);
+    await page.reload();
+    await expect(view).toHaveText('周');
+
+    await select('2026-09-01', '2026-09-30');
+    await expect(view).toHaveText('月');
+    await expect(page.locator('.cal-grid-wrap.is-month')).toBeVisible();
+    await page.reload();
+    await expect(view).toHaveText('月');
+
+    await select('2026-09-22', '2026-09-27');
+    await expect(view).toHaveText('6 天');
+    await expect(page.locator('.fc-col-header-cell')).toHaveCount(6);
+  });
+
   test('两分钟短任务从卡片主体拖动而非拉伸', async ({ page }) => {
     await call('POST', E, { ...content('短任务', '14:05'), time: { ...content('').time, startTime: '14:05', durationMinutes: 2 } });
     await page.reload(); await view(page, '日');

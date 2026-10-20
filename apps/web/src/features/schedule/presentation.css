@@ -91,7 +91,7 @@
   color: var(--tb-ink);
 }
 
-.cal-today-button, .cal-view-menu .cal-menu-trigger {
+.cal-toolbar .cal-today-button, .cal-view-menu .cal-menu-trigger {
   height: 36px;
   padding: 0 14px !important;
   border: 0 !important;
@@ -1012,6 +1012,8 @@ to { opacity: 1; transform: none; }
 
 .tbx-sheet .tbx-label {
   display: inline-flex;
+  max-width: 100%;
+  min-width: 0;
   align-items: center;
   gap: 6px;
   height: 28px;
@@ -1026,7 +1028,9 @@ to { opacity: 1; transform: none; }
   transition: background var(--tb-d1), border-color var(--tb-d1), color var(--tb-d1), transform var(--tb-d2) var(--tb-spring);
 }
 
-.tbx-sheet .tbx-label i { width: 8px; height: 8px; border-radius: 50%; background: var(--c); transition: transform 260ms var(--tb-spring); }
+.tbx-sheet .tbx-label i { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--c); transition: transform 260ms var(--tb-spring); }
+
+.tbx-sheet .tbx-label-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .tbx-sheet .tbx-label:hover { border-color: color-mix(in oklab, var(--c, var(--tb-ink)) 40%, var(--tb-line)) !important; }
 

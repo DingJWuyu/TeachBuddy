@@ -4,6 +4,7 @@ import { tx, useLocale, monthDay, weekdayName } from '../../i18n/presentation.js
 import { Icon } from '../../components/icons.jsx';
 import { useFlip } from '../../components/ui/motion.js';
 import { Popover } from '../../components/ui/popover.jsx';
+import { Menu } from '../../components/ui/menu.jsx';
 import { DatePicker, TimePicker } from '../../components/ui/datetime.jsx';
 import { ConfirmButton, ConfirmMenuItem, ConfirmDialog } from '../../components/ui/confirm.jsx';
 import { CalendarOverlay, CalendarDialog, isConfirmKey } from './CalendarControls.jsx';
@@ -27,7 +28,7 @@ export const PRIORITIES = [
 ];
 
 export function G({ name, size = 16, stroke = 1.8 }) {
-  return <Icon name={name === 'chevron' ? 'forward' : name} size={size} strokeWidth={stroke} />;
+  return <Icon name={name} size={size} strokeWidth={stroke} />;
 }
 
 /* A textarea as tall as its text. It is measured again whenever its width
@@ -318,9 +319,9 @@ function Labels({ tags, labels, onChange, onLabels, accountKey }) {
             disabled={!on && tags.length >= 30}
             onClick={() => onChange(on ? tags.filter((x) => x !== l.id) : [...tags, l.id])}
             onDoubleClick={() => setEditing({ ...l, clientId: crypto.randomUUID() })}
-            title={tx('双击编辑标签')}
+            title={`${l.name} · ${tx('双击编辑标签')}`}
           >
-            <i />{l.name}
+            <i /><span className="tbx-label-name">{l.name}</span>
           </button>
         );
       })}
@@ -348,8 +349,6 @@ export function EntryEditor(props) {
   const notesRef = useRef(null);
   const sheetRef = useRef(null);
   const [dialog, setDialog] = useState(null);
-  const [repeatMenu, setRepeatMenu] = useState(false);
-  const repeatRef = useRef(null);
   // the timed range a task had before "All day" was switched on, to give it back
   const beforeAllDay = useRef(null);
 
@@ -366,7 +365,7 @@ export function EntryEditor(props) {
   const today = todayInZone(draft.zone);
   const patchCalendar = (v) => onPatch({ calendar: { ...content.calendar, ...v } });
   const patchTime = (v) => onPatch({ time: { ...time, ...v } });
-  const setRepeat = (repeat, date = time.date) => { onPatch({ repeat, time: { ...time, date } }, true); setRepeatMenu(false); setDialog(null); };
+  const setRepeat = (repeat, date = time.date) => { onPatch({ repeat, time: { ...time, date } }, true); setDialog(null); };
   const anchor = draft.forceSeries ? time?.date : draft.entry?.time?.date ?? time?.date;
   const kind = tx(time ? (draft.id ? '任务' : '新任务') : (draft.id ? '待安排' : '新的待安排'));
   const confirmKey = (e) => {
@@ -540,25 +539,24 @@ export function EntryEditor(props) {
               <span className="tbx-row-label">{tx('全天')}</span>
               <span className="tbx-row-value"><Toggle on={allDay} onChange={toggleAllDay} label={tx('全天')} /></span>
             </div>
-            <div className="tbx-row is-button">
-              <button type="button" ref={repeatRef} className="tbx-row-hit" onClick={() => setRepeatMenu(!repeatMenu)} aria-haspopup="menu" aria-expanded={repeatMenu}>
+            <Menu className="tbx-row is-button" buttonClassName="tbx-row-hit" label={tx('重复')} icon={<>
                 <span className="tbx-row-icon is-gray"><G name="repeat" size={15} /></span>
                 <span className="tbx-row-label">{tx('重复')}</span>
                 <span className="tbx-row-value is-text">{content.repeat ? repeatLabel(content.repeat, anchor) : tx('不重复')}<G name="chevron" size={14} /></span>
-              </button>
-              <Popover anchor={repeatRef} open={repeatMenu} onClose={() => setRepeatMenu(false)} align="end" role="menu" label={tx('重复')}>
+              </>}>
+              {({ close }) => <>
                 {REPEATS.map(([id, label]) => {
                   const on = id === 'none' ? !content.repeat : Boolean(content.repeat) && repeatLabel(content.repeat, anchor) === repeatLabel(presetRepeat(id, time.date), anchor);
                   return (
-                    <button key={id} type="button" role="menuitemradio" aria-checked={on} onClick={() => setRepeat(id === 'none' ? null : presetRepeat(id, time.date))}>
+                    <button key={id} type="button" role="menuitemradio" aria-checked={on} onClick={() => { close(); setRepeat(id === 'none' ? null : presetRepeat(id, time.date)); }}>
                       {tx(label)}{on && <span className="tbx-pop-check"><G name="check" size={14} /></span>}
                     </button>
                   );
                 })}
                 <div className="tbx-popover-sep" />
-                <button type="button" role="menuitem" onClick={() => { setRepeatMenu(false); setDialog('repeat'); }}>{tx('自定义…')}</button>
-              </Popover>
-            </div>
+                <button type="button" role="menuitem" onClick={() => { close(); setDialog('repeat'); }}>{tx('自定义…')}</button>
+              </>}
+            </Menu>
             <div className="tbx-row is-button">
               <button type="button" className="tbx-row-hit" onClick={() => setDialog('reminder')}>
                 <span className="tbx-row-icon is-purple"><G name="bell" size={15} /></span>

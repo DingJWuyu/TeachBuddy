@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { cx } from '../../components/ui/classNames.js';
 import { tx, useLocale, monthDay } from '../../i18n/presentation.js';
 import { Icon as SharedIcon } from '../../components/icons.jsx';
@@ -63,22 +63,42 @@ const KindMark = ({ kind }) => (
   <span className="tbx-filter-mark" style={{ color: KINDS.find((k) => k.id === kind)?.hue }}><Icon name="fileType" size={15} stroke={2} /></span>
 );
 
-/* Thumbnail bytes use the same authenticated client as the original file;
-   each mounted picture releases its browser URL when its identity changes. */
-function useFileUrl(client, id) {
+/* Keep loaded thumbnails while browsing this library. The owning client marks
+   the account boundary; leaving the library releases every browser URL. */
+function useThumbnailCache(client) {
+  const cache = useMemo(() => new Map(), [client]);
+  useEffect(() => () => {
+    for (const entry of cache.values()) if (entry.url) URL.revokeObjectURL(entry.url);
+    cache.clear();
+  }, [cache]);
+  return cache;
+}
+
+function useFileUrl(client, id, cache) {
   const [value, setValue] = useState(null);
   useEffect(() => {
     if (!id) return undefined;
     let live = true;
-    let url;
-    client.request(`/api/workbench/files/${id}/content`, { blob: true }).then((blob) => {
-      if (!live) return;
-      url = URL.createObjectURL(blob);
-      setValue({ id, client, url });
+    let entry = cache.get(id);
+    if (!entry) {
+      entry = {};
+      cache.set(id, entry);
+      entry.promise = client.request(`/api/workbench/files/${id}/content`, { blob: true }).then((blob) => {
+        // A disposed library must not recreate URLs when an old request finishes.
+        if (cache.get(id) !== entry) return '';
+        entry.url = URL.createObjectURL(blob);
+        return entry.url;
+      }).catch((error) => {
+        if (cache.get(id) === entry) cache.delete(id);
+        throw error;
+      });
+    }
+    entry.promise.then((url) => {
+      if (live && url) setValue({ id, cache, url });
     }).catch(() => {});
-    return () => { live = false; if (url) URL.revokeObjectURL(url); };
-  }, [client, id]);
-  return value?.id === id && value?.client === client ? value.url : '';
+    return () => { live = false; };
+  }, [client, id, cache]);
+  return cache.get(id)?.url || (value?.id === id && value?.cache === cache ? value.url : '');
 }
 
 function UploadButton({ onUpload, disabled, big }) {
@@ -98,11 +118,11 @@ function UploadButton({ onUpload, disabled, big }) {
   );
 }
 
-function Thumb({ client, preview, file, title, error }) {
+function Thumb({ client, thumbnailCache, preview, file, title, error }) {
   const ext = extOf(file);
   const kind = kindOf(file) ?? 'file';
   const page = preview?.pages?.[0];
-  const url = useFileUrl(client, page?.imageFileId);
+  const url = useFileUrl(client, page?.imageFileId, thumbnailCache);
   return (
     <span className={cx('tbx-res-thumb', `is-${kind}`, !page && 'is-blank')}>
       {page ? (
@@ -194,6 +214,7 @@ export function Library(props) {
     scene, patchScene, items, allItems, tax, files, previews, fileErrors = {}, client, busy, loading: listLoading,
     searchInfo, onRetrySearch, listRef, breadcrumbs, onOpen, onUpload, onOrganize, onWrite, onError, onSearch,
   } = props;
+  const thumbnailCache = useThumbnailCache(client);
   const gestures = useRef(new Set());
   useEffect(() => () => {
     gestures.current.forEach(cancel => cancel());
@@ -735,7 +756,7 @@ export function Library(props) {
                   onPointerDown={(e) => startDrag(e, r)}
                 >
                   <button type="button" className="tbx-res-open" onClick={open} aria-pressed={select ? on : undefined}>
-                    <Thumb client={client} preview={previews[r.fileId]} file={file} title={r.title} error={fileErrors[r.fileId] ? tx('文件读取失败') : ['limited', 'failed'].includes(previews[r.fileId]?.state) ? tx('无法预览') : ''} />
+                    <Thumb client={client} thumbnailCache={thumbnailCache} preview={previews[r.fileId]} file={file} title={r.title} error={fileErrors[r.fileId] ? tx('文件读取失败') : ['limited', 'failed'].includes(previews[r.fileId]?.state) ? tx('无法预览') : ''} />
                     <span className="tbx-res-copy">
                       <strong title={r.title}>{r.title}</strong>
                       {match ? (

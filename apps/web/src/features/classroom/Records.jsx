@@ -2,6 +2,7 @@ import React, { Fragment } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { tx } from '../../i18n/presentation.js';
 import { cx } from '../../components/ui/classNames.js';
+import { ConfirmButton } from '../../components/ui/confirm.jsx';
 import { Icon, Menu, Empty, Search, Spinner } from './ui.jsx';
 import { today, longDate, monthLabel } from './util.js';
 import { weekdayName } from '../../i18n/presentation.js';
@@ -147,7 +148,7 @@ export function Journal({ ctx, subject, placeholder }) {
                         <p>{item.body}</p>
                         <div className="cr-entry-actions">
                           <button type="button" className="cr-icon-btn is-small" aria-label={tx('编辑')} title={tx('编辑')} onClick={() => setEditing(item.id)}><Icon name="pencil" size={14} stroke={2} /></button>
-                          <button type="button" className="cr-icon-btn is-small" aria-label={tx('归档')} title={tx('归档')} onClick={() => archive(item)}><Icon name="trash" size={14} stroke={2} /></button>
+                          <ConfirmButton label={tx('归档')} confirmLabel={tx('确认归档')} size="sm" onConfirm={() => archive(item)} />
                         </div>
                       </article>
                     )}

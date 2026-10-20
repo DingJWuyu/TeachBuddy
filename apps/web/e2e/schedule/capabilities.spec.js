@@ -460,21 +460,39 @@ test('提醒弹窗退出动效、Escape焦点和快速反向', async ({ page }) 
   const dialog = page.getByRole('dialog', { name: '提醒', exact: true });
   await expect(dialog).toBeVisible();
   await expect.poll(() => dialog.evaluate(node => Number(getComputedStyle(node).opacity))).toBe(1);
-  await page.evaluate(() => {
-    window.calendarExitFrames = [];
-    let count = 0;
-    function frame() {
-      const node = [...document.querySelectorAll('[role=dialog]')].find(x => x.getAttribute('aria-label') === '提醒');
-      if (node) {
-        const owner = node;
-        window.calendarExitFrames.push({ inert: Boolean(node.closest('[inert]')), opacity: Number(getComputedStyle(owner).opacity) });
-      }
-      if (++count < 60) requestAnimationFrame(frame);
-    }
-    requestAnimationFrame(frame);
+  // The fixed business clock also mocks RAF/timers, while CSS uses the native
+  // document timeline. Pause JS timers while inspecting a real CSS
+  // transition midpoint, instead of racing mocked frames against 180ms of CSS.
+  await page.clock.pauseAt(new Date(now));
+  await dialog.evaluate(node => {
+    window.calendarExitFrame = null;
+    window.calendarExitTransition = null;
+    const presence = node.closest('.cal-overlay-presence');
+    const observer = new MutationObserver(() => {
+      if (!presence.inert) return;
+      observer.disconnect();
+      const transition = node.getAnimations().find(animation => animation.transitionProperty === 'opacity');
+      if (!transition) return;
+      const duration = Number(transition.effect.getComputedTiming().duration);
+      transition.pause();
+      transition.currentTime = duration / 2;
+      window.calendarExitTransition = transition;
+      window.calendarExitFrame = { inert: Boolean(node.closest('[inert]')), duration,
+        to: transition.effect.getKeyframes().at(-1).opacity, opacity: Number(getComputedStyle(node).opacity) };
+    });
+    observer.observe(presence, { attributes: true, attributeFilter: ['inert'] });
   });
   await page.keyboard.press('Escape');
-  await expect.poll(() => page.evaluate(() => window.calendarExitFrames.some(x => x.inert && x.opacity > 0 && x.opacity < 1))).toBeTruthy();
+  await expect.poll(() => page.evaluate(() => {
+    const frame = window.calendarExitFrame;
+    return frame?.inert && frame.duration > 0 && frame.to === '0' && frame.opacity > 0 && frame.opacity < 1;
+  })).toBeTruthy();
+  await page.evaluate(async () => {
+    window.calendarExitTransition.play();
+    await window.calendarExitTransition.finished;
+    window.calendarExitTransition = null;
+  });
+  await page.clock.resume();
   await expect(dialog).toHaveCount(0);
   await expect(page.locator('.tbx-sheet').getByRole('button', { name: /^提醒/ })).toBeFocused();
   await action(page, '设置提醒'); await page.keyboard.press('Escape');

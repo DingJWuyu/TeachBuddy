@@ -292,8 +292,8 @@ to {
 }
 .cal-overlay-presence[data-state=closed] .cal-dialog-backdrop {
   background-color: transparent;
-  backdrop-filter: blur(0);
   -webkit-backdrop-filter: blur(0);
+  backdrop-filter: blur(0);
 }
 .cal-overlay-presence .cal-dialog {
   transition: transform 180ms cubic-bezier(.2, .8, .2, 1), opacity 180ms ease;
@@ -356,7 +356,7 @@ to {
   background: color-mix(in oklab, var(--tb-accent) 88%, black) !important;
 }
 :is(.wb-shell, .tbx-portal-host) .cal-dialog-backdrop {
-  backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
 }
 .cal-dialog .cal-icon-button { display: inline-grid; place-items: center; padding: 0; border-radius: 8px; background: transparent; }

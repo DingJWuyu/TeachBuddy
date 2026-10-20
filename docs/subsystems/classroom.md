@@ -6,7 +6,7 @@
 
 [ClassroomPage.jsx](../../apps/web/src/features/classroom/ClassroomPage.jsx) 组织班级工作区，分担到座位、学生、记录、考试、导入、成绩与归档组件；[index.jsx](../../apps/web/src/features/classroom/index.jsx) 在可信账户及身份代次下建立页面会话，卸载时中止旧请求。
 
-[createClassroomApi](../../apps/web/src/features/classroom/api.js) 负责现有 HTTP 契约到页面结构的适配：学号、性格、日期、座位行列、试卷及计分题、工作簿映射和统计结果均在此转换，不改写后端业务字段。真实文件经公共文件接口上传、下载；写入保留账户范围的原逻辑键与请求体，未知结果重试不能创建第二笔操作。页面布局与动效来自设计输入，统计计算与缺分、缺考口径继续由后端裁决。待上传字节保存在账户隔离 IndexedDB，由 [accountDeviceData](../../apps/web/src/accountDeviceData.js) 在删号确认后清理，[deviceRecovery](../../apps/web/src/features/reliability/deviceRecovery.js) 在时间点恢复后冻结到隔离区，不能自动重发。
+[createClassroomApi](../../apps/web/src/features/classroom/api.js) 负责现有 HTTP 契约到页面结构的适配：学号、性格、日期、座位行列、试卷及计分题、工作簿映射和统计结果均在此转换，不改写后端业务字段。列表在适配层按原型呈现顺序整理：班级按创建时间、学生按学号及姓名、标签按名称、考试按日期倒序；不沿用 HTTP 的最近更新顺序。真实文件经公共文件接口上传、下载；写入保留账户范围的原逻辑键与请求体，未知结果重试不能创建第二笔操作。页面布局与动效来自设计输入，统计计算与缺分、缺考口径继续由后端裁决。待上传字节保存在账户隔离 IndexedDB，由 [accountDeviceData](../../apps/web/src/accountDeviceData.js) 在删号确认后清理，[deviceRecovery](../../apps/web/src/features/reliability/deviceRecovery.js) 在时间点恢复后冻结到隔离区，不能自动重发。
 
 成绩确认允许无原卷、缺逐题分数及无总分列，姓名与学号至少对应一列；缺总分给出可校对警告，不自动求和。考试编辑器仍至少设置一道计分题。归档学生和记录直接使用账户内 `deleted=deleted` 查询，包含归档父对象下的条目，不再逐活动主体聚合。归档页读取必要的学生父关系，提前说明恢复上级的要求；服务端 [roster.deletion](../../apps/api/src/modules/classroom/roster.js) 同样要求恢复学生及记录时所属班级、学生活动，不自动恢复上级。
 

@@ -26,7 +26,8 @@ export function Menu({ label, icon = 'more', children, align = 'end', className,
     return () => cancelAnimationFrame(frame);
   }, [open]);
   const keydown = (event) => {
-    if (event.key === 'Tab') { close(false); return; }
+    // Continue native tab order from the trigger, not the portalled panel.
+    if (event.key === 'Tab') { close(); return; }
     // Native editing keys belong to embedded text fields.
     if (event.target.matches('input, textarea, select')) return;
     if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;

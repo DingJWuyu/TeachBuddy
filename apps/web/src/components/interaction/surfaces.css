@@ -54,6 +54,7 @@
 .wb-module-disclosure-trigger {
   display: flex;
   align-items: center;
+  justify-content: flex-start;
   gap: 6px;
   width: 100%;
   padding: 8px 0;
@@ -63,14 +64,14 @@
   text-align: left;
   cursor: pointer;
 }
-.wb-module-disclosure-trigger :is(.wb-icon, .tb-icon) { transition: transform 180ms ease; }
-.wb-module-disclosure-trigger[aria-expanded='true'] .wb-icon { transform: rotate(90deg); }
+.wb-module-disclosure-chevron { transition: transform 180ms ease; }
+.wb-module-disclosure-trigger[aria-expanded='true'] .wb-module-disclosure-chevron { transform: rotate(90deg); }
 .wb-module-dialog .wb-dialog p { color: var(--tb-muted); line-height: 1.8; }
 
 @media (prefers-reduced-motion: reduce) {
   .wb-module details::details-content,
   .wb-module-presence *,
   .wb-module-disclosure-grid,
-  .wb-module-disclosure-trigger :is(.wb-icon, .tb-icon) { transition: none !important; animation: none !important; }
+  .wb-module-disclosure-chevron { transition: none !important; animation: none !important; }
 }
 

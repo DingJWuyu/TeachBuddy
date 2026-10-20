@@ -393,12 +393,43 @@ test("文件夹树、框选、拖动、详情菜单和助理覆盖在宽窄屏�
 test("预览失败后可以重试，并逐页核对补充 PDF，原文件仍可下载", async ({
   page,
 }, info) => {
+  let pendingPreview;
+  let failedJobSeen = false;
+  await page.route('**/api/workbench/files/*/preview', async route => {
+    if (route.request().method() === 'POST') {
+      const response = await route.fetch();
+      const job = await response.json();
+      pendingPreview = (await api.request('GET', `/api/workbench/files/${job.target.id}/preview`)).json;
+      expect(pendingPreview.state).toBe('pending');
+      expect(pendingPreview.jobId).toBe(job.id);
+      // Keep the actual earlier preview snapshot in flight until conversion
+      // has really failed and committed its failed preview.
+      await expect.poll(async () => (await api.request('GET', `/api/workbench/jobs/${job.id}`)).json.state)
+        .toBe('failed');
+      await route.fulfill({ response });
+      return;
+    }
+    if (pendingPreview && !failedJobSeen) {
+      await route.fulfill({ json: pendingPreview });
+      return;
+    }
+    await route.continue();
+  });
+  await page.route('**/api/workbench/jobs/*', async route => {
+    const response = await route.fetch();
+    expect((await response.json()).state).toBe('failed');
+    failedJobSeen = true;
+    await route.fulfill({ response });
+  });
   const bytes = Buffer.from("%PDF-1.4\ntruncated");
   await page.getByLabel("上传资料", { exact: true }).setInputFiles({
     name: "待核对的课件.pdf",
     mimeType: "application/pdf",
     buffer: bytes,
   });
+  await expect(page.locator('.tbx-res-thumb-error')).toHaveText('无法预览');
+  expect(failedJobSeen).toBe(true);
+  await page.unrouteAll({ behavior: 'wait' });
   await openUploaded(page);
   await expect(
     page.getByRole("heading", { name: "暂时无法预览" }),
@@ -2424,4 +2455,99 @@ test.describe("真实 OCR 运行链", () => {
       contentType: "application/json",
     });
   });
+});
+
+test('已加载缩略图在视图切换和筛选返回后立即复用', async ({ page }) => {
+  await upload(page);
+  await page.getByRole('button', { name: '返回资源库', exact: true }).click();
+  const thumbnail = page.locator('.tbx-res-thumb img');
+  await expect.poll(() => thumbnail.evaluate(image => image.naturalWidth)).toBeGreaterThan(0);
+  const original = await thumbnail.getAttribute('src');
+  const requests = [];
+  page.on('request', request => {
+    if (/\/api\/workbench\/files\/[^/]+\/content$/.test(new URL(request.url()).pathname)) requests.push(request.url());
+  });
+  for (const name of ['列表视图', '缩略图视图']) {
+    await page.getByRole('button', { name, exact: true }).click();
+    await expect(thumbnail).toHaveAttribute('src', original);
+    expect(await thumbnail.evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
+  }
+  await page.getByLabel('搜索资料', { exact: true }).fill('没有匹配的资料');
+  await expect(page.locator('.tbx-res-card')).toHaveCount(0);
+  await page.getByRole('button', { name: '清除搜索', exact: true }).click();
+  await expect(thumbnail).toHaveAttribute('src', original);
+  expect(await thumbnail.evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
+  expect(requests).toEqual([]);
+});
+
+test('上传后的预览完成会自动更新列表缩略图', async ({ page }) => {
+  let pendingPreview;
+  let activeJob;
+  let retriedActiveJob = false;
+  let phase = 'upload';
+  let failedJobRead = false;
+  let failedDetailRead = false;
+  let committedRead = false;
+  await page.route('**/api/workbench/files/*/preview', async route => {
+    if (route.request().method() === 'POST') {
+      const response = await route.fetch();
+      const job = await response.json();
+      // Capture the real pending response, then hold delivery until the real
+      // conversion finishes. Its earlier snapshot can arrive beside success.
+      pendingPreview = (await api.request('GET', `/api/workbench/files/${job.target.id}/preview`)).json;
+      expect(pendingPreview.state).toBe('pending');
+      expect(pendingPreview.jobId).toBe(job.id);
+      activeJob = job;
+      expect(activeJob.state).toMatch(/^(queued|running)$/);
+      await expect.poll(async () => (await api.request('GET', `/api/workbench/jobs/${job.id}`)).json.state)
+        .toMatch(/^(succeeded|partial)$/);
+      await route.fulfill({ response });
+      return;
+    }
+    if (phase === 'failed') {
+      await route.abort('connectionreset');
+      failedDetailRead = true;
+      return;
+    }
+    if (pendingPreview && !committedRead) {
+      await route.fulfill({ json: pendingPreview });
+      return;
+    }
+    await route.continue();
+  });
+  await page.route('**/api/workbench/jobs/*', async route => {
+    if (!failedJobRead) {
+      failedJobRead = true;
+      phase = 'failed';
+      await route.abort('connectionreset');
+      return;
+    }
+    if (!retriedActiveJob) {
+      // An explicit read must restart polling even when it still sees the
+      // same pending preview and the accepted task has not finished yet.
+      retriedActiveJob = true;
+      await route.fulfill({ json: activeJob });
+      return;
+    }
+    const response = await route.fetch();
+    expect((await response.json()).state).toMatch(/^(succeeded|partial)$/);
+    committedRead = true;
+    await route.fulfill({ response });
+  });
+  await page.getByLabel('上传资料', { exact: true }).setInputFiles(pdf);
+  await expect(page.locator('.res-status')).toContainText('文件已保存');
+  await expect(page.locator('.res-detail')).toHaveCount(0);
+  await expect(page.locator('.tbx-res-thumb-error')).toHaveText('文件读取失败');
+  await openUploaded(page, 'c22.pdf');
+  await expect(page.getByRole('button', { name: '重新读取文件', exact: true })).toBeVisible();
+  await expect.poll(() => failedDetailRead).toBe(true);
+  phase = 'retry';
+  await page.getByRole('button', { name: '重新读取文件', exact: true }).click();
+  await page.getByRole('button', { name: '返回资源库', exact: true }).click();
+  await expect.poll(() => retriedActiveJob).toBe(true);
+  const thumbnail = page.locator('.tbx-res-thumb img');
+  await expect(thumbnail).toBeVisible();
+  await expect.poll(() => thumbnail.evaluate(image => image.naturalWidth)).toBeGreaterThan(100);
+  await expect(page.locator('.tbx-res-thumb-error')).toHaveCount(0);
+  expect(committedRead).toBe(true);
 });

@@ -37,13 +37,13 @@
   background-size: 28px 28px;
 }
 
-.cal-page button, .cal-menu button {
+.cal-page :where(button), .cal-menu :where(button) {
   font: inherit;
   color: inherit;
   cursor: pointer;
 }
 
-.cal-page :is(input, textarea, select) {
+.cal-page :where(input, textarea, select) {
   font: inherit;
   color: inherit;
   min-width: 0;

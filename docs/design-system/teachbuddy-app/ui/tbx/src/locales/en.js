@@ -5,6 +5,8 @@
  * Keep lines short: English runs ~1.6× the width of Chinese in the same spot.
  */
 export const EN = {
+  '请先恢复所属班级': 'Restore the class first',
+  '请先恢复所属学生': 'Restore the student first',
   /* ---------- date & time pickers ---------- */
   '选择年月': 'Choose month and year',
   '选择年份': 'Choose year',

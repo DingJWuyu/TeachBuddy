@@ -365,7 +365,8 @@ test('归档和彻底删除的响应丢失后按原请求确认，刷新返回�
     expect(keys.length).toBeGreaterThanOrEqual(2);
     expect(new Set(keys).size).toBe(1);
     await page.reload();
-    await expect(page.getByRole('button', { name: '新建作品', exact: true })).toBeVisible();
+    await expect(page.getByRole('main').getByRole('heading', { name: action === 'purge' ? '已归档' : '全部作品', exact: true })).toBeVisible();
+    await expect(page.getByLabel('作品名称', { exact: true })).toBeHidden();
     if (action === 'deletion') {
       await archived(page);
       await workRow(page, '请求确认作品').locator('>button').click();

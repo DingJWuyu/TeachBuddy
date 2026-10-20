@@ -23,7 +23,7 @@
 .wb-shell :is(h1, h2, h3, h4, h5, p) {
   margin: 0;
 }
-.wb-shell :is(input, textarea, select, button) {
+:where(.wb-shell) :is(input, textarea, select, button) {
   font: inherit;
   color: inherit;
 }

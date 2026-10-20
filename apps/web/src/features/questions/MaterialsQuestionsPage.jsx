@@ -19,6 +19,10 @@ import { QuestionIcon, QuestionDialog, QuestionDocumentEditor } from './Question
 import { QuestionFinder, QuestionWelcome, TYPE_HUES } from './QuestionFinder.jsx';
 import './questions-materials.css';
 const active = new Set(['queued', 'running', 'cancelling']);
+const lifecycleTitles = {
+  import: { archive: '归档材料？', restore: '恢复材料？', purge: '彻底删除材料？' },
+  question: { archive: '归档题目？', restore: '恢复题目？', purge: '彻底删除题目？' },
+};
 const stateNames = {
   queued: "原稿已保存，等待整理",
   running: "正在整理",
@@ -249,7 +253,7 @@ export default function MaterialsQuestionsPage({
                   disabled={busy || active.has(job?.state)}
                   role="menuitem" onClick={() => { requestLifecycle(value.deletedAt ? 'restore' : 'archive'); close(); }}
                 >
-                  {value.deletedAt ? t("恢复材料") : t("归档材料")}
+                  {value.deletedAt ? t("恢复材料") : t("归档材料", { context: 'action' })}
                 </button>
                 {value.deletedAt && <button className="is-danger" role="menuitem" disabled={busy || active.has(job?.state)} onClick={() => { requestLifecycle('purge'); close(); }}>{t("彻底删除材料")}</button>}
                 </>}</Popover>
@@ -489,7 +493,7 @@ export default function MaterialsQuestionsPage({
               </>
             )}
             {copies.map((q) => (
-              <button key={q.id} onClick={() => open("question", q.id)}> {t("改编题：")}{q.title || t("未命名")}
+              <button key={q.id} onClick={() => open("question", q.id)}> {t("改编题：{{title}}", { title: q.title || t("未命名") })}
               </button>
             ))}
             {value.id && (
@@ -617,7 +621,7 @@ export default function MaterialsQuestionsPage({
       <ModulePresence present={confirmDiscard}>{confirmDiscard && <ConfirmDialog title={t("放弃未保存的修改？")} message={t("此设备上的这份草稿将被删除，已经保存的题目不受影响。")} confirmLabel={t("放弃修改")} onCancel={() => cancelDiscard()} onConfirm={discardDraft} />}</ModulePresence>
       <ModulePresence present={Boolean(copyCandidate)}>{copyCandidate && <ConfirmDialog title={t("替换未完成的题目？")} message={t("你还有一份未完成的新题草稿。开始这次改编会替换它，已保存的题目不受影响。")} confirmLabel={t("替换并开始改编")} onCancel={() => cancelCopy()} onConfirm={replaceWithCopy} />}</ModulePresence>
       <ModulePresence present={Boolean(lifecycleAction)}>{lifecycleAction && <LifecycleConfirmDialog
-        title={`${lifecycleAction.mode === 'purge' ? t("彻底删除") : lifecycleAction.mode === 'restore' ? t("恢复") : t("归档")}${lifecycleAction.kind === 'import' ? t("材料") : t("题目")}？`}
+        title={t(lifecycleTitles[lifecycleAction.kind === 'import' ? 'import' : 'question'][lifecycleAction.mode])}
         message={lifecycleAction.mode === 'purge'
           ? t("“{{value}}”及其本地草稿将彻底删除，无法恢复。{{detail}}", { value: lifecycleAction.item.title || t("未命名题目"), detail: lifecycleAction.kind === 'import' ? t("已入库的题目会保留。") : t("已有改编题会保留。") })
           : lifecycleAction.mode === 'restore' ? t("恢复后，会重新出现在题库中。") : tx("将移出当前列表。之后可以在左侧的“已归档”里恢复或彻底删除。")}

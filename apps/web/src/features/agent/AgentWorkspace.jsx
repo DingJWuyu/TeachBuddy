@@ -1,5 +1,7 @@
 import { Fragment, useEffect, useLayoutEffect, useRef, useState, useMemo } from 'react';
 import { ConfirmMenuItem } from '../../components/ui/confirm.jsx';
+import { Popover } from '../../components/ui/popover.jsx';
+import { Menu } from '../../components/ui/menu.jsx';
 import { Icon } from '../../components/icons.jsx';
 import { cx } from '../../components/ui/classNames.js';
 import { tx, useLocale, isEnglish, monthDay } from '../../i18n/presentation.js';
@@ -8,7 +10,7 @@ import { isDeletedAccount, readLocal } from '../../platform/device/storage.js';
 import { navigate } from '../workbench/routes.js';
 import { usePresentationAgent as useAgent } from './AgentPresentation.jsx';
 import { Prose, Inline } from './Prose.jsx';
-import { ToolCard } from './ToolCard.jsx';
+import { ToolCard, toolLabels } from './ToolCard.jsx';
 import { useLegacyCardAction } from './useLegacyCardAction.js';
 import { useAuth } from '../auth/index.jsx';
 import { seedSampleWeek } from '../workbench/demo/seed.js';
@@ -137,15 +139,16 @@ function useLessons(revision, agent) {
 
 /* Display titles for references in the draft (the draft itself stores ids). */
 function useRefTitles(refs, agent) {
+  const locale = useLocale();
   const [titles, setTitles] = useState({});
   useEffect(() => {
     let live = true; setTitles({});
     for (const r of refs) {
       const where = r.kind === 'question' ? '/api/modules/questions/v2/items/' : r.kind === 'entry' ? '/api/modules/schedule/entries/' : '/api/modules/resources/items/';
-      agent.read(where + encodeURIComponent(r.id)).then(o => { if (live) setTitles(previous => ({ ...previous, [`${r.kind}:${r.id}`]: { title: o.title || KIND[r.kind]?.label } })); }).catch(() => {});
+      agent.read(where + encodeURIComponent(r.id)).then(o => { if (live) setTitles(previous => ({ ...previous, [`${r.kind}:${r.id}`]: { title: o.title || KIND[r.kind]?.label, note: r.kind === 'entry' && o.time?.date ? whenLabel({ date: r.originDate ?? o.time.date, start: o.time.startTime }) : undefined } })); }).catch(() => {});
     }
     return () => { live = false; };
-  }, [agent.accountKey, agent.isDemo, refs.map(r => `${r.kind}:${r.id}:${r.version}`).join(',')]);
+  }, [agent.accountKey, agent.isDemo, locale, refs.map(r => `${r.kind}:${r.id}:${r.version}:${r.originDate ?? ''}`).join(',')]);
   return titles;
 }
 
@@ -192,31 +195,31 @@ function useCurrentContext(enabled, accountKey) {
 /* ---------- conversations: rename, pin, delete ---------- */
 
 
-function ThreadMenu({ item, agent, onRename, onClose }) {
-  const ref = useRef(null);
-  useOutside(true, ref, onClose);
+function ThreadMenu({ item, agent, onRename }) {
   return (
-    <div className="tbx-menu is-thread" ref={ref} role="menu" onClick={(e) => e.stopPropagation()}>
-      <button role="menuitem" onClick={async () => { onClose(); try { await agent.patchThread(item.id, { pinned: !item.pinned }); } catch { /* Provider retains the failed action. */ } }}>
-        <Glyph name="pin" size={16} />{item.pinned ? tx('取消置顶') : tx('置顶')}
-      </button>
-      <button role="menuitem" onClick={() => { onClose(); onRename(); }}><Glyph name="pencil" size={16} />{tx('重命名')}</button>
-      <ConfirmMenuItem
-        icon={<Glyph name="trash" size={16} />}
-        label={tx('删除')}
-        onConfirm={async () => {
-          onClose();
-          try {
-            await agent.deleteThread(item.id);
-            await agent.retry();
-            if (agent.isDemo && agent.id === item.id) {
-              const next = agent.list.find((x) => x.id !== item.id);
-              if (next) agent.select(next.id); else void agent.create();
-            }
-          } catch { /* a running thread can't be deleted */ }
-        }}
-      />
-    </div>
+    <Menu label={tx('对话选项')} icon={<Glyph name="more" size={15} />} className="tbx-thread-options" buttonClassName="tbx-thread-more" menuClassName="tbx-menu tbx-agent-thread-popover">
+      {({ close }) => <Fragment>
+        <button role="menuitem" onClick={async () => { close(); try { await agent.patchThread(item.id, { pinned: !item.pinned }); } catch { /* Provider retains the failed action. */ } }}>
+          <Glyph name="pin" size={16} />{item.pinned ? tx('取消置顶') : tx('置顶')}
+        </button>
+        <button role="menuitem" onClick={() => { close(); onRename(); }}><Glyph name="pencil" size={16} />{tx('重命名')}</button>
+        <ConfirmMenuItem
+          icon={<Glyph name="trash" size={16} />}
+          label={tx('删除')}
+          onConfirm={async () => {
+            close();
+            try {
+              await agent.deleteThread(item.id);
+              await agent.retry();
+              if (agent.isDemo && agent.id === item.id) {
+                const next = agent.list.find((x) => x.id !== item.id);
+                if (next) agent.select(next.id); else void agent.create();
+              }
+            } catch { /* a running thread can't be deleted */ }
+          }}
+        />
+      </Fragment>}
+    </Menu>
   );
 }
 
@@ -225,7 +228,6 @@ export function ThreadList({ onPick, listRef }) {
   useLocale();
   const agent = useAgent();
   const [query, setQuery] = useState('');
-  const [menu, setMenu] = useState(null);
   const [renaming, setRenaming] = useState(null);
   const [draftTitle, setDraftTitle] = useState('');
   const running = agent.configuration?.activeTurn?.conversationId;
@@ -273,8 +275,8 @@ export function ThreadList({ onPick, listRef }) {
                 role="button"
                 tabIndex={0}
                 style={{ '--i': i }}
-                className={cx('tbx-thread', item.id === agent.id && 'is-active', menu?.id === item.id && 'is-menu')}
-                onClick={() => { if (renaming !== item.id) { agent.select(item.id); onPick?.(); } }}
+                className={cx('tbx-thread', item.id === agent.id && 'is-active')}
+                onClick={(event) => { if (event.target.closest('.tbx-thread-options, .tbx-agent-thread-popover')) return; if (renaming !== item.id) { agent.select(item.id); onPick?.(); } }}
                 onKeyDown={(e) => { if (e.key === 'Enter' && e.target === e.currentTarget && renaming !== item.id) { agent.select(item.id); onPick?.(); } }}
                 aria-current={item.id === agent.id ? 'true' : undefined}
               >
@@ -296,14 +298,7 @@ export function ThreadList({ onPick, listRef }) {
                     : <span className="tbx-thread-time">{item.pinned && <Glyph name="pin" size={12} />}{relativeTime(item.updatedAt)}</span>}
                 </span>
                 <span className="tbx-thread-preview">{running === item.id ? tx('正在回答…') : item.preview || tx('还没有回答')}</span>
-                <button
-                  className="tbx-thread-more"
-                  aria-label={tx('对话选项')}
-                  onClick={(e) => { e.stopPropagation(); setMenu(menu?.id === item.id ? null : { id: item.id }); }}
-                ><Glyph name="more" size={15} /></button>
-                {menu?.id === item.id && (
-                  <ThreadMenu item={item} agent={agent} onClose={() => setMenu(null)} onRename={() => { setDraftTitle(item.title); setRenaming(item.id); }} />
-                )}
+                <ThreadMenu item={item} agent={agent} onRename={() => { setDraftTitle(item.title); setRenaming(item.id); }} />
               </div>
             ))}
           </section>
@@ -333,7 +328,7 @@ function Shimmer({ children }) {
   return <span className="tbx-shine" data-text={typeof children === 'string' ? children : undefined}>{children}</span>;
 }
 function WorkRow({ call }) {
-  const tool = TOOL[call.name] ?? ({ wb_list_questions: { glyph: 'search', verb: '在题库里找', live: '正在题库里找' }, wb_get_question: { glyph: 'book', verb: '读了题目', live: '正在读题目' }, wb_propose_teaching_card: { glyph: 'layers', verb: '正在整理' } })[call.name] ?? { glyph: 'spark', verb: call.name };
+  const tool = TOOL[call.name] ?? ({ wb_list_questions: { glyph: 'search', verb: '在题库里找', live: '正在题库里找' }, wb_get_question: { glyph: 'book', verb: '读了题目', live: '正在读题目' }, wb_propose_teaching_card: { glyph: 'layers', verb: '正在整理' } })[call.name] ?? { glyph: 'spark', verb: toolLabels[call.name] ?? tx('操作详情') };
   const live = call.state === 'executing';
   const failed = call.state === 'failed';
   const verb = tx(live ? tool.live ?? tool.verb : failed ? '没有读到' : tool.verb);
@@ -576,7 +571,12 @@ function CopyButton({ text }) {
   );
 }
 
-function AssistantMessage({ m, agent, last, onRegenerate, model }) {
+function ProposalCards({ calls, agent }) {
+  if (!calls.length) return null;
+  return <div className="tbx-cards">{calls.map(call => <ResultCard key={call.toolCallId} card={call.result.card} proposalId={call.result.proposalId} agent={agent} />)}</div>;
+}
+
+function AssistantMessage({ m, agent, last, onRegenerate, model, proposals = [] }) {
   const streaming = m.state === 'streaming' || (m.state === 'partial' && agent.snapshot?.turns.some(t => t.id === m.turnId && t.state === 'running'));
   return (
     <article className={cx('tbx-msg is-assistant', streaming && 'is-streaming', last && 'is-last')}>
@@ -587,6 +587,7 @@ function AssistantMessage({ m, agent, last, onRegenerate, model }) {
           {m.cards.map((c, i) => <ResultCard key={i} card={c} cardKey={`${m.id}:${i}`} agent={agent} />)}
         </div>
       )}
+      <ProposalCards calls={proposals} agent={agent} />
       {m.state === 'partial' && <p className="tbx-msg-note">{tx('回答被停止了，只保留了前面的部分。')}</p>}
       {!streaming && m.text && (
         <div className="tbx-meta">
@@ -636,11 +637,10 @@ function ModelPicker({ agent }) {
 }
 
 /* The @ menu: questions, upcoming lessons and resources, searchable. */
-function MentionMenu({ query, onPick, onClose, agent }) {
+function MentionMenu({ query, onPick, onClose, agent, anchor }) {
   const [rows, setRows] = useState(null);
   const [active, setActive] = useState(0);
   const ref = useRef(null);
-  useOutside(true, ref, onClose);
   useEffect(() => {
     let live = true;
     const q = query.trim();
@@ -672,7 +672,8 @@ function MentionMenu({ query, onPick, onClose, agent }) {
   }, [rows, active]);
   let lastKind = null;
   return (
-    <div className="tbx-mention" ref={ref} role="listbox" aria-label={tx('引用工作台里的内容')}>
+    <Popover anchor={anchor} open onClose={onClose} className="tbx-agent-popover" role="listbox" label={tx('引用工作台里的内容')} offset={10}>
+    <div className="tbx-mention" ref={ref}>
       {rows === null && <p className="tbx-mention-empty">{tx('正在找…')}</p>}
       {rows?.length === 0 && <p className="tbx-mention-empty">{query ? tx('没有找到“{{query}}”。', { query }) : tx('没有找到可以引用的内容。')}</p>}
       {rows?.map((r, i) => {
@@ -690,18 +691,31 @@ function MentionMenu({ query, onPick, onClose, agent }) {
         );
       })}
     </div>
+    </Popover>
   );
 }
 
 function Composer({ agent, running, ready, variant, autoFocus, focusKey, context }) {
   const { draft } = agent;
   const area = useRef(null);
+  const mentionAnchor = useRef(null);
   const [mention, setMention] = useState(null);
   useLayoutEffect(() => {
     const el = area.current;
-    if (!el) return;
-    el.style.height = 'auto';
-    el.style.height = `${Math.min(el.scrollHeight, variant === 'panel' ? 180 : 240)}px`;
+    if (!el) return undefined;
+    const fit = () => {
+      el.style.height = 'auto';
+      el.style.height = `${Math.min(el.scrollHeight, variant === 'panel' ? 180 : 240)}px`;
+    };
+    let width = el.clientWidth;
+    fit();
+    const observer = new ResizeObserver(() => {
+      if (el.clientWidth === width) return;
+      width = el.clientWidth;
+      fit();
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
   }, [draft?.text, variant]);
   useEffect(() => { if (autoFocus || focusKey) area.current?.focus(); }, [autoFocus, focusKey, Boolean(draft)]);
   const refs = draft?.references ?? [];
@@ -725,7 +739,7 @@ function Composer({ agent, running, ready, variant, autoFocus, focusKey, context
   return (
     <div className={cx('tbx-composer-shell', (refs.length || suggest) && 'has-drawer')}>
       <form className={cx('tbx-composer', running && 'is-running')} onSubmit={(e) => { e.preventDefault(); if (canSend && !running) void agent.send(); }}>
-        {mention && <MentionMenu agent={agent} query={mention.query} onPick={pick} onClose={() => setMention(null)} />}
+        {mention && <MentionMenu agent={agent} anchor={mentionAnchor} query={mention.query} onPick={pick} onClose={() => setMention(null)} />}
         <textarea
           ref={area}
           className="tbx-input"
@@ -750,7 +764,7 @@ function Composer({ agent, running, ready, variant, autoFocus, focusKey, context
         />
         <div className="tbx-composer-bar">
           <ModelPicker agent={agent} />
-          <button type="button" className="tbx-tool-btn" aria-label={tx('引用工作台里的内容')} title={tx('引用题目、日程或资料')} onClick={() => setMention(mention ? null : { query: '' })}>
+          <button ref={mentionAnchor} type="button" className="tbx-tool-btn" aria-label={tx('引用工作台里的内容')} title={tx('引用题目、日程或资料')} onClick={() => setMention(mention ? null : { query: '' })}>
             <Glyph name="at" size={17} />
           </button>
           {running ? (
@@ -1091,21 +1105,22 @@ export function AgentWorkspace({ variant = 'panel' }) {
               {snapshot?.turns.map((turn) => {
                 const assistant = snapshot.messages.filter((m) => m.turnId === turn.id && m.role === 'assistant');
                 const calls = snapshot.toolCalls.filter((c) => c.turnId === turn.id).sort((a, b) => a.ordinal - b.ordinal);
+                const visibleAssistant = assistant.filter((m) => m.text || m.state !== 'streaming');
+                const proposals = agent.isDemo ? [] : calls.filter(call => call.name === 'wb_propose_teaching_card' && call.state === 'read' && call.result?.proposalId);
                 const answered = assistant.some((m) => m.text);
                 const working = turn.state === 'running' && !answered && !calls.some((c) => c.state === 'executing');
                 return (
                   <section className="tbx-turn" key={turn.id}>
                     {snapshot.messages.filter((m) => m.turnId === turn.id && m.role === 'user').map((m) => <UserMessage key={m.id} m={m} />)}
                     <WorkLog calls={calls.filter(call => call.name !== 'wb_propose_teaching_card')} turn={turn} answered={answered} />
-                    {!agent.isDemo && calls.map(call => call.name === 'wb_propose_teaching_card' && call.state === 'read' && call.result?.proposalId
-                      ? <div className="tbx-cards" key={call.toolCallId}><ResultCard card={call.result.card} proposalId={call.result.proposalId} agent={agent} /></div>
-                      : <ToolCard key={call.toolCallId} call={call} calls={snapshot.toolCalls} reconcile={agent.reconcile} />)}
+                    {!agent.isDemo && calls.filter(call => !(call.name === 'wb_propose_teaching_card' && call.state === 'read' && call.result?.proposalId)).map(call => <ToolCard key={call.toolCallId} call={call} calls={snapshot.toolCalls} reconcile={agent.reconcile} />)}
                     {working && (
                       <div className="tbx-working"><Shimmer>{calls.length ? tx('正在整理') : tx('正在思考')}</Shimmer><span className="tbx-working-time">· <Elapsed from={turn.createdAt} /></span></div>
                     )}
-                    {assistant.filter((m) => m.text || m.state !== 'streaming').map((m) => (
-                      <AssistantMessage key={m.id} m={m} agent={agent} model={modelName(turn.modelId)} last={turn === lastTurn && !running} onRegenerate={agent.isDemo ? undefined : () => regenerate(turn)} />
+                    {visibleAssistant.map((m) => (
+                      <AssistantMessage key={m.id} m={m} agent={agent} proposals={m === visibleAssistant.at(-1) ? proposals : []} model={modelName(turn.modelId)} last={turn === lastTurn && !running} onRegenerate={agent.isDemo ? undefined : () => regenerate(turn)} />
                     ))}
+                    {!visibleAssistant.length && <ProposalCards calls={proposals} agent={agent} />}
                     {!agent.isDemo && turn.usage && <details className="tbx-turn-usage"><summary>{tx('用量')}</summary><p>{turn.usage.totalTokens ?? tx('未知')} tokens · {tx(turn.usage.complete ? '用量已报告' : '用量不完整')} · {tx('实际费用未知')}</p></details>}
                     {turn.state !== 'running' && turn.state !== 'completed' && (
                       <Divider tone="muted">{tx(({ 'server-restart': '上次生成已中断', 'user-stop': '已停止', 'provider-error': '模型连接失败', 'tool-unconfirmed': '请确认写入结果', 'provider-quota': '模型调用被拒绝', 'model-unavailable': 'AI 暂不可用', 'context-limit': '这段对话过长，请新建对话并重新选择引用' })[turn.reason] ?? '操作未完成，请查看结果')}</Divider>
@@ -1151,7 +1166,7 @@ export function Home({ returnPath }) {
   useEffect(() => {
     if (!threadsOpen) return undefined;
     const closeOutside = (event) => {
-      if (!threadsRef.current?.contains(event.target) && !threadsToggleRef.current?.contains(event.target)) setThreadsOpen(false);
+      if (!threadsRef.current?.contains(event.target) && !threadsToggleRef.current?.contains(event.target) && !event.target.closest('.tbx-agent-thread-popover')) setThreadsOpen(false);
     };
     const closeOnEscape = (event) => {
       if (event.key !== 'Escape' || threadsRef.current?.querySelector('[role="menu"], .tbx-thread-rename')) return;

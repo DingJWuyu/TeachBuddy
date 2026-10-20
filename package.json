@@ -12,7 +12,7 @@
   "scripts": {
     "predev": "node scripts/math-support/prepare-assets.mjs",
     "dev": "node --env-file-if-exists=.env --watch apps/api/src/server.js --dev",
-    "prototype": "vite docs/design-system/teachbuddy-app --host 127.0.0.1 --port 4174 --strictPort",
+    "prototype": "python3 -m http.server 4174 --bind 127.0.0.1 --directory docs/design-system/teachbuddy-app",
     "dev:web": "npm --workspace @teachbuddy/web run dev",
     "dev:api": "npm --workspace @teachbuddy/api run dev",
     "test:api": "npm --workspace @teachbuddy/api run test",

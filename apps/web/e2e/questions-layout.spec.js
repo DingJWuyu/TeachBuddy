@@ -118,6 +118,9 @@ for (const language of ['zh-CN', 'en']) {
         expect(overlap(geometry.stateText, geometry.save)).toBeLessThan(1);
         expect(overlap(geometry.stateText, geometry.back)).toBeLessThan(1);
         expect(overlap(geometry.back, geometry.save)).toBeLessThan(1);
+        if (Math.abs(geometry.state.y - geometry.save.y) < geometry.save.height) {
+          expect(geometry.state.right).toBeLessThanOrEqual(geometry.save.x + 1);
+        }
         expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
       }
       await page.locator('.q-question-heading > .primary').click();
