@@ -33,7 +33,7 @@ const result = await resources.port.operations.restoreResourceFile({
 
 Web 的 [useResourceOperations](../../apps/web/src/features/resources/resourceOperations.js) 拥有资源持久操作的完整流程，包括请求快照、上传/重复选择、原键核实、版本冲突、归档/恢复/彻底删除及 UI 状态反馈。设备上的原请求记录由 [pendingRequests](../../apps/web/src/features/resources/pendingRequests.js) 保存并提供本账户清理端口；根 [accountDeviceData](../../apps/web/src/accountDeviceData.js) 仅在账户删除已确认后组合调用这些清理能力，不承担资源业务操作或解释请求内容。
 
-Web 的 PDF.js worker、CMap 和标准字体随本机构建提供，不依赖外部 CDN。
+Web 的 PDF.js worker、CMap 和标准字体随本机构建提供，不依赖外部 CDN。列表在已受理的预览任务运行期间只读轮询预览与任务状态，转换完成后更新缩略图，不创建新任务。已加载缩略图在当前列表的 client 生命周期内复用，筛选和视图切换不重取字节；离开资源模块或 client 更换时释放浏览器 URL。
 
 [模块迁移](../../apps/api/src/modules/resources/migrations/index.js) 提供表结构；其他模块不直接读取这些表，导出沿 readForExport。
 

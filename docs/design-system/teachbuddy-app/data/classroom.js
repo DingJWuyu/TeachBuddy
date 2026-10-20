@@ -489,6 +489,12 @@
     if (action === "deletion" && method === "PUT") {
       const item = get(state, collection, id);
       expectVersion(item, body);
+      if (!body.deleted && (collection === "students" || collection === "records")) {
+        const student = collection === "students" ? item : item.subject.kind === "student" ? get(state, "students", item.subject.id) : null;
+        const classId = student?.classId || (item.subject?.kind === "class" ? item.subject.id : null);
+        if (classId && get(state, "classes", classId).deletedAt) throw new Problem(409, "/problems/classroom/parent-archived", { detail: "请先恢复所属班级" });
+        if (collection === "records" && student?.deletedAt) throw new Problem(409, "/problems/classroom/parent-archived", { detail: "请先恢复所属学生" });
+      }
       if (typeof body.deleted !== "boolean") throw invalid("/deleted", "需要删除状态");
       if (collection === "imports" && item.state === "confirmed") throw new Problem(409, "/problems/classroom/import-confirmed", { detail: "确认的导入是成绩来源，不能单独删除" });
       if (collection === "results" && !body.deleted) {

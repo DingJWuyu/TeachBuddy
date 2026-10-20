@@ -91,7 +91,7 @@
   color: var(--tb-ink);
 }
 
-.cal-today-button, .cal-view-menu .cal-menu-trigger {
+.cal-toolbar .cal-today-button, .cal-view-menu .cal-menu-trigger {
   height: 36px;
   padding: 0 14px !important;
   border: 0 !important;

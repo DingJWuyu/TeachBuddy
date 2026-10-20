@@ -64,6 +64,7 @@ test('班级真实保存：座位、记录、Excel校对和成绩观察在刷新
     if (i < 3) await expect(dialog.getByLabel('姓名', { exact: true })).toHaveValue('');
   }
   await expect(dialog).toHaveCount(0);
+  await expect(page.locator('.cr-card .cr-card-text small')).toHaveText([/001/, /002/, /003/, /101/]);
   const students = (await read(page, `students?classId=${cls.id}`)).items;
   const first = students.find(s => s.studentNumber === '001');
   expect(first.description).toContain('分享解题');
@@ -71,6 +72,7 @@ test('班级真实保存：座位、记录、Excel校对和成绩观察在刷新
   const seat = page.locator('[data-seat="0:0"]');
   await dragStudent(page, page.locator(`.cr-tray [data-student="${first.id}"]`), seat);
   await expect.poll(async () => (await read(page, `classes/${cls.id}`)).seating.seats).toEqual([{ row: 1, column: 1, studentId: first.id }]);
+  expect(await page.locator('.cr-room').evaluate(element => element.scrollWidth - element.clientWidth), '宽屏应完整显示教室各列').toBe(0);
   await page.setViewportSize({ width: 390, height: 844 });
   expect(await seat.evaluate(element => element.clientWidth), '窄屏座位应有足够宽度读出学生姓名').toBeGreaterThanOrEqual(72);
   const room = page.locator('.cr-room');
@@ -89,6 +91,19 @@ test('班级真实保存：座位、记录、Excel校对和成绩观察在刷新
   await expect(journal.locator('.cr-entry-card')).toContainText('约好下次带草稿');
   await page.reload();
   await expect(page.locator('.cr-entry-card')).toContainText('约好下次带草稿');
+  const savedNote = page.locator('.cr-entry-card').filter({ hasText: '约好下次带草稿' });
+  await savedNote.getByRole('button', { name: '归档', exact: true }).click();
+  await expect(savedNote.getByRole('button', { name: '确认归档', exact: true })).toBeVisible();
+  expect((await read(page, `records?scope=student&subjectId=${first.id}`)).items).toHaveLength(1);
+  await page.keyboard.press('Escape');
+  await expect(savedNote.getByRole('button', { name: '归档', exact: true })).toBeVisible();
+  await journal.locator('textarea').fill('只在确认后归档的记录');
+  await journal.getByRole('button', { name: '记下', exact: true }).click();
+  const disposableNote = journal.locator('.cr-entry-card').filter({ hasText: '只在确认后归档的记录' });
+  await disposableNote.getByRole('button', { name: '归档', exact: true }).click();
+  await disposableNote.getByRole('button', { name: '确认归档', exact: true }).click();
+  await expect(disposableNote).toHaveCount(0);
+  await expect(savedNote).toBeVisible();
   await page.locator('.tbx-rail').getByRole('button', { name: /考试/ }).click();
   await page.getByRole('button', { name: '新建考试', exact: true }).first().click();
   dialog = page.getByRole('dialog', { name: '新建考试', exact: true });
@@ -160,6 +175,17 @@ test('班级真实保存：座位、记录、Excel校对和成绩观察在刷新
     const icon = element.querySelector('svg').getBoundingClientRect();
     return Math.abs((button.top + button.bottom) / 2 - (icon.top + icon.bottom) / 2);
   }), '原卷上传按钮的图标应在按钮内垂直居中，与文字同排').toBeLessThan(1);
+  await page.locator('.cr-panel').filter({ has: page.getByRole('heading', { name: '原卷', exact: true }) }).locator('input[type=file]').setInputFiles(path.resolve('test/fixtures/questions/figure.png'));
+  await expect(page.locator('.cr-files')).toContainText('figure.png');
+  await page.locator('.cr-files').getByRole('button', { name: '移除', exact: true }).click();
+  await expect(page.locator('.cr-files').getByRole('button', { name: '确认移除', exact: true })).toBeVisible();
+  expect((await read(page, 'exams')).items[0].source).toHaveLength(1);
+  await page.keyboard.press('Escape');
+  await expect(page.locator('.cr-files').getByRole('button', { name: '移除', exact: true })).toBeVisible();
+  await page.locator('.cr-files').getByRole('button', { name: '移除', exact: true }).click();
+  await page.locator('.cr-files').getByRole('button', { name: '确认移除', exact: true }).click();
+  await expect(page.locator('.cr-files')).toHaveCount(0);
+  expect((await read(page, 'exams')).items[0].source).toHaveLength(0);
   await page.locator('.cr-panel').filter({ has: page.getByRole('heading', { name: '原卷', exact: true }) }).locator('input[type=file]').setInputFiles(path.resolve('test/fixtures/questions/figure.png'));
   await expect(page.locator('.cr-files')).toContainText('figure.png');
   await page.getByRole('button', { name: '导入成绩', exact: true }).click();
@@ -395,6 +421,7 @@ test('原型成绩准入：无原卷按学号导入、缺总分保持未知，�
     await expect(dialog.getByRole('combobox', { name: /^学号/ })).toHaveValue('1');
     await dialog.getByRole('button', { name: '生成校对表', exact: true }).click();
     await expect(dialog.locator('.cr-review')).toBeVisible();
+    await expect(dialog.getByText('未上传原卷，看题时缺少证据。', { exact: true })).toHaveCount(1);
     await expect(dialog.getByRole('button', { name: '确认入库', exact: true })).toBeEnabled();
     return dialog;
   };

@@ -97,5 +97,6 @@
   "problem.forbidden": "The request was not accepted. Refresh the page and retry",
   "problem.keyReused": "The request key was used for another action. Retry as a new action",
   "problem.unavailable": "Service unavailable. Action result awaiting confirmation",
-  "查找题目，或改编教学材料。": "Find questions or adapt teaching materials."
+  "查找题目，或改编教学材料。": "Find questions or adapt teaching materials.",
+  "打开题目": "Open question"
 }

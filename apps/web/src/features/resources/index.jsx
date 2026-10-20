@@ -259,6 +259,37 @@ function ResourceWorkspace({
     JSON.stringify(scene.tagIds),
     revision,
   ]);
+  // Uploads stay in the list, so follow accepted preview jobs here as well
+  // as in the detail viewer. Reading never creates conversion or OCR work.
+  const pendingPreviews = JSON.stringify(Object.entries(previews)
+    .filter(([, preview]) => preview.state === "pending" && preview.jobId)
+    .map(([id, preview]) => [id, preview.jobId]));
+  useEffect(() => {
+    let pending = JSON.parse(pendingPreviews);
+    if (!pending.length) return undefined;
+    let active = true;
+    let timer;
+    async function poll() {
+      const results = await Promise.allSettled(pending.map(async ([id, jobId]) => {
+        const [preview, job] = await Promise.all([
+          client.request(`/api/workbench/files/${id}/preview`),
+          client.request(`/api/workbench/jobs/${jobId}`),
+        ]);
+        return { id, preview, job };
+      }));
+      if (!active) return;
+      setPreviews(current => ({ ...current, ...Object.fromEntries(results
+        .filter(result => result.status === "fulfilled")
+        .map(({ value }) => [value.id, value.preview])) }));
+      pending = results.flatMap((result, index) => result.status === "fulfilled"
+        && result.value.preview.state === "pending"
+        && ["queued", "running", "cancelling"].includes(result.value.job.state)
+          ? [pending[index]] : []);
+      if (pending.length) timer = setTimeout(poll, 2000);
+    }
+    timer = setTimeout(poll, 2000);
+    return () => { active = false; clearTimeout(timer); };
+  }, [client, pendingPreviews]);
   const item = allItems.find((i) => i.id === scene.openId),
     file = item && files[item.fileId];
   const draft = item ? (scene.drafts[item.id] ?? metadata(item)) : null;

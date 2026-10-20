@@ -719,6 +719,9 @@
   width: min(720px, 100%);
   margin: -8px auto 18px;
   padding: 0 28px;
+  color: var(--app-muted);
+  font-size: 12px;
+  min-height: 20px;
 }
 :is(.wb-shell, .tbx-portal-host) .wb-settings.settings-preview .settings-row .wb-button,
 :is(.wb-shell, .tbx-portal-host) .wb-settings.settings-preview .reliability-export-row > .wb-button {

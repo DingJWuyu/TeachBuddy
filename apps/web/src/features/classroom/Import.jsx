@@ -278,6 +278,13 @@ export function ImportDialog({ ctx, examId: givenExam, classId: givenClass, onCl
           <span className="cr-grow" />
           <Seg label={tx('显示')} value={filter} onChange={setFilter} options={[['issues', tx('需要看的')], ['all', tx('全部')], ['ignored', tx('已忽略')]]} />
         </div>
+        {draft.issues?.some(issue => issue.sourceRow == null) && (
+          <ul className="cr-issues">
+            {draft.issues.filter(issue => issue.sourceRow == null).map((issue, index) => (
+              <li key={index} className={`is-${issue.level}`}><Icon name="info" size={12} stroke={2.2} />{issue.template ? tx(issue.template, issue.params) : tx(issue.message)}</li>
+            ))}
+          </ul>
+        )}
         <div className="cr-review-table">
           <div className="cr-review-row is-head">
             <span>{tx('行')}</span><span>{tx('表中')}</span><span>{tx('对应学生')}</span><span>{tx('状态')}</span><span>{tx('总分')}</span><span />
@@ -310,7 +317,7 @@ export function ImportDialog({ ctx, examId: givenExam, classId: givenClass, onCl
                   <ul className="cr-issues">
                     {r.issues.map((i, k) => (
                       <li key={k} className={`is-${i.level}`}>
-                        <Icon name="info" size={12} stroke={2.2} />{i.template ? tx(i.template, i.params) : i.message}
+                        <Icon name="info" size={12} stroke={2.2} />{i.template ? tx(i.template, i.params) : tx(i.message)}
                         {i.code === 'out-of-range' && i.field && i.field !== 'total' && (
                           <input className="cr-fix" aria-label={tx('改成')} inputMode="decimal" defaultValue={r.scores?.[i.field] ?? ''} placeholder={tx('改成')} onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur(); }} onBlur={(e) => { const v = e.target.value.trim(); if (String(r.scores?.[i.field] ?? '') !== v) edit(r, { scores: { [i.field]: v === '' ? null : Number(v) } }); }} />
                         )}

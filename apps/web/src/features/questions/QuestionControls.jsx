@@ -25,7 +25,7 @@ const paths = {
 
 export function QuestionIcon({ name, size = 18 }) {
   useTranslation("questions");
-  if (!paths[name]) return <Icon name={name} size={size} />;
+  if (!paths[name]) return <Icon name={name === 'chevron' ? 'forward' : name} size={size} />;
   return <svg width={size} height={size} viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={paths[name]} /></svg>;
 }
 

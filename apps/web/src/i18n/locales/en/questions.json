@@ -458,5 +458,12 @@
   "已选用当前原题作为来源，改编内容仍保留，请再次保存。": "The current original is now the source. Your edits are kept. Save again.",
   "请先选择可定位的原稿页或段落": "Select an original page or paragraph with a saved location first",
   "原稿段落": "Original paragraph",
-  "选择原稿段落": "Choose an original paragraph"
+  "选择原稿段落": "Choose an original paragraph",
+  "归档题目？": "Archive this question?",
+  "恢复题目？": "Restore this question?",
+  "彻底删除题目？": "Permanently delete this question?",
+  "归档材料？": "Archive this material?",
+  "恢复材料？": "Restore this material?",
+  "彻底删除材料？": "Permanently delete this material?",
+  "归档材料_action": "Archive material"
 }

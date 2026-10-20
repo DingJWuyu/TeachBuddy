@@ -13,7 +13,7 @@
   font: 14px/1.55 var(--tb-font);
   font-synthesis: weight style;
 }
-:is(.wb-shell, .tbx-portal-host) .tbx-cr :where(button) {
+:is(.wb-shell, .tbx-portal-host) .tbx-cr :where(button:not(.tbx-confirm-btn)) {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -26,7 +26,7 @@
   font: inherit;
   cursor: pointer;
 }
-:is(.wb-shell, .tbx-portal-host) .tbx-cr :where(button):disabled {
+:is(.wb-shell, .tbx-portal-host) .tbx-cr :where(button:not(.tbx-confirm-btn)):disabled {
   opacity: 0.4;
   cursor: default;
 }
@@ -824,7 +824,7 @@
   box-shadow: inset 0 0 0 1px var(--tb-line-soft);
 }
 :is(.wb-shell, .tbx-portal-host) .cr-room-plan {
-  min-width: calc(var(--cols) * 112px + (var(--cols) - 1) * 10px);
+  min-width: calc(var(--cols) * 72px + (var(--cols) - 1) * 10px);
 }
 :is(.wb-shell, .tbx-portal-host) .cr-board {
   position: sticky;

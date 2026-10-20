@@ -615,3 +615,89 @@ test('WB-AG-024: 会话改名置顶在独立设备恢复，删除后真实历史
     await expect(second.getByText('周三课堂准备', { exact: true })).toHaveCount(0);
   } finally { await other.close(); }
 });
+
+test('原型对照：日程引用保留时间，引用浮层不被首页卡片裁切', async ({ page }) => {
+  const { headers } = await savedQuestion(page, '课堂引用题');
+  const { manualQuestionSample } = await import('../../../api/test/first-flow-harness.js');
+  for (let n = 0; n < 4; n++) {
+    const question = await page.request.post(world.origin + '/api/modules/questions/items', { headers: headers(), data: manualQuestionSample({ title: `课堂引用题${n}` }) });
+    expect(question.status()).toBe(201);
+    const day = new Date(); day.setDate(day.getDate() + n + 1);
+    const date = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
+    const entry = await page.request.post(world.origin + '/api/modules/schedule/entries', { headers: headers(), data: { title: `数学课${n}`, items: [], time: { date, startTime: '10:00', durationMinutes: 45, timeZone: 'UTC' }, repeat: null, reminder: null, calendar: { allDay: false, notes: '', tags: [] } } });
+    expect(entry.status()).toBe(201);
+  }
+  await page.reload();
+  await page.locator('.tbx-composer.is-placeholder').click();
+  await page.getByRole('button', { name: '引用工作台里的内容', exact: true }).click();
+  const menu = page.getByRole('listbox', { name: '引用工作台里的内容' });
+  await expect(menu.getByRole('option')).toHaveCount(9);
+  await expect.poll(() => menu.evaluate(element => {
+    const row = element.querySelector('[role="option"]');
+    const bounds = row.getBoundingClientRect();
+    const hit = document.elementFromPoint(bounds.left + bounds.width / 2, bounds.top + bounds.height / 2);
+    return bounds.top >= 12 && bounds.bottom <= innerHeight - 12 && row.contains(hit);
+  })).toBe(true);
+  await page.getByRole('option', { name: /数学课0/ }).click();
+  await expect(page.locator('.tbx-drawer .tbx-chip small')).toHaveText('明天 10:00');
+  await expect(page.getByText('草稿已保存', { exact: true })).toBeVisible();
+  await page.reload();
+  await expect(page.locator('.tbx-drawer .tbx-chip small')).toHaveText('明天 10:00');
+});
+
+test('原型对照：真实教学提案位于回答之后，保存后刷新仍可打开', async ({ page }) => {
+  const { provider } = await import('../../../api/test/fixtures/c26/provider.js');
+  const model = await provider([
+    [{ type: 'toolCall', id: 'parity-plan', name: 'wb_propose_teaching_card', arguments: { card: { kind: 'plan', title: '讲解顺序', entryTitle: '课前备课', steps: ['观察函数图像', '归纳函数性质'] } } }],
+    [{ type: 'text', text: '先观察图像，再归纳性质。' }],
+  ]);
+  await world.close(); world = await startWorld({ agent: model.config });
+  await register(page);
+  await page.locator('.tbx-composer.is-placeholder').click();
+  await page.getByRole('textbox', { name: 'AI 输入' }).fill('整理讲解顺序');
+  await page.getByRole('button', { name: '发送', exact: true }).click();
+  const answer = page.locator('.tbx-msg.is-assistant');
+  await expect(answer).toContainText('先观察图像，再归纳性质。');
+  await expect.poll(() => answer.evaluate(element => Boolean(element.querySelector('.tbx-prose').compareDocumentPosition(element.parentElement.querySelector('.tbx-cards')) & Node.DOCUMENT_POSITION_FOLLOWING) && Boolean(element.parentElement.querySelector('.tbx-cards').compareDocumentPosition(element.querySelector('.tbx-meta')) & Node.DOCUMENT_POSITION_FOLLOWING))).toBe(true);
+  await page.getByRole('button', { name: '加到日程', exact: true }).click();
+  await expect(page.getByRole('button', { name: '已加到待安排', exact: true })).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole('button', { name: '已加到待安排', exact: true })).toBeVisible();
+  expect(model.requests()).toBe(2);
+});
+
+test('原型对照：历史底部会话菜单可完整点击，删除保留就地确认', async ({ page }) => {
+  const { headers } = await savedQuestion(page, '历史菜单验证');
+  for (let n = 0; n < 13; n++) {
+    const response = await page.request.post(world.origin + '/api/agent/conversations', { headers: headers(), data: {} });
+    expect(response.status()).toBe(201);
+  }
+  await page.reload();
+  const last = page.locator('.tbx-thread').last();
+  const menu = page.getByRole('menu');
+  for (const viewport of [{ width: 1440, height: 900 }, { width: 820, height: 1180 }, { width: 390, height: 844 }]) {
+    await page.setViewportSize(viewport);
+    const toggle = page.getByRole('button', { name: '对话列表', exact: true });
+    if (await toggle.isVisible() && await toggle.getAttribute('aria-expanded') === 'false') await toggle.click();
+    await last.scrollIntoViewIfNeeded();
+    const trigger = last.getByRole('button', { name: '对话选项', exact: true });
+    await trigger.click();
+    await expect.poll(() => menu.evaluate(element => {
+      const bounds = element.getBoundingClientRect();
+      const remove = element.querySelector('[role="menuitem"]:last-child');
+      const row = remove.getBoundingClientRect();
+      return bounds.top >= 12 && bounds.bottom <= innerHeight - 12 && remove.contains(document.elementFromPoint(row.left + row.width / 2, row.top + row.height / 2));
+    })).toBe(true);
+    if (viewport.width !== 390) {
+      await page.keyboard.press('Escape');
+      await expect(menu).toHaveCount(0);
+      await expect(trigger).toBeFocused();
+    }
+  }
+  await menu.getByRole('menuitem', { name: '删除', exact: true }).click();
+  await expect(menu.getByRole('menuitem', { name: '确认删除', exact: true })).toBeVisible();
+  await menu.getByRole('menuitem', { name: '确认删除', exact: true }).click();
+  await expect(page.locator('.tbx-thread')).toHaveCount(12);
+  await page.reload();
+  await expect(page.locator('.tbx-thread')).toHaveCount(12);
+});

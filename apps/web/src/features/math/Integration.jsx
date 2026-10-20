@@ -11,7 +11,7 @@ export function MathTools({ children, sceneKey = 'current' }) {
   const [scene, patch] = useScene(shell.accountKey, `math-tools:${sceneKey}`, { top: 0, listTop: 0, expanded: {} });
   const [host, setHost] = useState(null);
   const restored = useRef(null);
-  useAuxiliaryTools([{ id: 'math-tools', label: t("编辑"), render: () => <div className="math-tools-panel mw-tool-host wb-module" ref={setHost}
+  useAuxiliaryTools([{ id: 'math-tools', label: t("制作工具"), render: () => <div className="math-tools-panel mw-tool-host wb-module" ref={setHost}
     onScrollCapture={event => {
       if (event.target === event.currentTarget) patch({ top: event.target.scrollTop });
       else if (event.target.tagName === 'NAV') patch({ listTop: event.target.scrollTop });

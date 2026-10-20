@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { tx } from '../../i18n/presentation.js';
 import { cx } from '../../components/ui/classNames.js';
 import { Icon, Menu, Dialog, Field, Empty, Spinner } from './ui.jsx';
+import { ConfirmButton } from '../../components/ui/confirm.jsx';
 import { Popover } from '../../components/ui/popover.jsx';
 import { longDate, fmt, pct, sum, today, hueOf, classMark } from './util.js';
 import { isEnglish } from '../../i18n/presentation.js';
@@ -463,6 +464,6 @@ function SourceFile({ file, ctx, onRemove }) {
   return <li>
     {file.mediaType?.startsWith('image/') && url ? <img src={url} alt="" /> : <span className="cr-file-icon"><Icon name="file" size={18} stroke={1.8} /><em>{(file.name.split('.').pop() || '').toUpperCase()}</em></span>}
     <a href={url || undefined} target="_blank" rel="noreferrer" onClick={e => { if (!url) e.preventDefault(); }}>{file.name}</a>
-    <button type="button" className="cr-icon-btn is-small" aria-label={tx('移除')} onClick={onRemove}><Icon name="close" size={12} stroke={2.4} /></button>
+    <ConfirmButton label={tx('移除')} confirmLabel={tx('确认移除')} icon="close" size="sm" onConfirm={onRemove} />
   </li>;
 }

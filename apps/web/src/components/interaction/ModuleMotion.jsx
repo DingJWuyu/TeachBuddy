@@ -57,7 +57,7 @@ export function ModuleDisclosure({ title, children, defaultOpen = false, open, o
     <section className={`wb-module-disclosure ${className}`}>
       {title && <button type="button" className="wb-module-disclosure-trigger" aria-expanded={active} aria-controls={id}
         onClick={() => { setExpanded(!active); onOpenChange?.(!active); }}>
-        <Icon name="chevron" size={14} /><span>{title}</span>
+        <Icon name="forward" size={14} className="wb-module-disclosure-chevron" /><span>{title}</span>
       </button>}
       <div id={id} className="wb-module-disclosure-grid" data-state={active ? 'open' : 'closed'} inert={!active ? true : undefined} aria-hidden={!active ? true : undefined}>
         <div className="wb-module-collapse-inner">{children}</div>

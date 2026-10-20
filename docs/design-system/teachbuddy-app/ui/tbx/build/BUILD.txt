@@ -1,3 +1,15 @@
+# 当前局部维护
+
+只有用户明确裁决要求同步参考行为时才编辑原型。界面源码在 `ui/tbx/src/`，模拟数据在 `data/`。修改 JSX 或 overlay 词库后，先在仓库根目录完成 `npm ci`，再从同一位置执行：
+
+```sh
+npm exec --no -- esbuild docs/design-system/teachbuddy-app/ui/tbx/src/index.js --bundle --format=iife --target=es2020 --jsx=transform --jsx-factory=h --jsx-fragment=Fragment --outfile=docs/design-system/teachbuddy-app/ui/tbx.js
+```
+
+这只重建 `ui/tbx.js`，不改原有 app bundle 或 CSS。生成产物与源码一起保留，并实际运行核对受影响页面。原型启动沿仓库 `npm run prototype`。
+
+下文保存设计输入最初的拼装说明。其旧机器路径和 pristine bundle 不属于本仓准备条件；不要重跑这些历史补丁或 `build.sh` 来重建当前 overlay。
+
 # TeachBuddy redesign layer
 
 The redesign lives beside the original bundle instead of inside it:

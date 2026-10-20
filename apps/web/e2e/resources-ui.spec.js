@@ -2425,3 +2425,35 @@ test.describe("真实 OCR 运行链", () => {
     });
   });
 });
+
+test('已加载缩略图在视图切换和筛选返回后立即复用', async ({ page }) => {
+  await upload(page);
+  await page.getByRole('button', { name: '返回资源库', exact: true }).click();
+  const thumbnail = page.locator('.tbx-res-thumb img');
+  await expect.poll(() => thumbnail.evaluate(image => image.naturalWidth)).toBeGreaterThan(0);
+  const original = await thumbnail.getAttribute('src');
+  const requests = [];
+  page.on('request', request => {
+    if (/\/api\/workbench\/files\/[^/]+\/content$/.test(new URL(request.url()).pathname)) requests.push(request.url());
+  });
+  for (const name of ['列表视图', '缩略图视图']) {
+    await page.getByRole('button', { name, exact: true }).click();
+    await expect(thumbnail).toHaveAttribute('src', original);
+    expect(await thumbnail.evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
+  }
+  await page.getByLabel('搜索资料', { exact: true }).fill('没有匹配的资料');
+  await expect(page.locator('.tbx-res-card')).toHaveCount(0);
+  await page.getByRole('button', { name: '清除搜索', exact: true }).click();
+  await expect(thumbnail).toHaveAttribute('src', original);
+  expect(await thumbnail.evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true);
+  expect(requests).toEqual([]);
+});
+
+test('上传后的预览完成会自动更新列表缩略图', async ({ page }) => {
+  await page.getByLabel('上传资料', { exact: true }).setInputFiles(pdf);
+  await expect(page.locator('.res-status')).toContainText('文件已保存');
+  await expect(page.locator('.res-detail')).toHaveCount(0);
+  const thumbnail = page.locator('.tbx-res-thumb img');
+  await expect(thumbnail).toBeVisible();
+  await expect.poll(() => thumbnail.evaluate(image => image.naturalWidth)).toBeGreaterThan(100);
+});
