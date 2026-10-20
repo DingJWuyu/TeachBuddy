@@ -38,7 +38,7 @@
 
 ### 浮层内操作完成后保留有效焦点
 
-菜单移入 portal 时，验证打开、执行操作、继续 Tab 和关闭的连续路径。操作完成若会禁用或移除当前控件，在状态更新前把焦点交给同一浮层中仍有效的控件；异步返回时先确认原浮层仍打开且焦点未由用户移走。
+菜单移入 portal 时，验证打开、操作成功或失败、继续 Tab 和关闭的连续路径。失败保留输入以便重试；成功若会禁用或移除当前控件，在状态更新前把焦点交给同一浮层中仍有效的控件。异步返回时先确认原浮层仍打开且焦点未由用户移走。
 
 班级题目标签菜单新增成功后清空输入，曾禁用当前“添加”按钮，使焦点落到 BODY，下一次 Tab 跳到工作台外壳。只验证立即 Escape 会漏掉这一步。依据：[原新增路径](https://github.com/DingJWuyu/TeachBuddy/blob/b110e6ad2d97862ba3df6e83693cf6ac2736e637/apps/web/src/features/classroom/Exams.jsx)、[修复 PR #47](https://github.com/DingJWuyu/TeachBuddy/pull/47)；当前保护在[班级完整保存回归](apps/web/e2e/classroom.spec.js)。
 

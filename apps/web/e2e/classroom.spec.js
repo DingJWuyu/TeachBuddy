@@ -113,6 +113,21 @@ test('班级真实保存：座位、记录、Excel校对和成绩观察在刷新
   const addTag = tagMenu.locator('.cr-tagmenu-new').getByRole('button', { name: '添加', exact: true });
   await page.keyboard.press('Tab');
   await expect(addTag).toBeFocused();
+  await page.route('**/api/modules/classroom/tags', route => route.fulfill({
+    status: 503,
+    contentType: 'application/problem+json',
+    body: JSON.stringify({ type: 'about:blank', title: 'Service unavailable', status: 503, detail: '标签服务暂不可用' }),
+  }), { times: 1 });
+  const failedTag = page.waitForResponse(response => response.url().endsWith('/api/modules/classroom/tags') && response.status() === 503);
+  await page.keyboard.press('Enter');
+  await failedTag;
+  await expect(page.locator('.cr-toast.is-error')).toBeVisible();
+  await expect(newTag).toHaveValue('函数');
+  await expect(addTag).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(newTag).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(addTag).toBeFocused();
   await page.keyboard.press('Enter');
   await expect(questionTags).toContainText('函数');
   expect(await newTag.evaluate(element => {

@@ -47,7 +47,7 @@
 
 各线回执为 `.scratch/ui-audit/<工作线>/receipt.md`，包含修前/修后证据、最终定点命令、实际访问与未覆盖范围。总控回执在同目录 `root/receipt.md`。这些是作者与总控已执行的检查，不代表独立审查、CI 或 preview 集成已经完成。后续固定候选集中审查和回归，不重跑本地全量。
 
-集成候选已提交 [PR #47](https://github.com/DingJWuyu/TeachBuddy/pull/47)。首次固定候选 `b110e6ad2d97862ba3df6e83693cf6ac2736e637` 的独立审查发现：Standards 两项（标签新增后 Tab 逃出弹层、数学按钮未用颜色令牌），Spec 一项（键盘选择会话后未收起列表）。均已由原作者取得定点失败证据并修复通过；接续应补审本次增量、核对最新 PR SHA 的 CI，再集成。审查回执在 `.scratch/ui-audit/review-{standards,spec}.md`，不要以首次候选的通过项代签新增内容。
+集成候选已提交 [PR #47](https://github.com/DingJWuyu/TeachBuddy/pull/47)。首次固定候选 `b110e6ad2d97862ba3df6e83693cf6ac2736e637` 的独立审查发现：Standards 两项（标签新增后 Tab 逃出弹层、数学按钮未用颜色令牌），Spec 一项（键盘选择会话后未收起列表）。增量 `455dae40` 关闭成功路径后，Standards 复现标签新增失败时仍会清空输入、丢失焦点；作者已限定成功才清空，既有同条回归覆盖一次失败、保留输入和焦点、恢复成功重试。各项均有定点失败及修后通过证据；旧候选 CI 已取消，接续应补审最后增量、核对最新 PR SHA 的 CI，再集成。审查回执在 `.scratch/ui-audit/review-{standards,spec}.md`，不要以首次候选的通过项代签新增内容。
 
 流程：固定输入与环境 → 并行实际检查及定点修复 → 总控复核共享根因和遗漏覆盖 → 固定完整候选、集中独立审查与 CI → preview 集成、实际入口复核、文档与现场清理。
 

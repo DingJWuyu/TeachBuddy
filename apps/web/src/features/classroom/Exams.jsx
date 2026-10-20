@@ -109,7 +109,7 @@ function TagPicker({ ctx, value, onChange }) {
     if (added && surface.current === menu && document.activeElement === submit) {
       form.querySelector('input')?.focus({ preventScroll: true });
     }
-    setName('');
+    if (added) setName('');
   };
   return (
     <span className="cr-menuwrap" ref={ref}>
