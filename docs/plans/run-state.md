@@ -4,24 +4,23 @@
 
 ## 工作现场与授权
 
-当前任务是[Design System 前端迁移](design-system-ui.md)：以用户新引入的设计规范与可运行原型完整替换前端 UI/UX，后端业务保持现行契约，差异集中进 buffer。目标、固定输入、工作分配、进展和完成判据只维护于该任务记录。工程通则沿[开发约定](../agents/module-development.md)，既有工程闭环证据见[核查入口](#核查入口)。
+本轮 Design System 全站前端迁移已由 [PR #46](https://github.com/DingJWuyu/TeachBuddy/pull/46) 集成，当前无继续执行的迁移任务。界面参考从[设计输入](../design-system/README.md)进入，行为与实现事实归各分区规格和子系统；后端能力差异及原型自身问题集中在 [buffer](../../buffer.md)。工程通则沿[开发约定](../agents/module-development.md)，交付证据见[核查入口](#核查入口)。
 
 用户体验运行 `TeachBuddy-preview` 的集成源码，维护方式见[已有实例](../SETUP.md#已有本机实例)。GitHub 默认分支与日常 trunk 是 `preview/integration`，`main` 是稳定发布分支。用户已授权仓库配置、CI、任务 PR、独立审查、trunk 集成与同步；执行[GitHub 工作流](../agents/github-workflow.md)。未授权实际版本准备、合 main、产品发布、公开部署、新增费用或社区自动运营。模型与外部账户操作沿各自授权，本轮不扩展。
 
 | 现场 | 当前安排 |
 | --- | --- |
 | `TeachBuddy-preview` / `preview/integration` | 集成及用户体验入口，保护私有配置和数据；当前分支与 HEAD 以 Git 核对 |
-| `TeachBuddy-ui` / `feat/design-system-ui` | 本轮前端重构工作树，公共文件唯一写者及任务进度见当前任务记录；完成集成后清理 |
 | `TeachBuddy` / `main` | 保留稳定分支工作树，不在本轮开发范围 |
 | `TeachBuddy-resources` / `feat/resources-core` | 保留已有资源库现场；本轮不修改或删除，接续前核对其成果和负责 session |
 
-账户、题库、数学、日程、班级后端及两次退役任务均已集成，其临时现场已清理。本轮用户已授权全站前端迁移，包含日程和新班级页面；AI 及其他后端扩展仍未授权。现有能力基线在实际集成后更新，不能把原型演示或并行工作中状态视为已交付。
+账户、题库、数学、日程、班级后端、两次退役及本轮全站前端迁移均已集成，已完成任务的临时现场已清理。AI 和其他后端扩展仍未授权；本轮局部模拟不等于已增加后端能力。
 
 总控管理公共文件唯一写者、工作树和集成。未提交成果、固定输入、私有配置和有效证据须保留；测试业务数据可按已授权范围处置。证据不充当运行依赖，换机从入库输入与[SETUP](../SETUP.md)重建。
 
 ## 开发基线
 
-当前是一个应用和一个 SQLite 持久底座。五个业务模块注册后端，四个模块开放 Web 页面；新班级 `classroom` 只有后端。备课及旧班级教学 `classes` 已退役，公共文稿、文件、转换、OCR、日程及有效旧库升级能力保留。接口和装配事实见[代码结构](../subsystems/README.md#代码结构)。
+当前是一个应用和一个 SQLite 持久底座。五个业务模块注册后端并开放 Web 页面，班级 `classroom` 前端已消费现有接口。备课及旧班级教学 `classes` 已退役，公共文稿、文件、转换、OCR、日程及有效旧库升级能力保留。接口和装配事实见[代码结构](../subsystems/README.md#代码结构)。
 
 本机运行 MinerU Standard Pro-2605 Q8 单路 OCR；旧机器结果可读，不自动重做。质量和剩余误读只按[选型验收](../acceptance/ocr-selection.md)描述。新检出所需样本、依赖清单和工具安装已入库，外部 E 原稿按[固定输入](../acceptance/samples.md#固定输入与回放)取得并校验。
 
@@ -33,19 +32,19 @@
 | 产品分区 | 保留能力 | 核查入口 |
 | --- | --- | --- |
 | 账户与身份 | 注册、登录、找回、退出、会话恢复及永久删除账户；删除/退出未决核实、设备数据清理和注册竞态防护已接入；保留昵称修改公开能力与同会话资料同步；目标邮件与设备仍有未验范围 | [规格](../features/identity.md)、[认证契约](../contracts/auth.md)、[核查入口](#核查入口) |
-| 工作台与设置 | 导航分组、顺序和隐藏状态按账户保存；设备开合独立，冲突和待确认布局可继续处理；主题、背景、头像、语言及中英帮助和更新页已接入；昵称可原位编辑并同步侧栏，保存保持工作台现场，邮箱只读；退出、删号、资料导出消费相应能力 | [规格](../features/workbench.md)、[核查入口](#核查入口) |
+| 工作台与设置 | 新版顶侧栏、导航分组/拖排/恢复、辅助栏、设置、主题/语言及中英帮助；导航偏好按账户保存，设备开合独立，冲突和待确认布局可接续；昵称同步侧栏、邮箱只读，退出/删号/资料导出使用真实能力；自定义背景、学期和反馈的本地边界见 buffer | [规格](../features/workbench.md)、[核查入口](#核查入口) |
 | 题库 | 手工与原生材料整理、校对入库、分类/笔记/改编；旧 DOC 经固定转换稿读取现存公式和配图，PDF 图边公式保留可编辑并核对配图归属；OCR 原图/公式/原答案/来源保留，局部校对保存，已核对题可先入库；未分配结构可明确归入题干、答案或笔记 | [规格](../features/questions.md)、[材料核查](#核查入口) |
 | 资源库 | 收录/分类/检索、常用格式预览与下载、文件替换/历史、页内查找；OCR 正文/公式/配图阅读、复制和搜索定位，内容疑点可高亮原页区域 | [规格](../features/resources.md)、[材料核查](#核查入口) |
 | 数学工坊 | 同一作品的可编辑公式、二维/三维构造、参数和步骤；本地 GeoGebra、自动保存与历史、图片/源码/课堂 ZIP；Chrome/Edge 网页 AI 接入和更新接续，旧类型保持可读 | [规格](../features/math.md)、[模块核查](#核查入口) |
-| 班级 | 后端名单、资料、座位与自由记录；正式考试原卷、Excel 映射校对、题目标签、跨考试学生/班级统计与同场对照；导出、恢复和删号已接入。前端页面及实际 AI 接入暂缓 | [班级规格](../features/classroom.md)、[班级验收](../acceptance/classroom.md)、[核查入口](#核查入口) |
+| 班级 | 后端名单、资料、座位与自由记录；正式考试原卷、Excel 映射校对、题目标签、跨考试学生/班级统计与同场对照；导出、恢复和删号已接入。前端名单、座位、记录、考试和统计已开放，实际班级 AI 工具未接入 | [班级规格](../features/classroom.md)、[班级验收](../acceptance/classroom.md)、[核查入口](#核查入口) |
 | 日程 | 日期视图、拖选/拖动/拉伸、标签、全天、自定义重复与单次独立任务；开始/结束前后提醒、通知已读/未读、待安排、事项完成/排序/原子移动、跟随系统时区以及键盘确认已集成。界面任务永久删除，兼容软删除 API 保留；真实输入法另验 | [规格](../features/schedule.md)、[模块核查](#核查入口) |
-| AI 助理 | 首批题库工具、对话及操作记录已接入；四业务模块扩展设计保留，开发暂停 | [规格](../features/agent.md)、[实现边界](../contracts/agent.md#四模块扩展契约) |
+| AI 助理 | 首页/辅助栏、会话、草稿和题库工具使用真实接口；不支持的引用及结构化回答保留账户隔离的本地演示，显式存题/加日程使用现有接口；会话标题/置顶/隐藏仅本地。其余业务工具扩展仍暂停 | [规格](../features/agent.md)、[实现边界](../contracts/agent.md#四模块扩展契约) |
 
 | 共享技术底座 | 保留能力 | 核查入口 |
 | --- | --- | --- |
 | 数据管理与恢复 | 个人资料包、各模块误删恢复的公共支持、实例备份还原及旧身份撤销；源码、快照和附件曾有本机验证，业务删除与恢复规则由所属分区拥有 | [数据规格](../features/data.md)、[核查入口](#核查入口) |
 | 文件、材料与识别 | 固定预览、文件版本、转换及本地单路 OCR 已被题库和资源库使用；输入限制、校对与输出各按所属分区验证 | [材料契约](../contracts/materials.md)、[识别契约](../contracts/recognition.md)、[选型验收](../acceptance/ocr-selection.md) |
-| 公共保存与模块装配 | 单一静态目录装配五个后端模块，四个现有 Web 页面开放；账户隔离、版本、幂等、冲突及资料导出只读端口沿公共约定 | [共享契约](../contracts/workbench.md)、[代码结构](../subsystems/README.md#代码结构) |
+| 公共保存与模块装配 | 单一静态目录装配五个后端模块及五个 Web 页面；账户隔离、版本、幂等、冲突及资料导出只读端口沿公共约定 | [共享契约](../contracts/workbench.md)、[代码结构](../subsystems/README.md#代码结构) |
 
 ## 剩余事项
 
@@ -58,7 +57,7 @@
 
 | 事项 | 当前事实 | 下一动作与完成条件 |
 | --- | --- | --- |
-| 班级界面与 AI 接入 | 名单、座位、记录、正式考试及统计后端已集成；教师页面和班级 AI 工具未实现 | 按[班级规格](../features/classroom.md)设计原型并消费现有接口；AI 由老师主动提问触发，等待用户启动该线 |
+| 班级 AI 接入 | 教师页面及其既有后端链路已集成；班级 AI 工具仍未实现 | 按[班级规格](../features/classroom.md)在老师主动提问后读取正式数据；等待用户启动相应后端工作线 |
 | 设备恢复后的用户接续 | 底座保留并隔离恢复前设备草稿和未决请求，主应用尚未接入查看、下载与对照后重新提交；旧设备管理设置入口已移除 | 保留[恢复保护要求](../features/data.md)，待相应业务设计接入；本轮只清除不可达旧 UI，不恢复被移除的设置 |
 | AI 助理业务工具与恢复衔接 | 首批只有题库工具；其余业务工具和恢复后旧操作完整处理未实现，设计不等于能力 | 保持暂停，恢复时基于当前模块端口及[Agent/数据判据](../acceptance/mvp-matrix.md)实施，不恢复退役模块 |
 | 通用外部 AI 文本交接 | 预览提问、复制外链、粘贴/上传回流仍属范围，未接入通用界面；数学网页 AI 是独立实现 | 随 AI 助理恢复后推进，旧偏好字段不算完成 |
@@ -105,7 +104,8 @@
 
 | 范围 | 已集成证据 | 可重建入口及边界 |
 | --- | --- | --- |
-| 当前安装与运行 | [PR #45](https://github.com/DingJWuyu/TeachBuddy/pull/45)，`afaf7880`；[CI](https://github.com/DingJWuyu/TeachBuddy/actions/runs/38699507239) 对应候选 `0bdb426d`，squash 后文件树一致 | TeachBuddy 包、全工作区构建、274 项 HTTP/SQLite、50 项真实输出和 317 项浏览器检查通过；2 项缺私人原稿明确跳过。Standards/Spec 独立审查无未关闭发现。现有旧库升级、本机目录及服务、文件转换、OCR 固定环境和实际登录入口已验；数据库与附件保留，真实 GPU 推理和外部服务不在本次命名核对中重跑 |
+| 全站前端与当前运行 | [PR #46](https://github.com/DingJWuyu/TeachBuddy/pull/46)，`6763f64a`；[CI](https://github.com/DingJWuyu/TeachBuddy/actions/runs/39444858003) 对应候选 `d7fb9ec9`，squash 后文件树一致 | 全工作区构建、274 项 HTTP/SQLite、50 项真实输出、343 项浏览器检查通过；2 项缺私人原稿跳过。Standards/Spec 独立审查无未关闭发现，作者另有视觉/交互及 CI 外专项证据。班级真实导入/统计、主动示例载入、账户清理和恢复均已验；后端业务和设计输入未改。preview 已同步并核对实际登录入口；真实邮件、模型、Office 和目标设备沿下方具名边界 |
+| 命名与安装基线 | [PR #45](https://github.com/DingJWuyu/TeachBuddy/pull/45)，`afaf7880`；[CI](https://github.com/DingJWuyu/TeachBuddy/actions/runs/38699507239) 对应候选 `0bdb426d`，squash 后文件树一致 | TeachBuddy 包、全工作区构建、274 项 HTTP/SQLite、50 项真实输出和 317 项浏览器检查通过；2 项缺私人原稿明确跳过。Standards/Spec 独立审查无未关闭发现。现有旧库升级、本机目录及服务、文件转换、OCR 固定环境和实际登录入口已验；数据库与附件保留，真实 GPU 推理和外部服务不在本次命名核对中重跑 |
 | 工程闭环 | [PR #44](https://github.com/DingJWuyu/TeachBuddy/pull/44)，`872ab0cd`；[CI](https://github.com/DingJWuyu/TeachBuddy/actions/runs/38690968669) 对应候选 `870ee1d0`，squash 后文件树一致 | 干净 Runner 构建、274 项 HTTP/SQLite、50 项真实输出、317 项浏览器检查通过；2 项因缺私人 E 原稿明确跳过。Standards/Spec 独立审查无未关闭发现。两位 fresh 作者完成真实代码中断接手及 8 项 HTTP 验证；独立安装与 GeoGebra 源码冷构建已验。preview 已备份、安装并重启，登录页面与迁移后的公共导入正常；真实模型、GPU OCR、邮件和目标设备沿专项另验 |
 | 班级后端 | [PR #42](https://github.com/DingJWuyu/TeachBuddy/pull/42)，`614b7ee3`；[CI](https://github.com/DingJWuyu/TeachBuddy/actions/runs/38422366903) | [班级验收](../acceptance/classroom.md)；HTTP/SQLite、真实 Excel/原卷、恢复与浏览器已验，班级页面和实际 AI 未验 |
 | 题库核心体验 | [PR #40](https://github.com/DingJWuyu/TeachBuddy/pull/40)，`a53f2285`；[CI](https://github.com/DingJWuyu/TeachBuddy/actions/runs/38387387677) | `apps/web/e2e/questions-ux.config.mjs`、`materials-question-notes*.test.js`、`materials-questions-output.test.js`；实际模型及外部原件按专项另验 |
@@ -120,4 +120,4 @@
 
 上述测试文件名相对 `apps/api/test/` 或 `apps/web/e2e/`。模块技术页链接准确源码与验证入口；完整产品交付再展开[验收矩阵](../acceptance/mvp-matrix.md)。
 
-已有本机回执保存在 preview 的 `test-results/`：`teachbuddy-identity-integration/root-receipt.json`、`workflow-health-integration/root-receipt.json`、`agent-workflow-integration/root-receipt.json`、`classroom-backend-integration/root-receipt.json`、`questions-integration/receipt.json`、`identity-integration/receipt.json`、`auth-ui-integration/receipt.json`、`settings-nickname/receipt.json`、`math-integration/receipt.json`。退役回执为 `remove-lessons-integration/root-receipt.json` 与 `remove-classes-integration/root-receipt.json`；工程更新、两次退役和班级后端升级前备份位置分别在同目录 `preview-backup.json`。旧数学/日程交接在 `math-handoff/`。这些现存证据和私有备份独立保全，不作为安装、运行或必要回归的前置。
+已有本机回执保存在 preview 的 `test-results/`：`design-system-ui-integration/root-receipt.json`、`teachbuddy-identity-integration/root-receipt.json`、`workflow-health-integration/root-receipt.json`、`agent-workflow-integration/root-receipt.json`、`classroom-backend-integration/root-receipt.json`、`questions-integration/receipt.json`、`identity-integration/receipt.json`、`auth-ui-integration/receipt.json`、`settings-nickname/receipt.json`、`math-integration/receipt.json`。退役回执为 `remove-lessons-integration/root-receipt.json` 与 `remove-classes-integration/root-receipt.json`；工程更新、两次退役和班级后端升级前备份位置分别在同目录 `preview-backup.json`。旧数学/日程交接在 `math-handoff/`。这些现存证据和私有备份独立保全，不作为安装、运行或必要回归的前置。
