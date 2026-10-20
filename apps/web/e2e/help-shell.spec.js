@@ -63,6 +63,7 @@ test('搜索支持关键词、键盘、空结果和快捷键切换', async ({ pa
   await expect(dialog).toContainText('没有找到');
   await input.fill('保存');
   await expect(page.getByRole('option').first()).toBeVisible();
+  await expect(page.getByRole('option').filter({ hasText: '录入一道题' })).not.toContainText('question');
   await page.keyboard.press('ArrowDown');
   await expect(input).toHaveAttribute('aria-activedescendant', 'tbx-hs-1');
   await page.screenshot({ animations: 'disabled', path: testInfo.outputPath('search.png') });

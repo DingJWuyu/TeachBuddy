@@ -192,7 +192,9 @@ export function Seating({ ctx, cls, students }) {
 
       <div className="cr-room">
         <div className="cr-board"><span>{tx('讲台')}</span></div>
-        <div className="cr-grid" style={{ '--cols': seating.cols }}>{cells}</div>
+        <div className="cr-room-plan" style={{ '--cols': seating.cols }}>
+          <div className="cr-grid">{cells}</div>
+        </div>
       </div>
 
       <div className={cx('cr-tray', target === 'tray' && 'is-target', !unseated.length && 'is-empty')} data-tray="">

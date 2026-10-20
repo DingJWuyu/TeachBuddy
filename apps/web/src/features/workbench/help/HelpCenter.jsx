@@ -59,7 +59,7 @@ function highlight(text, terms) {
 }
 
 const plain = (s) => String(s).replace(/\*\*|`/g, '');
-const blockText = (b) => (Array.isArray(b[1]) ? b[1].map((x) => (Array.isArray(x) ? x.join(' ') : x)).join(' ') : `${b[1] ?? ''} ${b[2] ?? ''}`);
+const blockText = (b) => b[0] === 'figure' ? (b[2] ?? '') : (Array.isArray(b[1]) ? b[1].map((x) => (Array.isArray(x) ? x.join(' ') : x)).join(' ') : `${b[1] ?? ''} ${b[2] ?? ''}`);
 
 /* ---------- article body ---------- */
 

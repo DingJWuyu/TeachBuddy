@@ -329,10 +329,24 @@ test("文件夹树、框选、拖动、详情菜单和助理覆盖在宽窄屏�
   await page.keyboard.press('Escape');
   await expect(page.getByRole('menu')).toBeHidden();
   await expect(menuButton).toBeFocused();
-  for (const width of [1440, 1024, 768]) {
-    await page.setViewportSize({width, height:1000});
+  for (const width of [1440, 1024, 768, 390]) {
+    await page.setViewportSize({width, height:width === 390 ? 844 : 1000});
     await expect(page.getByAltText('第 1 页', {exact:true})).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    expect((await page.locator('.res-page-scroll').boundingBox()).height).toBeGreaterThan(150);
+    if (width === 390) {
+      await page.getByLabel('资源笔记').fill('窄屏仍能保存资料信息');
+      const save = page.getByRole('button', {name:'保存修改',exact:true});
+      await save.scrollIntoViewIfNeeded();
+      const metadataScroll = await page.locator('.res-info-rail .tbx-rail-scroll').evaluate(node => ({top:node.scrollTop,height:node.scrollHeight,client:node.clientHeight}));
+      expect(metadataScroll.top).toBeGreaterThan(0);
+      expect(metadataScroll.height).toBeGreaterThan(metadataScroll.client);
+      await save.click();
+      await expect(save).toBeDisabled();
+      const downloaded = page.waitForEvent('download');
+      await page.getByRole('button',{name:'下载原件',exact:true}).click();
+      expect(fs.readFileSync(await (await downloaded).path()).equals(fs.readFileSync(pdf))).toBe(true);
+    }
     await screenshot(page, info, `detail-${width}`);
   }
   await page.setViewportSize({width:1440,height:1000});

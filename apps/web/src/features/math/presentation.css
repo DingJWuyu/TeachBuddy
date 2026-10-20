@@ -903,6 +903,17 @@
   :is(.wb-shell, .tbx-portal-host) .mw-create-tools > .mw-button { padding: 0 10px; }
 }
 @media (max-width: 700px) {
+  :is(.wb-shell, .tbx-portal-host) .mw-heading {
+    flex-wrap: wrap;
+    row-gap: 6px;
+  }
+  :is(.wb-shell, .tbx-portal-host) .mw-title-group { flex: 1 0 calc(100% - 44px); }
+  :is(.wb-shell, .tbx-portal-host) .mw-heading-actions { margin-left: auto; }
+  :is(.wb-shell, .tbx-portal-host) .mw-save-state,
+  :is(.wb-shell, .tbx-portal-host) .mw-mode-label {
+    position: static;
+    max-width: 100%;
+  }
   :is(.wb-shell, .tbx-portal-host) .mw-toolbar { align-self: stretch; }
   :is(.wb-shell, .tbx-portal-host) .mw-empty-actions button { width: 100%; }
 }
@@ -1015,12 +1026,12 @@
 :is(.wb-shell, .tbx-portal-host) .math-ai-new { width: 30px; height: 30px; border-radius: 50%; color: var(--tb-muted); }
 :is(.wb-shell, .tbx-portal-host) .math-ai-new:hover { background: var(--tb-fill); color: var(--tb-ink); }
 :is(.wb-shell, .tbx-portal-host) .math-web-assistant .math-ai-send {
-  background: var(--tb-primary);
+  background: #0071e3;
   color: var(--tb-on-primary);
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.22), 0 4px 10px -4px var(--tb-primary-glow);
-  transition: transform var(--tb-d2) var(--tb-spring), background var(--tb-d2);
+  transition: transform var(--tb-d2) var(--tb-spring);
 }
-:is(.wb-shell, .tbx-portal-host) .math-web-assistant .math-ai-send:hover:not(:disabled) { transform: scale(1.06); background: var(--tb-primary-hover); }
+:is(.wb-shell, .tbx-portal-host) .math-web-assistant .math-ai-send:hover:not(:disabled) { transform: scale(1.06); background: color-mix(in oklab, #0071e3 88%, black); }
 :is(.wb-shell, .tbx-portal-host) .math-web-assistant .math-ai-send.is-start { padding: 0 14px; border-radius: 999px; font-size: 13px; font-weight: 600; white-space: nowrap; }
 :is(.wb-shell, .tbx-portal-host) .math-web-assistant .math-ai-send:disabled { background: var(--tb-fill-hover); color: var(--tb-faint); box-shadow: none; }
 :is(.wb-shell, .tbx-portal-host) .math-ai-setup-popover {
@@ -1119,6 +1130,10 @@
 :is(.wb-shell, .tbx-portal-host) .math-main .math-document-bar .math-work-title:focus { outline: none; background: var(--tb-surface); box-shadow: inset 0 0 0 1.5px var(--tb-accent), 0 0 0 4px rgb(0 113 227 / 0.16); }
 :is(.wb-shell, .tbx-portal-host) .math-main .math-workspace-status { padding: 3px 10px; border-radius: 999px; background: var(--tb-fill); color: var(--tb-muted); font-size: 12px; font-weight: 600; }
 :is(.wb-shell, .tbx-portal-host) .math-main .math-undo-actions { margin-left: auto; }
+@container (max-width: 560px) {
+  :is(.wb-shell, .tbx-portal-host) .math-main .math-document-bar { flex: 1 0 100%; flex-wrap: nowrap; }
+  :is(.wb-shell, .tbx-portal-host) .math-main .math-workspace-actions { width: 100%; justify-content: flex-end; padding: 0 14px 10px; }
+}
 :is(.wb-shell, .tbx-portal-host) .math-main .math-canvas {
   flex: 1;
   min-height: 0;

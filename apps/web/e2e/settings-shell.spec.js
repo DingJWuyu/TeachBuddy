@@ -90,7 +90,31 @@ test('窄屏设置可阅读且不横向溢出', async ({ page }, testInfo) => {
   await expect(settings.getByRole('button', { name: '深色', exact: true })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   expect(await settings.evaluate(e => e.scrollWidth <= e.clientWidth + 1)).toBe(true);
+  for (const theme of ['浅色', '深色']) {
+    await settings.getByRole('button', { name: theme, exact: true }).click();
+    const upload = await settings.locator('.tbx-bg-upload em').boundingBox();
+    const label = await settings.locator('.tbx-bg-custom > span:last-child').boundingBox();
+    expect(upload.y + upload.height, '上传背景提示应完整位于自定义标题上方').toBeLessThanOrEqual(label.y);
+  }
+  await settings.getByRole('button', { name: '语言', exact: true }).click();
+  await page.getByRole('menuitemradio', { name: 'English', exact: true }).click();
+  const upload = await settings.locator('.tbx-bg-upload em').boundingBox();
+  const label = await settings.locator('.tbx-bg-custom > span:last-child').boundingBox();
+  expect(upload.y + upload.height, '英文上传背景提示应完整位于自定义标题上方').toBeLessThanOrEqual(label.y);
   await page.screenshot({ path: testInfo.outputPath('settings-mobile.png'), animations: 'disabled' });
+});
+
+test('协议阅读关闭后恢复入口焦点', async ({ page }) => {
+  const trigger = page.getByRole('button', { name: '签署协议', exact: true });
+  for (let attempt = 0; attempt < 2; attempt++) {
+    await trigger.click();
+    const dialog = page.getByRole('dialog', { name: '数据处理协议', exact: true });
+    await expect(dialog).toBeVisible();
+    await page.keyboard.press('Tab');
+    await page.keyboard.press('Escape');
+    await expect(dialog).toHaveCount(0);
+    await expect(trigger).toBeFocused();
+  }
 });
 
 test('外观和背景覆盖外壳与全部页面并在刷新后保留', async ({ page }, testInfo) => {

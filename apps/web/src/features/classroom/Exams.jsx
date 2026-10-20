@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { tx } from '../../i18n/presentation.js';
 import { cx } from '../../components/ui/classNames.js';
 import { Icon, Menu, Dialog, Field, Empty, Spinner } from './ui.jsx';
+import { Popover } from '../../components/ui/popover.jsx';
 import { longDate, fmt, pct, sum, today, hueOf, classMark } from './util.js';
 import { isEnglish } from '../../i18n/presentation.js';
 
@@ -75,12 +76,18 @@ function TagPicker({ ctx, value, onChange }) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
   const ref = useRef(null);
+  const surface = useRef(null);
   useEffect(() => {
     if (!open) return undefined;
-    const down = (e) => { if (!ref.current?.contains(e.target)) setOpen(false); };
-    document.addEventListener('pointerdown', down, true);
-    return () => document.removeEventListener('pointerdown', down, true);
+    const frame = requestAnimationFrame(() => {
+      surface.current?.querySelector('button:not(:disabled), input:not(:disabled)')?.focus({ preventScroll: true });
+    });
+    return () => cancelAnimationFrame(frame);
   }, [open]);
+  const close = (event) => {
+    setOpen(false);
+    if (event?.type === 'keydown') ref.current?.querySelector('button')?.focus();
+  };
   const toggle = (id) => onChange(value.includes(id) ? value.filter((x) => x !== id) : [...value, id]);
   const add = async (e) => {
     e.preventDefault();
@@ -101,8 +108,15 @@ function TagPicker({ ctx, value, onChange }) {
       <button type="button" className={cx('cr-tagcell', open && 'is-on')} onClick={() => setOpen(!open)} aria-expanded={open}>
         {value.length ? value.map((id) => <span key={id} className="cr-tagmini">{ctx.data.tags.find((t) => t.id === id)?.name}</span>) : <span className="cr-muted">{tx('添加标签')}</span>}
       </button>
-      {open && (
-        <div className="cr-menu is-end cr-tagmenu" role="menu" aria-label={tx('标签')}>
+      <Popover anchor={ref} surfaceRef={surface} open={open} onClose={close} align="end" className="cr-menu is-end cr-tagmenu" role="menu" label={tx('标签')} onKeyDown={(event) => {
+        if (event.key !== 'Tab') return;
+        const nodes = [...event.currentTarget.querySelectorAll('button:not(:disabled), input:not(:disabled)')];
+        if ((event.shiftKey && document.activeElement === nodes[0]) || (!event.shiftKey && document.activeElement === nodes.at(-1))) {
+          event.preventDefault();
+          (event.shiftKey ? nodes.at(-1) : nodes[0])?.focus();
+        }
+        event.stopPropagation();
+      }}>
           {ctx.data.tags.map((t) => (
             <button key={t.id} type="button" role="menuitemcheckbox" aria-checked={value.includes(t.id)} onClick={() => toggle(t.id)}>
               <span>{t.name}</span>{value.includes(t.id) && <Icon name="check" size={14} stroke={2.4} />}
@@ -113,8 +127,7 @@ function TagPicker({ ctx, value, onChange }) {
             <input value={name} maxLength={40} placeholder={tx('新标签')} aria-label={tx('新标签')} onChange={(e) => setName(e.target.value)} />
             <button type="submit" className="cr-icon-btn is-small is-filled" aria-label={tx('添加')} disabled={!name.trim()}><Icon name="plus" size={12} stroke={2.6} /></button>
           </form>
-        </div>
-      )}
+      </Popover>
     </span>
   );
 }

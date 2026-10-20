@@ -100,11 +100,13 @@ for (const language of ['zh-CN', 'en']) {
         await page.setViewportSize({ width, height: 900 });
         await page.locator('.q-question-heading').scrollIntoViewIfNeeded();
         await snapshot(page, info, 'editor-header-' + width);
+        const insertTools = await page.locator('.q-insert-tools').first().evaluate(tools => [...tools.querySelectorAll('button')].map(button => button.scrollWidth - button.clientWidth));
+        for (const tool of insertTools) expect(tool).toBeLessThanOrEqual(1);
         const geometry = await editorHeaderGeometry(page);
         measurements[width] = geometry;
         fs.writeFileSync(info.outputPath('editor-header-geometry.json'), JSON.stringify(measurements, null, 2));
-        if (width !== 390) {
         expect(geometry.stateOverflow).toBeLessThanOrEqual(1);
+        expect(geometry.save.height).toBeLessThanOrEqual(38);
         for (const control of [geometry.back, geometry.stateText, geometry.save]) {
           expect(control.x).toBeGreaterThanOrEqual(geometry.header.x - 1);
           expect(control.right).toBeLessThanOrEqual(geometry.header.right + 1);
@@ -116,7 +118,6 @@ for (const language of ['zh-CN', 'en']) {
         expect(overlap(geometry.stateText, geometry.save)).toBeLessThan(1);
         expect(overlap(geometry.stateText, geometry.back)).toBeLessThan(1);
         expect(overlap(geometry.back, geometry.save)).toBeLessThan(1);
-        }
         expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
       }
       await page.locator('.q-question-heading > .primary').click();
@@ -167,6 +168,7 @@ for (const kind of ['文字', '图片']) {
       await expect.poll(() => page.locator('.q-original .q-page img').evaluate(image => image.naturalWidth)).toBeGreaterThan(0);
     }
     await snapshot(page, info, 'review-desktop-initial');
+    expect((await page.getByRole('button', { name: '保存检查进度', exact: true }).boundingBox()).height).toBeLessThanOrEqual(38);
     fs.writeFileSync(info.outputPath('review-initial-geometry.json'), JSON.stringify(await reviewGeometry(page), null, 2));
     await expectReviewBoundary(page);
     const divider = page.getByRole('separator', { name: '调整原稿对照宽度', exact: true });

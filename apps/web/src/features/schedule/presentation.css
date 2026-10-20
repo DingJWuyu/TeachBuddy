@@ -31,7 +31,9 @@
 
 /* toolbar */
 .cal-toolbar {
-  height: 72px;
+  height: auto;
+  min-height: 72px;
+  flex-wrap: wrap;
   padding: 16px 16px 16px 20px;
 }
 
@@ -67,7 +69,11 @@
   font-size: 11.5px;
 }
 
+.cal-calendar-title { flex-shrink: 0; }
+
 .cal-toolbar-actions {
+  max-width: 100%;
+  flex-wrap: wrap;
   gap: 6px;
 }
 
@@ -1498,17 +1504,18 @@ to { opacity: 1; transform: none; }
 
 /* Calendar arrival follows the workspace's existing 520ms rise and 460ms
    easing. Mounted event rows enter softly instead of popping in after data
-   resolves; the task-board focus morph does not replay these animations. */
+   resolves. Stable selectors keep the mounted cards from re-entering after
+   the task-board focus transition clears its temporary suppression flag. */
 @media (prefers-reduced-motion: no-preference) {
-:root:not([data-tbx-focus-switch]) .cal-page[data-focus=calendar] .cal-board, :root:not([data-tbx-focus-switch]) .cal-page[data-focus=calendar] .cal-sidebar {
+.cal-page .cal-board, .cal-page .cal-sidebar {
     animation: tbx-page-in 520ms var(--tb-ease) backwards;
   }
 
-:root:not([data-tbx-focus-switch]) .cal-page[data-focus=calendar] .cal-sidebar {
+.cal-page .cal-sidebar {
     animation-delay: 70ms;
   }
 
-:root:not([data-tbx-focus-switch]) .cal-page[data-focus=calendar] :is(.fc-event, .cal-upcoming-row) {
+.cal-page :is(.fc-event, .cal-upcoming-row) {
     animation: tbx-page-in 420ms var(--tb-ease) backwards;
     animation-delay: 85ms;
   }

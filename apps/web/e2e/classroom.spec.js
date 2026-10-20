@@ -71,6 +71,16 @@ test('班级真实保存：座位、记录、Excel校对和成绩观察在刷新
   const seat = page.locator('[data-seat="0:0"]');
   await dragStudent(page, page.locator(`.cr-tray [data-student="${first.id}"]`), seat);
   await expect.poll(async () => (await read(page, `classes/${cls.id}`)).seating.seats).toEqual([{ row: 1, column: 1, studentId: first.id }]);
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(await seat.evaluate(element => element.clientWidth), '窄屏座位应有足够宽度读出学生姓名').toBeGreaterThanOrEqual(72);
+  const room = page.locator('.cr-room');
+  await room.evaluate(element => { element.scrollLeft = element.scrollWidth; });
+  expect(await room.evaluate(element => element.scrollLeft), '座位区应能横向滚动到最后一列').toBeGreaterThan(0);
+  const lastSeat = await page.locator('[data-seat="0:7"]').boundingBox();
+  const roomBox = await room.boundingBox();
+  expect(lastSeat.x + lastSeat.width).toBeLessThanOrEqual(roomBox.x + roomBox.width);
+  await room.evaluate(element => { element.scrollLeft = 0; });
+  await page.setViewportSize({ width: 1440, height: 1000 });
   await seat.locator('[data-student]').click();
   await expect(page.getByRole('heading', { name: '张明', exact: true })).toBeVisible();
   const journal = page.locator('.cr-journal');
@@ -87,8 +97,52 @@ test('班级真实保存：座位、记录、Excel校对和成绩观察在刷新
   await dialog.getByLabel('每题满分').fill('4');
   await dialog.locator('.cr-qadd').getByRole('button', { name: '添加', exact: true }).click();
   await dialog.getByLabel('题号', { exact: true }).nth(2).fill('3(1)');
+  const questionTags = dialog.locator('.cr-tagcell').last();
+  await page.keyboard.press('Tab');
+  await page.keyboard.press('Tab');
+  await expect(questionTags).toBeFocused();
+  await page.keyboard.press('Enter');
+  const tagMenu = page.getByRole('menu', { name: '标签', exact: true });
+  const newTag = tagMenu.getByRole('textbox', { name: '新标签', exact: true });
+  await expect(newTag).toBeFocused();
+  expect(await newTag.evaluate(element => {
+    const box = element.getBoundingClientRect();
+    return document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2) === element;
+  }), '试卷题目标签菜单的新标签输入应可见且不被对话框页脚遮挡').toBe(true);
+  await newTag.fill('函数');
+  const addTag = tagMenu.locator('.cr-tagmenu-new').getByRole('button', { name: '添加', exact: true });
+  await page.keyboard.press('Tab');
+  await expect(addTag).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(questionTags).toContainText('函数');
+  expect(await newTag.evaluate(element => {
+    const box = element.getBoundingClientRect();
+    return document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2) === element;
+  }), '新增标签后变高的菜单仍不应被对话框页脚遮挡').toBe(true);
+  await page.keyboard.press('Escape');
+  await expect(tagMenu).toHaveCount(0);
+  await expect(questionTags).toBeFocused();
+  await page.keyboard.press('Enter');
+  const functionTag = tagMenu.getByRole('menuitemcheckbox', { name: '函数', exact: true });
+  await expect(functionTag).toBeFocused();
+  await page.keyboard.press('Space');
+  await expect(functionTag).toHaveAttribute('aria-checked', 'false');
+  await page.keyboard.press('Space');
+  await expect(functionTag).toHaveAttribute('aria-checked', 'true');
+  await page.keyboard.press('Tab');
+  await expect(newTag).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(tagMenu).toHaveCount(0);
+  await expect(questionTags).toBeFocused();
+  await expect(dialog).toBeVisible();
   await dialog.getByRole('button', { name: '创建考试', exact: true }).click();
   await expect(page.getByRole('heading', { name: '期中数学', exact: true })).toBeVisible();
+  const paperUpload = page.locator('.cr-panel-head label.cr-btn');
+  expect(await paperUpload.evaluate(element => {
+    const button = element.getBoundingClientRect();
+    const icon = element.querySelector('svg').getBoundingClientRect();
+    return Math.abs((button.top + button.bottom) / 2 - (icon.top + icon.bottom) / 2);
+  }), '原卷上传按钮的图标应在按钮内垂直居中，与文字同排').toBeLessThan(1);
   await page.locator('.cr-panel').filter({ has: page.getByRole('heading', { name: '原卷', exact: true }) }).locator('input[type=file]').setInputFiles(path.resolve('test/fixtures/questions/figure.png'));
   await expect(page.locator('.cr-files')).toContainText('figure.png');
   await page.getByRole('button', { name: '导入成绩', exact: true }).click();
@@ -105,6 +159,14 @@ test('班级真实保存：座位、记录、Excel校对和成绩观察在刷新
   await expect(dialog.getByRole('button', { name: '确认入库', exact: true })).toBeEnabled();
   await dialog.getByRole('tab', { name: '全部', exact: true }).click();
   await expect(dialog.locator('.cr-review-row').filter({ has: page.locator('.cr-review-num', { hasText: /^6$/ }) })).toContainText('缺考');
+  const unrecordedStudent = dialog.locator('.cr-unrecorded .cr-chip-student');
+  await expect(unrecordedStudent).toContainText('王阳');
+  expect(await unrecordedStudent.evaluate(element => {
+    const chip = element.getBoundingClientRect();
+    const avatar = element.firstElementChild.getBoundingClientRect();
+    const name = element.lastElementChild.getBoundingClientRect();
+    return name.left >= avatar.right && name.bottom <= chip.bottom && name.top >= chip.top;
+  }), '未记录学生胶囊的头像与姓名应在同一行，姓名完整位于胶囊内').toBe(true);
   await page.screenshot({ path: info.outputPath('excel-review.png'), animations: 'disabled' });
   await page.reload();
   dialog = page.getByRole('dialog', { name: '导入成绩', exact: true });
@@ -158,6 +220,23 @@ test('班级真实保存：座位、记录、Excel校对和成绩观察在刷新
   expect((await read(page, `classes/${cls.id}`)).seating.seats[0].studentId).toBe(first.id);
   expect((await read(page, `records?scope=student&subjectId=${first.id}`)).items[0].text).toContain('约好下次带草稿');
   expect((await read(page, `results?classId=${cls.id}`)).items).toHaveLength(1);
+  await page.goto(world.origin + '/settings');
+  await page.getByRole('button', { name: '语言', exact: true }).click();
+  await page.getByRole('menuitemradio', { name: 'English', exact: true }).click();
+  await page.goto(world.origin + '/classroom');
+  await page.locator('.tbx-rail').getByRole('button', { name: /初三（2）班/ }).click();
+  await page.setViewportSize({ width: 390, height: 844 });
+  const classTabs = page.locator('.cr-tabs');
+  expect(await classTabs.evaluate(element => {
+    const container = element.getBoundingClientRect();
+    return [...element.querySelectorAll('button')].every(button => {
+      const box = button.getBoundingClientRect();
+      return box.left >= container.left && box.right <= container.right;
+    });
+  }), '窄屏英文班级的四个视图标签都应完整位于胶囊内').toBe(true);
+  await page.getByRole('tab', { name: 'Notes', exact: true }).click();
+  await expect(page.locator('.cr-journal textarea')).toBeVisible();
+  await page.screenshot({ path: info.outputPath('classroom-english-narrow.png'), animations: 'disabled' });
   expect(errors).toEqual([]);
 });
 

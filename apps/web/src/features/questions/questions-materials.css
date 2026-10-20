@@ -433,7 +433,7 @@
 :is(.wb-shell, .tbx-portal-host) .q-question-heading:not(:has(.q-back)) > .tbx-menu-trigger{ grid-column: 3; grid-row: 1; align-self: center; }
 :is(.wb-shell, .tbx-portal-host) .q-question > .q-reader-actions{ grid-column: 2; grid-row: 1; align-self: center; display: flex; gap: 6px; margin: 0; padding: 0; }
 :is(.wb-shell, .tbx-portal-host) .q-reader-actions button{ gap: 6px; }
-:is(.wb-shell, .tbx-portal-host) .q-question .tbx-menu-trigger > button{ width: 34px; padding: 0; border-radius: 50%; }
+:is(.wb-shell, .tbx-portal-host) .q-question-heading > .tbx-menu-trigger > button{ width: 34px; padding: 0; border-radius: 50%; }
 :is(.wb-shell, .tbx-portal-host) .q-eyebrow{ color: var(--tb-faint); font-size: 12px; font-weight: 650; }
 :is(.wb-shell, .tbx-portal-host) .q-eyebrow:empty{ display: none; }
 :is(.wb-shell, .tbx-portal-host) .q-question-title h2{
@@ -688,3 +688,15 @@
 :is(.wb-shell, .tbx-portal-host) .q-workspace .q-back{ white-space: nowrap; }
 
 :is(.wb-shell, .tbx-portal-host) .q-question-heading > .tbx-menu-trigger > button { background: var(--tb-fill); }
+
+@container q-reader (max-width: 640px) {
+  :is(.wb-shell, .tbx-portal-host) .q-workspace .q-question-heading:has(.q-back) { flex-wrap: wrap; }
+  :is(.wb-shell, .tbx-portal-host) .q-question-heading > :is(.q-back, .primary) { flex-shrink: 0; white-space: nowrap; }
+  :is(.wb-shell, .tbx-portal-host) .q-question-heading > .primary { margin-left: auto; }
+  :is(.wb-shell, .tbx-portal-host) .q-workspace .q-question-heading > .q-save-state { order: 1; max-width: 100%; }
+}
+
+:is(.wb-shell, .tbx-portal-host) .q-workspace .q-review-heading { flex-wrap: wrap; }
+:is(.wb-shell, .tbx-portal-host) .q-review-title { flex-basis: 400px; }
+:is(.wb-shell, .tbx-portal-host) .q-review-heading > .q-tools { display: flex; flex-wrap: wrap; gap: 6px; margin-left: auto; }
+:is(.wb-shell, .tbx-portal-host) .q-review-heading button { flex-shrink: 0; white-space: nowrap; }

@@ -243,3 +243,64 @@ test('侧栏导航在桌面、1024平板与窄屏均可由指针打开', async (
   }
   expect(errors).toEqual([]);
 });
+
+test('首页新对话按钮完整留在对话卡内，窄屏列表仍可点击', async ({ page }) => {
+  for (const viewport of [{ width: 1440, height: 900 }, { width: 820, height: 1180 }, { width: 390, height: 844 }, { width: 1440, height: 900 }]) {
+    await page.setViewportSize(viewport);
+    const toggle = page.getByRole('button', { name: '对话列表', exact: true });
+    if (await toggle.isVisible()) await toggle.click();
+    const compose = page.getByRole('button', { name: '新对话', exact: true });
+    await expect(compose).toBeVisible();
+    const bounds = await compose.evaluate(button => {
+      const box = button.getBoundingClientRect();
+      const head = button.closest('.tbx-threads-head').getBoundingClientRect();
+      return { left: box.left - head.left, right: head.right - box.right,
+        clickable: [0.1, 0.5, 0.9].every(ratio => button.contains(document.elementFromPoint(box.left + box.width * ratio, box.top + box.height / 2))) };
+    });
+    expect(bounds.left, '新对话按钮左侧位于对话标题行内').toBeGreaterThanOrEqual(0);
+    expect(bounds.right, '新对话按钮右侧位于对话标题行内').toBeGreaterThanOrEqual(0);
+    expect(bounds.clickable, '新对话按钮的左右边缘与中心均可点击').toBe(true);
+    await compose.click();
+    await expect(page.getByRole('textbox', { name: 'AI 输入', exact: true })).toBeVisible();
+  }
+});
+
+test('全局搜索键盘焦点限制在弹层内，关闭后返回入口', async ({ page }) => {
+  const trigger = page.getByRole('button', { name: '全局搜索', exact: true });
+  await trigger.click();
+  const search = page.getByRole('searchbox', { name: '搜索模块', exact: true });
+  await expect(search).toBeFocused();
+  await search.press('Shift+Tab');
+  await expect(page.getByRole('dialog', { name: '全局搜索', exact: true }).getByRole('link').last()).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog', { name: '全局搜索', exact: true })).toHaveCount(0);
+  await expect(trigger).toBeFocused();
+});
+
+test('首页窄屏对话列表支持 Escape 与点击外部收起', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const toggle = page.getByRole('button', { name: '对话列表', exact: true });
+  await toggle.click();
+  await expect(page.locator('.tbx-home')).toHaveClass(/is-threads-open/);
+  await page.keyboard.press('Escape');
+  await expect(page.locator('.tbx-home')).not.toHaveClass(/is-threads-open/);
+  await expect(toggle).toBeFocused();
+  await expect(page.locator('.tbx-threads')).toHaveCSS('opacity', '0');
+  await page.keyboard.press('Shift+Tab');
+  expect(await page.evaluate(() => Boolean(document.activeElement.closest('.tbx-threads'))), '关闭的对话列表不接收键盘焦点').toBe(false);
+  await toggle.click();
+  await expect(page.locator('.tbx-home')).toHaveClass(/is-threads-open/);
+  await page.mouse.click(365, 430);
+  await expect(page.locator('.tbx-home')).not.toHaveClass(/is-threads-open/);
+  await toggle.click();
+  await page.getByRole('button', { name: '新对话', exact: true }).click();
+  await expect(page.getByRole('textbox', { name: 'AI 输入', exact: true })).toBeVisible();
+  await toggle.click();
+  await page.locator('.tbx-thread.is-active').getByRole('button', { name: '对话选项', exact: true }).click();
+  await expect(page.getByRole('menu')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('menu')).toHaveCount(0);
+  await expect(page.locator('.tbx-home')).toHaveClass(/is-threads-open/);
+  await page.keyboard.press('Escape');
+  await expect(page.locator('.tbx-home')).not.toHaveClass(/is-threads-open/);
+});

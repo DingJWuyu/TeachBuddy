@@ -750,10 +750,54 @@ test('数学助理按钮：深浅主题开始、发送和停止可见，真实�
   }
   fs.writeFileSync(info.outputPath('button-colors.json'), JSON.stringify(records, null, 2));
   for (const record of records) {
-    expect(record.background, `${record.theme} ${record.state}`).toBe(record.theme === 'dark' ? 'rgb(10, 132, 255)' : 'rgb(0, 113, 227)');
+    expect(record.contrast, `${record.theme} ${record.state} readable foreground`).toBeGreaterThanOrEqual(4.5);
     expect(record.color).toBe('rgb(255, 255, 255)');
     if (record.svg) expect(record.svg).toBe(record.color);
     expect(record.height).toBe(32);
     if (record.state !== 'start') expect(record.width).toBe(32);
   }
+});
+
+test('窄屏作品保存状态完整显示在工具栏上方', async ({ page }, info) => {
+  await page.getByRole('button', { name: '新建作品', exact: true }).click();
+  await page.getByRole('button', { name: '添加公式', exact: true }).first().click();
+  await page.locator('math-field').click();
+  await page.keyboard.type('x^2+1');
+  await page.getByRole('button', { name: '加入作品', exact: true }).click();
+  await expect(page.locator('.mw-save-state')).toHaveText('已保存', { timeout: 60000 });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.getByRole('button', { name: '关闭辅助栏', exact: true }).last().click();
+  await expect(page.getByRole('complementary', { name: '辅助栏', exact: true })).toBeHidden();
+  const status = page.locator('.mw-save-state');
+  await expect(status).toBeInViewport({ ratio: 1 });
+  await expect.poll(async () => status.evaluate(element => {
+    const statusBounds = element.getBoundingClientRect();
+    const headerBounds = element.closest('.mw-heading').getBoundingClientRect();
+    const toolbarBounds = document.querySelector('.mw-toolbar').getBoundingClientRect();
+    return statusBounds.top >= headerBounds.top && statusBounds.bottom <= headerBounds.bottom && statusBounds.bottom <= toolbarBounds.top;
+  })).toBe(true);
+  await page.screenshot({ path: info.outputPath('narrow-save-status.png'), animations: 'disabled' });
+});
+
+test('窄屏网页作品名称与保存下载操作互不遮挡', async ({ page }, info) => {
+  await page.getByRole('link', { name: '账户：数学教师', exact: true }).click();
+  await page.getByRole('button', { name: '深色', exact: true }).click();
+  await page.getByRole('button', { name: '语言', exact: true }).click();
+  await page.getByRole('menuitemradio', { name: /English/ }).click();
+  await page.getByRole('navigation').getByRole('link', { name: /^Math workshop/ }).click();
+  const chooser = page.waitForEvent('filechooser');
+  await page.getByRole('button', { name: /^Import HTML/ }).click();
+  await (await chooser).setFiles({ name: 'triangle.html', mimeType: 'text/html', buffer: Buffer.from('<!doctype html><meta charset="utf-8"><h1>Triangle</h1>') });
+  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await expect(page.locator('.math-workspace-status')).toHaveText('Saved');
+  await page.setViewportSize({ width: 390, height: 844 });
+  const title = page.getByLabel('Work name', { exact: true });
+  await expect(title).toBeInViewport({ ratio: 1 });
+  await expect.poll(() => title.evaluate(input => {
+    const name = input.getBoundingClientRect();
+    const actions = document.querySelector('.math-workspace-actions').getBoundingClientRect();
+    const bar = input.closest('.math-document-bar');
+    return bar.scrollWidth <= bar.clientWidth && (name.right <= actions.left || name.bottom <= actions.top || name.top >= actions.bottom);
+  })).toBe(true);
+  await page.screenshot({ path: info.outputPath('narrow-html-header.png'), animations: 'disabled' });
 });

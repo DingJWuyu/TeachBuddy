@@ -1621,3 +1621,20 @@ html.tbx-banding, html.tbx-banding * { user-select: none; }
 /* Folder destination picker uses the existing popover and menu tokens. */
 :is(.wb-shell, .tbx-portal-host) .tbx-res-folder-move{ max-height: min(350px, 72vh); overflow-y: auto; }
 :is(.wb-shell, .tbx-portal-host) .tbx-res-folder-move .tbx-res-folder-path{ overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+
+@media (max-width: 950px) {
+  :is(.wb-shell, .tbx-portal-host) .res-workspace.tbx-split {
+    grid-template-rows: minmax(0, min(30%, 240px)) minmax(0, 1fr);
+  }
+  :is(.wb-shell, .tbx-portal-host) .res-workspace > .res-info-rail {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  :is(.wb-shell, .tbx-portal-host) .res-info-rail > .tbx-rail-scroll {
+    display: block;
+    overflow: hidden auto;
+    scrollbar-width: thin;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+}

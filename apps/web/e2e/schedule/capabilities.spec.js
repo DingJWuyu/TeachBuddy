@@ -994,6 +994,60 @@ test('三列看板按列筛选，事项优先级和关闭编辑后刷新保留',
   await shot(page, 'board-labels-priority-reopened');
 });
 
+test('任务切回日历后主卡片保持可见，不再次播放整页入场', async ({ page }, info) => {
+  await page.getByRole('button', { name: '任务', exact: true }).click();
+  await expect(page.locator('.tbx-board')).toBeVisible();
+  await expect(page.locator('html')).not.toHaveAttribute('data-tbx-focus-switch');
+  await page.evaluate(() => {
+    window.calendarSwitchFrames = [];
+    window.calendarSwitchSampling = true;
+    const sample = () => {
+      if (!window.calendarSwitchSampling) return;
+      const board = document.querySelector('.cal-board');
+      if (document.querySelector('.fc-timegrid') && board) {
+        window.calendarSwitchFrames.push({ time: performance.now(), opacity: Number(getComputedStyle(board).opacity) });
+      }
+      requestAnimationFrame(sample);
+    };
+    requestAnimationFrame(sample);
+  });
+  await page.getByRole('button', { name: '日历', exact: true }).click();
+  await expect(page.locator('.fc-timegrid')).toBeVisible();
+  // Observe the complete switch, including cleanup after the browser's view transition.
+  await expect(page.locator('html')).not.toHaveAttribute('data-tbx-focus-switch');
+  await page.evaluate(async () => {
+    await Promise.all(document.getAnimations().filter(animation => animation.effect?.getComputedTiming().iterations !== Infinity).map(animation => animation.finished.catch(() => {})));
+    await new Promise(resolve => requestAnimationFrame(resolve));
+    window.calendarSwitchSampling = false;
+  });
+  const frames = await page.evaluate(() => window.calendarSwitchFrames);
+  await info.attach('calendar-switch-frames', { body: JSON.stringify(frames), contentType: 'application/json' });
+  expect(frames.length).toBeGreaterThan(0);
+  expect(frames.filter(frame => frame.opacity < 1), '日历已显示后主卡片不能再次透明').toEqual([]);
+});
+
+test('英文日历打开辅助栏后工具栏按容器换行，月份不被操作遮挡', async ({ page }) => {
+  await page.setViewportSize({ width: 1100, height: 900 });
+  await page.getByRole('button', { name: '简体中文', exact: true }).click();
+  await page.getByRole('menuitemradio', { name: 'English', exact: true }).click();
+  await page.keyboard.press('d');
+  await page.getByRole('button', { name: 'Open Assistant', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Close side panel', exact: true })).toBeVisible();
+  await expect.poll(() => page.evaluate(() => {
+    const title = document.querySelector('.cal-calendar-title h1').getBoundingClientRect();
+    const actions = document.querySelector('.cal-toolbar-actions').getBoundingClientRect();
+    return title.left < actions.right && title.right > actions.left && title.top < actions.bottom && title.bottom > actions.top;
+  }), { message: '月份标题不得与日历操作重叠' }).toBe(false);
+  const toolbar = await page.locator('.cal-toolbar').boundingBox();
+  for (const button of await page.locator('.cal-toolbar-actions button:visible').all()) {
+    const bounds = await button.boundingBox();
+    expect(bounds.x).toBeGreaterThanOrEqual(toolbar.x);
+    expect(bounds.x + bounds.width).toBeLessThanOrEqual(toolbar.x + toolbar.width);
+  }
+  await page.getByRole('button', { name: 'Close side panel', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Close side panel', exact: true })).toHaveCount(0);
+});
+
 test('任务列滚动切换模块和刷新后恢复，独立于日历时间网格', async ({ page }) => {
   for (let index = 0; index < 30; index++) await call('POST', E, input(`滚动任务 ${index + 1}`, { time: null }));
   await page.reload(); await page.getByRole('button', { name: '任务', exact: true }).click();
