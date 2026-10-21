@@ -44,7 +44,7 @@
 | M36 | 受控网页桥 | 连接引导开关/热安装/登录返回、发送停止、断线重连；输入法/修饰键、迟到回复保护 | `web-ai/*`, `WorkshopWorkspace.jsx` | bridge.log 4/4，bridge-baseline/ messages.json；saving-baseline/ AI取消 | Chrome真实扩展+受控网页通过；线上未验 |
 | M37 | 桌面/1024/390，编辑右轨及 AI 辅助栏 | 首页/编辑器/历史/下载/HTML/连接浮层无裁剪、无横溢出、可继续键盘操作 | math CSS 与各实际消费者 | unified-baseline/ editor/下载/连接中英窄屏截图；library-failure.png；reduced-results.json | 数学界面通过；主侧栏修复证据归 shell/root |
 | M38 | 相关中英文与浅深主题 | 查看作品白纸、长标题/错误/菜单/对话框文案和按钮；中英主题实际截图 | 模块词库、math CSS | unified-baseline/ 公式深浅、英文切换、窄屏HTML标题；library-failure.png；bridge-baseline/ final.png | 通过相关中英主题 |
-| M39 | 普通与减少动效 | 页面、内容面板、下载/历史/确认、连接浮层开合及快速反向；关闭后焦点可继续 | math CSS、ModulePresence 消费者 | motion-candidate/、motion-negative/；reduced-results.json；unified-baseline/ 普通帧JSON | SW-MATH-T01 已修复；普通/减少动效通过 |
+| M39 | 普通与减少动效 | 页面、内容面板、下载/历史/确认、连接浮层开合及快速反向；关闭后焦点可继续 | math CSS、ModulePresence 消费者 | motion-candidate/、motion-negative/；reduced-results.json；unified-baseline/ 普通帧JSON | SW-MATH-T01 已修复；普通/减少动效通过；CI 同根补修见下表 |
 | M40 | 会话过期或切账户 | 保存原草稿、锁原现场；迟到响应/下载不跨账户，重新验证后继续 | `useMathWorkSession.js` | legacy-baseline/ 身份过期保留草稿与导出迟到跨账户保护 | 通过隔离身份；私人浏览器未验 |
 
 ## 发现与待裁决
@@ -52,7 +52,7 @@
 | 编号 | 类别、触发与根因 | 修复与证据 |
 | --- | --- | --- |
 | SW-MATH-01 | 既存产品问题，原型同根。连续搜索或切归档条件后，旧成功会覆盖新列表，旧失败会污染当前提示。列表只守账户代次，没有查询范围及读取顺序；保存后刷新还会使用旧闭包条件。 | 当前条件引用与读取序号共同守成功/失败，所有刷新入口读取最新条件。搜索成功/失败及归档筛选分别有基线红、候选绿；原型 `prototype-search.json/png`，同步交总控。 |
-| SW-MATH-T01 | 既存测试不稳定，不计产品。普通关闭算式动效为180ms，基线第3→4帧跨约317ms，26帧只采到3个高度，被旧4高度门槛误判。 | 暂停JS卸载，读取浏览器真实CSS两条transition的26个进度，继续检查高度/透明度、卸载和接续。`motion-candidate/`通过，临时移除退出transition的`motion-negative/`明确失败，注入已移除。 |
+| SW-MATH-T01 | 既存测试不稳定，不计产品。有限 RAF 样本会漏过180ms动效：原关闭算式第3→4帧跨约317ms；固定候选 `56b9fbad04a5f03cfefdfb71020b0670e38b7e9c` 的 CI 参数范围首段跨149.9ms，26帧四舍五入后仅3个高度，透明度已接近终态。本地300ms忙帧复现相同失败。 | 完整用例的参数/算式开合、快速反向与连接浮层统一采样真实 CSS effect 的26个进度；仅暂停 presence 的JS卸载，保留连续高度/透明度、末项可达、焦点和卸载检查，并核对反向起点连续。`motion-candidate/`、`motion-negative/`保留前轮证据；本次 `test-results/experience-completion/ci-math/receipt.md` 记录原用例和忙帧场景通过，以及移除grid动效、透明度、连接keyframe、算式退出动效的4项具名负对照失败。产品未修改，补修后的远端CI待总控执行。 |
 
 源码疑点已核验：统一归档作品内容/标题冻结，试演/全屏菜单实际可点，参数错误可修正，下载切换按合法选项生成。原型混合构造曾保存失败“数学视图未完成布局”，见 `prototype-failure.png/txt`，与产品通过区分，不计产品新问题。主侧栏缩窄的中间态和关闭动作由总控共享外壳线核验修复，证据沿 [共享外壳清单](shell.md) 与 root 回执；本线不重复计数或修改公共壳。
 

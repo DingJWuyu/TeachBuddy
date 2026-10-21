@@ -54,7 +54,9 @@
 
 日程提醒浮层的 CI 失败中，采样与 Escape 仅隔 5.827 ms，节点已进入关闭态却未采到中间透明度。探针确认受控 JS 时钟与 CSS 时间线独立；原用例改为暂停 JS 卸载、读取真实 transition 中点，再播放完成并恢复时钟，保留原有卸载、归焦、重开和保存检查。移除淡出的对照仍明确失败。依据：[失败 CI](https://github.com/DingJWuyu/TeachBuddy/actions/runs/39493111710)、[固定修正](https://github.com/DingJWuyu/TeachBuddy/blob/9255745c163d260564a7ebc7132a45a99a6cd3f6/apps/web/e2e/schedule/capabilities.spec.js)；当前保护在[日程能力回归](apps/web/e2e/schedule/capabilities.spec.js)。
 
-出现日期：2026-10-20。已核实 1 个不同日期。
+数学参数范围展开又因 Runner 忙帧误报：180ms 动效的前两次 RAF 相隔149.9ms，已有中间透明度，但四舍五入后只有3种高度，不满足原测试的4种门槛。此类检查从真实点击捕获浏览器已有 transition/keyframe，暂停并按进度读取插值；快速反向仍用真实点击，核对反转前后的连续性，并保留末项可达、卸载和归焦。移除对应动效的负对照须继续失败，不能只降低采样门槛。依据：[失败 CI](https://github.com/DingJWuyu/TeachBuddy/actions/runs/39588034823)；当前保护在[数学完整交互回归](apps/web/e2e/math-unified.spec.js)。
+
+出现日期：2026-10-20、2026-10-21。已核实 2 个不同日期。
 
 ## 维护规则
 

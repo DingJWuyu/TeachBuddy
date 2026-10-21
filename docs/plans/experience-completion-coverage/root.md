@@ -9,7 +9,7 @@
 | ROOT-03 | 资源查看指定页及备注，进入助理引用再去日程，回到资源核对选择/页码/正文现场；通知定位由共享/日程线互证 | 资源深链、Notifications、workbench/routes、useScene | 通过；cross-remaining-results.json、cross-preferences-results.json及分区回执，具体操作见下文 |
 | ROOT-04 | 资源页打开并取消全局搜索，再经支持进入帮助后返回；核对归焦与资源现场。窄屏侧栏和助理互切复用本轮共享线证据 | Topbar、SupportMenu、components/ui 实际消费者 | 通过；cross-remaining-results.json、cross-preferences-results.json及分区回执，具体操作见下文 |
 | ROOT-05 | 账户偏好切语言/主题后返回资源详情；刷新核对真实偏好、页码与备注，教师原文不被翻译 | usePreferences、WorkbenchApp、i18n/presentation、公共 portal 样式 | 通过；cross-remaining-results.json、cross-preferences-results.json及分区回执，具体操作见下文 |
-| ROOT-06 | 每条分区清单从当前源码反向找未归属入口、条件和调用者；与上轮清单比较补漏，新发现沿根因归属 | 模块根页、交互组件和路由注册，设计输入 | 已逐线反查入口、条件和消费者；正常路径缺口已退回各线补实际操作，新缺陷全部按根因归属。最终候选反查待独立审查 |
+| ROOT-06 | 每条分区清单从当前源码反向找未归属入口、条件和调用者；与上轮清单比较补漏，新发现沿根因归属 | 模块根页、交互组件和路由注册，设计输入 | 已逐线反查入口、条件和消费者；正常路径缺口已退回各线补实际操作，新缺陷全部按根因归属。最终候选已完成 Standards/Spec 独立审查和增量补审，无开放发现 |
 
 ## 发现与收口
 

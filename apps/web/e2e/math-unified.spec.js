@@ -624,155 +624,129 @@ test('按需展开：参数、连接与算式连续开合，快速反向和末�
   await page.getByRole('button', { name: '新建作品', exact: true }).click();
   await page.getByRole('button', { name: '添加参数', exact: true }).click();
   await page.getByRole('button', { name: '加入作品', exact: true }).click();
-  async function sample(root, trigger, name, opening) {
-    // The closing presence unmounts after 180 ms. Hold only that JS timer and
-    // inspect the browser's actual CSS interpolation, which is independent of RAF.
-    // A busy runner can skip every middle frame of this short transition.
-    if (!opening && await root.evaluate(el => el.classList.contains('wb-module-presence'))) {
+
+  async function sample(selector, action, name, { opening = true, progress = 1, presence = false, keyframe = false } = {}) {
+    // Capture the native CSS animation when it starts, before a busy runner can
+    // miss its middle frames. Seeking that real effect keeps interpolation checks
+    // independent of RAF frequency; it cannot invent a removed transition.
+    if (presence && !opening) {
       await page.clock.install();
       await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1000));
-      await root.evaluate(el => {
-        window.mathClosingTransitions = [];
-        el.addEventListener('transitionrun', () => {
-          const animations = el.getAnimations().filter(animation => ['grid-template-rows', 'opacity'].includes(animation.transitionProperty));
-          for (const animation of animations) animation.pause();
-          window.mathClosingTransitions = animations;
-        }, { once: true });
+    }
+    await page.evaluate(({ selector, keyframe }) => {
+      window.mathMotion = { animations: [] };
+      const eventName = keyframe ? 'animationstart' : 'transitionrun';
+      const capture = event => {
+        if (!event.target.matches(selector)) return;
+        const animations = event.target.getAnimations().filter(animation => keyframe
+          ? animation.animationName === 'math-popover-in'
+          : ['grid-template-rows', 'opacity'].includes(animation.transitionProperty));
+        if (!animations.length) return;
+        for (const animation of animations) { animation.pause(); animation.currentTime = 0; }
+        window.mathMotion.animations = animations;
+        document.removeEventListener(eventName, capture, true);
+      };
+      document.addEventListener(eventName, capture, true);
+    }, { selector, keyframe });
+    await action();
+    await expect.poll(() => page.evaluate(() => window.mathMotion.animations.map(animation => animation.transitionProperty ?? animation.animationName).sort()),
+      { message: `${name} native CSS motion` }).toEqual(keyframe ? ['math-popover-in'] : ['grid-template-rows', 'opacity']);
+    const result = await page.locator(selector).evaluate((el, progress) => {
+      const animations = window.mathMotion.animations;
+      const effects = animations.map(animation => ({ property: animation.transitionProperty ?? animation.animationName,
+        duration: animation.effect.getTiming().duration, keyframes: animation.effect.getKeyframes() }));
+      const frames = Array.from({ length: 26 }, (_, index) => {
+        const fraction = progress * index / 25;
+        for (const animation of animations) animation.currentTime = animation.effect.getTiming().duration * fraction;
+        return { progress: fraction, height: el.getBoundingClientRect().height, opacity: Number(getComputedStyle(el).opacity) };
       });
-      await trigger.click();
-      await expect.poll(() => page.evaluate(() => window.mathClosingTransitions.length)).toBe(2);
-      const frames = await root.evaluate(el => Array.from({ length: 26 }, (_, index) => {
-        for (const animation of window.mathClosingTransitions) animation.currentTime = animation.effect.getTiming().duration * index / 25;
-        return { progress: index / 25, height: el.getBoundingClientRect().height, opacity: Number(getComputedStyle(el).opacity) };
-      }));
-      fs.writeFileSync(info.outputPath(`${name}-close.json`), JSON.stringify(frames, null, 2));
+      return { effects, frames };
+    }, progress);
+    fs.writeFileSync(info.outputPath(`${name}.json`), JSON.stringify(result, null, 2));
+    const { frames } = result;
+    if (!keyframe) {
       expect(new Set(frames.map(frame => Math.round(frame.height * 10) / 10)).size, `${name} continuous height`).toBeGreaterThan(3);
-      expect(frames.some(frame => frame.opacity > 0 && frame.opacity < 1), `${name} continuous opacity`).toBe(true);
-      expect(frames[0].height).toBeGreaterThan(frames.at(-1).height);
-      expect(frames.at(-1).opacity).toBe(0);
+      if (opening) expect(frames.at(-1).height).toBeGreaterThan(frames[0].height);
+      else expect(frames[0].height).toBeGreaterThan(frames.at(-1).height);
+    }
+    expect(frames.some(frame => frame.opacity > 0 && frame.opacity < 1), `${name} continuous opacity`).toBe(true);
+    if (progress === 1) {
+      expect(frames.at(-1).opacity, `${name} final opacity`).toBe(opening ? 1 : 0);
+      await page.evaluate(() => { for (const animation of window.mathMotion.animations) animation.finish(); });
+    }
+    if (presence && !opening) {
       await page.clock.runFor(200);
       await page.clock.resume();
-      return;
     }
-    await root.evaluate(el => {
-      window.mathFoldFrames = [];
-      // Arm first, then sample from the real click after Playwright's actionability waits.
-      el.addEventListener('click', () => {
-        const frame = time => {
-          const grid = el.querySelector('.wb-module-disclosure-grid');
-          window.mathFoldFrames.push({ time, height: el.getBoundingClientRect().height, opacity: Number(grid ? getComputedStyle(grid).opacity : getComputedStyle(el, el.classList.contains('wb-module-presence') ? null : '::details-content').opacity) });
-          if (window.mathFoldFrames.length < 26) requestAnimationFrame(frame);
-        };
-        requestAnimationFrame(frame);
-      }, { once: true, capture: true });
-    });
-    await trigger.click();
-    await expect.poll(() => page.evaluate(() => window.mathFoldFrames.length)).toBe(26);
-    const frames = await page.evaluate(() => window.mathFoldFrames);
-    fs.writeFileSync(info.outputPath(`${name}-${opening ? 'open' : 'close'}.json`), JSON.stringify(frames, null, 2));
-    const heights = [...new Set(frames.map(f => Math.round(f.height * 10) / 10))];
-    expect(heights.length, `${name} continuous height`).toBeGreaterThan(3);
-    expect(frames.some(f => f.opacity > 0 && f.opacity < 1), `${name} continuous opacity`).toBe(true);
-    if (opening) {
-      await page.mouse.move(280, 75); await page.screenshot({ path: info.outputPath(`${name}-open.png`) });
-      const last = root.locator('input:not(:disabled), textarea:not(:disabled), select:not(:disabled), button:not(:disabled), a').last();
-      await last.focus(); await expect(last).toBeFocused();
-      expect(await last.evaluate(el => { const section = el.closest('.wb-module-disclosure'); return !section || el.getBoundingClientRect().bottom <= section.getBoundingClientRect().bottom + 1; })).toBe(true);
-    }
+    return frames;
+  }
+  async function lastReachable(root) {
+    const last = root.locator('input:not(:disabled), textarea:not(:disabled), select:not(:disabled), button:not(:disabled), a').last();
+    await last.focus(); await expect(last).toBeFocused();
+    expect(await last.evaluate(el => { const section = el.closest('.wb-module-disclosure'); return !section || el.getBoundingClientRect().bottom <= section.getBoundingClientRect().bottom + 1; })).toBe(true);
   }
   const tools = page.locator('.mw-tool-host');
   for (const name of ['改为算式', '参数范围', '样式', '参数播放']) {
-    const trigger = tools.locator('summary, button.wb-module-disclosure-trigger').filter({ hasText: new RegExp(`^${name}$`) });
+    const trigger = tools.getByRole('button', { name, exact: true }).first();
     const root = trigger.locator('..');
-    await sample(root, trigger, name, true); await sample(root, trigger, name, false);
+    const gridId = await trigger.getAttribute('aria-controls');
+    const selector = `[id="${gridId}"]`;
+    await sample(selector, () => trigger.click(), `${name}-open`);
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    await page.mouse.move(280, 75); await page.screenshot({ path: info.outputPath(`${name}-open.png`) });
+    await lastReachable(root);
+    await sample(selector, () => trigger.click(), `${name}-close`, { opening: false });
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+  }
+  async function reverse(selector, trigger, name, presence = false) {
+    const box = await trigger.boundingBox();
+    const click = () => page.mouse.click(box.x + 20, box.y + box.height / 2);
+    const opening = await sample(selector, click, `${name}-reverse-open`, { progress: .35 });
+    if (presence) {
+      // Keep the JS removal deadline from expiring while the test inspects a
+      // paused CSS effect. The next real click cancels that pending removal.
+      await page.clock.install();
+      await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1000));
+    }
+    const closing = await sample(selector, click, `${name}-reverse-close`, { opening: false, progress: .35 });
+    const reopened = await sample(selector, async () => {
+      await click();
+      if (presence) {
+        await expect(page.locator(selector)).not.toHaveAttribute('aria-hidden', 'true');
+        await page.clock.resume();
+      }
+    }, `${name}-reverse-reopen`);
+    // Each real click reverses an unfinished transition from its current layout.
+    expect(Math.abs(closing[0].height - opening.at(-1).height), `${name} first reversal continuity`).toBeLessThan(1);
+    expect(Math.abs(reopened[0].height - closing.at(-1).height), `${name} second reversal continuity`).toBeLessThan(1);
   }
   const conversion = tools.getByRole('button', { name: '改为算式', exact: true }).first();
-  const box = await conversion.boundingBox();
-  await conversion.locator('..').evaluate(el => {
-    window.mathReverseFrames = [];
-    el.addEventListener('click', () => {
-      const frame = time => { const grid = el.querySelector('.wb-module-disclosure-grid'); window.mathReverseFrames.push({ time, height: el.getBoundingClientRect().height, opacity: Number(getComputedStyle(grid).opacity) }); if (window.mathReverseFrames.length < 30) requestAnimationFrame(frame); };
-      requestAnimationFrame(frame);
-    }, { once: true, capture: true });
-  });
-  await page.mouse.click(box.x + 20, box.y + box.height / 2);
-  await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
-  await page.mouse.click(box.x + 20, box.y + box.height / 2);
-  await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
-  await page.mouse.click(box.x + 20, box.y + box.height / 2);
-  await expect.poll(() => page.evaluate(() => window.mathReverseFrames.length)).toBe(30);
-  const reverse = await page.evaluate(() => window.mathReverseFrames);
-  fs.writeFileSync(info.outputPath('改为算式-reverse.json'), JSON.stringify(reverse, null, 2));
-  expect(new Set(reverse.map(f => Math.round(f.height))).size).toBeGreaterThan(3);
-  expect(reverse.some(f => f.opacity > 0 && f.opacity < 1)).toBe(true);
+  await reverse(`[id="${await conversion.getAttribute('aria-controls')}"]`, conversion, '改为算式');
   await expect(conversion).toHaveAttribute('aria-expanded', 'true');
   await expect(tools.getByRole('textbox', { name: '定义', exact: true })).toBeVisible();
+  await lastReachable(conversion.locator('..'));
   await tools.getByRole('textbox', { name: '定义', exact: true }).fill('2+2');
   await page.getByRole('tab', { name: 'AI 助理', exact: true }).click();
   const provider = page.locator('.math-ai-provider');
   await expect(page.locator('.math-ai-connection').first()).toHaveClass(/is-missing/);
-  await provider.evaluate(button => {
-    window.mathPopoverFrames = [];
-    button.addEventListener('click', () => {
-      const frame = time => {
-        const el = document.querySelector('.math-ai-setup-popover');
-        window.mathPopoverFrames.push({ time, opacity: el ? Number(getComputedStyle(el).opacity) : 0, visible: Boolean(el && el.getBoundingClientRect().height > 0) });
-        if (window.mathPopoverFrames.length < 26) requestAnimationFrame(frame);
-      };
-      requestAnimationFrame(frame);
-    }, { once: true, capture: true });
-  });
-  await provider.click();
+  await sample('.math-ai-setup-popover', () => provider.click(), '连接-popover-open', { keyframe: true });
   const popover = page.locator('.math-ai-setup-popover');
   await expect(popover).toBeVisible();
-  await expect.poll(() => page.evaluate(() => window.mathPopoverFrames.length)).toBe(26);
-  const popoverFrames = await page.evaluate(() => window.mathPopoverFrames);
-  fs.writeFileSync(info.outputPath('连接-popover-open.json'), JSON.stringify(popoverFrames, null, 2));
-  expect(popoverFrames.some(f => f.visible)).toBe(true);
   expect(await popover.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
-  const last = popover.locator('input:not(:disabled), textarea:not(:disabled), select:not(:disabled), button:not(:disabled), a').last();
-  await last.focus();
-  await expect(last).toBeFocused();
+  await lastReachable(popover);
   await page.keyboard.press('Escape');
   await expect(popover).toHaveCount(0);
   await expect(provider).toBeFocused();
   await page.getByRole('button', { name: '关闭辅助栏', exact: true }).last().click();
   const expression = page.locator('.mw-expression-disclosure');
   const toggle = page.getByRole('button', { name: '输入算式', exact: true });
-  await toggle.evaluate(button => {
-    window.mathExpressionFrames = [];
-    // Start at the actual click so actionability waits cannot consume the animation samples.
-    button.addEventListener('click', () => {
-      const frame = time => { const el = document.querySelector('.mw-expression-disclosure'); window.mathExpressionFrames.push({ time, height: el?.getBoundingClientRect().height ?? 0, opacity: el ? Number(getComputedStyle(el).opacity) : 0 }); if (window.mathExpressionFrames.length < 26) requestAnimationFrame(frame); };
-      requestAnimationFrame(frame);
-    }, { once: true, capture: true });
-  });
-  await toggle.click();
+  await sample('.mw-expression-disclosure', () => toggle.click(), '输入算式-open');
   await expect(page.getByLabel('图形表达式', { exact: true })).toBeFocused();
-  await expect.poll(() => page.evaluate(() => window.mathExpressionFrames.length)).toBe(26);
-  const frames = await page.evaluate(() => window.mathExpressionFrames);
-  fs.writeFileSync(info.outputPath('输入算式-open.json'), JSON.stringify(frames, null, 2));
-  expect(new Set(frames.map(f => Math.round(f.height))).size).toBeGreaterThan(3);
-  expect(frames.some(f => f.opacity > 0 && f.opacity < 1)).toBe(true);
-  await sample(expression, page.getByRole('button', { name: '收起算式', exact: true }), '输入算式', false);
+  await lastReachable(expression);
+  await sample('.mw-expression-disclosure', () => page.getByRole('button', { name: '收起算式', exact: true }).click(),
+    '输入算式-close', { opening: false, presence: true });
   await expect(expression).toHaveCount(0);
-  await toggle.evaluate(button => {
-    window.mathExpressionReverse = [];
-    button.addEventListener('click', () => {
-      const frame = time => { const el = document.querySelector('.mw-expression-disclosure'); window.mathExpressionReverse.push({ time, height: el?.getBoundingClientRect().height ?? 0, opacity: el ? Number(getComputedStyle(el).opacity) : 0 }); if (window.mathExpressionReverse.length < 30) requestAnimationFrame(frame); };
-      requestAnimationFrame(frame);
-    }, { once: true, capture: true });
-  });
-  const toggleBox = await toggle.boundingBox();
-  for (let index = 0; index < 3; index += 1) {
-    await page.mouse.click(toggleBox.x + 20, toggleBox.y + toggleBox.height / 2);
-    await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
-  }
-  await expect.poll(() => page.evaluate(() => window.mathExpressionReverse.length)).toBe(30);
-  const expressionReverse = await page.evaluate(() => window.mathExpressionReverse);
-  fs.writeFileSync(info.outputPath('输入算式-reverse.json'), JSON.stringify(expressionReverse, null, 2));
-  expect(new Set(expressionReverse.map(f => Math.round(f.height))).size).toBeGreaterThan(3);
-  expect(expressionReverse.some(f => f.opacity > 0 && f.opacity < 1)).toBe(true);
+  await reverse('.mw-expression-disclosure', toggle, '输入算式', true);
   await expect(page.getByLabel('图形表达式', { exact: true })).toBeFocused();
   await page.screenshot({ path: info.outputPath('展开终态.png') });
 });
