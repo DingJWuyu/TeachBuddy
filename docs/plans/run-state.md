@@ -4,7 +4,7 @@
 
 ## 工作现场与授权
 
-原型功能差异收口与后续全站原型对照已按用户要求串行完成，分别见 [PR #48](https://github.com/DingJWuyu/TeachBuddy/pull/48) 和 [PR #49](https://github.com/DingJWuyu/TeachBuddy/pull/49)。两项均完成独立审查、CI、preview 集成核对与现场清理，本轮任务记录已关闭。界面参考从[设计输入](../design-system/README.md)进入，工程通则沿[开发约定](../agents/module-development.md)，交付证据见[核查入口](#核查入口)。
+原型功能差异收口与后续全站原型对照已完成，分别见 [PR #48](https://github.com/DingJWuyu/TeachBuddy/pull/48) 和 [PR #49](https://github.com/DingJWuyu/TeachBuddy/pull/49)。用户现已授权再进行一轮完整体验清查及修复，当前目标、覆盖、分工和证据沿[本轮任务记录](prototype-experience-audit.md)接续；独立工作树为 `TeachBuddy-experience-audit` / `fix/prototype-experience-audit`。本轮需要从原型源码与实际操作建立覆盖范围，并在最终汇报独立问题数。界面参考从[设计输入](../design-system/README.md)进入，工程通则沿[开发约定](../agents/module-development.md)，既有交付证据见[核查入口](#核查入口)。
 
 用户体验运行 `TeachBuddy-preview` 的集成源码，维护方式见[已有实例](../SETUP.md#已有本机实例)。GitHub 默认分支与日常 trunk 是 `preview/integration`，`main` 是稳定发布分支。用户已授权仓库配置、CI、任务 PR、独立审查、trunk 集成与同步；执行[GitHub 工作流](../agents/github-workflow.md)。未授权实际版本准备、合 main、产品发布、公开部署、新增费用或社区自动运营。模型与外部账户操作沿各自授权，本轮不扩展。
 
