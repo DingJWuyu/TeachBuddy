@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { cx } from '../../../components/ui/classNames.js';
 import { tx, useLocale } from '../../../i18n/presentation.js';
 import { useFlip } from '../../../components/ui/motion.js';
-import { ConfirmMenuItem, ConfirmHost } from '../../../components/ui/confirm.jsx';
+import { ConfirmMenuItem } from '../../../components/ui/confirm.jsx';
 import { Icon } from '../../../components/icons.jsx';
 import { workbenchModules as workbenchModulesAll, moduleDisplayName } from '../../modules/moduleRegistry.js';
 import { groupDisplayName } from './displayNames.js';
@@ -688,7 +688,6 @@ export default function Sidebar({
           onDelete={() => { navRef.current?.querySelector('.tbx-new-group-button')?.focus(); act(() => model.deleteGroup(menu.group.id)); setMenu(null); }}
         />
       )}
-      <ConfirmHost />
       {railCollapsed && tip && <span className="tb-rail-tooltip tbx-tip" role="tooltip" style={{ left: tip.left, top: tip.top }}>{tip.label}</span>}
     </>
   );
