@@ -156183,6 +156183,7 @@ ${face.svg()}`;
     function focusExportAction() {
       const dialog = exportContent.current?.closest("dialog");
       if (dialog?.contains(document.activeElement)) dialog.querySelector(".settings-confirm-actions button")?.focus();
+      else document.activeElement?.closest(".reliability-pending")?.querySelector(".settings-disclosure-trigger")?.focus();
     }
     const [exportOpen, setExportOpen] = (0, import_react97.useState)(false);
     const action = useIdempotentSubmit({
@@ -156553,6 +156554,7 @@ ${face.svg()}`;
     const running = (0, import_react98.useRef)(false);
     const avatarInput = (0, import_react98.useRef)(null);
     const avatarTrigger = (0, import_react98.useRef)(null);
+    const [avatarDeleteOpen, setAvatarDeleteOpen] = (0, import_react98.useState)(false);
     const { theme, background, avatar } = shell.appearance;
     const preferences = shell.preferences;
     const appearanceDisabled = !preferences.baseline || preferences.status === "identity";
@@ -156616,13 +156618,17 @@ ${face.svg()}`;
                 /* @__PURE__ */ (0, import_jsx_runtime85.jsx)("path", { d: "M8 5 9.5 3h5L16 5h4v15H4V5Z" }),
                 /* @__PURE__ */ (0, import_jsx_runtime85.jsx)("circle", { cx: "12", cy: "12", r: "4" })
               ] }) }),
-              /* @__PURE__ */ (0, import_jsx_runtime85.jsx)("button", { type: "button", "aria-label": t67("\u5220\u9664\u5934\u50CF"), disabled: !avatar || avatarLoading || appearanceDisabled, onClick: (event) => {
-                if (document.activeElement === event.currentTarget) avatarTrigger.current?.focus();
-                setAvatarError("");
-                shell.setAppearance({ avatar: "" });
+              /* @__PURE__ */ (0, import_jsx_runtime85.jsx)("button", { type: "button", "aria-label": t67("\u5220\u9664\u5934\u50CF"), disabled: !avatar || avatarLoading || appearanceDisabled, onClick: () => {
+                setAvatarDeleteOpen(true);
               }, children: /* @__PURE__ */ (0, import_jsx_runtime85.jsx)("svg", { width: "17", height: "17", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.8", children: /* @__PURE__ */ (0, import_jsx_runtime85.jsx)("path", { d: "M4 6h16M9 6V3h6v3M6 6l1 15h10l1-15M10 10v7m4-7v7" }) }) })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime85.jsx)("input", { ref: avatarInput, type: "file", accept: "image/jpeg,image/png,image/webp", hidden: true, onChange: chooseAvatar })
+            /* @__PURE__ */ (0, import_jsx_runtime85.jsx)("input", { ref: avatarInput, type: "file", accept: "image/jpeg,image/png,image/webp", hidden: true, onChange: chooseAvatar }),
+            /* @__PURE__ */ (0, import_jsx_runtime85.jsx)(globalThis.__tbx.KitConfirmDialog, { present: avatarDeleteOpen, title: t67("\u5220\u9664\u5934\u50CF"), onCancel: () => setAvatarDeleteOpen(false), onConfirm: () => {
+              setAvatarDeleteOpen(false);
+              avatarTrigger.current?.focus();
+              setAvatarError("");
+              shell.setAppearance({ avatar: "" });
+            } })
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime85.jsxs)("div", { className: "settings-profile-copy", children: [
             /* @__PURE__ */ (0, import_jsx_runtime85.jsx)(EditableNickname, { nickname, onSave: updateNickname }),

@@ -32,6 +32,7 @@ export function DataManagement({ accountActions, dangerActions }) {
   function focusExportAction() {
     const dialog = exportContent.current?.closest('dialog');
     if (dialog?.contains(document.activeElement)) dialog.querySelector('.settings-confirm-actions button')?.focus();
+    else document.activeElement?.closest('.reliability-pending')?.querySelector('.settings-disclosure-trigger')?.focus();
   }
   async function remove(item) {
     focusExportAction();

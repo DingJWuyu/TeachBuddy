@@ -168,7 +168,16 @@ test('头像上传删除同步侧栏、自定义背景按账户跨设备保存�
   await expect(settings.getByAltText('账户头像')).toBeVisible();
   await expect(page.locator('.tb-account-row img')).toBeVisible();
   await settings.locator('.settings-avatar').hover();
-  await settings.getByRole('button', { name: '删除头像' }).click();
+  const deleteAvatar = settings.getByRole('button', { name: '删除头像', exact: true });
+  await deleteAvatar.click();
+  await expect(settings.getByAltText('账户头像')).toBeVisible();
+  const avatarConfirmation = page.getByRole('alertdialog', { name: '删除头像', exact: true });
+  await expect(avatarConfirmation).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(deleteAvatar).toBeFocused();
+  await expect(settings.getByAltText('账户头像')).toBeVisible();
+  await deleteAvatar.click();
+  await avatarConfirmation.getByRole('button', { name: '删除', exact: true }).click();
   await expect(settings.getByAltText('账户头像')).toHaveCount(0);
   await expect(settings.getByRole('button', { name: '选择头像', exact: true })).toBeFocused();
   await expect(page.locator('.tb-account-row img')).toHaveCount(0);
@@ -233,6 +242,8 @@ test('外观保存回执丢失后原键确认并保存后续选择', async ({ pa
 test('导出回执丢失后刷新可确认并下载同一资料包', async ({ page }) => {
   const keys = [];
   let lost = false;
+  let releaseRetry;
+  const retryGate = new Promise(resolve => { releaseRetry = resolve; });
   await page.route('**/api/reliability/v1/exports', async route => {
     if (route.request().method() !== 'POST') return route.continue();
     keys.push(route.request().headers()['idempotency-key']);
@@ -240,7 +251,7 @@ test('导出回执丢失后刷新可确认并下载同一资料包', async ({ pa
       lost = true;
       await route.fetch();
       await route.abort('failed');
-    } else await route.continue();
+    } else { await retryGate; await route.continue(); }
   });
   await page.getByRole('button', { name: '导出数据', exact: true }).click();
   await expect(page.getByRole('button', { name: '重试确认操作', exact: true })).toBeVisible();
@@ -252,7 +263,15 @@ test('导出回执丢失后刷新可确认并下载同一资料包', async ({ pa
   await expect(page.getByRole('button', { name: '重试确认操作', exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: '放弃重试', exact: true })).toHaveCount(0);
   await page.reload();
-  await page.getByRole('button', { name: '重试确认操作', exact: true }).click();
+  const retry = page.getByRole('button', { name: '重试确认操作', exact: true });
+  const details = page.getByRole('button', { name: '查看待确认请求', exact: true });
+  await retry.click();
+  try {
+    await expect(retry).toBeDisabled();
+    await expect(details).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('.reliability-pending pre')).toBeVisible();
+  } finally { releaseRetry(); }
   await expect(page.getByRole('button', { name: '下载', exact: true })).toBeVisible();
   expect(keys).toHaveLength(2);
   expect(keys[0]).toBeTruthy();

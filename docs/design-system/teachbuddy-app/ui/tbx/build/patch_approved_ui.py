@@ -92,8 +92,14 @@ PATCHES = (
     (
         'settings-data-focus-references-and-remove-reset-state',
         r'''    const { accountKey } = useWorkbenchShell();
+    const exportContent = (0, import_react97.useRef)(null);
+    const exportTrigger = (0, import_react97.useRef)(null);
+    const returnToExport = (0, import_react97.useRef)(false);
+    function focusExportAction() {
+      const dialog = exportContent.current?.closest("dialog");
+      if (dialog?.contains(document.activeElement)) dialog.querySelector(".settings-confirm-actions button")?.focus();
+    }
     const [exportOpen, setExportOpen] = (0, import_react97.useState)(false);
-    const [resetOpen, setResetOpen] = (0, import_react97.useState)(false);
 ''',
         r'''    const { accountKey } = useWorkbenchShell();
     const exportContent = (0, import_react97.useRef)(null);
@@ -102,6 +108,7 @@ PATCHES = (
     function focusExportAction() {
       const dialog = exportContent.current?.closest("dialog");
       if (dialog?.contains(document.activeElement)) dialog.querySelector(".settings-confirm-actions button")?.focus();
+      else document.activeElement?.closest(".reliability-pending")?.querySelector(".settings-disclosure-trigger")?.focus();
     }
     const [exportOpen, setExportOpen] = (0, import_react97.useState)(false);
 ''',
@@ -239,10 +246,13 @@ PATCHES = (
     ),
     (
         'settings-avatar-focus-before-deletion',
-        r'''              /* @__PURE__ */ (0, import_jsx_runtime85.jsx)("button", { type: "button", "aria-label": t67("\u5220\u9664\u5934\u50CF"), disabled: !avatar || avatarLoading || appearanceDisabled, onClick: () => {
-''',
         r'''              /* @__PURE__ */ (0, import_jsx_runtime85.jsx)("button", { type: "button", "aria-label": t67("\u5220\u9664\u5934\u50CF"), disabled: !avatar || avatarLoading || appearanceDisabled, onClick: (event) => {
                 if (document.activeElement === event.currentTarget) avatarTrigger.current?.focus();
+                setAvatarError("");
+                shell.setAppearance({ avatar: "" });
+''',
+        r'''              /* @__PURE__ */ (0, import_jsx_runtime85.jsx)("button", { type: "button", "aria-label": t67("\u5220\u9664\u5934\u50CF"), disabled: !avatar || avatarLoading || appearanceDisabled, onClick: () => {
+                setAvatarDeleteOpen(true);
 ''',
     ),
     (
@@ -914,6 +924,27 @@ PATCHES = (
                 setDeleting(true);''',
     ),
 
+    (
+        'settings-avatar-confirmation-state',
+        r'''    const avatarTrigger = (0, import_react98.useRef)(null);
+''',
+        r'''    const avatarTrigger = (0, import_react98.useRef)(null);
+    const [avatarDeleteOpen, setAvatarDeleteOpen] = (0, import_react98.useState)(false);
+''',
+    ),
+    (
+        'settings-avatar-shared-confirmation',
+        r'''            /* @__PURE__ */ (0, import_jsx_runtime85.jsx)("input", { ref: avatarInput, type: "file", accept: "image/jpeg,image/png,image/webp", hidden: true, onChange: chooseAvatar })
+''',
+        r'''            /* @__PURE__ */ (0, import_jsx_runtime85.jsx)("input", { ref: avatarInput, type: "file", accept: "image/jpeg,image/png,image/webp", hidden: true, onChange: chooseAvatar }),
+            /* @__PURE__ */ (0, import_jsx_runtime85.jsx)(globalThis.__tbx.KitConfirmDialog, { present: avatarDeleteOpen, title: t67("\u5220\u9664\u5934\u50CF"), onCancel: () => setAvatarDeleteOpen(false), onConfirm: () => {
+              setAvatarDeleteOpen(false);
+              avatarTrigger.current?.focus();
+              setAvatarError("");
+              shell.setAppearance({ avatar: "" });
+            } })
+''',
+    ),
 )
 
 
