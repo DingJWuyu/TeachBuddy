@@ -53,10 +53,6 @@ export function passwordIssue(value) {
   return null;
 }
 
-export function nicknameLength(value) {
-  return codePointLength(trimmed(value));
-}
-
 export function passwordLength(value) {
   return codePointLength(value);
 }

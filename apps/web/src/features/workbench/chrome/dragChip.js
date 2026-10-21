@@ -2,8 +2,6 @@ import { createElement } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Icon } from '../../../components/icons.jsx';
 
-const CHIP_SIZE = 32;
-
 /*
  * The native image, suppressed.
  *
@@ -73,6 +71,3 @@ export function createDragChip({ icon }) {
     }
   };
 }
-
-/** The chip's own size, so callers and tests do not repeat it. */
-export const DRAG_CHIP_SIZE = CHIP_SIZE;

@@ -37,6 +37,8 @@ HTTP 写入由认证 transport 附加页面/保护头和逻辑 UUID key，router
 
 Web 的日历与任务看板在 [index.jsx](../../apps/web/src/features/schedule/index.jsx) 组合；[TaskBoard](../../apps/web/src/features/schedule/TaskBoard.jsx) 负责看板，[EntryEditor](../../apps/web/src/features/schedule/EntryEditor.jsx) 负责当前任务与事项编辑。[ScheduleDialogs](../../apps/web/src/features/schedule/ScheduleDialogs.jsx) 提供标签及重复弹层，提醒和事项移动分别在 [CalendarDetails](../../apps/web/src/features/schedule/CalendarDetails.jsx) 与 [CalendarItems](../../apps/web/src/features/schedule/CalendarItems.jsx)，统一消费公共菜单、日期时间与对话框。既有安排、提醒与未确认写入继续经同一真实 API，不以演示数据替换。
 
+[calendarModel.js](../../apps/web/src/features/schedule/calendarModel.js) 拥有当前编辑内容、新建默认值、日历事件转换与重复规则计算；[model.js](../../apps/web/src/features/schedule/model.js) 提供共用日期/钟点标签、标题与夏令时调整提示，时区换算由 [zoned.js](../../apps/web/src/features/schedule/zoned.js) 提供。
+
 看板事项完成操作按点击顺序保存在账户设备现场，前次写入确认后才读取下一次修改所需的版本；重复实例首次独立得到的新 ID 用于等待中的后续点击。中间写入不提前刷新列表，整批完成或失败后重新读取；看板保留尚未完成的乐观状态，早一操作的返回不回滚后写状态。刷新或切模块后，未确认写入先沿原请求确认入口处理，确认结果同时更新后续点击的对象身份，再继续保存，不能绕过共享保存协议。
 
 事项跟手卡通过公共 `shellRoot` 挂载在编辑器之外，固定坐标不受任务面板动效的变换祖先影响。任务打开错误与列表刷新错误分别保留：打开成功、新建草稿、退出编辑或切换深链接清除前一目标的错误；任务重试重新读取该目标，列表重试只刷新列表，未确认写入仍优先以原请求确认。深链接从首轮读取起受编辑意图编号约束，后续新建、打开其他任务或退出后，迟到的成功与错误均不得覆盖当前现场。
