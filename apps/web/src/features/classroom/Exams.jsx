@@ -463,7 +463,7 @@ function SourceFile({ file, ctx, onRemove }) {
   }, [file.fileId, ctx.api]);
   return <li>
     {file.mediaType?.startsWith('image/') && url ? <img src={url} alt="" /> : <span className="cr-file-icon"><Icon name="file" size={18} stroke={1.8} /><em>{(file.name.split('.').pop() || '').toUpperCase()}</em></span>}
-    <a href={url || undefined} target="_blank" rel="noreferrer" onClick={e => { if (!url) e.preventDefault(); }}>{file.name}</a>
+    <a href={url || undefined} target="_blank" rel="noreferrer" download={file.mediaType?.startsWith('image/') || file.mediaType === 'application/pdf' ? undefined : file.name} onClick={e => { if (!url) e.preventDefault(); }}>{file.name}</a>
     <ConfirmButton label={tx('移除')} confirmLabel={tx('确认移除')} icon="close" size="sm" onConfirm={onRemove} />
   </li>;
 }

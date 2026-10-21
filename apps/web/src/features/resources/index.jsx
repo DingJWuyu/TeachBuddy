@@ -17,6 +17,7 @@ import { ResourceInfo } from "./ResourceInfo.jsx";
 import { Icon } from "../../components/icons.jsx";
 import { TaxonomyDialog } from "./Taxonomy.jsx";
 import { Rail } from "../../components/ui/rail.jsx";
+import { ConfirmDialog } from "../../components/ui/confirm.jsx";
 import { LABEL_COLORS } from "../../components/ui/colors.js";
 import { Menu as Popover } from "../../components/ui/menu.jsx";
 import "./resources.css";
@@ -881,62 +882,36 @@ function ResourceWorkspace({
       </ModulePresence>
       <ModulePresence present={!!dialog}>
         {dialog && (
-          <ResourceDialog
-            label={
-              dialog.kind === "replace"
-                ? t("更新文件确认")
-                : dialog.kind === "purge"
-                  ? t("彻底删除确认")
-                  : t("归档恢复确认")
-            }
-            onClose={() => operations.dismissConfirmation()}
+          <ConfirmDialog
+            title={dialog.kind === "replace"
+              ? t("更新当前文件")
+              : dialog.kind === "purge"
+                ? t("彻底删除资料")
+                : dialog.item.deletedAt
+                  ? t("恢复资料")
+                  : t("归档资料")}
+            message={dialog.kind === "replace"
+              ? `${file?.name ?? ""} → ${dialog.source.name}`
+              : dialog.kind === "purge"
+                ? t("“{{title}}”将从资源库永久删除，无法恢复。", { title: dialog.item.title })
+                : dialog.item.deletedAt
+                  ? t("恢复后可以继续查看和整理这份资料。")
+                  : t("资料会移入“已归档资料”，可以随时恢复。")}
+            danger={dialog.kind === "purge"}
+            icon={dialog.kind === "replace" ? "upload" : dialog.item?.deletedAt ? "restore" : "trash"}
+            disabled={disabled}
+            confirmLabel={dialog.kind === "replace"
+              ? t("更新")
+              : dialog.kind === "purge"
+                ? t("彻底删除")
+                : dialog.item.deletedAt
+                  ? t("恢复")
+                  : t("归档")}
+            onConfirm={operations.confirmOperation}
+            onCancel={() => operations.dismissConfirmation()}
           >
-            <h2>
-              {dialog.kind === "replace"
-                ? t("更新当前文件")
-                : dialog.kind === "purge"
-                  ? t("彻底删除资料")
-                  : dialog.item.deletedAt
-                    ? t("恢复资料")
-                    : t("归档资料")}
-            </h2>
-            {dialog.kind === "replace" ? (
-              <>
-                <p>
-                  {file?.name} → {dialog.source.name}
-                </p>
-                <p>{t("名称、文件夹、标签和备注都会保留。")}</p>
-              </>
-            ) : (
-              <p>
-                {dialog.kind === "purge"
-                  ? t("“{{title}}”将从资源库永久删除，无法恢复。", { title: dialog.item.title })
-                  : dialog.item.deletedAt
-                    ? t("恢复后可以继续查看和整理这份资料。")
-                    : t("资料会移入“已归档资料”，可以随时恢复。")}
-              </p>
-            )}
-            <div className="res-actions">
-              <button
-                className={
-                  dialog.kind === "purge" ||
-                  (dialog.kind === "delete" && !dialog.item.deletedAt)
-                    ? "res-danger"
-                    : "res-primary"
-                }
-                disabled={disabled}
-                onClick={operations.confirmOperation}
-              > {t("确认")} {dialog.kind === "replace"
-                  ? t("更新")
-                  : dialog.kind === "purge"
-                    ? t("彻底删除")
-                    : dialog.item.deletedAt
-                      ? t("恢复")
-                      : t("归档")}
-              </button>
-              <button onClick={() => operations.dismissConfirmation()}>{t("取消")}</button>
-            </div>
-          </ResourceDialog>
+            {dialog.kind === "replace" && <p>{t("名称、文件夹、标签和备注都会保留。")}</p>}
+          </ConfirmDialog>
         )}
       </ModulePresence>
     </div>

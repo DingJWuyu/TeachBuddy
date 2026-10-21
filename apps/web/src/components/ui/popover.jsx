@@ -11,6 +11,7 @@ import { cx } from './classNames.js';
 const MARGIN = 12;
 
 export function shellRoot() {
+  if (document.fullscreenElement) return document.fullscreenElement;
   const shell = document.querySelector('.wb-shell');
   if (shell) return shell;
   let host = document.querySelector('.tbx-portal-host');

@@ -113,7 +113,7 @@ test("真实身份外壳：原件预览替换、校对入库与重启恢复", as
   const chooser = page.waitForEvent("filechooser");
   await page.getByRole("menuitem", { name: "更新文件", exact: true }).click();
   await (await chooser).setFiles("test/fixtures/materials/c22.pdf");
-  await page.getByRole("button", { name: "确认 更新", exact: true }).click();
+  await page.getByRole("button", { name: "更新", exact: true }).click();
   await expect(page.locator(".res-file-info strong")).toHaveText("c22.pdf");
   await page.getByRole("button", { name: "返回资源库", exact: true }).click();
   await page

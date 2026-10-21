@@ -99,3 +99,24 @@ test('窄屏目录连续展开收起，正文无溢出', async ({ page }, testIn
   await page.keyboard.press('Escape');
   await expect(page.locator('.tbx-help-dir-search')).toBeFocused();
 });
+
+test('滚动后立即切到下一篇并后退，恢复原阅读位置', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto(world.origin + '/help/start/workspace');
+  const main = page.locator('.tbx-help-main');
+  await expect(page.locator('.tbx-help-prose h1')).toBeVisible();
+  // Keep delayed saves pending while the teacher scrolls and changes article.
+  await page.clock.install();
+  await page.clock.pauseAt(new Date(Date.now() + 1000));
+  await main.evaluate(element => {
+    element.scrollTop = element.scrollHeight;
+    element.dispatchEvent(new Event('scroll'));
+  });
+  const position = await main.evaluate(element => element.scrollTop);
+  expect(position).toBeGreaterThan(500);
+  await page.locator('.tbx-help-pager .is-next').click();
+  await expect(page).toHaveURL(/\/help\/start\/sample-data$/);
+  await page.goBack();
+  await expect(page).toHaveURL(/\/help\/start\/workspace$/);
+  await expect.poll(() => main.evaluate(element => element.scrollTop)).toBe(position);
+});

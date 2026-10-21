@@ -475,10 +475,9 @@ export function HelpCenter() {
   useEffect(() => {
     const el = scroller.current;
     if (!el) return undefined;
-    let t = 0;
-    const save = () => { clearTimeout(t); t = setTimeout(() => patch((c) => ({ positions: { ...c.positions, [route.path]: el.scrollTop } })), 150); };
+    const save = () => patch((current) => ({ positions: { ...current.positions, [route.path]: el.scrollTop } }));
     el.addEventListener('scroll', save, { passive: true });
-    return () => { clearTimeout(t); el.removeEventListener('scroll', save); };
+    return () => el.removeEventListener('scroll', save);
   }, [route.path]);
 
   // ⌘K searches help while you're here

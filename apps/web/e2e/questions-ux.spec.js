@@ -1436,3 +1436,38 @@ test('分类管理、多视口与普通查找切页后保留AI草稿', async ({ 
   expect(saved.types.map(item => item.name)).toEqual(['几何证明']);
   expect(saved.tags.map(item => item.name)).toEqual(['长名称标签边界检验']);
 });
+
+test('保存校对时持续显示同一原稿，预览读取延迟不清空已显示内容', async ({ page }, info) => {
+  await finder(page).getByRole('button', { name: '从资料收录', exact: true }).click();
+  await page.getByRole('button', { name: /上传图片 截图/ }).click();
+  await page.getByLabel('选择原稿').setInputFiles({ name: '保存期间原稿.png', mimeType: 'image/png',
+    buffer: await sharp({ create: { width: 320, height: 1000, channels: 3, background: '#f2f4f7' } }).png().toBuffer() });
+  await page.getByRole('button', { name: '开始整理', exact: true }).click();
+  const original = page.getByRole('region', { name: '原始材料' });
+  const image = original.locator('.q-page img');
+  await expect.poll(() => image.evaluate(node => node.complete && node.naturalWidth > 0)).toBe(true);
+  await expect(page.getByRole('button', { name: '保存检查进度', exact: true })).toBeEnabled();
+  await page.getByRole('button', { name: '材料操作', exact: true }).click();
+  await page.getByRole('menuitem', { name: '补充题目草稿', exact: true }).click();
+  await page.getByRole('button', { name: '修改题目', exact: true }).click();
+  await page.getByLabel('题干段落 1', { exact: true }).fill('保存时对照原稿继续校对。');
+  await page.getByRole('button', { name: '完成修改', exact: true }).click();
+  await original.getByLabel('原稿缩放').selectOption('1.5');
+  await original.locator('.q-page-scroll').evaluate(node => { node.scrollTop = 120; });
+  const scrollTop = await original.locator('.q-page-scroll').evaluate(node => node.scrollTop);
+  let release;
+  const held = new Promise(resolve => { release = resolve; });
+  await page.route('**/api/workbench/files/*/preview', async route => {
+    if (route.request().method() === 'GET') await held;
+    await route.continue();
+  });
+  try {
+    await page.getByRole('button', { name: '保存检查进度', exact: true }).click();
+    await expect(page.locator('.q-message')).toContainText('校对已保存');
+    await expect(image).toBeVisible();
+    await expect.poll(() => image.evaluate(node => node.complete && node.naturalWidth > 0)).toBe(true);
+    await expect(original.getByLabel('原稿缩放')).toHaveValue('1.5');
+    expect(await original.locator('.q-page-scroll').evaluate(node => node.scrollTop)).toBe(scrollTop);
+    await page.screenshot({ path: info.outputPath('original-retained-after-review-save.png') });
+  } finally { release(); }
+});

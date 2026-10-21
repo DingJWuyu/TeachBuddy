@@ -57,7 +57,10 @@ test('统一作品：空白退出、公式自动保存、刷新、手动图形�
   await page.screenshot({ path: info.outputPath('editor-desktop.png') });
   await page.getByRole('button', { name: '试演', exact: true }).click();
   await expect(page.getByRole('button', { name: '返回编辑', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '重置', exact: true }).click();
   await page.getByRole('button', { name: '返回编辑', exact: true }).click();
+  await expect(page.getByRole('button', { name: '返回编辑', exact: true })).toHaveCount(0);
+  await expect(page.locator('.mw-notice').filter({ hasText: '正在修改作品' })).toHaveCount(0);
   await page.setViewportSize({ width: 1024, height: 768 }); await page.screenshot({ path: info.outputPath('editor-1024.png') });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.getByRole('button', { name: '关闭辅助栏', exact: true }).last().click();
@@ -359,6 +362,59 @@ test('界面路径：一键编辑、未连接输入保护、菜单键盘与下�
   await page.getByRole('button', { name: '下载', exact: true }).click();
   await page.keyboard.press('Escape');
   await expect(page.getByRole('button', { name: '下载', exact: true })).toBeFocused();
+  // Classroom display must use the browser fullscreen surface and survive native exit.
+  const beforePresentation = await (await import('./math-unified-helpers.mjs')).deviceMath(page);
+  await more.click(); await page.getByRole('menuitem', { name: '课堂展示', exact: true }).click();
+  await expect.poll(() => page.evaluate(() => document.fullscreenElement?.matches('.math-workshop') ?? false)).toBe(true);
+  await shot('final-native-fullscreen.png');
+  await more.click();
+  const fullscreenMenu = page.getByRole('menu', { name: '更多作品操作', exact: true });
+  await expect(fullscreenMenu).toBeVisible();
+  const menuReceivesPointer = await fullscreenMenu.evaluate(menu => {
+    const item = menu.querySelector('[role=menuitem]');
+    const bounds = item.getBoundingClientRect();
+    return menu.contains(document.elementFromPoint(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2));
+  });
+  expect(menuReceivesPointer).toBe(true);
+  await page.keyboard.press('Escape');
+  await expect(fullscreenMenu).toHaveCount(0);
+  await expect(more).toBeFocused();
+  await page.getByRole('button', { name: '下载', exact: true }).click();
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByRole('combobox', { name: '内容', exact: true })).toBeFocused();
+  await page.keyboard.press('Escape'); await expect(dialog).toHaveCount(0);
+  await more.click(); await page.getByRole('menuitem', { name: '历史版本', exact: true }).click();
+  const fullscreenHistory = page.getByRole('dialog', { name: '历史版本', exact: true });
+  await expect(fullscreenHistory.getByRole('combobox', { name: '保存记录', exact: true })).toBeVisible();
+  await fullscreenHistory.getByRole('button', { name: '取消', exact: true }).click();
+  await expect(fullscreenHistory).toHaveCount(0);
+  await expect.poll(() => page.evaluate(() => document.fullscreenElement?.matches('.math-workshop') ?? false)).toBe(true);
+  await page.getByRole('button', { name: '返回编辑', exact: true }).click();
+  await expect.poll(() => page.evaluate(() => document.fullscreenElement === null)).toBe(true);
+  await expect(page.locator('.math-workshop')).not.toHaveClass(/is-presenting|is-preview/);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await more.click(); await page.getByRole('menuitem', { name: '课堂展示', exact: true }).click();
+  await expect.poll(() => page.evaluate(() => document.fullscreenElement?.matches('.math-workshop') ?? false)).toBe(true);
+  const presentationHeader = await page.locator('.mw-heading').evaluate(header => {
+    const title = header.querySelector('.mw-title-group').getBoundingClientRect();
+    const actions = header.querySelector('.mw-heading-actions').getBoundingClientRect();
+    return { titleY: title.y, actionsY: actions.y };
+  });
+  expect(Math.abs(presentationHeader.titleY - presentationHeader.actionsY)).toBeLessThan(8);
+  await shot('final-native-fullscreen-narrow.png');
+  // Native exit also waits for an in-flight reset to finish restoring the graph.
+  await page.getByRole('button', { name: '重置', exact: true }).click();
+  // Browser chrome and native Escape both exit fullscreen through this real event.
+  await page.evaluate(() => document.exitFullscreen());
+  await expect(page.locator('.math-workshop')).not.toHaveClass(/is-presenting|is-preview/);
+  const afterPresentation = await (await import('./math-unified-helpers.mjs')).deviceMath(page);
+  expect(afterPresentation.draft.source).toEqual(beforePresentation.draft.source);
+  expect(afterPresentation.draft.version).toBe(beforePresentation.draft.version);
+  await more.click(); await page.getByRole('menuitem', { name: '课堂展示', exact: true }).click();
+  await page.getByRole('button', { name: '返回编辑', exact: true }).click();
+  await expect(page.locator('.math-workshop')).not.toHaveClass(/is-presenting|is-preview/);
+  await expect.poll(() => page.evaluate(() => document.fullscreenElement === null)).toBe(true);
+  await page.getByRole('button', { name: '内容列表', exact: true }).click();
   await page.setViewportSize({ width: 1024, height: 768 }); await shot('final-work-1024.png');
   await page.setViewportSize({ width: 390, height: 844 });
   await page.getByRole('button', { name: '关闭辅助栏', exact: true }).last().click();

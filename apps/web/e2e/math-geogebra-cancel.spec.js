@@ -28,7 +28,7 @@ test('AI取消保留即时手拖内容，关闭辅助栏继续运行，迟到构
     await page.getByRole('tab',{name:'AI 助理',exact:true}).click();
     await page.getByRole('button',{name:'发送消息',exact:true}).click();await page.waitForFunction(()=>typeof window.cancelTestRelease==='function');
     expect((await currentApi(page,'A')).coords).toEqual([8,9]);
-    await page.getByRole('button',{name:'关闭辅助栏',exact:true}).last().click();await page.getByRole('button',{name:'打开辅助栏',exact:true}).click();
+    await page.getByRole('button',{name:'关闭辅助栏',exact:true}).last().click();await page.getByRole('banner').getByRole('button',{name:'打开 AI 助理',exact:true}).click();
     await expect(page.getByRole('button',{name:'停止生成',exact:true})).toBeVisible();await page.getByRole('button',{name:'停止生成',exact:true}).click();
     await expect(page.locator('.math-ai-stage')).toHaveText('已停止');await expect.poll(async()=>sourceA((await deviceMath(page)).draft.source.graph.base64),{timeout:90000}).toEqual(manual);
     await page.evaluate(()=>window.cancelTestRelease()).catch(()=>{});await expect.poll(async()=> (await currentApi(page,'B'))?.exists).toBe(false);

@@ -1,0 +1,57 @@
+# 日程与通知体验清查
+
+负责人：experience_schedule，gpt-6.1-sol / medium。输入基线 `a5daad25a712a4d2f75f34da71bc97e645f1a8a0`；授权与总任务见[任务记录](../prototype-experience-audit.md)。本页是本工作线唯一覆盖清单，实际证据在 `test-results/experience-audit/schedule/receipt.md`。
+
+原型底层：`docs/design-system/teachbuddy-app/ui/app.js` 的 CalendarMenu/MiniCalendar/ViewMenu（137131 起）、ReminderDialog/RepeatDialog（137767 起）、MonthMore/TimeGrid（151810 起）、DailyTasks（152288 起）、Notifications（155408 起）；覆盖层：`ui/tbx/src/schedule/{EntryEditor,TaskBoard}.jsx` 与 `ui/tbx/styles/schedule.css`。产品对应 `apps/web/src/features/schedule/`；通知数据 hook 归日程，展示与样式在共享 TopbarSurfaces，修改归总控。
+
+以下36行是源码枚举分母，每行列全相关状态及连续转换；实际验收按子分支留明细，不以一张截图通过整行。系统时区、真实保存/冲突/隔离、重复单次独立等以现行规格裁决，原型模拟能力不覆盖真实能力。
+
+| ID | 入口 | 状态、控件与连续操作 | 来源/产品符号 | 状态 |
+| --- | --- | --- | --- | --- |
+| S01 | 导航 | 默认今天七天、年月/时区、上一段/下一段/今天、1900/2100 边界 | Calendar/index | 通过：默认导航及1900/2100日周月边界，remaining.log |
+| S02 | 视图 | 日、周、月及2到9天各入口、D/W/M/数字快捷键 | ViewMenu/index | 通过：配对日/周/月、2至9天快捷键 |
+| S03 | 自定义 | 1/31有效，空/0/32/小数禁用，Enter/Escape/重开 | ViewMenu | 通过：配对0/31、K2空/0/32/小数及K3 1/9/31，custom.log |
+| S04 | 小月历 | 点日、前后月浏览不改日程、整周整月和跨周跨月拖选、反向拖选、Escape取消、方向键 | MiniCalendar | 通过：跨年正反/Escape/方向键、整周整月与其他天数，remaining.log |
+| S05 | 时间网格 | 空白点击取消选区、正反向拖选5分钟吸附、选区起止文字、草稿拖动 | TimeGrid | 通过：原型/产品未命名草稿拖动同为04:00→05:00，原选区可取消；completion-extra.log |
+| S06 | 时间任务 | 短/长标题、事项、标签配色、选中不透明、重叠、当前时间线 | TimeGrid/eventOf | 通过：配对样式/选中/短卡/当前线；三重叠时段x与宽度逐项一致，completion-extra.log |
+| S07 | 手势 | 已有任务主体拖动、上下拉伸、跨日移动、Escape仅取消当前手势 | TimeGrid | 通过：拖动/拉伸真实保存，Escape已选/未选取消；拉伸取消复验通过 |
+| S08 | 全天 | 标题无色点、跨天跨度、拖动拉伸、转时间60分钟、转全天一天 | TimeGrid | 通过：60分钟/一天转换、跨度与真实保存 |
+| S09 | 月布局 | 连续跨月滚动、今天定位、跨周分行、跨度优先、自动折叠 | TimeGrid | 通过：月布局/折叠与跨月滚动、独立滚动，remaining.log |
+| S10 | 月更多 | 打开/关闭/同入口切换、日期标题、长标题、任务打开和外拖不误点、边缘定位 | MonthMore | 通过：长标题/开关/日期标题/三种外拖且不误点 |
+| S11 | 右轨列表 | 即将到来/待安排标题数量、空态、添加、独立列表/标签分组、排序、长标题及滚动 | DailyTasks | 通过：空态/排序/独立分类/新建及配对长标题 |
+| S12 | 视图切换 | 日历与三列看板切换、方向滑块及原生ViewTransition中间态、保持草稿 | TaskBoard/FocusToggle | 通过：配对日历看板切换，80ms原生动画及静止副本关闭 |
+| S13 | 看板 | 今天/之后/待安排、日期分组、全空/有数据、卡片进场及完成进度环 | TaskBoard | 通过：配对空态/已有事项/完成进度/优先级 |
+| S14 | 看板筛选 | 每列标签多选/无标签、全部清除、筛空提示/显示全部、切换恢复 | TagFilter | 通过：配对无标签筛空/显示全部/多选；真实产品刷新恢复，menu-probe.json |
+| S15 | 看板任务 | 打开/再次点关闭、事项直接完成/恢复、优先级、事项过多渐隐、长标题 | TaskCard | 通过：配对打开/关闭/直接完成恢复、7项折叠与备注 |
+| S16 | 编辑开关 | 新建排期/待安排、空标题取消、有效标题自动保存、关闭静止副本收起、快速重开 | EntryEditor/index | 通过：新建/关闭/空标题、未知保存阻断与静止副本 |
+| S17 | 标题备注 | 多行/长内容自适应、清空备注占位、Enter移出焦点/ShiftEnter换行、滚动 | EntryEditor | 通过：长标签/备注1675及390、Enter与清空/重输 |
+| S18 | 时间输入 | 日期Picker日/月/年与时间小时分钟、结束跨日、非法结束、字段Enter、全天开关 | Pill/EntryEditor | 通过：日期/时间共享Picker、非法结束/恢复、AX无效状态、全天 |
+| S19 | 排期转换 | 待安排安排时间、移回待安排确认/取消、保留标题标签备注事项、时间控件按需显示 | EntryEditor | 通过：排期未过期默认值；无效排期取消保留待安排 |
+| S20 | 事项输入 | 添加/连续Enter/空白离开清理/200容量、保持ID、完成与恢复 | Checklist | 通过：空白清理/连续输入；目标200容量与移动已验 |
+| S21 | 事项菜单 | 高/中/低优先级、删除就地确认、移动到其他安排入口 | Checklist | 通过：公共Menu键盘、优先级/移动、配对事项二次确认删除，menu-probe.json |
+| S22 | 事项手势 | 小点拖动/完成后拖动、落点指示/ghost锚点/FLIP、长按不完成、Escape取消、键盘上下排序 | Checklist | 通过：原型/产品实际ghost/淡化/静止邻行/落点帧已验，产品Escape保留；EA06红绿与坐标证据见completion-extra-final.log |
+| S23 | 移动事项 | 新待安排/普通/重复整组/某次目标，日期加载/无日期/失败、容量满/禁用、确认取消 | MoveItemDialog | 通过：重复series/instance/200容量、异步加载/503失败/空日期/重新选择恢复与取消保留均实际通过 |
+| S24 | 标签 | 搜索/无匹配、新建/改名/8色/取消/删除确认、30选择上限、键盘焦点与二次Enter取消 | Labels/LabelDialog | 通过：8色保存/取消、30上限；搜索为底层退役入口，覆盖层无搜索 |
+| S25 | 重复快捷 | 每天/工作日/每周/双周/月日期/月星期/每年/不重复、摘要与日期定位 | EntryEditor | 通过：六种快捷保存、全天/重复/单次编辑与自建标签真实保存 |
+| S26 | 重复自定义 | 日/周/月日期/月星期/年、间隔1到999、周日选择、结束从不/日期/次数、非法校验 | RepeatDialog | 通过：配对四单位、月日期/星期/闰日、三种结束与非法数值；英文窄屏Every留10px间隔 |
+| S27 | 重复实例 | 内容编辑后独立、原系列后续保留、规则更改保留独立、删除仅此次/全部选择 | index/EntryEditor | 通过：实例独立连续编辑、后续实例改星期保留起点/既有日期、整组删除保留独立均实际通过 |
+| S28 | 提醒 | 四种时机/0到10080分钟、初值/非法禁用/关闭提醒/摘要、键盘左右及上下 | ReminderDialog | 通过：配对4种时机、0/非法，HTTP摘要与键盘左右/Enter |
+| S29 | 提醒失效 | 修改或拖动导致过期、放弃恢复、关闭提醒保存、Escape放弃、遮罩不关闭、迟到输入保留 | index | 通过：完整提示、保存/放弃/遮罩/Escape/晚到输入/新任务取消均实际通过，completion.log |
+| S30 | 删除任务 | 普通就地确认、重复仅一次/全部对话框、取消与键盘确认、删除无恢复 | EntryEditor/index | 通过：普通确认、重复只删一次、删除全部保留独立、未知结果原键确认均真实读回 |
+| S31 | 通知 | 空态、未读/已读撤销、全部已读、拖桶二次确认直至空态、通知定位、目标删除状态 | Notifications/NotificationPanel | 通过：全部已读/撤销/逐条拖桶至空态/二次确认、已删除/取消/移出范围通知定位与真实dismiss；无批量清空入口见裁决 |
+| S32 | 通知关闭 | 入口切换、外点含顶部空白、Escape只关闭通知保留日程编辑 | Notifications/Topbar | 通过：通知Escape保留编辑、顶部外点关闭及重开重试，remaining.log |
+| S33 | 保存故障 | 读取失败旧内容/重试、未知结果原请求确认、冲突比较/采用、保存中继续输入/切换 | index/ConflictPreview | 通过：读取503保留旧内容/重试，冲突采用取消/确认及读回、EA07任务错误隔离/重试、原未知与迟到路径均已验 |
+| S34 | 现场恢复 | 刷新/跨模块保留视图/选段/月滚动/草稿/右轨滚动，账户隔离 | index/TaskBoard | 通过：真实账户甲未知请求及后续输入切乙隔离、回甲恢复确认；任务列滚动往返/刷新独立于网格 |
+| S35 | 关联布局 | 中英深浅、390窄屏辅助卡片、AI覆盖月份右轨、长编辑末端操作可达、无横溢出 | schedule.css/presentation.css | 通过：中英深浅390/1675弹层/看板/长内容/Every间隔；1100英文AI容器换行与11天选择保留AI输入均已验 |
+| S36 | 系统时区 | IANA偏移、窗口focus/15秒检查、DST提示、分钟边界当前线 | index/model | 通过：系统时区变化、15秒检测、DST真实时长与时间线5条专项 |
+
+当前：原型与隔离真实产品已完成36组源码分支清查，首次冻结保留的11组剩余浏览器条件均已补齐。7项原有问题已修复并定点复验，等待总控集中审查；证据与独立问题分类见 `test-results/experience-audit/schedule/receipt.md`。真实触屏、真实输入法和读屏器为单列未验条件。
+
+证据入口：`pair-results.json` / `pair-complete.log` 为同日期、同数据、同视口配对；`menu-probe.json` 为原型与候选键盘焦点及AX树；`regression.log` 为首次失败基线；`fixes-final.log`、`invalid-verified.log`、`month-drop.log`、`final-targets.log`、`resize-verified.log`、`timezone.log` 记录逐项复验。最终冻结编译产物 `candidate-complete-web`，源码摘要 `complete-sha256.txt`，独立outDir不覆盖共享基线。
+
+
+冻结状态：原分母36组均已实际覆盖，本轮追加清单11组剩余浏览器条件已闭合。原型自身的ghost偏移、拖动Escape关闭父编辑器、英文Every遮挡等保留原始对照，产品按现行规则修正；不将原型错误当作必须保留的行为。实际未验仅真实触屏、真实输入法和真实读屏器，未运行全CI。
+
+通知裁决：总控核对Design System外壳通知段后确认，行尾›跳转、拖桶二次确认删除，无批量清空入口。旧规格TT-U10已由总控修正；本线实际验证逐条dismiss至空态，不新增按钮，不计新增产品问题。
+
+追加证据：`completion.log` 13条通过；`completion-extra.log` 中草稿/重叠、移动加载异常、读取失败/采用、整组删除保留独立4条通过；`completion-red.log` 的EA06/EA07均在旧候选具名失败，`completion-green.log` 4条通过；`completion-extra-final.log` 原生ghost中间帧及通知失效目标/逐条删空2条通过。最终构建改为 `candidate-complete-web`，摘要见 `complete-sha256.txt`。

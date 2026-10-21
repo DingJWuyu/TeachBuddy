@@ -25,7 +25,7 @@ const initialScene = { view: 'class', tab: 'seats' };
 
 function useData(api) {
   const [data, setData] = useState({ classes: [], students: [], exams: [], tags: [], loaded: false, error: null });
-  const load = useCallback(async () => {
+  const load = useCallback(async ({ propagate = false } = {}) => {
     try {
       await api.recover();
       const c = await api.get('/classes');
@@ -33,6 +33,7 @@ function useData(api) {
       setData({ classes: c.items, students: s.items, exams: e.items, tags: t.items.filter((x) => !x.mergedIntoId), loaded: true, error: null });
     } catch (error) {
       setData((d) => ({ ...d, loaded: true, error }));
+      if (propagate) throw error;
     }
   }, [api]);
   useEffect(() => { load(); }, [load]);
@@ -44,33 +45,43 @@ function ClassForm({ api, initial, onClose, onSaved }) {
   const [term, setTerm] = useState(initial?.term ?? '');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const written = useRef(null);
   const save = async (e) => {
     e?.preventDefault();
+    if (busy) return;
     setBusy(true);
     setError('');
+    let completing = false;
     try {
-      const saved = initial
-        ? await api.put(`/classes/${initial.id}`, { baseVersion: initial.version, name, term })
-        : await api.post('/classes', { name, term });
-      onSaved(saved);
+      const body = { name, term }, signature = JSON.stringify(body);
+      if (written.current?.signature !== signature) {
+        const target = written.current?.saved || initial;
+        const saved = target
+          ? await api.put(`/classes/${target.id}`, { baseVersion: target.version, ...body })
+          : await api.post('/classes', body);
+        written.current = { saved, signature };
+      }
+      completing = true;
+      await onSaved(written.current.saved);
       onClose();
-    } catch (err) { setError(err.message); } finally { setBusy(false); }
+    } catch (err) { setError(completing ? tx('班级暂时无法读取') : err.message); } finally { setBusy(false); }
   };
   return (
     <Dialog
+      busy={busy}
       title={initial ? tx('班级信息') : tx('新建班级')}
       subtitle={initial ? null : tx('建好后，把学生加进来，再排一排座位。')}
       onClose={onClose}
       footer={(
         <>
-          <button type="button" className="cr-btn" onClick={onClose}>{tx('取消')}</button>
+          <button type="button" className="cr-btn" disabled={busy} onClick={onClose}>{tx('取消')}</button>
           <button type="button" className="cr-btn is-primary" disabled={busy || !name.trim()} onClick={save}>{initial ? tx('保存') : tx('创建班级')}</button>
         </>
       )}
     >
       <form className="cr-form" onSubmit={save}>
-        <Field label={tx('班级名称')}><input value={name} maxLength={60} placeholder={tx('例如：初三（2）班')} onChange={(e) => setName(e.target.value)} /></Field>
-        <Field label={tx('学期')} hint={tx('选填')}><input value={term} maxLength={60} placeholder={tx('例如：2026 秋季学期')} onChange={(e) => setTerm(e.target.value)} /></Field>
+        <Field label={tx('班级名称')}><input disabled={busy} value={name} maxLength={60} placeholder={tx('例如：初三（2）班')} onChange={(e) => setName(e.target.value)} /></Field>
+        <Field label={tx('学期')} hint={tx('选填')}><input disabled={busy} value={term} maxLength={60} placeholder={tx('例如：2026 秋季学期')} onChange={(e) => setTerm(e.target.value)} /></Field>
         {error && <p className="cr-error">{error}</p>}
       </form>
     </Dialog>
@@ -195,10 +206,10 @@ export function ClassroomWorkspace({ api, shell }) {
         <RailHint tone="green" onClick={() => shell.openPanel?.('ai')}>{tx('想知道谁最近进步了、哪类题失分多？问问助理。')}</RailHint>
       </Rail>
 
-      {dialog?.name === 'class' && <ClassForm api={api} {...dialog.props} onClose={close} onSaved={async (c) => { await reload(); go({ view: 'class', classId: c.id, studentId: null }); toast(dialog.props.initial ? tx('已保存') : tx('班级已创建')); }} />}
+      {dialog?.name === 'class' && <ClassForm api={api} {...dialog.props} onClose={close} onSaved={async (c) => { await reload({ propagate: true }); go({ view: 'class', classId: c.id, studentId: null }); toast(dialog.props.initial ? tx('已保存') : tx('班级已创建')); }} />}
       {dialog?.name === 'student' && <StudentForm ctx={ctx} {...dialog.props} onClose={close} />}
       {dialog?.name === 'exam' && <ExamForm ctx={ctx} {...dialog.props} onClose={close} />}
-      {dialog?.name === 'import' && <ImportDialog ctx={ctx} {...dialog.props} onClose={close} />}
+      {dialog?.name === 'import' && data.loaded && !data.error && <ImportDialog ctx={ctx} {...dialog.props} onClose={close} />}
       {dialog?.name === 'confirm' && <Confirm {...dialog.props} onClose={close} onError={async error => {
         close();
         toast(error.message || tx('操作没有完成，请再试一次。'), 'error');

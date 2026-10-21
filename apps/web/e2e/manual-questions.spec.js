@@ -8,6 +8,7 @@ fs.mkdirSync(evidence, { recursive: true });
 let world;
 test.afterEach(async ({context}, info) => {
   await context.close(); await world?.close();
+  if (!world) return;
   if (info.status === info.expectedStatus) fs.rmSync(world.directory, { recursive: true });
   else fs.writeFileSync(info.outputPath('fixture-directory.txt'), world.directory);
 });

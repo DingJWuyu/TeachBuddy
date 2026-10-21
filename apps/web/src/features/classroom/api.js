@@ -47,6 +47,9 @@ export function createClassroomApi({ accountKey, transport, getSignal, onIdentit
     if (response.status === 401) onIdentityLost?.();
     if (!response.ok) {
       let problem = problemFromResponse(response.status, value);
+      if (response.status === 422 && value?.type === '/problems/workbench/classroom-workbook-input') {
+        problem = { ...problem, kind: 'invalid', message: value.detail || tx('操作没有完成，请再试一次。') };
+      }
       if (response.status === 409 && value?.type?.startsWith('/problems/workbench/classroom-')) {
         const copy = {
           'restore-class-required': '请先恢复所属班级', 'restore-student-required': '请先恢复所属学生',
@@ -82,7 +85,16 @@ export function createClassroomApi({ accountKey, transport, getSignal, onIdentit
     const rows = d.rows.map(row => {
       const source = d.workbook.sheets[m?.sheetIndex || 0].rows.find(r => r.rowNumber === row.sourceRow);
       const display = col => source?.cells.find(c => c.column === col)?.display || '';
-      return { ...row, total: row.totalScore, source: { name: display(m?.nameColumn), studentNo: display(m?.studentNumberColumn) }, issues: issues.filter(i => i.sourceRow === row.sourceRow).map(importIssueView) };
+      const sourceIdentity = { name: display(m?.nameColumn), studentNo: display(m?.studentNumberColumn) };
+      const byNumber = sourceIdentity.studentNo.trim() ? roster.filter(student => student.studentNumber === sourceIdentity.studentNo.trim()) : [];
+      const suggestion = !row.studentId && sourceIdentity.name.trim() && byNumber.length === 1 && byNumber[0].name.trim() !== sourceIdentity.name.trim() ? byNumber[0] : null;
+      const rowIssues = issues.filter(i => i.sourceRow === row.sourceRow).map(issue => {
+        const view = importIssueView(issue);
+        return suggestion && issue.code === 'student-match-required'
+          ? { ...view, code: 'name-number-conflict', template: '学号 {{no}} 是 {{name}}，表中写的是 {{sheet}}', params: { no: sourceIdentity.studentNo, name: suggestion.name, sheet: sourceIdentity.name } }
+          : view;
+      });
+      return { ...row, total: row.totalScore, source: sourceIdentity, suggestedStudentId: suggestion?.id ?? null, issues: rowIssues };
     });
     return { ...d, issues: issues.map(importIssueView), mapping: m ? { sheet: m.sheetIndex, headerRow: m.headerRow, firstRow: m.firstDataRow, lastRow: m.lastDataRow, nameCol: m.nameColumn, numberCol: m.studentNumberColumn, totalCol: m.totalColumn, absentCol: m.attendanceColumn, questionCols: Object.fromEntries(m.questionColumns.map(q => [q.questionId, q.column])) } : null, fileName: files.get(d.sourceFileId)?.name || '', workbook: { ...d.workbook, sheets }, rows,
       unrecorded: roster.filter(s => !rows.some(r => !r.ignored && r.studentId === s.id)).map(s => s.id),

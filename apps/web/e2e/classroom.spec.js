@@ -495,3 +495,361 @@ test('原型成绩准入：无原卷按学号导入、缺总分保持未知，�
   await expect(page.getByRole('heading', { name: '没有归档的内容', exact: true })).toBeVisible();
   expect(errors).toEqual([]);
 });
+
+test('成绩筛选在读取统计时保留多选菜单，可连续选择考试与标签', async ({ page }, info) => {
+  await register(page, world, 'classroom-filter-menu@example.test');
+  const coach = page.getByRole('button', { name: /知道了/ });
+  if (await coach.count()) await coach.first().click();
+  const write = async (collection, data) => {
+    const response = await page.request.post(`${world.origin}/api/modules/classroom/${collection}`, {
+      headers: { ...headers(page), Origin: world.origin, 'X-TeachBuddy-Request': '1', 'Idempotency-Key': crypto.randomUUID() }, data,
+    });
+    expect(response.status()).toBe(201);
+    return response.json();
+  };
+  await write('classes', { name: '多选筛选班' });
+  for (const name of ['函数', '几何']) await write('tags', { name });
+  for (const name of ['第一次考试', '第二次考试']) await write('exams', {
+    name, subject: '数学', occurredOn: '2026-10-20', totalMax: 10, source: [],
+    questions: [{ label: '1', groupLabel: null, maxScore: 10, tagIds: [], locations: [] }],
+  });
+  await page.goto(world.origin + '/classroom');
+  await page.getByRole('tab', { name: '成绩', exact: true }).click();
+  await page.getByRole('button', { name: '全部考试', exact: true }).click();
+  const menu = page.getByRole('menu', { name: '考试', exact: true });
+  await menu.getByRole('menuitem', { name: /第一次考试/ }).click();
+  await expect(menu).toBeVisible();
+  await menu.getByRole('menuitem', { name: /第二次考试/ }).click();
+  await expect(menu).toBeVisible();
+  await expect(page.getByRole('button', { name: '2 场考试', exact: true })).toBeVisible();
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: '全部标签', exact: true }).click();
+  const tags = page.getByRole('menu', { name: '题目标签', exact: true });
+  await tags.getByRole('menuitem', { name: '函数', exact: true }).click();
+  await expect(tags).toBeVisible();
+  await page.route('**/api/modules/classroom/classes/*/statistics?*', route => route.fulfill({ status: 503, contentType: 'application/problem+json', body: JSON.stringify({ type: 'about:blank', status: 503, title: '暂时无法读取' }) }), { times: 1 });
+  await tags.getByRole('menuitem', { name: '几何', exact: true }).click();
+  await expect(tags).toBeVisible();
+  await expect(page.getByRole('button', { name: '2 个标签', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '成绩暂时无法读取', exact: true })).toBeVisible();
+  await page.screenshot({ path: info.outputPath('selected-filters-after-failure.png'), animations: 'disabled' });
+  await tags.getByRole('menuitem', { name: '全部标签', exact: true }).click();
+  await expect(page.getByRole('button', { name: '全部标签', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '成绩暂时无法读取', exact: true })).toHaveCount(0);
+});
+
+test('自由记录清空搜索后，迟到的旧关键词结果不能覆盖当前列表', async ({ page }) => {
+  await register(page, world, 'classroom-record-search@example.test');
+  const coach = page.getByRole('button', { name: /知道了/ });
+  if (await coach.count()) await coach.first().click();
+  await page.goto(world.origin + '/classroom');
+  await page.locator('.cr-empty').getByRole('button', { name: '新建班级', exact: true }).click();
+  await page.getByRole('dialog').getByLabel('班级名称', { exact: true }).fill('记录搜索班');
+  await page.getByRole('dialog').getByRole('button', { name: '创建班级', exact: true }).click();
+  await page.getByRole('tab', { name: '记录', exact: true }).click();
+  await page.locator('.cr-composer textarea').fill('清空搜索后应保留的课堂观察');
+  await page.getByRole('button', { name: '记下', exact: true }).click();
+  const note = page.locator('.cr-entry-card').filter({ hasText: '清空搜索后应保留的课堂观察' });
+  await expect(note).toBeVisible();
+  let release, started;
+  const waiting = new Promise(resolve => { release = resolve; });
+  const pending = new Promise(resolve => { started = resolve; });
+  await page.route('**/api/modules/classroom/records?*', async route => {
+    if (new URL(route.request().url()).searchParams.get('q') !== '不存在的词') return route.continue();
+    const response = await route.fetch({ ignoreHTTPSErrors: true });
+    started();
+    await waiting;
+    await route.fulfill({ response });
+  });
+  const query = page.getByPlaceholder('搜索记录里的文字');
+  await query.fill('不存在的词');
+  await pending;
+  const cleared = page.waitForResponse(response => response.url().includes('/classroom/records?') && !new URL(response.url()).searchParams.has('q'));
+  await page.getByRole('button', { name: '清除搜索', exact: true }).click();
+  await cleared;
+  await expect(note).toBeVisible();
+  const stale = page.waitForResponse(response => new URL(response.url()).searchParams.get('q') === '不存在的词');
+  release();
+  await (await stale).finished();
+  await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+  await expect(query).toHaveValue('');
+  await expect(note).toBeVisible();
+  let releaseSave, saveStarted, releaseSelected, selectedStarted;
+  const saveGate = new Promise(resolve => { releaseSave = resolve; });
+  const saving = new Promise(resolve => { saveStarted = resolve; });
+  const selectedGate = new Promise(resolve => { releaseSelected = resolve; });
+  const selected = new Promise(resolve => { selectedStarted = resolve; });
+  await page.route('**/api/modules/classroom/records', async route => {
+    const response = await route.fetch({ ignoreHTTPSErrors: true });
+    saveStarted();
+    await saveGate;
+    await route.fulfill({ response });
+  }, { times: 1 });
+  let held = false;
+  await page.route('**/api/modules/classroom/records?*', async route => {
+    if (new URL(route.request().url()).searchParams.get('q') !== '新筛选' || held) return route.continue();
+    held = true;
+    const response = await route.fetch({ ignoreHTTPSErrors: true });
+    selectedStarted();
+    await selectedGate;
+    await route.fulfill({ response });
+  });
+  await page.locator('.cr-composer textarea').fill('保存完成时仍使用新筛选的课堂记录');
+  await page.getByRole('button', { name: '记下', exact: true }).click();
+  await saving;
+  await query.fill('新筛选');
+  await selected;
+  try {
+    const saved = page.waitForResponse(response => response.request().method() === 'POST' && response.url().endsWith('/classroom/records'));
+    releaseSave();
+    await (await saved).finished();
+    await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+  } finally { releaseSave(); releaseSelected(); }
+  await expect(page.locator('.cr-entry-card')).toHaveCount(1);
+  await expect(page.locator('.cr-entry-card')).toContainText('保存完成时仍使用新筛选');
+});
+
+test('损坏工作簿明确拒绝后，可以直接重新选择有效Excel继续导入', async ({ page }) => {
+  await register(page, world, 'classroom-invalid-workbook@example.test');
+  const coach = page.getByRole('button', { name: /知道了/ });
+  if (await coach.count()) await coach.first().click();
+  const post = async (collection, data) => {
+    const response = await page.request.post(`${world.origin}/api/modules/classroom/${collection}`, {
+      headers: { ...headers(page), Origin: world.origin, 'X-TeachBuddy-Request': '1', 'Idempotency-Key': crypto.randomUUID() }, data,
+    });
+    expect(response.status()).toBe(201);
+    return response.json();
+  };
+  await post('classes', { name: '工作簿重选班' });
+  await page.goto(world.origin + '/classroom');
+  await page.getByRole('tab', { name: '成绩', exact: true }).click();
+  await expect(page.getByRole('heading', { name: '还没有考试', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '班级操作', exact: true }).click();
+  await page.getByRole('menuitem', { name: '导入成绩', exact: true }).click();
+  await expect(page.getByRole('dialog')).toContainText('先新建一场考试，写好每道计分题的满分。');
+  await page.keyboard.press('Escape');
+  await post('exams', { name: '工作簿重选考试', subject: '数学', occurredOn: '2026-10-20', totalMax: 100, source: [],
+    questions: [{ label: '1', groupLabel: null, maxScore: 10, tagIds: [], locations: [] }],
+  });
+  await page.goto(world.origin + '/classroom');
+  await page.getByRole('button', { name: '班级操作', exact: true }).click();
+  await page.getByRole('menuitem', { name: '导入成绩', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: '导入成绩', exact: true });
+  const rejected = page.waitForResponse(response => response.url().endsWith('/classroom/imports') && response.status() === 422);
+  await dialog.locator('input[type=file]').setInputFiles({ name: 'invalid.xlsx', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', buffer: Buffer.from('not-an-excel-workbook') });
+  await rejected;
+  await expect(dialog.locator('.cr-error')).toContainText('请选择实际的 .xlsx 或 .xls');
+  await dialog.locator('input[type=file]').setInputFiles({ name: 'valid.xlsx', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', buffer: scoreWorkbook() });
+  await expect(dialog.getByRole('button', { name: '生成校对表', exact: true })).toBeVisible();
+  await dialog.getByRole('tab', { name: '二班', exact: true }).click();
+  await dialog.getByRole('tab', { name: '一班', exact: true }).click();
+  await expect(dialog.locator('.cr-sheet-preview')).toContainText('张明');
+});
+
+test('姓名学号矛盾只提示唯一学号候选，老师快捷确认后才能入库', async ({ page }) => {
+  await register(page, world, 'classroom-name-conflict@example.test');
+  const coach = page.getByRole('button', { name: /知道了/ });
+  if (await coach.count()) await coach.first().click();
+  const post = async (collection, data) => {
+    const response = await page.request.post(`${world.origin}/api/modules/classroom/${collection}`, {
+      headers: { ...headers(page), Origin: world.origin, 'X-TeachBuddy-Request': '1', 'Idempotency-Key': crypto.randomUUID() }, data,
+    });
+    expect(response.status()).toBe(201);
+    return response.json();
+  };
+  const cls = await post('classes', { name: '姓名校对班' });
+  const student = await post('students', { classId: cls.id, name: '王小明', studentNumber: '001', birthday: null, interests: '', description: '' });
+  const other = await post('students', { classId: cls.id, name: '王小明', studentNumber: '002', birthday: null, interests: '', description: '' });
+  await post('exams', { name: '姓名校对考试', subject: '数学', occurredOn: '2026-10-20', totalMax: 100, source: [],
+    questions: [{ label: '1', groupLabel: null, maxScore: 10, tagIds: [], locations: [] }],
+  });
+  await page.goto(world.origin + '/classroom');
+  await page.getByRole('button', { name: '班级操作', exact: true }).click();
+  await page.getByRole('menuitem', { name: '导入成绩', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: '导入成绩', exact: true });
+  await dialog.locator('input[type=file]').setInputFiles({ name: 'conflicting-name.xlsx', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', buffer: scoreWorkbook() });
+  await dialog.getByLabel('到第几行', { exact: true }).fill('4');
+  await dialog.getByRole('button', { name: '生成校对表', exact: true }).click();
+  await dialog.getByRole('tab', { name: '全部', exact: true }).click();
+  const row = dialog.locator('.cr-review-row:not(.is-head)').first();
+  await expect(row.getByLabel('对应学生', { exact: true })).toHaveValue('');
+  await expect(dialog.getByRole('button', { name: '确认入库', exact: true })).toBeDisabled();
+  const candidate = dialog.getByRole('button', { name: '就是 王小明', exact: true });
+  await expect(candidate).toBeVisible();
+  await candidate.click();
+  await expect(row.getByLabel('对应学生', { exact: true })).toHaveValue(student.id);
+  await expect(candidate).toHaveCount(0);
+  await row.getByLabel('对应学生', { exact: true }).selectOption(other.id);
+  await expect(row.getByLabel('对应学生', { exact: true })).toHaveValue(other.id);
+  await expect(candidate).toHaveCount(0);
+  await row.getByLabel('对应学生', { exact: true }).selectOption(student.id);
+  await expect(dialog.getByRole('button', { name: '确认入库', exact: true })).toBeEnabled();
+  await dialog.getByRole('button', { name: '确认入库', exact: true }).click();
+  await expect(dialog.getByRole('heading', { name: '成绩已保存', exact: true })).toBeVisible();
+  const result = (await read(page, `results?classId=${cls.id}`)).items[0];
+  expect(result.rows.find(value => value.status === 'present').studentId).toBe(student.id);
+  await dialog.getByRole('button', { name: '完成', exact: true }).click();
+  await page.getByRole('button', { name: '班级操作', exact: true }).click();
+  await page.getByRole('menuitem', { name: '导入成绩', exact: true }).click();
+  const book = XLSX.read(scoreWorkbook(), { type: 'buffer' });
+  delete book.Sheets['一班'].A4;
+  book.Sheets['一班'].B4 = { t: 's', v: '没有对应学生' };
+  await dialog.locator('input[type=file]').setInputFiles({ name: 'no-identity.xlsx', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', buffer: XLSX.write(book, { type: 'buffer', bookType: 'xlsx' }) });
+  await dialog.getByLabel('到第几行', { exact: true }).fill('4');
+  await dialog.getByRole('button', { name: '生成校对表', exact: true }).click();
+  await expect(row.getByLabel('对应学生', { exact: true })).toHaveValue('');
+  await expect(dialog.getByRole('button', { name: /^就是 / })).toHaveCount(0);
+  await expect(dialog.getByRole('button', { name: '确认入库', exact: true })).toBeDisabled();
+});
+
+test('班级原卷取回保留原文件名和字节', async ({ page }, info) => {
+  await register(page, world, 'classroom-original-name@example.test');
+  const coach = page.getByRole('button', { name: /知道了/ });
+  if (await coach.count()) await coach.first().click();
+  const created = await page.request.post(`${world.origin}/api/modules/classroom/exams`, {
+    headers: { ...headers(page), Origin: world.origin, 'X-TeachBuddy-Request': '1', 'Idempotency-Key': crypto.randomUUID() },
+    data: { name: '保留原卷名称', subject: '数学', occurredOn: '2026-10-20', totalMax: 10, source: [],
+      questions: [{ label: '1', groupLabel: null, maxScore: 10, tagIds: [], locations: [] }] },
+  });
+  expect(created.status()).toBe(201);
+  await page.goto(world.origin + '/classroom');
+  await page.locator('.tbx-rail').getByRole('button', { name: /考试/ }).click();
+  await page.locator('.cr-exam-card').click();
+  const paper = page.locator('.cr-panel').filter({ has: page.getByRole('heading', { name: '原卷', exact: true }) });
+  await paper.locator('input[type=file]').setInputFiles(path.resolve('test/fixtures/questions/W.docx'));
+  const file = page.locator('.cr-files a').filter({ hasText: 'W.docx' });
+  await expect(file).toHaveAttribute('href', /^blob:/);
+  const waiting = page.waitForEvent('download');
+  await file.click();
+  const downloaded = await waiting;
+  const filename = info.outputPath('original.docx');
+  await downloaded.saveAs(filename);
+  expect(fs.readFileSync(filename).equals(fs.readFileSync(path.resolve('test/fixtures/questions/W.docx')))).toBe(true);
+  expect(downloaded.suggestedFilename()).toBe('W.docx');
+  await paper.locator('input[type=file]').setInputFiles([path.resolve('test/fixtures/questions/P.pdf'), path.resolve('test/fixtures/questions/figure.png')]);
+  await expect(page.locator('.cr-files li')).toHaveCount(3);
+  for (const name of ['P.pdf', 'figure.png']) {
+    const preview = page.locator('.cr-files a').filter({ hasText: name });
+    await expect(preview).toHaveAttribute('href', /^blob:/);
+    expect(await preview.getAttribute('download')).toBeNull();
+    await expect(preview).toHaveAttribute('target', '_blank');
+  }
+  await page.locator('.cr-files img').evaluate(image => image.decode());
+});
+
+test('班级信息保存等待读回后关闭，连续切换标签不会被迟到回调拉回班级', async ({ page }) => {
+  await register(page, world, 'classroom-class-save@example.test');
+  const coach = page.getByRole('button', { name: /知道了/ });
+  if (await coach.count()) await coach.first().click();
+  await page.goto(world.origin + '/classroom');
+  await page.locator('.cr-empty').getByRole('button', { name: '新建班级', exact: true }).click();
+  await page.getByRole('dialog').getByLabel('班级名称', { exact: true }).fill('连续切换班');
+  await page.getByRole('dialog').getByRole('button', { name: '创建班级', exact: true }).click();
+  await expect(page.getByRole('heading', { name: '连续切换班', exact: true })).toBeVisible();
+  const writes = [];
+  page.on('request', request => { if (request.method() === 'PUT' && /\/classroom\/classes\/[^/]+$/.test(new URL(request.url()).pathname)) writes.push(request); });
+  await page.getByRole('button', { name: '班级操作', exact: true }).click();
+  await page.getByRole('menuitem', { name: '班级信息', exact: true }).click();
+  let release, started;
+  const gate = new Promise(resolve => { release = resolve; });
+  const pending = new Promise(resolve => { started = resolve; });
+  await page.route('**/api/modules/classroom/classes', async route => {
+    const response = await route.fetch({ ignoreHTTPSErrors: true });
+    started();
+    await gate;
+    await route.fulfill({ response });
+  }, { times: 1 });
+  const dialog = page.getByRole('dialog', { name: '班级信息', exact: true });
+  await dialog.getByLabel('学期').fill('保存后继续操作');
+  await dialog.getByRole('button', { name: '保存', exact: true }).click();
+  await pending;
+  try {
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole('button', { name: '保存', exact: true })).toBeDisabled();
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeVisible();
+    await page.locator('.cr-scrim').click({ position: { x: 30, y: 30 } });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole('button', { name: '关闭', exact: true })).toBeDisabled();
+    await page.keyboard.press('Tab');
+    await expect(dialog).toBeFocused();
+  } finally { release(); }
+  await expect(dialog).toHaveCount(0);
+  await page.locator('.tbx-rail').getByRole('button', { name: /题目标签/ }).click();
+  await expect(page.getByRole('heading', { name: '题目标签', exact: true })).toBeVisible();
+  await page.locator('.tbx-rail').getByRole('button', { name: /连续切换班/ }).click();
+  await page.getByRole('button', { name: '班级操作', exact: true }).click();
+  await page.getByRole('menuitem', { name: '班级信息', exact: true }).click();
+  await dialog.getByLabel('学期').fill('读回失败仍保留输入');
+  await page.route('**/api/modules/classroom/classes', route => route.fulfill({ status: 503, contentType: 'application/problem+json', body: JSON.stringify({ type: '/problems/workbench/temporarily-unavailable' }) }), { times: 1 });
+  await dialog.getByRole('button', { name: '保存', exact: true }).click();
+  await expect(dialog.locator('.cr-error')).toContainText('班级暂时无法读取');
+  await expect(dialog.getByLabel('学期')).toHaveValue('读回失败仍保留输入');
+  expect(writes).toHaveLength(2);
+  await dialog.getByRole('button', { name: '保存', exact: true }).click();
+  await expect(dialog).toHaveCount(0);
+  expect(writes).toHaveLength(2);
+  await expect(page.locator('.cr-head-title')).toContainText('读回失败仍保留输入');
+});
+
+test('导入校对原键恢复完成后才打开草稿，首次刷新显示恢复后的分数', async ({ page }) => {
+  await register(page, world, 'classroom-import-recover@example.test');
+  const coach = page.getByRole('button', { name: /知道了/ });
+  if (await coach.count()) await coach.first().click();
+  const post = async (collection, data) => {
+    const response = await page.request.post(`${world.origin}/api/modules/classroom/${collection}`, {
+      headers: { ...headers(page), Origin: world.origin, 'X-TeachBuddy-Request': '1', 'Idempotency-Key': crypto.randomUUID() }, data,
+    });
+    expect(response.status()).toBe(201);
+    return response.json();
+  };
+  const cls = await post('classes', { name: '校对恢复班' });
+  await post('students', { classId: cls.id, name: '张明', studentNumber: '001', birthday: null, interests: '', description: '' });
+  await post('exams', { name: '校对恢复考试', subject: '数学', occurredOn: '2026-10-20', totalMax: 100, source: [],
+    questions: [{ label: '1', groupLabel: null, maxScore: 10, tagIds: [], locations: [] }] });
+  await page.goto(world.origin + '/classroom');
+  await page.getByRole('button', { name: '班级操作', exact: true }).click();
+  await page.getByRole('menuitem', { name: '导入成绩', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: '导入成绩', exact: true });
+  await dialog.locator('input[type=file]').setInputFiles({ name: 'recover.xlsx', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', buffer: scoreWorkbook() });
+  await dialog.getByLabel('到第几行', { exact: true }).fill('4');
+  await dialog.getByRole('button', { name: '生成校对表', exact: true }).click();
+  await dialog.getByRole('tab', { name: '全部', exact: true }).click();
+  const keys = [];
+  let release, started;
+  const gate = new Promise(resolve => { release = resolve; });
+  const recovering = new Promise(resolve => { started = resolve; });
+  await page.route('**/api/modules/classroom/imports/*', async route => {
+    if (route.request().method() !== 'PUT') return route.continue();
+    keys.push(route.request().headers()['idempotency-key']);
+    if ([1, 3, 4].includes(keys.length)) return route.fulfill({ status: 503, contentType: 'application/problem+json', body: JSON.stringify({ type: '/problems/workbench/temporarily-unavailable' }) });
+    if (keys.length === 2) { started(); await gate; }
+    await route.continue();
+  });
+  const total = dialog.locator('.cr-review-row:not(.is-head)').first().getByLabel('总分', { exact: true });
+  await total.fill('45');
+  await total.press('Tab');
+  await expect(dialog.locator('.cr-error')).toBeVisible();
+  const reloading = page.reload();
+  await recovering;
+  try { await expect(dialog).toHaveCount(0); } finally { release(); }
+  await reloading;
+  await dialog.locator('.cr-review').waitFor();
+  await dialog.getByRole('tab', { name: '全部', exact: true }).click();
+  await expect(total).toHaveValue('45');
+  expect(keys).toHaveLength(2);
+  expect(keys[0]).toBe(keys[1]);
+  await total.fill('46');
+  await total.press('Tab');
+  await expect(dialog.locator('.cr-error')).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole('heading', { name: '班级暂时无法读取', exact: true })).toBeVisible();
+  await expect(dialog).toHaveCount(0);
+  await page.getByRole('button', { name: '重新加载', exact: true }).click();
+  await dialog.locator('.cr-review').waitFor();
+  await dialog.getByRole('tab', { name: '全部', exact: true }).click();
+  await expect(total).toHaveValue('46');
+  expect(keys).toHaveLength(5);
+  expect(keys[2]).toBe(keys[3]);
+  expect(keys[3]).toBe(keys[4]);
+});

@@ -28,21 +28,41 @@
 
 | 工作线 | 写入边界 | 行为清单 | 当前状态 |
 | --- | --- | --- | --- |
-| account | auth、设置、帮助、支持页及其所属定点回归/文档 | `experience-audit/account.md` | 待派发 |
-| home | agent、首页内容及其所属定点回归/文档 | `experience-audit/home.md` | 待派发 |
-| questions | questions 及其所属定点回归/文档 | `experience-audit/questions.md` | 待派发 |
-| resources | resources 及其所属定点回归/文档 | `experience-audit/resources.md` | 待派发 |
-| schedule | schedule、Notifications 及其所属定点回归/文档 | `experience-audit/schedule.md` | 待派发 |
-| classroom | classroom 及其所属定点回归/文档 | `experience-audit/classroom.md` | 待派发 |
-| math | math 界面及其所属定点回归/文档 | `experience-audit/math.md` | 待派发 |
-| root | 其余工作台外壳、共享组件/样式/翻译、计划/台账/buffer、构建与 Git | `experience-audit/shared.md` | 环境准备 |
+| account | auth、设置、帮助、支持页及其所属定点回归/文档 | `experience-audit/account.md` | 51组完成，作者冻结 |
+| home | agent、首页内容及其所属定点回归/文档 | `experience-audit/home.md` | 18组77细项完成，作者冻结 |
+| questions | questions 及其所属定点回归/文档 | `experience-audit/questions.md` | 47组完成，作者冻结 |
+| resources | resources 及其所属定点回归/文档 | `experience-audit/resources.md` | 69组完成，作者冻结 |
+| schedule | schedule、Notifications 及其所属定点回归/文档 | `experience-audit/schedule.md` | 36组完成，作者冻结 |
+| classroom | classroom 及其所属定点回归/文档 | `experience-audit/classroom.md` | 74组完成，作者冻结 |
+| math | math 界面及其所属定点回归/文档 | `experience-audit/math.md` | 53组完成，49组交互与4组实际能力/外部边界，作者冻结 |
+| root | 其余工作台外壳、共享组件/样式/翻译、计划/台账/buffer、构建与 Git | `experience-audit/shared.md` | 28组完成，公共归并与集成 |
 
 执行者在接手后发回实际边界清单；共用文档和测试遇到重叠先交总控。公共问题报告准确路径、复现与建议，由总控统一修改。完整工程规则沿[开发约定](../agents/module-development.md#编排)，模型和权限不由旧回执推断。
 
 ## 进度、问题与证据
 
-当前：隔离工作树已创建，准备依赖与固定基线构建，随后并行建立清单并开始实际对照。
+当前：全部作者源码和回执已冻结，班级最后的原键恢复/首次读取竞态也已完成红绿复验，固定提交后进入独立审查。清单内可在隔离环境触发的等待、失败、快速连续操作和尺寸组合已补齐，没有以已通过数量代替遗漏条件。真实设备、线上模型及真实邮件仍按授权保留边界。总控已通过资源更新、题库校对保存、跨模块返回和新浏览器/进程重启读回的既有材料集成用例，证据 `root/materials-integration.log`；没有重跑完整本地CI。
+
+数学恢复原生全屏后暴露的共享Portal遮挡已由总控修复，归 `EA-shared-01`，明确不计为基线既存偏差。原型与产品共有、尚无明确规格裁决的细节登记根buffer；已有设计规则明确要求的多选保持、键盘可达和长文案避让按规则修复，分类单列。
 
 问题按独立根因编号 `EA-<工作线>-NN`；同一公共根因跨模块只计一次，多个独立根因不能为降低数字合并。每条保留触发、原型依据、基线复现、修复及复验；区分原有偏差、本轮引入、测试缺陷。总控在收口时核对分区条目并记录去重总数。
 
-下一步：完成隔离环境，派发七条边界明确的作者工作线；总控同步检查公共实现与覆盖分母。最终候选、审查、CI、集成和清理结果尚未产生。
+已确认问题归并如下，最终通过状态仍以作者回执及集中审查为准：
+
+| 工作线 | 基线问题 | 独立根因 |
+| --- | --- | --- |
+| account | 1 | 帮助快速切文丢失最后滚动位置 |
+| home | 1 | 首条长回答及输入区变高后未跟随底部 |
+| questions | 5 | 材料菜单按钮外形、校对卡留白、提示底色、保存校对导致原稿重载闪烁、原稿选择框宽度 |
+| resources | 1 | 更新/归档/恢复/彻底删除仍用旧确认模板 |
+| schedule | 7 | 待安排排期落在过去、重复输入宽度、无效时间语义、事项菜单键盘、英文重复标签重叠、拖拽卡坐标、通知跳转残留旧错误 |
+| classroom | 7 | 多选加载卸载菜单、旧搜索覆盖当前结果、损坏Excel不能重选、姓名学号冲突快捷确认不可达、原卷下载丢文件名、保存迟到导航、未决校对恢复前读出旧草稿 |
+| math | 3 | 原生全屏缺失、窄屏展示标题错位、试演切换与返回竞态 |
+
+本轮修复范围共25项基线问题，含原型也有但已有明确行为/设计规则要求修复的缺陷；不全部称为复刻遗漏。另有7项原型共有且未裁决的发现留buffer：反馈选文件丢附件，助理取消课程保留引用、中段引用残留标记、复制拒绝假成功，帮助末节高亮，题库单复数与快速弹窗聚焦。加总为32项本轮既存发现，最终计数待集中审查确认。学期与反馈收件是此前暂缓项，不重算为本轮发现。
+
+数学全屏Portal组合问题和事项菜单替换时的临时引用错误均属开发中发现与修复，不混计基线。旧测试错误假设单列，不用测试失败数推高产品问题数。
+
+通知规格旧“清空/点行跳转”与Design System已不一致，总控按原型明确的“行尾跳转、拖桶再确认删除”同步规格，没有新增按钮。没有明确规则裁决的原型共同问题继续集中留buffer。
+
+下一步：固定候选，集中 Standards/Spec 独立审查，再执行PR CI与集成。总控已从冻结源码构建 `test-results/experience-audit/candidate-web` 供必要浏览器复核。尚未创建PR，没有独立审查或CI通过结论。原型、后端、依赖和生成文件均未改动。

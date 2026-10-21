@@ -1161,3 +1161,39 @@ for (const date of ['1900-01-01', '2100-12-31']) test(`日期选择器限制支�
   await close(page);
   expect((await call('GET', `${E}/${task.id}`)).time.date).toBe(date);
 });
+
+test('失效通知的读取错误不覆盖后续任务，重试重新读取目标', async ({ page }) => {
+  const reminder = { anchor: 'start', side: 'before', minutes: 0 };
+  const removed = await call('POST', E, input('已删除的通知目标', { reminder }));
+  const active = await call('POST', E, input('仍然有效的通知目标', { reminder }));
+  now = '2026-09-25T07:01:00Z';
+  await page.clock.setFixedTime(new Date(now));
+  await call('GET', N);
+  await call('POST', `${E}/${removed.id}/delete`, { expectedVersion: removed.version });
+  await page.reload();
+  const panel = page.locator('.tb-popover-notifications');
+  const viewNotice = async title => {
+    await page.getByRole('button', { name: '通知', exact: true }).click();
+    await panel.locator('.tb-notification').filter({ hasText: title }).getByRole('button', { name: '在日程中查看', exact: true }).click();
+    await expect(panel).toHaveCount(0);
+  };
+  await viewNotice(removed.title);
+  await expect(page.locator('.cal-load-error')).toContainText('可能已被删除');
+  await viewNotice(active.title);
+  await expect(page.locator('#calendar-entry-title')).toHaveValue(active.title);
+  await expect(page.locator('.cal-load-error')).toHaveCount(0);
+  await close(page);
+  let targetReads = 0;
+  await page.route(`**${E}/${active.id}`, async route => {
+    if (route.request().method() !== 'GET') return route.continue();
+    targetReads += 1;
+    if (targetReads > 1) return route.continue();
+    await route.fulfill({ status: 503, contentType: 'application/problem+json', body: JSON.stringify({ type: '/problems/workbench/unavailable', status: 503, title: '暂时无法读取' }) });
+  });
+  await page.locator('.cal-upcoming-row').filter({ hasText: active.title }).click();
+  await expect(page.locator('.cal-load-error')).toBeVisible();
+  await page.locator('.cal-load-error').getByRole('button', { name: '重试', exact: true }).click();
+  await expect(page.locator('#calendar-entry-title')).toHaveValue(active.title);
+  expect(targetReads).toBe(2);
+  await expect(page.locator('.cal-load-error')).toHaveCount(0);
+});

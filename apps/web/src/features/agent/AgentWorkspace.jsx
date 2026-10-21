@@ -969,15 +969,24 @@ export function AgentWorkspace({ variant = 'panel' }) {
   const [lesson, setLesson] = useState(null);
   const context = useCurrentContext(variant === 'panel', agent.accountKey);
   const { snapshot, draft } = agent;
+  const seenSeq = useRef({ id: null, seq: 0 });
+  const autoScroll = useRef(false);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const area = thread.current;
     if (!area) return;
     try { area.scrollTop = Number(localStorage.getItem(agent.prefix + agent.id + ':scroll') ?? area.scrollHeight); } catch {}
     nearBottom.current = area.scrollHeight - area.clientHeight - area.scrollTop < 160;
-  }, [agent.id, Boolean(snapshot)]);
-  const seenSeq = useRef({ id: null, seq: 0 });
-  const autoScroll = useRef(false);
+    const observer = new ResizeObserver(() => {
+      if (!nearBottom.current || area.scrollHeight - area.clientHeight - area.scrollTop < 1) return;
+      autoScroll.current = true;
+      area.scrollTop = area.scrollHeight;
+    });
+    observer.observe(area);
+    // The measured composer changes this padding after the first answer mounts.
+    if (area.firstElementChild) observer.observe(area.firstElementChild, { box: 'border-box' });
+    return () => observer.disconnect();
+  }, [agent.id, Boolean(snapshot), Boolean(snapshot?.messages?.length)]);
   // Only real growth of the conversation counts as “new”, not draft or title events.
   const lastMsg = snapshot?.messages?.[snapshot.messages.length - 1];
   const growth = `${snapshot?.messages?.length ?? 0}:${lastMsg?.text?.length ?? 0}:${lastMsg?.cards?.length ?? 0}:${snapshot?.toolCalls?.length ?? 0}`;

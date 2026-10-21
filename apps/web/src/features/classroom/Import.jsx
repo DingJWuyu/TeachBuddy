@@ -321,8 +321,8 @@ export function ImportDialog({ ctx, examId: givenExam, classId: givenClass, onCl
                         {i.code === 'out-of-range' && i.field && i.field !== 'total' && (
                           <input className="cr-fix" aria-label={tx('改成')} inputMode="decimal" defaultValue={r.scores?.[i.field] ?? ''} placeholder={tx('改成')} onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur(); }} onBlur={(e) => { const v = e.target.value.trim(); if (String(r.scores?.[i.field] ?? '') !== v) edit(r, { scores: { [i.field]: v === '' ? null : Number(v) } }); }} />
                         )}
-                        {i.code === 'name-number-conflict' && r.studentId && (
-                          <button type="button" className="cr-link" onClick={() => edit(r, { studentId: r.studentId })}>{tx('就是 {{name}}', { name: roster.find((st) => st.id === r.studentId)?.name })}</button>
+                        {i.code === 'name-number-conflict' && r.suggestedStudentId && (
+                          <button type="button" className="cr-link" onClick={() => edit(r, { studentId: r.suggestedStudentId })}>{tx('就是 {{name}}', { name: roster.find((st) => st.id === r.suggestedStudentId)?.name })}</button>
                         )}
                       </li>
                     ))}

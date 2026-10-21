@@ -738,3 +738,27 @@ test('原型对照：历史底部会话菜单可完整点击，删除保留就�
   await page.reload();
   await expect(page.locator('.tbx-thread')).toHaveCount(12);
 });
+
+test('首条长回答到达后跟随末尾，阅读旧文时新回答保留位置', async ({ page }) => {
+  const { provider } = await import('../../../api/test/fixtures/c26/provider.js');
+  const model = await provider([
+    [{ type: 'text', text: '课堂讲解\n\n' + '先观察图像，再解释参数。\n\n'.repeat(45) + '第一轮结束。' }],
+    [{ type: 'text', text: '第二轮补充。\n\n' + '检查每一步的依据。\n\n'.repeat(12) }],
+  ]);
+  await world.close(); world = await startWorld({ agent: model.config });
+  await register(page);
+  await page.locator('.tbx-composer.is-placeholder').click();
+  const input = page.getByRole('textbox', { name: 'AI 输入', exact: true });
+  await input.fill('请给我完整讲解');
+  await page.getByRole('button', { name: '发送', exact: true }).click();
+  await expect(page.getByRole('button', { name: '重新回答', exact: true })).toBeVisible();
+  const thread = page.locator('.tbx-thread-area');
+  await expect.poll(() => thread.evaluate(element => element.scrollHeight - element.clientHeight - element.scrollTop < 3)).toBe(true);
+  await thread.evaluate(element => { element.scrollTop = 120; });
+  await input.fill('再补充一段');
+  await page.getByRole('button', { name: '发送', exact: true }).click();
+  await expect(page.locator('.tbx-msg:not(.is-user)').last()).toContainText('第二轮补充');
+  await expect.poll(() => thread.evaluate(element => element.scrollTop)).toBe(120);
+  await page.getByRole('button', { name: '新消息', exact: true }).click();
+  await expect.poll(() => thread.evaluate(element => element.scrollHeight - element.clientHeight - element.scrollTop < 3)).toBe(true);
+});

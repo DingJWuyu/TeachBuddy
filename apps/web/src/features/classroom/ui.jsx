@@ -54,14 +54,18 @@ export function Menu({ label, icon = 'more', items, align = 'end', className, tr
   );
 }
 
-export function Dialog({ title, subtitle, onClose, children, footer, wide, className }) {
+export function Dialog({ title, subtitle, onClose, children, footer, wide, className, busy = false }) {
   const ref = useRef(null);
+  const closing = useRef({ busy, onClose });
+  closing.current = { busy, onClose };
+  const dismiss = () => { if (!closing.current.busy) closing.current.onClose(); };
   useEffect(() => {
     const previous = document.activeElement;
     const key = (e) => {
-      if (e.key === 'Escape') { e.stopPropagation(); onClose(); }
+      if (e.key === 'Escape') { e.stopPropagation(); dismiss(); }
       if (e.key === 'Tab') {
         const nodes = [...(ref.current?.querySelectorAll('button:not(:disabled),input:not(:disabled):not([type=hidden]),textarea:not(:disabled),select:not(:disabled),a[href]') || [])].filter(el => el.getClientRects().length);
+        if (!nodes.length) { e.preventDefault(); ref.current?.focus(); return; }
         const first = nodes[0], last = nodes.at(-1);
         if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last?.focus(); }
         else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first?.focus(); }
@@ -72,15 +76,16 @@ export function Dialog({ title, subtitle, onClose, children, footer, wide, class
     first?.focus({ preventScroll: true });
     return () => { document.removeEventListener('keydown', key); if (previous?.isConnected) previous.focus({ preventScroll: true }); };
   }, []);
+  useEffect(() => { if (busy) ref.current?.focus({ preventScroll: true }); }, [busy]);
   return (
-    <div className="cr-scrim" onPointerDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <section ref={ref} className={cx('cr-dialog', wide && 'is-wide', className)} role="dialog" aria-modal="true" aria-label={title}>
+    <div className="cr-scrim" onPointerDown={(e) => { if (e.target === e.currentTarget) dismiss(); }}>
+      <section ref={ref} className={cx('cr-dialog', wide && 'is-wide', className)} role="dialog" tabIndex={-1} aria-modal="true" aria-label={title}>
         <header className="cr-dialog-head">
           <div>
             <h2>{title}</h2>
             {subtitle && <p>{subtitle}</p>}
           </div>
-          <button type="button" className="cr-icon-btn is-filled" aria-label={tx('关闭')} onClick={onClose}><Icon name="close" size={13} stroke={2.4} /></button>
+          <button type="button" className="cr-icon-btn is-filled" aria-label={tx('关闭')} disabled={busy} onClick={dismiss}><Icon name="close" size={13} stroke={2.4} /></button>
         </header>
         <div className="cr-dialog-body">{children}</div>
         {footer && <footer className="cr-dialog-foot">{footer}</footer>}
