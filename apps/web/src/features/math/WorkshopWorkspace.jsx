@@ -71,6 +71,8 @@ export default function WorkshopWorkspace({ draft, accountKey, takeAssistantRequ
   const [downloadOpen, setDownloadOpen] = useState(false);
   const [download, setDownload] = useState({ format: 'png', selection: 'work', background: 'white', width: 1600 });
   const [presenting, setPresenting] = useState(false);
+  const nativePresentation = useRef(false);
+  const previewOperation = useRef(null);
   const [confirmation, confirmationDialog] = useMathConfirm();
   const [localFormula, setLocalFormula] = useState(null);
   const localFormulaRef = useRef(null); localFormulaRef.current = localFormula;
@@ -153,6 +155,13 @@ export default function WorkshopWorkspace({ draft, accountKey, takeAssistantRequ
     };
     window.addEventListener('keydown', keys); return () => window.removeEventListener('keydown', keys);
   }, [presenting, tool, onSave]);
+  useEffect(() => {
+    const fullscreenChanged = () => {
+      if (nativePresentation.current && document.fullscreenElement !== moduleHost.current) void endPreview();
+    };
+    document.addEventListener('fullscreenchange', fullscreenChanged);
+    return () => document.removeEventListener('fullscreenchange', fullscreenChanged);
+  }, []);
   async function apply(changes) {
     if (!editor.current || frozen) return;
     try { return await editor.current.apply({ baseEditRevision: editor.current.read().editRevision, changes }); }
@@ -194,10 +203,41 @@ export default function WorkshopWorkspace({ draft, accountKey, takeAssistantRequ
     if (await apply({ steps: [...source.steps, step], initialStepId: source.initialStepId ?? step.id })) select({ type: 'step', id: step.id });
   }
   async function preview(fullscreen = false) {
-    try { await capture(); if (drawingTool) { await editor.current.setTool('select'); setDrawingTool(null); } await editor.current.preview({ stepId: source.initialStepId }); setState(editor.current.read()); if (fullscreen) { setPresenting(true); shell?.closePanel(); } }
+    try {
+      await capture();
+      if (drawingTool) { await editor.current.setTool('select'); setDrawingTool(null); }
+      await showPreview({ stepId: source.initialStepId });
+      if (fullscreen) {
+        setPresenting(true);
+        shell?.closePanel();
+        if (moduleHost.current?.requestFullscreen) {
+          await moduleHost.current.requestFullscreen().catch(() => {});
+          nativePresentation.current = document.fullscreenElement === moduleHost.current;
+        }
+      }
+    }
     catch (error) { onError(error); }
   }
-  async function endPreview() { try { await editor.current?.endPreview(); setState(editor.current.read()); setPresenting(false); } catch (error) { onError(error); } }
+  async function showPreview(options) {
+    if (previewOperation.current) return previewOperation.current;
+    const controller = editor.current;
+    const operation = controller.preview(options);
+    previewOperation.current = operation;
+    setState(controller.read());
+    try { return await operation; }
+    finally {
+      if (previewOperation.current === operation) previewOperation.current = null;
+      if (editor.current === controller) setState(controller.read());
+    }
+  }
+  async function endPreview() {
+    nativePresentation.current = false;
+    try {
+      await previewOperation.current;
+      await editor.current?.endPreview(); setState(editor.current.read()); setPresenting(false);
+      if (document.fullscreenElement === moduleHost.current) await document.exitFullscreen().catch(() => {});
+    } catch (error) { onError(error); }
+  }
   async function removeFormula(formula) {
     if (localFormula?.id === formula.id) { clearTimeout(localTimer.current); localTimer.current = null; setLocalFormula(null); }
     const affected = source.steps.filter(step => step.visibleFormulas.includes(formula.id));
@@ -237,7 +277,7 @@ export default function WorkshopWorkspace({ draft, accountKey, takeAssistantRequ
       {state.mode === 'preview' && <span className="mw-mode-label">{t('试演中')}</span>}
       {state.mode !== 'preview' && (source.formulas.length > 0 || source.graph || pending || status === '保存失败') && <span className={`mw-save-state${status === '保存失败' || pending ? ' has-error' : ''}`} role="status">{t(pending && !busy ? '保存结果待确认' : status === '未保存' ? '等待保存' : status)}</span>}
       <div className="mw-heading-actions">
-        {state.mode === 'preview' ? <button className="mw-button is-primary" onClick={endPreview}>{t('返回编辑')}</button> : <>
+        {state.mode === 'preview' ? <button className="mw-button is-primary" disabled={state.busy} onClick={endPreview}>{t('返回编辑')}</button> : <>
           <button className="mw-button is-primary" disabled={!ready || busy || state.busy} onClick={() => preview()}><Icon name="play" size={13}/>{t('试演')}</button>
 
         </>}
@@ -293,9 +333,9 @@ export default function WorkshopWorkspace({ draft, accountKey, takeAssistantRequ
           <span aria-hidden="true">ƒ</span><input ref={expressionField} aria-label={t('图形表达式')} placeholder={t('输入算式，如 f(x)=x²')} disabled={state.busy} value={expression} onChange={event => changeExpression(event.target.value)}/>
           <button type="submit" className="mw-icon" aria-label={t('建立图形')} disabled={state.busy || !expression.trim() || !ready}><Icon name="arrowUp" size={16}/></button><button type="button" className="mw-icon" aria-label={t('收起算式')} onClick={() => setShowExpression(false)}><Icon name="close" size={16}/></button>
         </form></ModulePresence>
-        {source.steps.length > 0 ? <div className="mw-step-rail"><span>{t('步骤')}</span><nav aria-label={t('教学步骤')}>{source.steps.map((step, index) => <button key={step.id} disabled={state.busy} className={selectedStep?.id === step.id || state.previewStepId === step.id ? 'is-selected' : ''} onClick={() => state.mode === 'preview' ? editor.current.preview({ stepId: step.id }).then(() => setState(editor.current.read())).catch(onError) : select({ type: 'step', id: step.id })}><span>{index + 1}</span>{step.title}</button>)}</nav>{!frozen && <button className="mw-icon" aria-label={t('添加步骤')} disabled={state.busy} onClick={addStep}><Icon name="plus" size={15}/></button>}</div>
+        {source.steps.length > 0 ? <div className="mw-step-rail"><span>{t('步骤')}</span><nav aria-label={t('教学步骤')}>{source.steps.map((step, index) => <button key={step.id} disabled={state.busy} className={selectedStep?.id === step.id || state.previewStepId === step.id ? 'is-selected' : ''} onClick={() => state.mode === 'preview' ? showPreview({ stepId: step.id }).catch(onError) : select({ type: 'step', id: step.id })}><span>{index + 1}</span>{step.title}</button>)}</nav>{!frozen && <button className="mw-icon" aria-label={t('添加步骤')} disabled={state.busy} onClick={addStep}><Icon name="plus" size={15}/></button>}</div>
           : null}
-        {state.mode === 'preview' && <PreviewControls state={state} editor={editor.current} onError={onError} onState={setState} readOnly={!!draft.deletedAt}/>}
+        {state.mode === 'preview' && <PreviewControls state={state} editor={editor.current} onPreview={showPreview} onError={onError} onState={setState} readOnly={!!draft.deletedAt}/>}
       </main>
       {shell && <WorkshopToolsPortal>        <div className="mw-side-content" inert={editingBlocked || undefined} onKeyDown={event => {
           if (event.key !== 'Enter' || event.nativeEvent.isComposing || event.repeat || event.shiftKey || event.ctrlKey || event.metaKey || event.altKey || event.target.closest('form')) return;
@@ -371,18 +411,18 @@ function StepTools({ step, onTextChange, onPatch, source, objects, apply, frozen
     <div className="mw-step-order">{['up', 'down'].map(direction => <button key={direction} className="mw-button" disabled={frozen || (direction === 'up' ? source.steps[0].id === step.id : source.steps.at(-1).id === step.id)} onClick={() => { const steps = [...source.steps]; const index = steps.findIndex(item => item.id === step.id); const next = index + (direction === 'up' ? -1 : 1); [steps[index], steps[next]] = [steps[next], steps[index]]; void apply({ steps }); }}>{t(direction === 'up' ? '前移' : '后移')}</button>)}</div><button className="mw-button" disabled={frozen || source.initialStepId === step.id} onClick={() => apply({ initialStepId: step.id })}>{t(source.initialStepId === step.id ? '开场步骤' : '设为开场')}</button><button className="mw-text-button is-danger" disabled={frozen} onClick={() => { const steps = source.steps.filter(item => item.id !== step.id); apply({ steps, initialStepId: source.initialStepId === step.id ? steps[0]?.id ?? null : source.initialStepId }); }}>{t('删除步骤')}</button>
   </div>;
 }
-function PreviewControls({ state, editor, onError, onState, readOnly }) {
+function PreviewControls({ state, editor, onPreview, onError, onState, readOnly }) {
   const { t } = useTranslation('math'); const step = state.source.steps.find(item => item.id === state.previewStepId);
   const [values, setValues] = useState({});
   const signature = parameters(state.objects).map(object => `${objectId(object)}:${object.numericValue}`).join(',');
   useEffect(() => setValues(Object.fromEntries(parameters(state.objects).map(object => [objectId(object), object.numericValue]))), [signature, state.previewStepId]);
-  const show = options => editor.preview(options).then(() => onState(editor.read())).catch(onError);
+  const show = options => onPreview(options).catch(onError);
   return <div className="mw-preview-controls">{step?.description && <p>{step.description}</p>}
-    {parameters(state.objects).map(object => <label key={objectId(object)}><span>{objectId(object)} = {values[objectId(object)] ?? object.numericValue}</span><input type="range" aria-label={t('试演参数 {{name}}', { name: objectId(object) })} min={object.slider.min} max={object.slider.max} step={object.slider.step} value={values[objectId(object)] ?? object.numericValue ?? 0}
+    {parameters(state.objects).map(object => <label key={objectId(object)}><span>{objectId(object)} = {values[objectId(object)] ?? object.numericValue}</span><input type="range" disabled={state.busy} aria-label={t('试演参数 {{name}}', { name: objectId(object) })} min={object.slider.min} max={object.slider.max} step={object.slider.step} value={values[objectId(object)] ?? object.numericValue ?? 0}
       onChange={event => setValues({ ...values, [objectId(object)]: Number(event.target.value) })} onPointerUp={() => show({ stepId: state.previewStepId, values })} onKeyUp={() => show({ stepId: state.previewStepId, values })}/></label>)}
-    {state.source.animation && <button className="mw-button" onClick={() => show({ stepId: state.previewStepId, play: true })}>{t('播放')}</button>}
-    <button className="mw-button" disabled={readOnly} onClick={() => editor.apply({ baseEditRevision: state.editRevision, changes: { setAsOpening: true } }).then(() => onState(editor.read())).catch(onError)}>{t('设为开场状态')}</button>
-    <button className="mw-button" onClick={() => show({ stepId: state.previewStepId })}>{t('重置')}</button>
+    {state.source.animation && <button className="mw-button" disabled={state.busy} onClick={() => show({ stepId: state.previewStepId, play: true })}>{t('播放')}</button>}
+    <button className="mw-button" disabled={readOnly || state.busy} onClick={() => editor.apply({ baseEditRevision: state.editRevision, changes: { setAsOpening: true } }).then(() => onState(editor.read())).catch(onError)}>{t('设为开场状态')}</button>
+    <button className="mw-button" disabled={state.busy} onClick={() => show({ stepId: state.previewStepId })}>{t('重置')}</button>
   </div>;
 }
 

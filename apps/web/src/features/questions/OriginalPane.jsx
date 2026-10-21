@@ -84,7 +84,8 @@ export default function OriginalPane({
       active = false;
       clearTimeout(timer);
     };
-  }, [fileId, material.version, previewAttempt]);
+  // 校对版本只更新草稿；同一不可变原稿的预览不随保存重新加载。
+  }, [fileId, previewAttempt]);
   const current = previewFileId === fileId ? preview?.pages.find((x) => x.page === page) : null;
   const original = originalDocuments.find(item => item.fileId === fileId);
   const paragraph = scene.paragraph ?? sourceParts.flatMap(part => part.locations)

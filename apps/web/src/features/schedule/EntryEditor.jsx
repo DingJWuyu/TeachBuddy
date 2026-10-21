@@ -1,9 +1,10 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { cx } from '../../components/ui/classNames.js';
 import { tx, useLocale, monthDay, weekdayName } from '../../i18n/presentation.js';
 import { Icon } from '../../components/icons.jsx';
 import { useFlip } from '../../components/ui/motion.js';
-import { Popover } from '../../components/ui/popover.jsx';
+import { Popover, shellRoot } from '../../components/ui/popover.jsx';
 import { Menu } from '../../components/ui/menu.jsx';
 import { DatePicker, TimePicker } from '../../components/ui/datetime.jsx';
 import { ConfirmButton, ConfirmMenuItem, ConfirmDialog } from '../../components/ui/confirm.jsx';
@@ -63,7 +64,7 @@ function Pill({ type, value, onChange, invalid, min, children, label, today }) {
   const ref = useRef(null);
   return (
     <>
-      <button type="button" ref={ref} className={cx('tbx-pill-input', invalid && 'is-invalid', open && 'is-open')} aria-label={label} aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen(!open)}>
+      <button type="button" ref={ref} className={cx('tbx-pill-input', invalid && 'is-invalid', open && 'is-open')} aria-label={label} aria-invalid={invalid || undefined} aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen(!open)}>
         <span>{children}</span>
       </button>
       <Popover anchor={ref} open={open} onClose={() => setOpen(false)} align="end" label={label}>
@@ -92,12 +93,10 @@ function Checklist({ items, onChange, repeating, onMove }) {
   const dragCleanup = useRef(null);
   useEffect(() => () => dragCleanup.current?.(), []);
   const [adding, setAdding] = useState('');
-  const [menu, setMenu] = useState(null);
   const [drag, setDrag] = useState(null); // { id, x, y, dx, dy, index, line }
   const done = items.filter((i) => i.completed).length;
   // rows glide only after a reorder we started (same motion as the sidebar)
   const flipRef = useFlip(null);
-  const menuAnchor = useRef(null);
 
   useLayoutEffect(() => {
     if (!focusId.current) return;
@@ -193,7 +192,7 @@ function Checklist({ items, onChange, repeating, onMove }) {
               key={item.id}
               ref={flipRef(item.id)}
               data-item={item.id}
-              className={cx('tbx-item', item.completed && 'is-done', drag?.id === item.id && 'is-origin', menu === item.id && 'is-menu')}
+              className={cx('tbx-item', item.completed && 'is-done', drag?.id === item.id && 'is-origin')}
             >
               <button type="button" className="tbx-item-grip" aria-label={tx('拖动事项 {{value}}', { value: index + 1 })} onPointerDown={(e) => { e.currentTarget.focus(); startDrag(e, item.id); }} onKeyDown={event => {
                 if (!['ArrowUp', 'ArrowDown'].includes(event.key)) return;
@@ -238,16 +237,21 @@ function Checklist({ items, onChange, repeating, onMove }) {
               />
               <span className="tbx-item-tail">
                 {pr && <span className={cx('tbx-prio', `is-${pr.id}`)}>{tx(pr.label)}</span>}
-                <button
-                  type="button"
-                  className="tbx-item-more"
-                  aria-label={tx('事项选项')}
-                  aria-haspopup="menu"
-                  aria-expanded={menu === item.id}
-                  onClick={(e) => { menuAnchor.current = e.currentTarget; setMenu(menu === item.id ? null : item.id); }}
-                >
-                  <G name="more" size={16} stroke={2.6} />
-                </button>
+                <Menu label={tx('事项选项')} icon={<G name="more" size={16} stroke={2.6} />} buttonClassName="tbx-item-more" menuClassName="tbx-item-menu">
+                  {({ close }) => <>
+                    <div className="tbx-item-prio" role="radiogroup" aria-label={tx('优先级')}>
+                      {PRIORITIES.map((p) => (
+                        <button key={p.id} type="button" role="radio" aria-checked={(item.priority || 'normal') === p.id} className={cx(`is-${p.id}`, (item.priority || 'normal') === p.id && 'is-on')} onClick={() => { patch(item.id, { priority: p.id }); close(); }}>
+                          {tx(p.label)}
+                        </button>
+                      ))}
+                    </div>
+                    {!repeating && onMove && item.text.trim() && (
+                      <button type="button" role="menuitem" onClick={() => { close(); onMove(item.id); }}><G name="move" />{tx('移到其他安排…')}</button>
+                    )}
+                    <ConfirmMenuItem icon={<G name="trash" />} label={tx('删除事项')} onConfirm={() => { close(); remove(item.id); }} />
+                  </>}
+                </Menu>
               </span>
             </div>
           );
@@ -268,34 +272,13 @@ function Checklist({ items, onChange, repeating, onMove }) {
           />
         </div>
       </div>
-      {dragged && (
+      {dragged && createPortal(
         <div className="tbx-drag-ghost is-item" style={{ transform: `translate(${drag.x - drag.dx}px, ${drag.y - drag.dy}px)` }} aria-hidden="true">
           <span className={cx('tbx-item-check', dragged.completed && 'is-done')} />
           <span>{dragged.text || tx('写一件要做的事')}</span>
-        </div>
+        </div>, shellRoot()
       )}
-      {(() => {
-        const item = items.find((x) => x.id === menu);
-        return (
-          <Popover anchor={menuAnchor} open={Boolean(item)} onClose={() => setMenu(null)} align="end" role="menu" className="tbx-item-menu">
-            {item && (
-              <>
-                <div className="tbx-item-prio" role="radiogroup" aria-label={tx('优先级')}>
-                  {PRIORITIES.map((p) => (
-                    <button key={p.id} type="button" role="radio" aria-checked={(item.priority || 'normal') === p.id} className={cx(`is-${p.id}`, (item.priority || 'normal') === p.id && 'is-on')} onClick={() => { patch(item.id, { priority: p.id }); setMenu(null); }}>
-                      {tx(p.label)}
-                    </button>
-                  ))}
-                </div>
-                {!repeating && onMove && item.text.trim() && (
-                  <button type="button" role="menuitem" onClick={() => { setMenu(null); onMove(item.id); }}><G name="move" />{tx('移到其他安排…')}</button>
-                )}
-                <ConfirmMenuItem icon={<G name="trash" />} label={tx('删除事项')} onConfirm={() => { setMenu(null); remove(item.id); }} />
-              </>
-            )}
-          </Popover>
-        );
-      })()}
+
     </section>
   );
 }
@@ -374,9 +357,8 @@ export function EntryEditor(props) {
     e.currentTarget.blur();
     onConfirm();
   };
-  const morning = () => ({ ...defaultTime(draft.zone), date: today, startTime: '09:00', durationMinutes: 60 });
   const toggleAllDay = (on) => {
-    const t = time ?? morning();
+    const t = time ?? defaultTime(draft.zone);
     if (on) {
       if (!allDay) beforeAllDay.current = { startTime: t.startTime, durationMinutes: t.durationMinutes };
       onPatch({ calendar: { ...content.calendar, allDay: true }, time: { ...t, startTime: '00:00', durationMinutes: Math.max(1440, Math.ceil(t.durationMinutes / 1440) * 1440) } });
@@ -566,7 +548,7 @@ export function EntryEditor(props) {
             </div>
           </div>
         ) : (
-          <button type="button" className="tbx-when-add" onClick={() => onPatch({ time: morning(), calendar: { ...content.calendar, allDay: false } })}>
+          <button type="button" className="tbx-when-add" onClick={() => onPatch({ time: defaultTime(draft.zone), calendar: { ...content.calendar, allDay: false } })}>
             <span className="tbx-row-icon is-red"><G name="calendar" size={15} /></span>
             <span><strong>{tx('放进日历，变成任务')}</strong></span>
             <G name="chevron" size={14} />

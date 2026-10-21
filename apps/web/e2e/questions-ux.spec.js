@@ -1436,3 +1436,96 @@ test('分类管理、多视口与普通查找切页后保留AI草稿', async ({ 
   expect(saved.types.map(item => item.name)).toEqual(['几何证明']);
   expect(saved.tags.map(item => item.name)).toEqual(['长名称标签边界检验']);
 });
+
+test('保存校对时持续显示同一原稿，预览读取延迟不清空已显示内容', async ({ page }, info) => {
+  await finder(page).getByRole('button', { name: '从资料收录', exact: true }).click();
+  await page.getByRole('button', { name: /上传图片 截图/ }).click();
+  await page.getByLabel('选择原稿').setInputFiles({ name: '保存期间原稿.png', mimeType: 'image/png',
+    buffer: await sharp({ create: { width: 320, height: 1000, channels: 3, background: '#f2f4f7' } }).png().toBuffer() });
+  await page.getByRole('button', { name: '开始整理', exact: true }).click();
+  const original = page.getByRole('region', { name: '原始材料' });
+  const image = original.locator('.q-page img');
+  await expect.poll(() => image.evaluate(node => node.complete && node.naturalWidth > 0)).toBe(true);
+  await expect(page.getByRole('button', { name: '保存检查进度', exact: true })).toBeEnabled();
+  await page.getByRole('button', { name: '材料操作', exact: true }).click();
+  await page.getByRole('menuitem', { name: '补充题目草稿', exact: true }).click();
+  await page.getByRole('button', { name: '修改题目', exact: true }).click();
+  await page.getByLabel('题干段落 1', { exact: true }).fill('保存时对照原稿继续校对。');
+  await page.getByRole('button', { name: '完成修改', exact: true }).click();
+  await original.getByLabel('原稿缩放').selectOption('1.5');
+  await original.locator('.q-page-scroll').evaluate(node => { node.scrollTop = 120; });
+  const scrollTop = await original.locator('.q-page-scroll').evaluate(node => node.scrollTop);
+  let release;
+  const held = new Promise(resolve => { release = resolve; });
+  await page.route('**/api/workbench/files/*/preview', async route => {
+    if (route.request().method() === 'GET') await held;
+    await route.continue();
+  });
+  try {
+    await page.getByRole('button', { name: '保存检查进度', exact: true }).click();
+    await expect(page.locator('.q-message')).toContainText('校对已保存');
+    await expect(image).toBeVisible();
+    await expect.poll(() => image.evaluate(node => node.complete && node.naturalWidth > 0)).toBe(true);
+    await expect(original.getByLabel('原稿缩放')).toHaveValue('1.5');
+    expect(await original.locator('.q-page-scroll').evaluate(node => node.scrollTop)).toBe(scrollTop);
+    await page.screenshot({ path: info.outputPath('original-retained-after-review-save.png') });
+  } finally { release(); }
+});
+
+test('确认取消后键盘不会归档、丢弃草稿、替换新题或删除分类，快速重开可正常确认', async ({ page }, info) => {
+  await createQuestion(page, '确认框原题');
+  const writes = [];
+  page.on('request', request => {
+    if (request.method() === 'POST' && /\/questions\/v2\/items\/[^/]+\/deletion$/.test(new URL(request.url()).pathname)) writes.push(request.postData());
+  });
+  await page.getByRole('button', { name: '更多题目操作', exact: true }).click();
+  await page.getByRole('menuitem', { name: '归档题目', exact: true }).click();
+  await page.getByRole('alertdialog', { name: '归档题目？', exact: true }).getByRole('button', { name: '取消', exact: true }).click();
+  await page.keyboard.press('Tab');
+  await page.keyboard.press('Enter');
+  expect(writes).toHaveLength(0);
+  expect(await records()).toHaveLength(1);
+  if (!(await page.getByLabel('题目标题').isVisible())) await page.getByRole('button', { name: '编辑题目', exact: true }).click();
+  await page.getByLabel('题干段落 1', { exact: true }).fill('取消丢弃后继续保留的输入。');
+  await page.getByRole('button', { name: '放弃未保存的修改', exact: true }).click();
+  await page.getByRole('alertdialog', { name: '放弃未保存的修改？', exact: true }).getByRole('button', { name: '取消', exact: true }).click();
+  await page.keyboard.press('Tab');
+  await page.keyboard.press('Enter');
+  await expect(page.getByLabel('题干段落 1', { exact: true })).toHaveValue('取消丢弃后继续保留的输入。');
+  await page.getByRole('button', { name: '返回题目', exact: true }).click();
+  await finder(page).getByRole('button', { name: '新建题目', exact: true }).click();
+  await page.getByLabel('题目标题').fill('替换取消后保留的新题');
+  await page.getByLabel('题干段落 1', { exact: true }).fill('未完成新题输入。');
+  await page.getByRole('button', { name: '返回题库', exact: true }).click();
+  await page.locator('.tbx-qn-row').click();
+  await page.getByRole('button', { name: '复制改编', exact: true }).click();
+  await page.getByRole('alertdialog', { name: '替换未完成的题目？', exact: true }).getByRole('button', { name: '取消', exact: true }).click();
+  await page.keyboard.press('Tab');
+  await page.keyboard.press('Enter');
+  await page.getByRole('button', { name: '继续未完成的题目', exact: true }).click();
+  await expect(page.getByLabel('题目标题')).toHaveValue('替换取消后保留的新题');
+  await expect(page.getByLabel('题干段落 1', { exact: true })).toHaveValue('未完成新题输入。');
+  await page.locator('.tbx-qn-rail').getByRole('button', { name: '管理题型与标签', exact: true }).click();
+  await page.getByLabel('新分类名称').fill('取消删除后保留的题型');
+  await page.getByRole('button', { name: '新增', exact: true }).click();
+  await page.getByRole('button', { name: '保存分类', exact: true }).click();
+  await page.locator('.tbx-qn-rail').getByRole('button', { name: '管理题型与标签', exact: true }).click();
+  const deleting = page.getByRole('button', { name: '删除题型“取消删除后保留的题型”', exact: true });
+  await deleting.click();
+  await page.getByRole('alertdialog', { name: '删除题型', exact: true }).getByRole('button', { name: '取消', exact: true }).click();
+  await expect(page.getByRole('textbox', { name: '题型名称', exact: true })).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(deleting).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('alertdialog', { name: '删除题型', exact: true })).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('textbox', { name: '题型名称', exact: true })).toBeFocused();
+  await expect(page.getByRole('textbox', { name: '题型名称', exact: true })).toHaveValue('取消删除后保留的题型');
+  await deleting.click();
+  await page.getByRole('alertdialog', { name: '删除题型', exact: true }).getByRole('button', { name: '取消', exact: true }).click();
+  await expect(page.getByRole('textbox', { name: '题型名称', exact: true })).toBeFocused();
+  await deleting.click();
+  await page.getByRole('alertdialog', { name: '删除题型', exact: true }).getByRole('button', { name: '删除题型', exact: true }).click();
+  await expect(page.getByRole('textbox', { name: '题型名称', exact: true })).toHaveCount(0);
+  await page.screenshot({ path: info.outputPath('cancelled-confirmations-preserve-content.png') });
+});

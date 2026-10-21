@@ -42,6 +42,7 @@
 .q-original pre, .q-review-result pre { white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; line-height: 1.9; }
 .q-original mark { color: inherit; background: light-dark(#f3eac6, #645b2d); border-radius: 2px; }
 .q-original .q-tools { margin: 14px 0; }
+.q-workspace .q-original select { width: 100%; }
 .q-original .q-tools button { font-size: 12px; }
 .q-origin { color: var(--q-muted); overflow-wrap: anywhere; font-size: 12px; }
 .q-review-tabs { display: flex; flex-wrap: wrap; gap: 6px; border-bottom: 1px solid var(--q-line); padding-bottom: 14px; }
@@ -55,7 +56,7 @@
 .q-review-answer h4 { color: var(--q-muted); font-size: 12px; margin-bottom: 8px; }
 .q-review-answer .material-document > :first-child { margin-top: 0; }
 .q-review-answer .material-document > :last-child { margin-bottom: 0; }
-.q-review-checks { border: 1px solid light-dark(#e8dcb9, #615634); border-radius: 10px; padding: 14px; background: light-dark(#fcfaf3, #2c291f); }
+.q-review-checks { border: 1px solid light-dark(#e8dcb9, #615634); border-radius: 10px; padding: 14px; background: light-dark(#f8f8fa, #272728); }
 .q-review-checks h4 { font-size: 13px; margin-bottom: 12px; }
 .q-workspace .q-issue { display: flex; flex-wrap: nowrap; align-items: flex-start; gap: 12px; padding: 8px 0; font-size: 13px; }
 .q-workspace .q-issue > span { flex: 1; line-height: 1.7; color: inherit; }
@@ -445,7 +446,7 @@
 :is(.wb-shell, .tbx-portal-host) .q-question-heading:not(:has(.q-back)) > .tbx-menu-trigger{ grid-column: 3; grid-row: 1; align-self: center; }
 :is(.wb-shell, .tbx-portal-host) .q-question > .q-reader-actions{ grid-column: 2; grid-row: 1; align-self: center; display: flex; gap: 6px; margin: 0; padding: 0; }
 :is(.wb-shell, .tbx-portal-host) .q-reader-actions button{ gap: 6px; }
-:is(.wb-shell, .tbx-portal-host) .q-question-heading > .tbx-menu-trigger > button{ width: 34px; padding: 0; border-radius: 50%; }
+:is(.wb-shell, .tbx-portal-host) :is(.q-question-heading, .q-review-heading .q-tools) > .tbx-menu-trigger > button{ width: 34px; padding: 0; border-radius: 50%; }
 :is(.wb-shell, .tbx-portal-host) .q-eyebrow{ color: var(--tb-faint); font-size: 12px; font-weight: 650; }
 :is(.wb-shell, .tbx-portal-host) .q-eyebrow:empty{ display: none; }
 :is(.wb-shell, .tbx-portal-host) .q-question-title h2{
@@ -679,7 +680,6 @@
 
 :is(.wb-shell, .tbx-portal-host) .q-workspace-host{ container: q-workspace / inline-size; width: 100%; height: 100%; min-width: 0; min-height: 0; }
 :is(.wb-shell, .tbx-portal-host) .q-workspace[data-review=true] .q-main{ container-type: normal; }
-:is(.wb-shell, .tbx-portal-host) .q-workspace .q-review-fields .q-reading-body{ padding: 18px 22px; }
 :is(.wb-shell, .tbx-portal-host) .q-workspace .q-question{ min-height: 0; }
 :is(.wb-shell, .tbx-portal-host) .q-workspace .q-resize-divider{ display: none; }
 :is(.wb-shell, .tbx-portal-host) .q-workspace .q-review{ --q-gap: 10px; }
@@ -699,7 +699,7 @@
 
 :is(.wb-shell, .tbx-portal-host) .q-workspace .q-back{ white-space: nowrap; }
 
-:is(.wb-shell, .tbx-portal-host) .q-question-heading > .tbx-menu-trigger > button { background: var(--tb-fill); }
+:is(.wb-shell, .tbx-portal-host) :is(.q-question-heading, .q-review-heading .q-tools) > .tbx-menu-trigger > button { background: var(--tb-fill); }
 
 @container q-reader (max-width: 640px) {
   :is(.wb-shell, .tbx-portal-host) .q-workspace .q-question-heading:has(.q-back) { flex-wrap: wrap; }

@@ -152,10 +152,10 @@ test.describe('任务读取与保存一致性', () => {
    });
    await page.getByRole('textbox',{name:'备注',exact:true}).fill(Array.from({length:30},(_,i)=>`第${i+1}行：检查失败后能否在当前视野理解发生了什么`).join('\n'));
    await page.keyboard.press('ControlOrMeta+s');
-   await expect(page.locator('.tbx-sheet .cal-error')).toContainText('确认');
+   await expect(page.locator('.tbx-sheet-error')).toContainText('确认');
    await page.getByRole('button',{name:'关闭',exact:true}).click();
    await expect(page.locator('.tbx-sheet')).toHaveCount(1);
-   const error=await page.locator('.tbx-sheet .cal-error').boundingBox(),panel=await page.locator('.tbx-sheet').boundingBox();
+   const error=await page.locator('.tbx-sheet-error').boundingBox(),panel=await page.locator('.tbx-sheet').boundingBox();
    expect(error.y).toBeLessThan(panel.y+panel.height);
    expect(error.y+error.height).toBeGreaterThan(panel.y);
    await page.screenshot({path:test.info().outputPath('save-feedback.png'),animations:'disabled'});
@@ -194,10 +194,10 @@ test.describe('任务读取与保存一致性', () => {
    await page.screenshot({path:test.info().outputPath('reminder-dark-mobile.png'),animations:'disabled'});
   });
 
-  test('待安排临时安排了无效开始时间，关闭仍保留待安排及有效备注',async({page})=>{
+  test('待安排临时安排了无效结束时间，关闭仍保留待安排及有效备注',async({page})=>{
    const task=await call('POST',E,entry('待安排取消无效时间',{time:null}));await page.reload();await open(page,task.title);
    await page.getByRole('button',{name:'放进日历，变成任务',exact:true}).click();
-   await page.locator('.tbx-sheet').getByRole('button',{name:'开始时间',exact:true}).click();await page.keyboard.press('Escape');await page.getByRole('textbox',{name:'备注',exact:true}).fill('保留待安排备注');await closed(page);
+   await setScheduleField(page,'结束时间','00:00');await expect(page.getByRole('alert')).toContainText('结束时间要晚于开始时间');await page.getByRole('textbox',{name:'备注',exact:true}).fill('保留待安排备注');await closed(page);
    const saved=await call('GET',`${E}/${task.id}`);expect(saved.time).toBeNull();expect(saved.reminder).toBeNull();expect(saved.calendar.notes).toBe('保留待安排备注');
   });
 });
@@ -268,7 +268,7 @@ test.describe('跨日导航与连续编辑', () => {
     const task = await call('POST', E, entry('夜间整理', { time: { ...entry('').time, startTime: '23:50', durationMinutes: 20 } }));
     await page.reload(); await open(page, task.title);
     await expect(page.locator('.fc-timegrid-event.is-selected')).toHaveCount(2);
-    await page.locator('.cal-mini [data-date="2026-09-26"]').click(); await view(page, '日');
+    await close(page);await page.locator('.cal-mini [data-date="2026-09-26"]').click(); await view(page, '日');await open(page,task.title);
     await expect(page.locator('.fc-timegrid-event.is-selected')).toHaveCount(1);
     await expectScheduleField(page, '开始日期', '2026-09-25');
     await expectScheduleField(page, '结束日期', '2026-09-26');
@@ -375,7 +375,7 @@ test.describe('跨日导航与连续编辑', () => {
     await page.reload(); await open(page, task.title);
     await setScheduleField(page, '结束时间', '14:00');
     await page.getByRole('textbox', { name: '备注', exact: true }).fill('修正后保留');
-    await expect(page.locator('.tbx-sheet-hint.is-error')).toContainText('时间无效');
+    await expect(page.locator('.tbx-sheet-hint.is-error')).toContainText('结束时间要晚于开始时间');
     expect((await call('GET', `${E}/${task.id}`)).version).toBe(task.version);
     await setScheduleField(page, '结束时间', '15:45'); await close(page); await page.reload();
     const saved = await call('GET', `${E}/${task.id}`); expect(saved.time.durationMinutes).toBe(45); expect(saved.calendar.notes).toBe('修正后保留');

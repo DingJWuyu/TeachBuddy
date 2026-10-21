@@ -98,6 +98,7 @@ export default function SchedulePage({ route }) {
   const [data, setData] = useState({ entries: [], occurrences: [], daily: [], labels: [] });
   const [displayMonth, setDisplayMonth] = useState(scene.anchor.slice(0, 7));
   const [loadError, setLoadError] = useState('');
+  const [openError, setOpenError] = useState(null);
   const [validation, setValidation] = useState('');
   const [revision, setRevision] = useState(0);
   const [deletePrompt, setDeletePrompt] = useState(false);
@@ -343,7 +344,7 @@ export default function SchedulePage({ route }) {
       if (content !== current.content) setDraft({ ...current, content });
     } else if (current && timeProblem(current.content)) setDraft(null);
     if (!await leaveEditor() || intent !== editorIntent.current) return;
-    setDraft(null); setValidation(''); setMobileSidebar(false);
+    setDraft(null); setOpenError(null); setValidation(''); setMobileSidebar(false);
     if (route?.search) shell.navigate('/calendar');
   }
   async function patchContent(patch, forceSeries = false) {
@@ -382,10 +383,11 @@ export default function SchedulePage({ route }) {
       const keepDraft = sameDraft
         && (entry.version < current.version || current.savePaused || !same(withoutEmptyItems(current.content), withoutEmptyItems(current.baseline)) || opRef.current.pending);
       if (!keepDraft) setDraft({ clientId: sameDraft ? current.clientId : crypto.randomUUID(), id, origin, version: entry.version, entry, content, baseline: structuredClone(content), zone: zoneRef.current, readOnly, occurrenceState: occurrence?.state, isException: occurrence?.exception });
+      setOpenError(null);
       if (!bypass && shell.isPanelOpen) shell.closePanel();
       setValidation(''); setMobileSidebar(true);
       return true;
-    } catch (error) { if (mounted.current && intent === editorIntent.current) setLoadError(error.problem?.message ?? t("无法打开任务")); }
+    } catch (error) { if (mounted.current && intent === editorIntent.current) setOpenError({ id, origin, message: error.problem?.message ?? t("无法打开任务") }); }
   }
   async function create(start, end, allDay = false, unscheduled = false) {
     const intent = ++editorIntent.current;
@@ -394,6 +396,7 @@ export default function SchedulePage({ route }) {
     if (!await leaveEditor() || intent !== editorIntent.current) return;
     const content = newContent(zoneRef.current, start, end, allDay);
     if (unscheduled) content.time = null;
+    setOpenError(null);
     setDraft({ clientId: crypto.randomUUID(), id: null, origin: null, version: null, entry: null, content, baseline: null, zone: zoneRef.current });
     if (shell.isPanelOpen) shell.closePanel();
     setValidation(''); setMobileSidebar(true);
@@ -401,7 +404,7 @@ export default function SchedulePage({ route }) {
   async function remove(scope = 'series') {
     ++editorIntent.current;
     const current = sceneRef.current.draft;
-    if (!current?.id) { setDraft(null); setDeletePrompt(false); return; }
+    if (!current?.id) { setDraft(null); setOpenError(null); setDeletePrompt(false); return; }
     if (flight.current) await flight.current;
     const entry = await api.getEntry(current.id).catch(() => null);
     if (!entry) { setValidation(t("读取失败，请重试")); return; }
@@ -487,7 +490,7 @@ export default function SchedulePage({ route }) {
     if (!current || current.clientId !== clientId || opRef.current.pending) return;
     if (current.id) return remove(scope);
     ++editorIntent.current;
-    setDraft(null); setValidation(''); setMobileSidebar(false);
+    setDraft(null); setOpenError(null); setValidation(''); setMobileSidebar(false);
   }
   async function toggleBoardItem(value, itemId, completed) {
     const id = value.key?.entryId ?? value.id;
@@ -535,19 +538,21 @@ export default function SchedulePage({ route }) {
   useEffect(() => {
     const query = new URLSearchParams(route?.search ?? '');
     const id = query.get('entry');
+    setOpenError(null);
     if (!id) return;
+    const intent = ++editorIntent.current;
     let cancelled = false;
     api.getEntry(id).then(async entry => {
-      if (cancelled) return;
+      if (cancelled || intent !== editorIntent.current) return;
       const origin = query.get('on') ?? (entry.repeat ? entry.time.date : null);
       const occurrence = entry.time ? await api.getOccurrence(id, origin) : null;
-      if (cancelled) return;
+      if (cancelled || intent !== editorIntent.current) return;
       if (occurrence) {
         const value = localParts(zone, Date.parse(occurrence.startsAt));
         updateScene({ anchor: value.date, month: value.date.slice(0, 7), scroll: Math.max(0, (value.minutes / 60 - 1) * 104) });
       }
       await openEntry(id, origin, { preserveDraft: true });
-    }).catch(error => { if (!cancelled) setLoadError(error.problem?.message ?? t("无法打开这项安排")); });
+    }).catch(error => { if (!cancelled && intent === editorIntent.current) setOpenError({ id, origin: query.get('on'), message: error.problem?.message ?? t("无法打开这项安排") }); });
     return () => { cancelled = true; };
   }, [route?.search, shell.generation, zone]);
 
@@ -562,7 +567,7 @@ export default function SchedulePage({ route }) {
   const zoneLabel = `${zoneOffset === 'GMT' ? 'UTC+00:00' : zoneOffset.replace(/^GMT/, 'UTC')} · ${zone}`;
   const labelsChanged = label => { setData(current => ({ ...current, labels: label.deleted ? current.labels.filter(x => x.id !== label.id) : [...current.labels.filter(x => x.id !== label.id), label] })); reload(); };
   return <div className={`cal-page${mobileSidebar ? ' sidebar-open' : ''}${shell.isPanelOpen ? ' has-ai' : ''}`} data-region="schedule" data-focus={scene.focus || 'calendar'} data-editing={draft ? 'true' : 'false'}>
-    {(loadError || (op.problem && !draft && !reminderRejected)) && <div className="cal-load-error" role="alert">{loadError || op.problem.message}<button onClick={() => op.pending ? perform(null, true) : reload()}>{t("重试")}</button></div>}
+    {(loadError || openError || (op.problem && !draft && !reminderRejected)) && <div className="cal-load-error" role="alert">{loadError || openError?.message || op.problem?.message}<button onClick={() => op.pending ? perform(null, true) : loadError ? reload() : openError ? openEntry(openError.id, openError.origin, { preserveDraft: true }) : reload()}>{t("重试")}</button></div>}
     <section className="cal-board" aria-label={t("日历")}><header className="cal-toolbar"><div className="cal-calendar-title"><MonthTitle date={scene.view.kind === 'month' ? `${displayMonth}-01` : scene.anchor}/><span className="cal-time-zone" title={zone}>{zoneLabel}</span></div><div className="cal-toolbar-actions"><FocusToggle value={scene.focus || 'calendar'} onChange={focus => updateScene({ focus })}/><ViewMenu view={scene.view} onChange={changeView}/><button className="cal-today-button" onClick={() => { setDisplayMonth(today.slice(0, 7)); updateScene({ anchor: scene.view.kind === 'week' ? monday(today) : today, month: today.slice(0, 7), monthScroll: null, monthJump: (scene.monthJump || 0) + 1 }); }}>{t("今天")}</button><IconButton name="left" label={t("上一段")} onClick={() => navigate(-1)}/><IconButton name="right" label={t("下一段")} onClick={() => navigate(1)}/><span className="cal-mobile-toggle"><IconButton name="grid" label={t("打开月份与任务")} onClick={() => setMobileSidebar(true)}/></span></div></header>
       {scene.focus === 'tasks' ? <TaskBoard entries={data.entries} occurrences={data.occurrences} daily={data.daily} labels={data.labels} zone={zone} now={now} today={today} draft={draft} draftId={draft?.id} onOpen={openEntry} onClose={closeEditor} onNew={unscheduled => create(undefined, undefined, false, unscheduled)} onToggle={toggleBoardItem} accountKey={shell.accountKey} helpers={{ localParts, formatClock }} scroll={scene.boardScroll} onScroll={(column, top) => updateScene({ boardScroll: { ...sceneRef.current.boardScroll, [column]: top } })}/>
       : <TimeGrid key={scene.view.kind === 'month' ? `${zone}:${scene.anchor}:${scene.monthJump}` : `time:${zone}`} view={scene.view} anchor={scene.anchor} zone={zone} occurrences={data.occurrences} labels={data.labels} selected={draft}

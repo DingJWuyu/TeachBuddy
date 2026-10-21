@@ -69,13 +69,20 @@ export function Journal({ ctx, subject, placeholder }) {
   const [editing, setEditing] = useState(null);
   const [fresh, setFresh] = useState(null);
   const key = subject.kind === 'student' ? 'studentId' : 'classId';
+  const request = useRef(0);
+  const criteria = `${subject.kind}:${subject.id}:${q.trim()}:${range}`;
+  const selection = useRef(null);
+  selection.current = { criteria, key, id: subject.id, q: q.trim(), range };
   const load = async () => {
+    const selected = selection.current;
+    const generation = ++request.current;
+    const current = () => generation === request.current && selected.criteria === selection.current.criteria;
     try {
-      const res = await ctx.api.get('/records', { [key]: subject.id, q: q.trim(), from: range === 'all' ? '' : daysAgo(Number(range)) });
-      setItems(res.items); setError(null);
-    } catch (err) { setError(err); }
+      const res = await ctx.api.get('/records', { [selected.key]: selected.id, q: selected.q, from: selected.range === 'all' ? '' : daysAgo(Number(selected.range)) });
+      if (current()) { setItems(res.items); setError(null); }
+    } catch (err) { if (current()) setError(err); }
   };
-  useEffect(() => { const t = setTimeout(load, q ? 220 : 0); return () => clearTimeout(t); }, [subject.id, q, range]);
+  useEffect(() => { const t = setTimeout(load, q ? 220 : 0); return () => { clearTimeout(t); request.current++; }; }, [subject.id, q, range]);
 
   const create = async ({ body, date }) => {
     try {

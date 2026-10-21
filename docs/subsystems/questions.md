@@ -41,6 +41,10 @@ v2 操作同步返回 `{status, body}`，合法失败抛带 `status/problem` 的
 
 [useQuestionSession](../../apps/web/src/features/questions/useQuestionSession.js) 拥有题库完整持久编辑流程：设备草稿、原请求核实、版本冲突、收录、校对与确认入库。页面 [MaterialsQuestionsPage](../../apps/web/src/features/questions/MaterialsQuestionsPage.jsx) 消费该 session 呈现内容，[QuestionFinder](../../apps/web/src/features/questions/QuestionFinder.jsx) 组织新版列表、搜索与模块右轨；新建、编辑、改编及三步收录继续调用真实 session，无本地业务模拟。[QuestionControls](../../apps/web/src/features/questions/QuestionControls.jsx) 负责编辑控件与浮层；[question-documents](../../apps/web/src/features/questions/question-documents.js) 拥有文稿操作，[review-drafts](../../apps/web/src/features/questions/review-drafts.js) 处理校对拆分。[materials-api](../../apps/web/src/features/questions/materials-api.js) 只承担 HTTP 读写/上传/下载，[uploadRecovery](../../apps/web/src/features/questions/uploadRecovery.js) 保存上传核实所需的设备记录，[OriginalPane](../../apps/web/src/features/questions/OriginalPane.jsx) 读取原稿。文稿编辑复用公共 [DocumentEditor](../../apps/web/src/components/materials/DocumentEditor.jsx)，原生输入沿 [native-word](../../apps/api/src/modules/questions/native-word.js)、[native-pdf](../../apps/api/src/modules/questions/native-pdf.js) 和 [recognized-page](../../apps/api/src/modules/questions/recognized-page.js)。
 
+`OriginalPane` 的预览读取随原稿文件切换或显式重试更新，不随校对材料版本重载。保存校对时保留已显示的原稿、缩放和滚动；新增草稿、裁图或分类不改变不可变原件。
+
+题库的放弃草稿、替换新题、内容生命周期及分类删除确认直接使用共享确认框的 `present`，portal 内的退出保留和交互关闭由共享组件负责；业务页面不另保留旧确认数据。分类删除在异步读取影响数并禁用按钮前，把焦点交给同一行名称输入框，取消后可沿该行继续操作。
+
 对象深链只在目标题目改变时初始化阅读场景；同一对象因业务更新重新挂载时，`useQuestionSession` 恢复其持久编辑与对照状态。读取最新服务器内容与保留设备草稿分别处理，后续保存仍按原版本检查冲突。
 
 迁移由 [migrations](../../apps/api/src/modules/questions/migrations/index.js) 提供。跨模块不直接读题库表；资料包沿 readForExport，Agent 沿 operations。

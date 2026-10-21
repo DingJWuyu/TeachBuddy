@@ -39,12 +39,6 @@ export function ClassScores({ ctx, cls }) {
       </Empty>
     );
   }
-  if (!stats) return <div className="cr-loading is-inline"><Spinner /></div>;
-  if (stats.error) return <Empty compact icon="info" title={tx('成绩暂时无法读取')} text={stats.error.message} />;
-
-  const ok = stats.points.filter((p) => p.state === 'ok');
-  const none = stats.points.filter((p) => p.state !== 'ok');
-  const current = ok.find((p) => p.exam.id === focus) || ok.at(-1);
   const toggle = (list, set, id) => set(list.includes(id) ? list.filter((x) => x !== id) : [...list, id]);
   const filters = (
     <div className="cr-toolbar">
@@ -80,6 +74,19 @@ export function ClassScores({ ctx, cls }) {
       {importButton}
     </div>
   );
+
+  if (!stats || stats.error) {
+    return (
+      <div className="cr-scores">
+        {filters}
+        {!stats ? <div className="cr-loading is-inline"><Spinner /></div> : <Empty compact icon="info" title={tx('成绩暂时无法读取')} text={stats.error.message} />}
+      </div>
+    );
+  }
+
+  const ok = stats.points.filter((p) => p.state === 'ok');
+  const none = stats.points.filter((p) => p.state !== 'ok');
+  const current = ok.find((p) => p.exam.id === focus) || ok.at(-1);
 
   if (!ok.length) {
     return (

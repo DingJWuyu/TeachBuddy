@@ -1109,7 +1109,7 @@ to { opacity: 1; transform: none; }
 
 .tbx-sheet .tbx-item.is-dragging::after { display: none; }
 
-.tbx-sheet .tbx-item.is-menu { z-index: 4; }
+.tbx-sheet .tbx-item:has(.tbx-item-more[aria-expanded=true]) { z-index: 4; }
 
 .tbx-sheet .tbx-item-grip {
   flex: none;
@@ -1213,7 +1213,7 @@ to { opacity: 1; transform: none; }
   transition: opacity var(--tb-d1), background var(--tb-d1), color var(--tb-d1);
 }
 
-.tbx-sheet .tbx-item:hover .tbx-item-more, .tbx-sheet .tbx-item.is-menu .tbx-item-more, .tbx-sheet .tbx-item-more:focus-visible { opacity: 1; }
+.tbx-sheet .tbx-item:hover .tbx-item-more, .tbx-sheet .tbx-item:has(.tbx-item-more[aria-expanded=true]) .tbx-item-more, .tbx-sheet .tbx-item-more:focus-visible { opacity: 1; }
 
 .tbx-sheet .tbx-item-more:hover { background: var(--tb-fill) !important; color: var(--tb-ink); }
 
@@ -1245,6 +1245,13 @@ to { opacity: 1; transform: none; }
 .tbx-item-menu .tbx-item-prio button:hover { color: var(--tb-ink); }
 
 .tbx-item-menu .tbx-item-prio button.is-on { background: var(--tb-surface) !important; color: var(--tb-ink); box-shadow: 0 1px 2px rgb(0 0 0 / 0.08); }
+
+.tbx-item-menu .tbx-item-prio button:focus-visible {
+  outline: none;
+  box-shadow: none;
+  background: var(--tb-fill-hover) !important;
+  color: var(--tb-ink);
+}
 
 .tbx-sheet .tbx-item-prio button.is-high.is-on { color: var(--tb-danger); }
 

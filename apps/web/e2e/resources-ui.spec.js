@@ -26,6 +26,12 @@ const image = path.resolve(
 const pdf = path.resolve("test/fixtures/materials/c22.pdf");
 async function screenshot(page, info, name) {
   await page.evaluate(() => document.fonts.ready);
+  await page.evaluate(() => new Promise(requestAnimationFrame));
+  await page.evaluate(() => Promise.allSettled(
+    document.getAnimations()
+      .filter(animation => animation.effect?.getTiming().iterations !== Infinity)
+      .map(animation => animation.finished),
+  ));
   await page.mouse.move(280, 80);
   await page.screenshot({
     path: info.outputPath(`${name}.png`),
@@ -235,10 +241,23 @@ test("真实 PDF 翻页、更新文件、归档恢复与彻底删除", async ({
   const chooserEvent = page.waitForEvent("filechooser");
   await page.getByRole("menuitem", { name: "更新文件", exact: true }).click();
   await (await chooserEvent).setFiles(image);
-  await expect(
-    page.getByRole("dialog", { name: "更新文件确认" }),
-  ).toContainText("page.png");
-  await page.getByRole("button", { name: "确认 更新", exact: true }).click();
+  await screenshot(page, info, "replace-confirmation");
+  const replacement = page.getByRole("alertdialog", { name: "更新当前文件" });
+  await expect(replacement).toContainText("page.png");
+  await expect(replacement.locator(".tbx-confirm-icon")).toBeVisible();
+  await expect(replacement.getByRole("button")).toHaveText(["取消", "更新"]);
+  await expect(replacement.getByRole("button", { name: "更新", exact: true })).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(replacement.getByRole("button", { name: "取消", exact: true })).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(replacement).toHaveCount(0);
+  await expect(page.getByAltText("第 2 页", { exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "资料更多操作", exact: true })).toBeFocused();
+  await page.getByRole("button", { name: "资料更多操作", exact: true }).click();
+  const nextChooser = page.waitForEvent("filechooser");
+  await page.getByRole("menuitem", { name: "更新文件", exact: true }).click();
+  await (await nextChooser).setFiles(image);
+  await replacement.getByRole("button", { name: "更新", exact: true }).click();
   await expect(page.locator(".res-status")).toContainText("文件已更新");
   await expect(page.getByLabel("资源名称")).toHaveValue("函数复习资料");
   await expect(page.getByLabel("资源笔记")).toHaveValue(
@@ -246,7 +265,7 @@ test("真实 PDF 翻页、更新文件、归档恢复与彻底删除", async ({
   );
   await page.getByRole("button", { name: "资料更多操作", exact: true }).click();
   await page.getByRole("menuitem", { name: "归档资料", exact: true }).click();
-  await page.getByRole("button", { name: "确认 归档", exact: true }).click();
+  await page.getByRole("button", { name: "归档", exact: true }).click();
   await expect(page.locator(".tbx-res")).toBeVisible();
   await expect(page.locator(".res-detail")).toHaveCount(0);
   await expect(page.locator(".res-status")).toBeHidden({ timeout: 3500 });
@@ -255,7 +274,7 @@ test("真实 PDF 翻页、更新文件、归档恢复与彻底删除", async ({
   await screenshot(page, info, "deleted");
   await page.locator(".tbx-res-open").click();
   await page.getByRole("button", { name: "恢复资料", exact: true }).click();
-  await page.getByRole("button", { name: "确认 恢复", exact: true }).click();
+  await page.getByRole("button", { name: "恢复", exact: true }).click();
   await expect(page.locator(".res-status")).toContainText("资料已恢复");
   await page.reload();
   await infoPanel(page);
@@ -276,20 +295,20 @@ test("真实 PDF 翻页、更新文件、归档恢复与彻底删除", async ({
   expect(rejected.status).toBe(422);
   await page.getByRole("button", { name: "资料更多操作", exact: true }).click();
   await page.getByRole("menuitem", { name: "归档资料", exact: true }).click();
-  await page.getByRole("button", { name: "确认 归档", exact: true }).click();
+  await page.getByRole("button", { name: "归档", exact: true }).click();
   await expect(page.locator(".tbx-res")).toBeVisible();
   await openArchive(page);
   await page.locator(".tbx-res-open").click();
   await page.getByRole("button", { name: "资料更多操作", exact: true }).click();
   await page.getByRole("menuitem", { name: "彻底删除", exact: true }).click();
   await expect(
-    page.getByRole("dialog", { name: "彻底删除确认" }),
+    page.getByRole("alertdialog", { name: "彻底删除资料" }),
   ).toContainText("无法恢复");
   await page.getByRole("button", { name: "取消", exact: true }).click();
   await expect(page.locator(".res-detail")).toBeVisible();
   await page.getByRole("button", { name: "资料更多操作", exact: true }).click();
   await page.getByRole("menuitem", { name: "彻底删除", exact: true }).click();
-  await page.getByRole("button", { name: "确认 彻底删除", exact: true }).click();
+  await page.getByRole("button", { name: "彻底删除", exact: true }).click();
   await expect(
     page.getByRole("heading", { name: "没有归档的资料" }),
   ).toBeVisible();
@@ -302,6 +321,74 @@ test("真实 PDF 翻页、更新文件、归档恢复与彻底删除", async ({
       .status,
   ).toBe(404);
 });
+
+for (const kind of ["更新", "归档", "恢复", "彻底删除"]) {
+  test(`取消${kind}确认的退场期间不可重新执行，快速重开使用新现场`, async ({ page }, info) => {
+    await upload(page);
+    if (["恢复", "彻底删除"].includes(kind)) {
+      await page.getByRole("button", { name: "资料更多操作", exact: true }).click();
+      await page.getByRole("menuitem", { name: "归档资料", exact: true }).click();
+      await page.getByRole("alertdialog").getByRole("button", { name: "归档", exact: true }).click();
+      await expect(page.locator(".res-detail")).toHaveCount(0);
+      await openArchive(page);
+      await openUploaded(page);
+    }
+    const resource = (await api.request("GET", `/api/modules/resources/items?state=${["恢复", "彻底删除"].includes(kind) ? "deleted" : "active"}`)).json.items[0];
+    const trigger = page.getByRole("button", { name: kind === "恢复" ? "恢复资料" : "资料更多操作", exact: true });
+    async function openConfirmation() {
+      await trigger.click();
+      if (kind === "恢复") return;
+      if (kind === "更新") {
+        const chooser = page.waitForEvent("filechooser");
+        await page.getByRole("menuitem", { name: "更新文件", exact: true }).click();
+        await (await chooser).setFiles(pdf);
+      } else {
+        await page.getByRole("menuitem", { name: kind === "归档" ? "归档资料" : "彻底删除", exact: true }).click();
+      }
+    }
+    await openConfirmation();
+    const modal = page.getByRole("alertdialog");
+    await expect(modal).toBeVisible();
+    await page.evaluate(() => Promise.allSettled(document.getAnimations().filter(animation => animation.effect?.getTiming().iterations !== Infinity).map(animation => animation.finished)));
+    // Hold the JS unmount timer while real browser keyboard actions and native
+    // CSS transitions continue. The regression cannot hide beyond a short race.
+    const now = Date.now();
+    await page.clock.install({ time: new Date(now) });
+    await page.clock.pauseAt(new Date(now + 1000));
+    const writes = [];
+    page.on("request", request => {
+      if (request.method() !== "GET" && /\/api\/(?:modules\/resources\/items|workbench\/files)/.test(request.url()))
+        writes.push({ method: request.method(), path: new URL(request.url()).pathname });
+    });
+    await modal.getByRole("button", { name: "取消", exact: true }).click();
+    const closing = await page.evaluate(() => {
+      const node = document.querySelector(".tbx-confirm");
+      const boundary = node?.closest("[inert]");
+      return {
+        retained: Boolean(node), inert: Boolean(boundary),
+        focusedDialog: Boolean(document.activeElement?.closest(".tbx-confirm")),
+        fadesOut: Boolean(boundary?.getAnimations({ subtree: true }).some(animation => animation.effect?.getKeyframes().at(-1)?.opacity === "0")),
+      };
+    });
+    await page.keyboard.press("Tab");
+    await page.keyboard.press("Enter");
+    await info.attach("cancel-lifecycle", { body: JSON.stringify({ kind, closing, writes }), contentType: "application/json" });
+    expect(writes, "取消后Tab/Enter不能发送业务写请求").toEqual([]);
+    expect(closing, "实际portal内容退场时应保留淡出、不可交互并释放焦点").toEqual({ retained: true, inert: true, focusedDialog: false, fadesOut: true });
+    expect((await api.request("GET", `/api/modules/resources/items/${resource.id}`)).json).toEqual(resource);
+    // Reopen before the old 180ms lifetime ends, then let both JS frames pass.
+    await openConfirmation();
+    await page.clock.runFor(40);
+    await expect(modal).toHaveCount(1);
+    await expect(modal.getByRole("button", { name: kind, exact: true })).toBeFocused();
+    await page.keyboard.press("Escape");
+    await page.clock.resume();
+    await expect(page.locator(".tbx-confirm")).toHaveCount(0);
+    await expect(trigger).toBeFocused();
+    expect(writes).toEqual([]);
+    expect((await api.request("GET", `/api/modules/resources/items/${resource.id}`)).json).toEqual(resource);
+  });
+}
 
 test("文件夹树、框选、拖动、详情菜单和助理覆盖在宽窄屏保持可用", async ({ page }, info) => {
   await upload(page);
@@ -675,7 +762,7 @@ test("彻底删除的权限、版本与响应丢失恢复", async ({ page }) => 
   await upload(page);
   await page.getByRole("button", { name: "资料更多操作", exact: true }).click();
   await page.getByRole("menuitem", { name: "归档资料", exact: true }).click();
-  await page.getByRole("button", { name: "确认 归档", exact: true }).click();
+  await page.getByRole("button", { name: "归档", exact: true }).click();
   await expect(page.locator(".tbx-res")).toBeVisible();
   const archived = (
     await api.request("GET", "/api/modules/resources/items?state=deleted")
@@ -711,7 +798,7 @@ test("彻底删除的权限、版本与响应丢失恢复", async ({ page }) => 
   });
   await page.getByRole("button", { name: "资料更多操作", exact: true }).click();
   await page.getByRole("menuitem", { name: "彻底删除", exact: true }).click();
-  await page.getByRole("button", { name: "确认 彻底删除", exact: true }).click();
+  await page.getByRole("button", { name: "彻底删除", exact: true }).click();
   await expect(
     page.getByRole("button", { name: "重试确认原请求" }),
   ).toBeVisible();
@@ -817,7 +904,7 @@ test("历史文件可下载核对并恢复，备注保持", async ({ page }, inf
   const chooser = page.waitForEvent("filechooser");
   await page.getByRole("menuitem", { name: "更新文件", exact: true }).click();
   await (await chooser).setFiles(image);
-  await page.getByRole("button", { name: "确认 更新", exact: true }).click();
+  await page.getByRole("button", { name: "更新", exact: true }).click();
   await expect(page.locator(".res-status")).toContainText("文件已更新");
   await page.getByRole("button", { name: "资料更多操作", exact: true }).click();
   await page
@@ -1567,7 +1654,7 @@ test("全文检索只跟随当前文件，历史恢复与归档刷新保持正�
   const chooser = page.waitForEvent("filechooser");
   await page.getByRole("menuitem", { name: "更新文件", exact: true }).click();
   await (await chooser).setFiles(image);
-  await page.getByRole("button", { name: "确认 更新", exact: true }).click();
+  await page.getByRole("button", { name: "更新", exact: true }).click();
   await expect(page.locator(".res-status")).toContainText("文件已更新");
   await page.getByRole("button", { name: "返回资源库", exact: true }).click();
   await expect(page.locator(".tbx-res-open")).toHaveCount(0);
@@ -1592,7 +1679,7 @@ test("全文检索只跟随当前文件，历史恢复与归档刷新保持正�
   await page.locator(".tbx-res-open").click();
   await page.getByRole("button", { name: "资料更多操作", exact: true }).click();
   await page.getByRole("menuitem", { name: "归档资料", exact: true }).click();
-  await page.getByRole("button", { name: "确认 归档", exact: true }).click();
+  await page.getByRole("button", { name: "归档", exact: true }).click();
   await expect(page.locator(".tbx-res-open")).toHaveCount(0);
   await openArchive(page);
   await page.getByLabel("搜索资料").fill("三角形");
@@ -2320,7 +2407,7 @@ test.describe("OCR 资源消费", () => {
     const chooser = page.waitForEvent("filechooser");
     await page.getByRole("menuitem", { name: "更新文件", exact: true }).click();
     await (await chooser).setFiles(image);
-    await page.getByRole("button", { name: "确认 更新", exact: true }).click();
+    await page.getByRole("button", { name: "更新", exact: true }).click();
     await expect(page.locator(".res-status")).toContainText("文件已更新");
     await expect(page.getByRole("region", { name: /识别正文/ })).toHaveCount(0);
     await page.getByRole("button", { name: "返回资源库", exact: true }).click();

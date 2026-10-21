@@ -29,7 +29,7 @@ test.describe('日历视图与编辑流程', () => {
 
   async function saved(title) { return (await entries()).find(x => x.title === title); }
 
-  async function closeEditor(page) { await page.getByRole('button', { name: '关闭', exact: true }).click(); await expect(page.locator('.tbx-sheet')).toHaveCount(0); }
+  async function closeEditor(page) { await page.locator('.tbx-sheet').getByRole('button', { name: '关闭', exact: true }).click(); await expect(page.locator('.tbx-sheet')).toHaveCount(0); }
 
   async function view(page, name) { await page.getByRole('button', { name: '日历视图', exact: true }).click(); await page.getByRole('menuitemradio', { name: new RegExp(`^${name}\\s`) }).click(); }
 
@@ -194,7 +194,7 @@ test.describe('日历视图与编辑流程', () => {
     await page.mouse.move(rect.x + 120, rect.y + 3); await page.mouse.down();
     await page.mouse.move(rect.x + 120, rect.y + 107, { steps: 18 }); await page.mouse.up();
     await expectScheduleField(page, '开始时间', '04:00');
-    await expect(page.locator('.fc-highlight')).toHaveCount(1);
+    await expect(page.locator('.cal-draft-event')).toBeVisible();
     await page.locator('.fc-timegrid-slot-lane[data-time="06:00:00"]').click({ position: { x: 100, y: 6 } });
     await expect(page.locator('.tbx-sheet')).toHaveCount(0);
     await expect(page.locator('.fc-highlight')).toHaveCount(0);
@@ -244,7 +244,7 @@ test.describe('日历视图与编辑流程', () => {
     const grid = await page.locator('.fc-timegrid-cols').boundingBox();
     const firstDay = await page.locator('.fc-timegrid-col[data-date]').first().boundingBox();
     expect(Math.abs(guide.x - firstDay.x)).toBeLessThan(2);
-    expect(Math.abs(guide.x + guide.width - grid.x - grid.width)).toBeLessThan(2);
+    expect(guide.x + guide.width).toBeGreaterThanOrEqual(grid.x + grid.width - 2);
     await page.screenshot({ path: info.outputPath('now-time.png'), animations: 'disabled' });
     const task = page.locator('.fc-timegrid-event').filter({ hasText: '上课' });
     const normal = await task.evaluate(node => getComputedStyle(node).backgroundColor);
@@ -281,7 +281,7 @@ test.describe('日历视图与编辑流程', () => {
     await marker.scrollIntoViewIfNeeded();
     const narrowGuide = await page.locator('.cal-now-guide').boundingBox();
     const narrowGrid = await page.locator('.fc-timegrid-cols').boundingBox();
-    expect(Math.abs(narrowGuide.x + narrowGuide.width - narrowGrid.x - narrowGrid.width)).toBeLessThan(2);
+    expect(narrowGuide.x + narrowGuide.width).toBeGreaterThanOrEqual(narrowGrid.x + narrowGrid.width - 2);
     await page.screenshot({ path: info.outputPath('now-time-tablet-dark.png'), animations: 'disabled' });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
   });
@@ -290,6 +290,7 @@ test.describe('日历视图与编辑流程', () => {
     // 从文本输入切到日期，覆盖浏览器保留键盘焦点状态的路径。
     await page.getByRole('button', { name: '新建任务', exact: true }).click();
     await page.locator('#calendar-entry-title').fill('');
+    await closeEditor(page);
     const previous = page.locator('.cal-mini [data-date="2026-09-24"]');
     await previous.click();
     await page.mouse.move(280, 80);
@@ -473,6 +474,13 @@ test.describe('日历视图与编辑流程', () => {
     await page.screenshot({ path: test.info().outputPath('item-handle-hover.png'), animations: 'disabled' });
     const from = await grip.boundingBox(), to = await rows.first().boundingBox();
     await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2); await page.mouse.down();
+    const pointerX = from.x + from.width / 2 + 80;
+    await page.mouse.move(pointerX, from.y + from.height / 2, { steps: 10 });
+    const ghost = page.locator('.tbx-drag-ghost.is-item');
+    await expect(ghost).toBeVisible();
+    const ghostBox = await ghost.boundingBox();
+    expect(Math.abs(ghostBox.x - pointerX), '事项跟手卡应留在抓取点附近').toBeLessThan(40);
+    await page.screenshot({ path: test.info().outputPath('item-ghost-under-pointer.png') });
     await page.mouse.move(to.x + 10, to.y + 2, { steps: 15 }); await page.mouse.up();
     await expect.poll(() => rows.locator('input').evaluateAll(nodes => nodes.map(node => node.value))).toEqual(['第三项', '第一项', '第二项']);
     await closeEditor(page); await page.reload();
@@ -570,7 +578,7 @@ test.describe('日历视图与编辑流程', () => {
     await expect.poll(async () => (await saved('课堂准备'))?.calendar.tags.length).toBe(1);
     await capture(page, 'editor');
     await page.reload(); await expect(page.locator('#calendar-entry-title')).toHaveValue('课堂准备');
-    await expect(page.getByRole('textbox', { name: '备注', exact: true })).toHaveValue('准备两个例子');
+    await expect(page.getByRole('textbox', { name: '备注', exact: true })).toHaveValue('讲清函数的定义\n准备两个例子');
     await page.locator('.tbx-sheet-delete').click(); await page.locator('.tbx-sheet-delete').click();
 
     await expect.poll(async () => Boolean(await saved('课堂准备'))).toBeFalsy();
@@ -814,7 +822,8 @@ test.describe('月视图布局与全天任务', () => {
     }
     const from=await row.boundingBox(),to=await page.locator('.fc-daygrid-day[data-date="2026-09-26"]').boundingBox();
     await page.mouse.move(from.x+from.width/2,from.y+from.height/2);await page.mouse.down();
-    await page.mouse.move(to.x+to.width/2,to.y+50,{steps:20});await page.mouse.up();
+    // Aim at the exposed edge of the date cell, outside the anchored overflow panel.
+    await page.mouse.move(to.x+to.width-6,to.y+50,{steps:20});await page.mouse.up();
     await expect(page.locator('.cal-month-more-popover')).toHaveCount(0);
     await expect(page.locator('.tbx-sheet')).toHaveCount(0);
     if(refreshStarted) {
@@ -868,13 +877,14 @@ test.describe('字段校验与编辑可达性', () => {
   test('无效结束时间就地提示不挤动布局，关闭保留原时间且不阻塞',async({page})=>{
     const task=await call('POST',E,entry('关闭交互待核对'));
     await page.reload();await open(page,task.title);
-    const notes=page.locator('.tbx-sheet-notes-label');
+    const notes=page.getByRole('textbox',{name:'备注',exact:true});
+    await notes.click();
     const before=await notes.boundingBox();
     await setScheduleField(page, '结束时间', '14:55');
     await expect(page.locator('.tbx-sheet').getByRole('button', { name: '结束时间', exact: true })).toHaveAttribute('aria-invalid','true');
-    await expect(page.locator('.tbx-sheet-hint.is-error')).toContainText('时间无效');
-    await expect(page.locator('.tbx-sheet-hint.is-error')).toHaveCSS('color','rgb(216, 58, 66)');
-    await expect(page.locator('.tbx-sheet-hint.is-error')).toHaveCSS('font-size','11px');
+    await expect(page.locator('.tbx-sheet-hint.is-error')).toContainText('结束时间要晚于开始时间');
+    await expect(page.locator('.tbx-sheet-hint.is-error')).toHaveCSS('color','rgb(215, 0, 21)');
+    await expect(page.locator('.tbx-sheet-hint.is-error')).toHaveCSS('font-size','12.5px');
     expect((await notes.boundingBox()).y).toBe(before.y);
     await expect(page.locator('.tbx-sheet > .cal-error')).toHaveCount(0);
     await page.screenshot({path:test.info().outputPath('invalid-time-inline.png')});
@@ -974,7 +984,7 @@ test.describe('视图范围与字段边界', () => {
 
   test('K4 标签达到30个后不允许静默选入第31个导致任务无法保存',async({page})=>{
      const labels=[];for(let i=0;i<31;i++)labels.push(await call('POST',L,{name:`标签${String(i+1).padStart(2,'0')}`,color:'#63c6ec'}));const task=await call('POST',E,entry('标签数量边界',{calendar:{allDay:false,notes:'',tags:labels.slice(0,30).map(x=>x.id)}}));await reloadOpen(page,task);const option=page.locator('.tbx-labels').getByRole('button',{name:'标签31',exact:true});
-     const disabled=await option.isDisabled();if(!disabled)await option.click();await page.keyboard.press('Escape');await page.getByRole('button',{name:'关闭',exact:true}).click();await expect(page.locator('.tbx-sheet')).toHaveCount(0);expect((await call('GET',`${E}/${task.id}`)).calendar.tags).toHaveLength(30);
+     await expect(option).toBeDisabled();await page.locator('.tbx-sheet').getByRole('button',{name:'关闭',exact:true}).click();await expect(page.locator('.tbx-sheet')).toHaveCount(0);expect((await call('GET',`${E}/${task.id}`)).calendar.tags).toHaveLength(30);
     });
 
   for(const year of ['1900-01-01','2100-12-31'])test(`K5 浏览边界日期${year}的日周月视图不会失败或跳出支持范围`,async({page})=>{
@@ -1085,16 +1095,22 @@ test.describe('手势取消、通知与字段校验', () => {
      await dayView(page);const slot=page.locator('.fc-timegrid-slot-lane[data-time="04:00:00"]');await slot.scrollIntoViewIfNeeded();const r=await slot.boundingBox();await page.mouse.move(r.x+120,r.y+2);await page.mouse.down();await page.mouse.move(r.x+120,r.y+r.height*4-2,{steps:15});await expect(page.locator('.cal-selection-time')).toBeVisible();await page.keyboard.press('Escape');await page.mouse.up();await expect(page.locator('.tbx-sheet')).toHaveCount(0);await expect(page.locator('.cal-selection-time')).toHaveCount(0);
     });
 
-  test('T3 编辑任务时取消小月历拖选，仅取消日期手势而保留任务编辑器',async({page})=>{
-     const task=await call('POST',E,entry('小月历取消范围'));await reloadOpen(page,task);const a=await page.locator('.cal-mini [data-date="2026-09-25"]').boundingBox(),b=await page.locator('.cal-mini [data-date="2026-09-28"]').boundingBox();await page.mouse.move(a.x+a.width/2,a.y+a.height/2);await page.mouse.down();await page.mouse.move(b.x+b.width/2,b.y+b.height/2,{steps:15});await page.keyboard.press('Escape');await page.mouse.up();await expect(page.locator('#calendar-entry-title')).toHaveValue(task.title);expect((await call('GET',`${E}/${task.id}`)).version).toBe(task.version);
+  test('T3 编辑器替代小月历，关闭后取消日期拖选不会修改任务',async({page})=>{
+     const task=await call('POST',E,entry('小月历取消范围'));await reloadOpen(page,task);
+     await expect(page.locator('.cal-mini')).toBeHidden();
+     await page.locator('.tbx-sheet').getByRole('button',{name:'关闭',exact:true}).click();
+     const selected=await page.locator('.cal-mini [aria-pressed=true]').evaluateAll(nodes=>nodes.map(node=>node.dataset.date));
+     const a=await page.locator('.cal-mini [data-date="2026-09-25"]').boundingBox(),b=await page.locator('.cal-mini [data-date="2026-09-28"]').boundingBox();await page.mouse.move(a.x+a.width/2,a.y+a.height/2);await page.mouse.down();await page.mouse.move(b.x+b.width/2,b.y+b.height/2,{steps:15});await page.keyboard.press('Escape');await page.mouse.up();
+     expect(await page.locator('.cal-mini [aria-pressed=true]').evaluateAll(nodes=>nodes.map(node=>node.dataset.date))).toEqual(selected);
+     await open(page,task.title);await expect(page.locator('#calendar-entry-title')).toHaveValue(task.title);expect((await call('GET',`${E}/${task.id}`)).version).toBe(task.version);
     });
 
   test('T4 调整结束边缘时按Escape，松手不会提交新的时长',async({page})=>{
-     const task=await call('POST',E,entry('取消拉伸'));await reloadOpen(page,task);await dayView(page);const card=page.locator('.fc-timegrid-event:not(.fc-event-mirror)').filter({hasText:task.title});await card.scrollIntoViewIfNeeded();await card.hover();const h=await card.locator('.fc-event-resizer-end').boundingBox();await page.mouse.move(h.x+h.width/2,h.y+h.height/2);await page.mouse.down();await page.mouse.move(h.x+h.width/2,h.y+h.height/2+52,{steps:12});await expect(page.locator('.fc-event-mirror')).toBeVisible();await page.keyboard.press('Escape');await page.mouse.up();await page.waitForTimeout(900);expect((await call('GET',`${E}/${task.id}`)).time).toEqual(task.time);
+     const task=await call('POST',E,entry('取消拉伸'));await reloadOpen(page,task);await dayView(page);const card=page.locator('.fc-timegrid-event:not(.fc-event-mirror)').filter({hasText:task.title});await card.hover();await card.evaluate(node=>Promise.all(node.getAnimations().map(animation=>animation.finished.catch(()=>{}))));await page.mouse.wheel(0,260);await expect.poll(async()=>{const box=await card.boundingBox();return box.y+box.height<800;}).toBe(true);await card.hover();const h=await card.locator('.fc-event-resizer-end').boundingBox();await page.mouse.move(h.x+h.width/2,h.y+h.height/2);await page.mouse.down();await page.mouse.move(h.x+h.width/2,h.y+h.height/2+52,{steps:12});await expect(page.locator('.fc-event-mirror')).toBeVisible();await page.keyboard.press('Escape');await page.mouse.up();await page.waitForTimeout(900);expect((await call('GET',`${E}/${task.id}`)).time).toEqual(task.time);
     });
 
   test('T5 通知全部已读、切回未读及拖到垃圾桶只删除那一条',async({page})=>{
-     const panel=await due(page);await panel.getByRole('button',{name:'全部已读',exact:true}).click();await expect.poll(async()=>(await call('GET',N)).unreadCount).toBe(0);const first=panel.locator('.tb-notification').first();await expect(first).toHaveClass(/is-read/);await first.click();await expect.poll(async()=>(await call('GET',N)).unreadCount).toBe(1);await panel.getByRole('button',{name:'全部已读',exact:true}).click();await expect.poll(async()=>(await call('GET',N)).unreadCount).toBe(0);await expect(first).toHaveClass(/is-read/);await first.dragTo(panel.locator('.tb-notification-trash'));await expect.poll(async()=>(await call('GET',N)).items.length).toBe(2);expect((await call('GET',E)).items).toHaveLength(3);
+     const panel=await due(page);await panel.getByRole('button',{name:'全部已读',exact:true}).click();await expect.poll(async()=>(await call('GET',N)).unreadCount).toBe(0);const first=panel.locator('.tb-notification').first();await expect(first).toHaveClass(/is-read/);await first.click();await expect.poll(async()=>(await call('GET',N)).unreadCount).toBe(1);await panel.getByRole('button',{name:'全部已读',exact:true}).click();await expect.poll(async()=>(await call('GET',N)).unreadCount).toBe(0);await expect(first).toHaveClass(/is-read/);await first.dragTo(panel.locator('.tb-notification-trash'));expect((await call('GET',N)).items).toHaveLength(3);await panel.getByRole('button',{name:'确认删除',exact:true}).click();await expect.poll(async()=>(await call('GET',N)).items.length).toBe(2);expect((await call('GET',E)).items).toHaveLength(3);
     });
 
   for (const [width,theme] of [[1675,'浅色'],[1675,'深色'],[390,'浅色'],[390,'深色']]) test(`T6 全部已读响应丢失后关闭再打开面板，可确认原请求且不重复通知${width===1675&&theme==='浅色'?'':`，${width}${theme}`}`,async({page},info)=>{

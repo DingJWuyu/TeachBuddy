@@ -369,3 +369,58 @@ test('浏览器：图片批次逐题校对，几何下标自动恢复后入库�
     await page.screenshot({path:info.outputPath(`question-6-dark-${width}.png`),fullPage:true});
   }
 });
+
+test('浏览器：整理中停止、刷新和重试保留原稿及已编辑草稿', async ({page}, info) => {
+  let secondPageStarted = false;
+  beforePage = async (name, signal) => {
+    if (name !== 'I-2') return;
+    secondPageStarted = true;
+    await new Promise((resolve, reject) => {
+      const abort = () => reject(signal.reason ?? new DOMException('Aborted', 'AbortError'));
+      if (signal.aborted) abort();
+      else signal.addEventListener('abort', abort, {once: true});
+    });
+  };
+  await page.goto(world.origin);
+  await page.getByLabel('邮箱', {exact:true}).fill(email);
+  await page.getByLabel('密码', {exact:true}).fill('math-password');
+  await page.getByRole('button', {name:'登录', exact:true}).click();
+  await page.getByRole('button', {name:'知道了', exact:true}).click();
+  await page.getByRole('navigation', {name:'功能模块'}).getByRole('link', {name:/^题库/}).click();
+  await page.locator('.q-finder').getByRole('button', {name:'从资料收录', exact:true}).click();
+  const dialog = page.getByRole('dialog', {name:'从资料收录题目'});
+  await dialog.getByRole('button', {name:/上传图片/}).click();
+  await dialog.getByLabel('选择原稿').setInputFiles(pageNames.map(name => ({name:name+'.png', mimeType:'image/png', buffer:sourceImage(name)})));
+  const accepted = page.waitForResponse(response => response.url().endsWith(`${base}/imports`) && response.request().method() === 'POST');
+  await dialog.getByRole('button', {name:'开始整理'}).click();
+  const created = await (await accepted).json();
+  await expect.poll(() => secondPageStarted).toBe(true);
+  await expect(page.getByRole('button', {name:'停止整理',exact:true})).toBeVisible();
+  await expect(page.getByRole('button', {name:'保存检查进度',exact:true})).toBeDisabled();
+  await page.screenshot({path:info.outputPath('running.png')});
+  await page.getByRole('button', {name:'停止整理',exact:true}).click();
+  expect((await waitJob(created.jobId)).state).toBe('cancelled');
+  await expect(page.getByRole('button', {name:'重试未完成部分',exact:true})).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole('button', {name:'重试未完成部分',exact:true})).toBeVisible();
+  await expect(page.locator('.q-original img')).toBeVisible();
+  await page.getByRole('button', {name:'修改题目',exact:true}).click();
+  const firstDraftId = (await read(created.id)).drafts[0].id;
+  await page.getByLabel('草稿标题').fill('停止后人工校对的第一题');
+  await page.getByRole('button', {name:'完成修改',exact:true}).click();
+  await page.getByRole('button', {name:'保存检查进度',exact:true}).click();
+  await expect.poll(async () => (await read(created.id)).drafts[0].title).toBe('停止后人工校对的第一题');
+  beforePage = async () => {};
+  const retried = page.waitForResponse(response => /\/jobs\/[^/]+\/retry$/.test(new URL(response.url()).pathname) && response.request().method() === 'POST');
+  await page.getByRole('button', {name:'重试未完成部分',exact:true}).click();
+  const retriedJob = await (await retried).json();
+  expect((await waitJob(retriedJob.id)).state).toBe('succeeded');
+  await expect(page.getByRole('button', {name:'停止整理',exact:true})).toBeHidden();
+  await page.reload();
+  const material = await read(created.id);
+  expect(material.drafts.find(draft => draft.id === firstDraftId).title).toBe('停止后人工校对的第一题');
+  expect(material.drafts.filter(draft => draft.title.startsWith('Q')).map(draft => draft.title).sort()).toEqual(['Q1.', 'Q2.', 'Q3.', 'Q4.', 'Q5.', 'Q6.']);
+  await page.getByRole('button', {name:'修改题目',exact:true}).click();
+  await expect(page.getByLabel('草稿标题')).toHaveValue('停止后人工校对的第一题');
+  await page.screenshot({path:info.outputPath('retried-preserved.png')});
+});

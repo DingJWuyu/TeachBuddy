@@ -1,7 +1,6 @@
 import { useTranslation } from 'react-i18next';
 
 import { useEffect, useRef, useState } from 'react';
-import { ModulePresence } from '../../components/interaction/ModuleMotion.jsx';
 import { AppConfirmDialog } from '../../components/ui/confirm.jsx';
 
 export function useMathConfirm() {
@@ -19,6 +18,6 @@ export function useMathConfirm() {
     resolveRef.current = resolve;
     setMessage({ text: message, ...options });
   });
-  const dialog = <ModulePresence present={!!message}>{message && <AppConfirmDialog title={message.title ?? t("确认操作")} message={message.text} confirmLabel={message.confirmLabel ?? t("继续")} onConfirm={() => finish(true)} onCancel={() => finish(false)} />}</ModulePresence>;
+  const dialog = <AppConfirmDialog present={!!message} title={message?.title ?? t("确认操作")} message={message?.text} confirmLabel={message?.confirmLabel ?? t("继续")} onConfirm={() => finish(true)} onCancel={() => finish(false)} />;
   return [confirm, dialog];
 }

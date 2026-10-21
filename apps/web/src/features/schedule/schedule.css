@@ -1036,7 +1036,7 @@
 
 .cal-repeat-row > span {
   flex: none;
-  width: 20px;
+  min-width: 20px;
 }
 
 .cal-repeat-row input {
@@ -1092,12 +1092,12 @@
   margin: 0;
 }
 
-.cal-repeat-end input[type=date] {
+.cal-dialog .cal-repeat-end input[type=date] {
   width: 174px;
   margin-left: auto;
 }
 
-.cal-repeat-end input[type=number] {
+.cal-dialog .cal-repeat-end input[type=number] {
   width: 80px;
 }
 
