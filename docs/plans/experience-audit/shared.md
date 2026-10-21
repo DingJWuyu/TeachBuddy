@@ -40,6 +40,6 @@
 | 编号 | 类别与触发 | 修复与证据 |
 | --- | --- | --- |
 | EA-shared-01 | 本轮恢复数学原生全屏后暴露的组合问题：菜单Portal仍在外壳，落在全屏层外，DOM存在但用户无法点击。不是基线既存复刻偏差。 | `components/ui/popover.jsx` 的宿主优先原生全屏元素；math/fullscreen-menu-red 证明失败，math/final-regression 与 native-confirm 证明菜单、下载、历史及嵌套确认可点、可退出、归焦正确。 |
-| EA-shared-02 | 基线共享缺陷：ModulePresence在确认框portal外，取消后保留的旧确认不受inert/退场约束。题库取消后Tab/Enter实际归档；数学退出期仍占焦点；资源本轮迁移复用了相同错误结构。三处同根只计1。 | 红证据为 `review/standards-confirm-lifecycle.json`、`questions/confirm-lifecycle-before/receipt.json`、`math/confirm-lifecycle-red.json`。ConfirmDialog通过受控present在portal内拥有退出与焦点，保留原入场，取消立即禁用、快速重开新实例。绿证据为resources/lifecycle-green及lifecycle-recheck、questions/confirm-focus与taxonomy-focus-after、math/confirm-lifecycle-green及confirm-native-lifecycle；独立增量复核待完成。 |
+| EA-shared-02 | 基线共享缺陷：ModulePresence在确认框portal外，取消后保留的旧确认不受inert/退场约束。题库取消后Tab/Enter实际归档；数学退出期仍占焦点；资源本轮迁移复用了相同错误结构。三处同根只计1。 | 红证据为 `review/standards-confirm-lifecycle.json`、`questions/confirm-lifecycle-before/receipt.json`、`math/confirm-lifecycle-red.json`。ConfirmDialog通过受控present在portal内拥有退出与焦点，保留原入场，取消立即禁用、快速重开新实例。绿证据为resources/lifecycle-green及lifecycle-recheck、questions/confirm-focus与taxonomy-focus-after、math/confirm-lifecycle-green及confirm-native-lifecycle；独立增量复核及条件挂载兼容已通过，见review/standards-delta。 |
 
 共享基线独立缺陷1项。早期脚本的静态选择器、前置草稿、布局动画坐标、文本归一化错误均已修正，并在上述定点中重新实际操作，不计产品问题。反馈文件选择丢附件、其他分区提交的原型共有未决行为集中在根buffer。
