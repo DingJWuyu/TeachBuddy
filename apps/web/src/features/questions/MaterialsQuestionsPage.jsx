@@ -633,7 +633,7 @@ export default function MaterialsQuestionsPage({
         onCancel={cancelLifecycle}>
         {message && <p className="q-error" role="alert">{message}</p>}
       </LifecycleConfirmDialog>
-      <ModulePresence present={Boolean(newCategory)}>{newCategory && <QuestionDialog title={newCategory.kind === 'types' ? t("新建题型") : t("新建标签")} onClose={() => closeCategory()}>
+      <ModulePresence present={Boolean(newCategory)}>{newCategory && <QuestionDialog key={newCategory.openingId} title={newCategory.kind === 'types' ? t("新建题型") : t("新建标签")} onClose={() => closeCategory()}>
         <form onSubmit={event => { event.preventDefault(); createCategory(); }}>
           <label>{t("名称")}<input aria-label={t("分类名称")} value={categoryName} maxLength={80} onChange={event => changeCategoryName(event.target.value)} /></label>
           <p className="q-muted">{t("创建后直接选用于当前题目。")}</p>

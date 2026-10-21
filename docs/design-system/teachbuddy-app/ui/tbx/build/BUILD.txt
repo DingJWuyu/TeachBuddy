@@ -8,6 +8,8 @@ npm exec --no -- esbuild docs/design-system/teachbuddy-app/ui/tbx/src/index.js -
 
 这只重建 `ui/tbx.js`，不改原有 app bundle 或 CSS。生成产物与源码一起保留，并实际运行核对受影响页面。原型启动沿仓库 `npm run prototype`。
 
+反馈附件和题库材料计数、分类弹窗仍属于输入中的 legacy `ui/app.js`，没有配套 JSX 原稿。已裁决的局部修改维护在 `patch_approved_ui.py`，以入库 bundle 为输入生成对应片段；从仓库根目录运行 `python3 docs/design-system/teachbuddy-app/ui/tbx/build/patch_approved_ui.py`，重复运行不改变结果。相关翻译仍在 overlay 词库，修改后也执行上面的 esbuild 命令。这条入口不恢复缺失的原始工程，也不执行下方历史拼装流程。
+
 下文保存设计输入最初的拼装说明。其旧机器路径和 pristine bundle 不属于本仓准备条件；不要重跑这些历史补丁或 `build.sh` 来重建当前 overlay。
 
 # TeachBuddy redesign layer

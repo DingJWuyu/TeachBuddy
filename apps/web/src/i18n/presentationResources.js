@@ -152,6 +152,7 @@ export const EN = {
   '打开日程': 'Open Schedule',
   '把「{{title}}」带进对话': 'Bring “{{title}}” into the chat',
   '复制': 'Copy',
+  '复制失败，请重试': 'Copy failed. Please try again.',
   '回答被停止了，只保留了前面的部分。': 'Stopped. Only the first part was kept.',
   '重新回答': 'Regenerate',
   '暂不可用': 'Unavailable',

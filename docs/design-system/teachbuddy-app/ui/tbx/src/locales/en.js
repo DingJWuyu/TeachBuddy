@@ -154,6 +154,7 @@ export const EN = {
   '打开日程': 'Open Schedule',
   '把「{{title}}」带进对话': 'Bring “{{title}}” into the chat',
   '复制': 'Copy',
+  '复制失败，请重试': 'Copy failed. Please try again.',
   '回答被停止了，只保留了前面的部分。': 'Stopped. Only the first part was kept.',
   '重新回答': 'Regenerate',
   '暂不可用': 'Unavailable',
@@ -881,6 +882,8 @@ export const APP_EN = {
     '删除未完成，请重试。': 'Couldn’t delete. Please try again.',
   },
   questions: {
+    '{{count}} 份材料_one': '{{count}} material',
+    '{{count}} 份材料_other': '{{count}} materials',
     '将移出当前列表。之后可以在左侧的“已归档”里恢复或彻底删除。': 'It will leave this list. You can restore it or delete it for good from Archived on the left.',
   },
   math: {
@@ -907,4 +910,5 @@ export const APP_OVERRIDES = {
 /* Chinese strings the app looks up by key (new modules). */
 export const APP_ZH = {
   workbench: { 'modules.classroom': '班级' },
+  questions: { '{{count}} 份材料': '{{count}} 份材料' },
 };

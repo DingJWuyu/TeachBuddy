@@ -333,8 +333,11 @@ export function FeedbackPanel({ onAnnounce, onClose }) {
   const setBody = body => patchFeedback({ body });
   const [sent, setSent] = useState(false);
   const [files, setFiles] = useState([]);
-  const addFiles = list => setFiles(current => [...current,
-    ...Array.from(list || [], file => ({ name: file.name || tx('截图'), size: file.size }))].slice(0, 5));
+  const addFiles = list => {
+    // FileList is live: capture it before the picker input is cleared.
+    const added = Array.from(list || [], file => ({ name: file.name || tx('截图'), size: file.size }));
+    setFiles(current => [...current, ...added].slice(0, 5));
+  };
   const canSend = body.trim().length > 0;
 
   if (sent) {

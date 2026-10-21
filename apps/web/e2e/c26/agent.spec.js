@@ -762,3 +762,121 @@ test('首条长回答到达后跟随末尾，阅读旧文时新回答保留位�
   await page.getByRole('button', { name: '新消息', exact: true }).click();
   await expect.poll(() => thread.evaluate(element => element.scrollHeight - element.clientHeight - element.scrollTop < 3)).toBe(true);
 });
+
+
+test('AC02: 取消选课仅移除该次选课带入的引用', async ({ page }) => {
+  const { headers } = await savedQuestion(page, '保留的独立引用');
+  const date = new Date(); date.setDate(date.getDate() + 1);
+  const response = await page.request.post(world.origin + '/api/modules/schedule/entries', { headers: headers(), data: { title: '可取消的数学课', items: [], time: { date: date.toISOString().slice(0, 10), startTime: '10:00', durationMinutes: 45, timeZone: 'UTC' }, repeat: null, reminder: null, calendar: { allDay: false, notes: '', tags: [] } } });
+  expect(response.status()).toBe(201);
+  await page.reload();
+  await page.getByRole('button', { name: '哪节课', exact: true }).click();
+  await page.getByRole('option', { name: /可取消的数学课/ }).click();
+  await page.locator('.tbx-composer.is-placeholder').click();
+  await expect(page.locator('.tbx-drawer .tbx-chip')).toHaveCount(1);
+  await page.locator('.tbx-inline-button').click();
+  await page.getByRole('button', { name: '不针对某节课', exact: true }).click();
+  await expect(page.locator('.tbx-drawer .tbx-chip')).toHaveCount(0);
+  await expect(page.locator('.tbx-inline-button')).toBeFocused();
+  const input = page.getByRole('textbox', { name: 'AI 输入' });
+  await input.fill('@保留的独立引用');
+  await page.getByRole('option', { name: '保留的独立引用', exact: true }).click();
+  await input.fill('保留这段备课正文');
+  await page.getByRole('button', { name: '哪节课', exact: true }).click();
+  await page.getByRole('option', { name: /可取消的数学课/ }).click();
+  await expect(page.locator('.tbx-drawer .tbx-chip')).toHaveCount(2);
+  await page.locator('.tbx-inline-button').click();
+  await page.getByRole('button', { name: '不针对某节课', exact: true }).click();
+  await expect(page.locator('.tbx-inline-button')).toBeFocused();
+  await page.screenshot({ path: `${evidence}/ac02-cancel-lesson.png` });
+  await expect(page.locator('.tbx-drawer .tbx-chip')).toHaveCount(1);
+  await expect(page.locator('.tbx-drawer')).toContainText('保留的独立引用');
+  await expect(input).toHaveValue('保留这段备课正文');
+  await expect(page.getByText('草稿已保存', { exact: true })).toBeVisible();
+  await page.reload();
+  await expect(page.locator('.tbx-drawer .tbx-chip')).toHaveCount(1);
+  await expect(input).toHaveValue('保留这段备课正文');
+  // 通过 @ 独立加入的同一课程，不属于后一次选课带入的引用。
+  await input.fill('@可取消');
+  await page.getByRole('option', { name: /可取消的数学课/ }).click();
+  await page.getByRole('button', { name: '哪节课', exact: true }).click();
+  await page.getByRole('option', { name: /可取消的数学课/ }).click();
+  await page.locator('.tbx-inline-button').click();
+  await page.getByRole('button', { name: '不针对某节课', exact: true }).click();
+  await expect(page.locator('.tbx-drawer .tbx-chip')).toHaveCount(2);
+});
+
+test('AC03: 正文中间选择引用保留前后文及继续输入位置', async ({ page }) => {
+  await savedQuestion(page, '中间引用的题目');
+  await page.locator('.tbx-composer.is-placeholder').click();
+  const input = page.getByRole('textbox', { name: 'AI 输入' });
+  await input.fill('前文 后文 @原有文字');
+  await input.press('Home'); await input.press('ArrowRight'); await input.press('ArrowRight'); await input.press('ArrowRight');
+  await input.pressSequentially('@中间');
+  await page.getByRole('option', { name: '中间引用的题目', exact: true }).click();
+  await page.screenshot({ path: `${evidence}/ac03-middle-reference.png` });
+  await expect(input).toHaveValue('前文 后文 @原有文字');
+  await expect(input).toBeFocused();
+  await page.keyboard.insertText('继续');
+  await expect(input).toHaveValue('前文 继续后文 @原有文字');
+  await expect(page.getByText('草稿已保存', { exact: true })).toBeVisible();
+  await page.reload();
+  await expect(input).toHaveValue('前文 继续后文 @原有文字');
+  await expect(page.locator('.tbx-drawer .tbx-chip')).toHaveCount(1);
+  await input.press('End');
+  await page.getByRole('button', { name: '引用工作台里的内容', exact: true }).click();
+  await page.getByRole('option', { name: '中间引用的题目', exact: true }).click();
+  await expect(input).toHaveValue('前文 继续后文 @原有文字');
+  await expect(input).toBeFocused();
+  await page.keyboard.insertText('末尾继续');
+  await expect(input).toHaveValue('前文 继续后文 @原有文字末尾继续');
+});
+
+for (const locale of ['zh-CN', 'en']) test(`AC04: ${locale}复制拒绝与不可用不假报成功，同一按钮重试真实写入剪贴板`, async ({ page, context }) => {
+  const { provider } = await import('../../../api/test/fixtures/c26/provider.js');
+  const model = await provider([[{ type: 'text', text: '可核对的复制正文' }]]);
+  await world.close(); world = await startWorld({ agent: model.config });
+  if (locale === 'en') await page.emulateMedia({ colorScheme: 'dark' });
+  await register(page);
+  await page.locator('.tbx-composer.is-placeholder').click();
+  await page.getByRole('textbox', { name: 'AI 输入' }).fill('请回答');
+  await page.getByRole('button', { name: '发送', exact: true }).click();
+  await expect(page.locator('.tbx-msg.is-assistant')).toContainText('可核对的复制正文');
+  await expect(page.getByRole('button', { name: '重新回答', exact: true })).toBeVisible();
+  if (locale === 'en') {
+    await page.locator('.tb-language-row').click();
+    await page.getByRole('menuitemradio', { name: 'English', exact: true }).click();
+    await expect(page.getByRole('button', { name: 'Copy', exact: true })).toBeVisible();
+    await page.setViewportSize({ width: 390, height: 844 });
+  }
+  const copyName = locale === 'en' ? 'Copy' : '复制';
+  const copiedName = locale === 'en' ? 'Copied' : '已复制';
+  const failure = locale === 'en' ? 'Copy failed. Please try again.' : '复制失败，请重试';
+  const input = page.locator('.tbx-input');
+  for (const mode of ['denied', 'unavailable']) {
+    if (mode === 'denied') {
+      await page.route(world.origin + '/', async route => { const response = await route.fetch(); return route.fulfill({ response, headers: { ...response.headers(), 'permissions-policy': 'clipboard-write=()' } }); });
+      await page.reload();
+      expect(await page.evaluate(() => document.featurePolicy.allowsFeature('clipboard-write'))).toBe(false);
+    } else await page.evaluate(() => Object.defineProperty(navigator, 'clipboard', { configurable: true, value: undefined }));
+    await page.getByRole('button', { name: copyName, exact: true }).click();
+    await expect(page.getByTitle(copiedName, { exact: true })).toHaveCount(0);
+    await expect(page.getByRole('alert')).toHaveText(failure);
+    await page.screenshot({ path: `${evidence}/ac04-${locale}-${mode}.png` });
+    await input.fill('复制失败后仍可输入');
+    await expect(input).toHaveValue('复制失败后仍可输入');
+    if (mode === 'denied') {
+      await page.unroute(world.origin + '/');
+      await page.reload();
+    }
+  }
+  await page.evaluate(() => { delete navigator.clipboard; });
+  await context.grantPermissions(['clipboard-read', 'clipboard-write'], { origin: world.origin });
+  await page.getByRole('button', { name: copyName, exact: true }).click();
+  await expect(page.getByTitle(copiedName, { exact: true })).toBeVisible();
+  await expect(page.getByText(failure, { exact: true })).toHaveCount(0);
+  await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe('可核对的复制正文');
+  await expect(input).toHaveValue('复制失败后仍可输入');
+  await page.screenshot({ path: `${evidence}/ac04-${locale}-retry-success.png` });
+  expect(model.requests()).toBe(1);
+});

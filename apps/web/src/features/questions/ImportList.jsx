@@ -14,7 +14,7 @@ export function ImportList({ imports, archived, selectedId, onOpen }) {
   ];
   return groups.map(([label, materials, expanded]) => materials.length > 0 && (
     <details className="q-imports" key={label} open={expanded || undefined}>
-      <summary>{label} · {materials.length} {t('份材料')}</summary>
+      <summary>{label} · {t('{{count}} 份材料', { count: materials.length })}</summary>
       {materials.map(material => <button key={material.id}
         className={selectedId === material.id ? 'selected' : ''} onClick={() => onOpen(material.id)}>
         <strong>{material.title}</strong>

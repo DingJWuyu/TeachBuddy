@@ -94946,7 +94946,7 @@ $$${math3}$$
         openCategory: (kind, onAssign) => {
           setCategoryName("");
           setMessage("");
-          setNewCategory({ kind, onAssign });
+          setNewCategory({ openingId: crypto.randomUUID(), kind, onAssign });
         },
         closeCategory: () => setNewCategory(null),
         changeCategoryName: (name25) => setCategoryName(name25),
@@ -95318,9 +95318,7 @@ $$${math3}$$
       /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("summary", { children: [
         label2,
         " \xB7 ",
-        materials.length,
-        " ",
-        t67("\u4EFD\u6750\u6599")
+        t67("{{count}} 份材料", { count: materials.length })
       ] }),
       materials.map((material) => /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(
         "button",
@@ -97024,7 +97022,7 @@ $$${math3}$$
               /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("button", { className: "primary", disabled: busy || !categoryName.trim(), children: t67("\u521B\u5EFA\u5E76\u9009\u7528") })
             ] }),
             message && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { role: "alert", children: message })
-          ] }) }) })
+          ] }) }, newCategory.openingId) })
         ]
       }
     );
@@ -155148,7 +155146,10 @@ ${face.svg()}`;
     const setBody = (body2) => patchFeedback({ body: body2 });
     const [sent, setSent] = (0, import_react91.useState)(false);
     const [files, setFiles] = (0, import_react91.useState)([]);
-    const addFiles = (list3) => setFiles((current) => [...current, ...[...list3].map((file) => ({ name: file.name || t67("\u622A\u56FE"), size: file.size }))].slice(0, 5));
+    const addFiles = (list3) => {
+      const added = Array.from(list3 || [], (file) => ({ name: file.name || t67("\u622A\u56FE"), size: file.size }));
+      setFiles((current) => [...current, ...added].slice(0, 5));
+    };
     const canSend = body.trim().length > 0;
     if (sent) {
       return /* @__PURE__ */ (0, import_jsx_runtime77.jsx)("div", { className: "tb-popover tb-popover-feedback", role: "dialog", "aria-labelledby": "tb-feedback-title", children: /* @__PURE__ */ (0, import_jsx_runtime77.jsxs)("div", { className: "tb-feedback-sent", children: [

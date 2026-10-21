@@ -1529,3 +1529,65 @@ test('确认取消后键盘不会归档、丢弃草稿、替换新题或删除�
   await expect(page.getByRole('textbox', { name: '题型名称', exact: true })).toHaveCount(0);
   await page.screenshot({ path: info.outputPath('cancelled-confirmations-preserve-content.png') });
 });
+
+test('就地分类连续创建与快速重开始终聚焦名称并保留键盘接续', async ({ page }, info) => {
+  await finder(page).getByRole('button', { name: '新建题目', exact: true }).click();
+  await page.getByRole('textbox', { name: '题干段落 1', exact: true }).fill('连续分类操作不改变题干。');
+  await page.getByRole('button', { name: '题型、标签与笔记', exact: true }).click();
+  const openType = page.getByRole('button', { name: '新建题型', exact: true });
+  const openTag = page.getByRole('button', { name: '新建标签', exact: true });
+  await openType.click();
+  const typeDialog = page.getByRole('dialog', { name: '新建题型', exact: true });
+  await expect(typeDialog.getByLabel('分类名称')).toBeFocused();
+  await page.keyboard.type('Sequential type');
+  await page.keyboard.press('Enter');
+  await openTag.click();
+  const tagDialog = page.getByRole('dialog', { name: '新建标签', exact: true });
+  await expect(tagDialog.getByLabel('分类名称')).toBeFocused();
+  await page.keyboard.type('Sequential tag');
+  await expect(tagDialog.getByLabel('分类名称')).toHaveValue('Sequential tag');
+  await page.screenshot({ path: info.outputPath('category-name-focused-after-type.png') });
+  await page.keyboard.press('Enter');
+  await expect(openTag).toBeFocused();
+  const transitions = [];
+  for (const [index, trigger] of [openTag, openType, openTag].entries()) {
+    if (index === 2) await page.emulateMedia({ reducedMotion: 'reduce' });
+    await trigger.click();
+    const dialog = page.getByRole('dialog', { name: await trigger.textContent(), exact: true });
+    await expect(dialog.getByLabel('分类名称')).toBeFocused();
+    await page.keyboard.type('Cancel and reopen');
+    await page.keyboard.press('Escape');
+    const closedAt = await page.evaluate(() => {
+      const dialog = [...document.querySelectorAll('.q-modal')].at(-1);
+      const surface = dialog?.closest('.wb-module-presence');
+      return { time: performance.now(), state: surface?.dataset.state, inert: surface?.inert,
+        duration: surface && getComputedStyle(surface.firstElementChild).transitionDuration, opacity: surface && getComputedStyle(surface.firstElementChild).opacity, animations: surface?.getAnimations({ subtree: true }).map(animation => ({ state: animation.playState, time: animation.currentTime })), reduced: matchMedia('(prefers-reduced-motion: reduce)').matches };
+    });
+    if (!closedAt.reduced) {
+      expect(closedAt.state).toBe('closed');
+      expect(closedAt.inert).toBe(true);
+    }
+    // The exiting surface remains mounted; reopen through the real trigger now.
+    await trigger.click();
+    await expect(dialog.getByLabel('分类名称')).toBeFocused();
+    await expect(dialog.getByLabel('分类名称')).toHaveValue('');
+    transitions.push({ ...closedAt, reopenedAfterMs: await page.evaluate(time => performance.now() - time, closedAt.time) });
+    await page.keyboard.type('Keyboard cancellation');
+    await page.keyboard.press('Tab');
+    await expect(dialog.getByRole('button', { name: '取消', exact: true })).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(trigger).toBeFocused();
+  }
+  const transitionEvidence = info.outputPath('category-dialog-transitions.json');
+  fs.writeFileSync(transitionEvidence, JSON.stringify(transitions, null, 2));
+  await info.attach('category-dialog-transitions', { path: transitionEvidence, contentType: 'application/json' });
+  const taxonomy = (await client.request('GET', '/api/modules/questions/v2/taxonomy')).json;
+  expect(taxonomy.types.map(item => item.name)).toEqual(['Sequential type']);
+  expect(taxonomy.tags.map(item => item.name)).toEqual(['Sequential tag']);
+  await page.getByRole('button', { name: '保存题目', exact: true }).click();
+  await page.reload();
+  const [saved] = await records();
+  expect(saved.typeId).toBe(taxonomy.types[0].id);
+  expect(saved.tagIds).toEqual([taxonomy.tags[0].id]);
+  await expect(page.getByRole('button', { name: '编辑题目', exact: true })).toBeVisible();
+});

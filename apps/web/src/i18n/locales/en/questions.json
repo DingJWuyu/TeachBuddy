@@ -58,7 +58,6 @@
   "清除条件": "Clear filters",
   "归档材料": "Archived materials",
   "继续收录": "Continue importing",
-  "份材料": " materials",
   "已入库 ·": "In question bank ·",
   "待校对": "Awaiting review",
   "正在读取题库…": "Loading question bank…",
@@ -465,5 +464,7 @@
   "归档材料？": "Archive this material?",
   "恢复材料？": "Restore this material?",
   "彻底删除材料？": "Permanently delete this material?",
-  "归档材料_action": "Archive material"
+  "归档材料_action": "Archive material",
+  "{{count}} 份材料_one": "{{count}} material",
+  "{{count}} 份材料_other": "{{count}} materials"
 }

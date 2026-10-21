@@ -888,7 +888,7 @@ export function useQuestionSession({ accountKey, transport, requestedId, onRetur
       showTaxonomy: () => setManage(true),
       saveTaxonomy: next => action(() => saveTaxonomy(next)),
       openCategory: (kind, onAssign) => {
-        setCategoryName(''); setMessage(''); setNewCategory({ kind, onAssign });
+        setCategoryName(''); setMessage(''); setNewCategory({ openingId: crypto.randomUUID(), kind, onAssign });
       },
       closeCategory: () => setNewCategory(null),
       changeCategoryName: name => setCategoryName(name),

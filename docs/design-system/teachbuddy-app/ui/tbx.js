@@ -2726,17 +2726,33 @@ ${text}`),
   function UserMessage({ m }) {
     return /* @__PURE__ */ h("article", { className: "tbx-msg is-user" }, /* @__PURE__ */ h("div", { className: "tbx-bubble" }, /* @__PURE__ */ h("p", null, m.text), m.references.length > 0 && /* @__PURE__ */ h("div", { className: "tbx-chips is-sent" }, m.references.map((r, i) => /* @__PURE__ */ h(RefChip, { key: i, r: { kind: r.input.kind, id: r.input.id, title: r.title } })))));
   }
-  function CopyButton({ text }) {
+  function CopyButton({ text, onError }) {
     const [copied, setCopied] = useState(false);
-    return /* @__PURE__ */ h("button", { className: cx("tbx-meta-btn", copied && "is-done"), "aria-label": tx("\u590D\u5236"), title: copied ? tx("\u5DF2\u590D\u5236") : tx("\u590D\u5236"), onClick: () => {
-      navigator.clipboard?.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    } }, /* @__PURE__ */ h("span", { className: "tbx-morph" }, /* @__PURE__ */ h(Glyph3, { name: "copy", size: 15 }), /* @__PURE__ */ h(Glyph3, { name: "check", size: 15, stroke: 2.2 })));
+    const [copying, setCopying] = useState(false);
+    const reset = useRef(null);
+    useEffect(() => () => clearTimeout(reset.current), []);
+    async function copy() {
+      clearTimeout(reset.current);
+      setCopied(false);
+      setCopying(true);
+      onError(false);
+      try {
+        if (!navigator.clipboard?.writeText) throw new Error("clipboard-unavailable");
+        await navigator.clipboard.writeText(text);
+        setCopied(true);
+        reset.current = setTimeout(() => setCopied(false), 1500);
+      } catch {
+        onError(true);
+      } finally {
+        setCopying(false);
+      }
+    }
+    return /* @__PURE__ */ h("button", { className: cx("tbx-meta-btn", copied && "is-done"), "aria-label": tx("\u590D\u5236"), title: copied ? tx("\u5DF2\u590D\u5236") : tx("\u590D\u5236"), disabled: copying, onClick: copy }, /* @__PURE__ */ h("span", { className: "tbx-morph" }, /* @__PURE__ */ h(Glyph3, { name: "copy", size: 15 }), /* @__PURE__ */ h(Glyph3, { name: "check", size: 15, stroke: 2.2 })));
   }
   function AssistantMessage({ m, agent, last, onRegenerate, model }) {
+    const [copyError, setCopyError] = useState(false);
     const streaming = m.state === "streaming";
-    return /* @__PURE__ */ h("article", { className: cx("tbx-msg is-assistant", streaming && "is-streaming", last && "is-last") }, /* @__PURE__ */ h(Prose, { text: m.text }), streaming && /* @__PURE__ */ h("span", { className: "tbx-typing", "aria-hidden": "true" }), (m.cards ?? []).length > 0 && /* @__PURE__ */ h("div", { className: "tbx-cards" }, m.cards.map((c, i) => /* @__PURE__ */ h(ResultCard, { key: i, card: c, cardKey: `${m.id}:${i}`, agent }))), m.state === "partial" && /* @__PURE__ */ h("p", { className: "tbx-msg-note" }, tx("\u56DE\u7B54\u88AB\u505C\u6B62\u4E86\uFF0C\u53EA\u4FDD\u7559\u4E86\u524D\u9762\u7684\u90E8\u5206\u3002")), !streaming && m.text && /* @__PURE__ */ h("div", { className: "tbx-meta" }, /* @__PURE__ */ h(CopyButton, { text: m.text }), last && onRegenerate && /* @__PURE__ */ h("button", { className: "tbx-meta-btn", "aria-label": tx("\u91CD\u65B0\u56DE\u7B54"), title: tx("\u91CD\u65B0\u56DE\u7B54"), onClick: onRegenerate }, /* @__PURE__ */ h(Glyph3, { name: "retry", size: 15 })), /* @__PURE__ */ h("span", { className: "tbx-meta-text tbx-num" }, clock(m.createdAt), model ? ` \xB7 ${model}` : "")));
+    return /* @__PURE__ */ h("article", { className: cx("tbx-msg is-assistant", streaming && "is-streaming", last && "is-last") }, /* @__PURE__ */ h(Prose, { text: m.text }), streaming && /* @__PURE__ */ h("span", { className: "tbx-typing", "aria-hidden": "true" }), (m.cards ?? []).length > 0 && /* @__PURE__ */ h("div", { className: "tbx-cards" }, m.cards.map((c, i) => /* @__PURE__ */ h(ResultCard, { key: i, card: c, cardKey: `${m.id}:${i}`, agent }))), m.state === "partial" && /* @__PURE__ */ h("p", { className: "tbx-msg-note" }, tx("\u56DE\u7B54\u88AB\u505C\u6B62\u4E86\uFF0C\u53EA\u4FDD\u7559\u4E86\u524D\u9762\u7684\u90E8\u5206\u3002")), !streaming && m.text && /* @__PURE__ */ h("div", { className: "tbx-meta" }, /* @__PURE__ */ h(CopyButton, { text: m.text, onError: setCopyError }), last && onRegenerate && /* @__PURE__ */ h("button", { className: "tbx-meta-btn", "aria-label": tx("\u91CD\u65B0\u56DE\u7B54"), title: tx("\u91CD\u65B0\u56DE\u7B54"), onClick: onRegenerate }, /* @__PURE__ */ h(Glyph3, { name: "retry", size: 15 })), /* @__PURE__ */ h("span", { className: "tbx-meta-text tbx-num" }, clock(m.createdAt), model ? ` \xB7 ${model}` : "")), copyError && /* @__PURE__ */ h("div", { className: "tbx-notice is-error", role: "alert" }, tx("\u590D\u5236\u5931\u8D25\uFF0C\u8BF7\u91CD\u8BD5")));
   }
   function Divider({ children, tone }) {
     return /* @__PURE__ */ h("div", { className: cx("tbx-divider", tone && `is-${tone}`) }, /* @__PURE__ */ h("span", null, children));
@@ -2827,6 +2843,13 @@ ${text}`),
     const { draft } = agent;
     const area = useRef(null);
     const [mention, setMention] = useState(null);
+    const pendingCaret = useRef(null);
+    useLayoutEffect(() => {
+      if (pendingCaret.current === null || !area.current) return;
+      area.current.focus();
+      area.current.setSelectionRange(pendingCaret.current, pendingCaret.current);
+      pendingCaret.current = null;
+    }, [draft?.text]);
     useLayoutEffect(() => {
       const el = area.current;
       if (!el) return;
@@ -2848,10 +2871,15 @@ ${text}`),
     }
     function pick3(r) {
       if (r) addRef(r);
-      const text = draft.text.replace(/@([^\s@]*)$/, "");
+      const text = mention?.start === void 0 ? draft.text : draft.text.slice(0, mention.start) + draft.text.slice(mention.end);
+      pendingCaret.current = mention?.start ?? area.current?.selectionStart ?? draft.text.length;
       if (text !== draft.text) agent.edit({ text });
       setMention(null);
       area.current?.focus();
+      if (text === draft.text && area.current) {
+        area.current.setSelectionRange(pendingCaret.current, pendingCaret.current);
+        pendingCaret.current = null;
+      }
     }
     return /* @__PURE__ */ h("div", { className: cx("tbx-composer-shell", (refs.length || suggest) && "has-drawer") }, /* @__PURE__ */ h("form", { className: cx("tbx-composer", running && "is-running"), onSubmit: (e) => {
       e.preventDefault();
@@ -2869,7 +2897,7 @@ ${text}`),
           const text = e.target.value;
           agent.edit({ text });
           const m = /@([^\s@]*)$/.exec(text.slice(0, e.target.selectionStart));
-          setMention(m ? { query: m[1] } : null);
+          setMention(m ? { query: m[1], start: m.index, end: e.target.selectionStart } : null);
         },
         onKeyDown: (e) => {
           if (mention && ["ArrowDown", "ArrowUp", "Enter", "Tab"].includes(e.key)) return;
@@ -2892,13 +2920,12 @@ ${text}`),
     const [open, setOpen] = useState(false);
     const ref = useRef(null);
     useOutside(open, ref, () => setOpen(false));
-    return /* @__PURE__ */ h("span", { className: "tbx-inline-pick", ref }, /* @__PURE__ */ h("button", { type: "button", className: "tbx-inline-button", onClick: () => setOpen(!open), "aria-expanded": open }, lesson ? lesson.title : tx("\u54EA\u8282\u8BFE")), open && /* @__PURE__ */ h("div", { className: "tbx-pick-menu", role: "listbox" }, /* @__PURE__ */ h("h4", null, tx("\u63A5\u4E0B\u6765\u7684\u8BFE")), lessons.map((l) => /* @__PURE__ */ h("button", { key: l.id, role: "option", "aria-selected": lesson?.id === l.id, className: cx("tbx-pick-row", lesson?.id === l.id && "is-selected"), onClick: () => {
-      onChange(l);
+    function choose(next) {
+      ref.current?.querySelector(".tbx-inline-button")?.focus();
+      onChange(next);
       setOpen(false);
-    } }, /* @__PURE__ */ h("span", { className: "tbx-pick-when tbx-num" }, whenLabel(l)), /* @__PURE__ */ h("span", { className: "tbx-pick-title" }, l.title, l.todo[0] ? /* @__PURE__ */ h("small", null, l.todo[0]) : null), lesson?.id === l.id && /* @__PURE__ */ h(Glyph3, { name: "check", size: 15 }))), /* @__PURE__ */ h("button", { className: cx("tbx-pick-row is-plain", !lesson && "is-selected"), onClick: () => {
-      onChange(null);
-      setOpen(false);
-    } }, /* @__PURE__ */ h("span", { className: "tbx-pick-title" }, tx("\u4E0D\u9488\u5BF9\u67D0\u8282\u8BFE")), !lesson && /* @__PURE__ */ h(Glyph3, { name: "check", size: 15 }))));
+    }
+    return /* @__PURE__ */ h("span", { className: "tbx-inline-pick", ref }, /* @__PURE__ */ h("button", { type: "button", className: "tbx-inline-button", onClick: () => setOpen(!open), "aria-expanded": open }, lesson ? lesson.title : tx("\u54EA\u8282\u8BFE")), open && /* @__PURE__ */ h("div", { className: "tbx-pick-menu", role: "listbox" }, /* @__PURE__ */ h("h4", null, tx("\u63A5\u4E0B\u6765\u7684\u8BFE")), lessons.map((l) => /* @__PURE__ */ h("button", { key: l.id, role: "option", "aria-selected": lesson?.id === l.id, className: cx("tbx-pick-row", lesson?.id === l.id && "is-selected"), onClick: () => choose(l) }, /* @__PURE__ */ h("span", { className: "tbx-pick-when tbx-num" }, whenLabel(l)), /* @__PURE__ */ h("span", { className: "tbx-pick-title" }, l.title, l.todo[0] ? /* @__PURE__ */ h("small", null, l.todo[0]) : null), lesson?.id === l.id && /* @__PURE__ */ h(Glyph3, { name: "check", size: 15 }))), /* @__PURE__ */ h("button", { className: cx("tbx-pick-row is-plain", !lesson && "is-selected"), onClick: () => choose(null) }, /* @__PURE__ */ h("span", { className: "tbx-pick-title" }, tx("\u4E0D\u9488\u5BF9\u67D0\u8282\u8BFE")), !lesson && /* @__PURE__ */ h(Glyph3, { name: "check", size: 15 }))));
   }
   function lessonSuggestions(lesson) {
     const topic = `${lesson.title} ${lesson.todo.join(" ")}`;
@@ -2967,6 +2994,7 @@ ${text}`),
     const [dockH, setDockH] = useState(140);
     const [lessons, refreshLessons] = useLessons(agent.businessRevision);
     const [lesson, setLesson] = useState(null);
+    const lessonReference = useRef(null);
     const context = useCurrentContext(variant === "panel");
     const { snapshot, draft } = agent;
     useEffect(() => {
@@ -2995,7 +3023,8 @@ ${text}`),
     }, [growth]);
     useEffect(() => {
       if (!agent.draft || pending2.current === null) return;
-      const { text, refs } = pending2.current;
+      const { text, refs, lessonId } = pending2.current;
+      if (lessonId) lessonReference.current = { conversationId: agent.id, id: lessonId };
       pending2.current = null;
       agent.edit({ text, ...refs ? { references: refs } : {} });
       setFocusComposer((n) => n + 1);
@@ -3022,7 +3051,7 @@ ${text}`),
         agent.edit({ text, references: extra ? [...refs, extra] : refs });
         setFocusComposer((n) => n + 1);
       } else {
-        pending2.current = { text, refs: extra ? [extra] : null };
+        pending2.current = { text, refs: extra ? [extra] : null, lessonId: !ctx ? lessonRef?.id : null };
         void agent.create();
       }
     }
@@ -3033,14 +3062,24 @@ ${text}`),
       setTimeout(sendReliably, 0);
     }
     useEffect(() => {
-      if (!lesson || !agent.draft || !empty) return;
-      if (agent.draft.references.some((r) => r.kind === "entry" && r.id === lesson.id)) return;
-      agent.edit({ references: [...agent.draft.references.filter((r) => r.kind !== "entry"), lessonRef] });
+      if (!agent.draft || !empty) {
+        lessonReference.current = null;
+        return;
+      }
+      const owned = lessonReference.current?.conversationId === agent.id ? lessonReference.current : null;
+      const refs = agent.draft.references;
+      let next = owned && owned.id !== lesson?.id ? refs.filter((r) => !(r.kind === "entry" && r.id === owned.id)) : refs;
+      if (owned?.id !== lesson?.id) lessonReference.current = null;
+      if (lesson && !next.some((r) => r.kind === "entry" && r.id === lesson.id)) {
+        next = [...next, lessonRef];
+        lessonReference.current = { conversationId: agent.id, id: lesson.id };
+      }
+      if (next !== refs) agent.edit({ references: next });
     }, [lesson?.id, Boolean(agent.draft), agent.id]);
     const lastTurn = snapshot?.turns[snapshot.turns.length - 1];
     const dock = /* @__PURE__ */ h("div", { className: "tbx-dock", ref: dockRef }, agent.sendPending && /* @__PURE__ */ h("div", { className: "tbx-notice" }, ta("\u53D1\u9001\u7ED3\u679C\u5F85\u786E\u8BA4"), /* @__PURE__ */ h("button", { className: "tbx-btn is-small", onClick: agent.send, disabled: agent.busy }, ta("\u786E\u8BA4\u53D1\u9001\u7ED3\u679C"))), agent.error && /* @__PURE__ */ h("div", { className: "tbx-notice is-error", role: "alert" }, agent.error, /* @__PURE__ */ h("button", { className: "tbx-btn is-small", onClick: () => draft?.dirty ? agent.save() : agent.retry() }, ta("\u91CD\u8BD5"))), agent.conflict && /* @__PURE__ */ h("div", { className: "tbx-notice is-conflict" }, /* @__PURE__ */ h("strong", null, ta("\u8349\u7A3F\u5DF2\u5728\u5176\u4ED6\u8BBE\u5907\u4FEE\u6539")), /* @__PURE__ */ h("p", null, ta("\u672C\u673A\uFF1A"), draft.text), /* @__PURE__ */ h("p", null, ta("\u5DF2\u4FDD\u5B58\uFF1A"), agent.conflict.text), /* @__PURE__ */ h("div", null, /* @__PURE__ */ h("button", { className: "tbx-btn is-small", onClick: () => agent.chooseDraft(true) }, ta("\u4FDD\u7559\u672C\u673A\u5185\u5BB9")), /* @__PURE__ */ h("button", { className: "tbx-btn is-small", onClick: () => agent.chooseDraft(false) }, ta("\u91C7\u7528\u5DF2\u4FDD\u5B58\u5185\u5BB9")))), draft ? /* @__PURE__ */ h(Composer, { agent, running, ready, variant, autoFocus: variant === "home", focusKey: focusComposer, context }) : /* @__PURE__ */ h("div", { className: "tbx-composer-shell" }, /* @__PURE__ */ h("button", { className: "tbx-composer is-placeholder", onClick: () => {
       setFocusComposer((n) => n + 1);
-      pending2.current = lessonRef ? { text: "", refs: [lessonRef] } : null;
+      pending2.current = lessonRef ? { text: "", refs: [lessonRef], lessonId: lessonRef.id } : null;
       void agent.create();
     }, disabled: agent.busy }, /* @__PURE__ */ h("span", { className: "tbx-input-placeholder" }, tx(variant === "panel" ? "\u95EE\u4E00\u4E2A\u95EE\u9898\uFF0C\u6216\u8F93\u5165 @ \u5F15\u7528\u9898\u76EE\u3001\u65E5\u7A0B" : "\u63CF\u8FF0\u4F60\u60F3\u51C6\u5907\u7684\u8BFE\u3001\u60F3\u8BA8\u8BBA\u7684\u9898\uFF0C\u8F93\u5165 @ \u5F15\u7528\u5DE5\u4F5C\u53F0\u91CC\u7684\u5185\u5BB9")), /* @__PURE__ */ h("span", { className: "tbx-composer-bar" }, /* @__PURE__ */ h("span", null), /* @__PURE__ */ h("span", { className: "tbx-send", "aria-hidden": "true" }, /* @__PURE__ */ h(Glyph3, { name: "arrowUp", size: 17, stroke: 2.2 }))))));
     const heroSuggestions = lesson ? lessonSuggestions(lesson) : SUGGESTIONS;
@@ -4861,6 +4900,7 @@ ${text}`),
     const next = all[index + 1];
     const heads = article.blocks.filter((b) => b[0] === "h2").map((b) => b[1]);
     const [active, setActive] = useState(0);
+    const jumped = useRef(null);
     useEffect(() => {
       const root = scroller.current;
       if (!root || heads.length < 2) return void 0;
@@ -4870,15 +4910,38 @@ ${text}`),
         root.querySelectorAll(".tbx-help-prose h2").forEach((el, i) => {
           if (el.getBoundingClientRect().top <= line) current = i;
         });
-        setActive(current);
+        if (root.scrollTop > 0 && root.scrollHeight - root.clientHeight - root.scrollTop <= 1) current = heads.length - 1;
+        setActive(jumped.current ?? current);
       };
+      const resume = () => {
+        jumped.current = null;
+        spy();
+      };
+      const key2 = (event) => {
+        if (["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", " "].includes(event.key)) resume();
+      };
+      spy();
       root.addEventListener("scroll", spy, { passive: true });
-      return () => root.removeEventListener("scroll", spy);
+      root.addEventListener("wheel", resume, { passive: true });
+      root.addEventListener("touchstart", resume, { passive: true });
+      root.addEventListener("pointerdown", resume);
+      root.addEventListener("keydown", key2);
+      return () => {
+        root.removeEventListener("scroll", spy);
+        root.removeEventListener("wheel", resume);
+        root.removeEventListener("touchstart", resume);
+        root.removeEventListener("pointerdown", resume);
+        root.removeEventListener("keydown", key2);
+      };
     }, [article]);
     const jump = (i) => {
       const root = scroller.current;
       const el = root?.querySelector(`#s${i}`);
-      if (el) root.scrollTo({ top: el.offsetTop - 28, behavior: "smooth" });
+      if (el) {
+        jumped.current = i;
+        setActive(i);
+        root.scrollTo({ top: root.scrollTop + el.getBoundingClientRect().top - root.getBoundingClientRect().top - 28, behavior: "smooth" });
+      }
     };
     return /* @__PURE__ */ h("div", { className: cx("tbx-help-article", `is-${topic.hue}`, heads.length > 1 && "has-toc") }, /* @__PURE__ */ h("article", { className: "tbx-help-prose" }, /* @__PURE__ */ h(Link, { to: topicPath(topic), className: cx("tbx-help-eyebrow", `is-${topic.hue}`) }, /* @__PURE__ */ h(Tile, { topic, size: "s" }), topic.title), /* @__PURE__ */ h("h1", null, article.title), /* @__PURE__ */ h("p", { className: "tbx-help-lead" }, article.summary), /* @__PURE__ */ h("p", { className: "tbx-help-meta" }, tx("{{n}} \u5206\u949F\u9605\u8BFB", { n: article.minutes }), /* @__PURE__ */ h("span", { "aria-hidden": "true" }, "\xB7"), tx("2026 \u5E74 10 \u6708\u66F4\u65B0")), /* @__PURE__ */ h(Blocks, { blocks: article.blocks }), /* @__PURE__ */ h(Helpful, { id: article.id }), /* @__PURE__ */ h("nav", { className: "tbx-help-pager", "aria-label": tx("\u4E0A\u4E00\u7BC7\u548C\u4E0B\u4E00\u7BC7") }, prev ? /* @__PURE__ */ h(Link, { to: articlePath(prev.t, prev.a), className: "is-prev" }, /* @__PURE__ */ h("small", null, tx("\u4E0A\u4E00\u7BC7")), /* @__PURE__ */ h("span", null, prev.a.title)) : /* @__PURE__ */ h("span", null), next ? /* @__PURE__ */ h(Link, { to: articlePath(next.t, next.a), className: "is-next" }, /* @__PURE__ */ h("small", null, tx("\u4E0B\u4E00\u7BC7")), /* @__PURE__ */ h("span", null, next.a.title)) : /* @__PURE__ */ h("span", null))), heads.length > 1 && /* @__PURE__ */ h("aside", { className: "tbx-help-toc", "aria-label": tx("\u672C\u9875\u5185\u5BB9") }, /* @__PURE__ */ h("h4", null, tx("\u672C\u9875\u5185\u5BB9")), heads.map((title, i) => /* @__PURE__ */ h("button", { key: title, type: "button", className: cx(active === i && "is-active"), onClick: () => jump(i) }, title))));
   }
@@ -7952,6 +8015,7 @@ $$`)));
     "\u6253\u5F00\u65E5\u7A0B": "Open Schedule",
     "\u628A\u300C{{title}}\u300D\u5E26\u8FDB\u5BF9\u8BDD": "Bring \u201C{{title}}\u201D into the chat",
     "\u590D\u5236": "Copy",
+    "\u590D\u5236\u5931\u8D25\uFF0C\u8BF7\u91CD\u8BD5": "Copy failed. Please try again.",
     "\u56DE\u7B54\u88AB\u505C\u6B62\u4E86\uFF0C\u53EA\u4FDD\u7559\u4E86\u524D\u9762\u7684\u90E8\u5206\u3002": "Stopped. Only the first part was kept.",
     "\u91CD\u65B0\u56DE\u7B54": "Regenerate",
     "\u6682\u4E0D\u53EF\u7528": "Unavailable",
@@ -8665,6 +8729,8 @@ $$`)));
       "\u5220\u9664\u672A\u5B8C\u6210\uFF0C\u8BF7\u91CD\u8BD5\u3002": "Couldn\u2019t delete. Please try again."
     },
     questions: {
+      "{{count}} \u4EFD\u6750\u6599_one": "{{count}} material",
+      "{{count}} \u4EFD\u6750\u6599_other": "{{count}} materials",
       "\u5C06\u79FB\u51FA\u5F53\u524D\u5217\u8868\u3002\u4E4B\u540E\u53EF\u4EE5\u5728\u5DE6\u4FA7\u7684\u201C\u5DF2\u5F52\u6863\u201D\u91CC\u6062\u590D\u6216\u5F7B\u5E95\u5220\u9664\u3002": "It will leave this list. You can restore it or delete it for good from Archived on the left."
     },
     math: {
@@ -8686,7 +8752,8 @@ $$`)));
     math: { "\u65B0\u5EFA\u4F5C\u54C1": "New Work" }
   };
   var APP_ZH = {
-    workbench: { "modules.classroom": "\u73ED\u7EA7" }
+    workbench: { "modules.classroom": "\u73ED\u7EA7" },
+    questions: { "{{count}} \u4EFD\u6750\u6599": "{{count}} \u4EFD\u6750\u6599" }
   };
 
   // docs/design-system/teachbuddy-app/ui/tbx/src/locales/install.js
