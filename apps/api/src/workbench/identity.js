@@ -18,17 +18,17 @@
 import crypto from 'node:crypto';
 import { workbenchHeaders } from '@teachbuddy/shared';
 
-export const TEST_PRINCIPAL_MODE = 'test-principal';
-export const NO_IDENTITY_MODE = 'none';
+const TEST_PRINCIPAL_MODE = 'test-principal';
+const NO_IDENTITY_MODE = 'none';
 
-export function deriveTestPrincipalToken(accountKey, sessionSecret) {
+function deriveTestPrincipalToken(accountKey, sessionSecret) {
   return crypto
     .createHmac('sha256', sessionSecret)
     .update(`workbench-test-principal:${accountKey}`)
     .digest('base64url');
 }
 
-export function readCookie(cookieHeader, name) {
+function readCookie(cookieHeader, name) {
   if (typeof cookieHeader !== 'string' || !cookieHeader) return null;
   for (const part of cookieHeader.split(';')) {
     const separator = part.indexOf('=');
@@ -40,7 +40,7 @@ export function readCookie(cookieHeader, name) {
   return null;
 }
 
-export function sessionCookieHeader(name, token) {
+function sessionCookieHeader(name, token) {
   // Frozen attributes: HttpOnly, Secure, Path=/, SameSite=Lax, no Domain.
   // Expiry is a G03 open item, so no Max-Age/Expires is invented here.
   return `${name}=${token}; Path=/; HttpOnly; Secure; SameSite=Lax`;

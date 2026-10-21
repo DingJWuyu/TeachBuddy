@@ -1,10 +1,10 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { tx } from '../../i18n/presentation.js';
 import { cx } from '../../components/ui/classNames.js';
 import { ConfirmButton } from '../../components/ui/confirm.jsx';
 import { Icon, Menu, Empty, Search, Spinner } from './ui.jsx';
-import { today, longDate, monthLabel } from './util.js';
+import { today, monthLabel } from './util.js';
 import { weekdayName } from '../../i18n/presentation.js';
 
 /*

@@ -206,7 +206,7 @@ function assertDateFields(value, pointer) {
 }
 
 /** Shape checks shared by EntryInput, EntryUpdate and Override content. */
-export function validateEntryShape(value, pointer = '') {
+function validateEntryShape(value, pointer = '') {
   assertItems(value.items, pointer);
   assertDateFields(value, pointer);
   if (value.calendar) {

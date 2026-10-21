@@ -4,7 +4,7 @@ import path from 'node:path';
 import { backup, restore, activate } from '../../api/src/workbench/reliability/backup.js';
 import { test, expect } from '@playwright/test';
 import { createIntegration } from '../../api/test/fixtures/auth-integration/harness.js';
-import { register, login, headers, track } from './teaching-time-auth/helpers.mjs';
+import { register, login, headers } from './teaching-time-auth/helpers.mjs';
 import { importLegacy } from './fixtures/math-workspace.js';
 let world;
 let extraDirectories;

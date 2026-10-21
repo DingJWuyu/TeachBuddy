@@ -1,5 +1,5 @@
 import { kinds, createClassroomRepository } from './repository.js';
-import { validateWrite, id, integer, date, object, mapping, rows, text, array, enumValue } from './schema.js';
+import { validateWrite, id, integer, object, mapping, rows, text, array, enumValue } from './schema.js';
 import { normalizeTag } from './tags.js';
 import { validateScores } from './scores.js';
 import { validateExamFiles } from './assessment.js';

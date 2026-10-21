@@ -326,10 +326,6 @@ describe('CC-UNKNOWN 响应丢失后的恢复', () => {
     await world.stop();
   });
 
-  function lossyClient(options = {}) {
-    return createClient(proxy.baseUrl, { ...options, jar: options.jar });
-  }
-
   async function loseResponse(method, path, { jar, pageId, body }) {
     const client = createClient(proxy.baseUrl, { jar, pageId });
     let failed = false;

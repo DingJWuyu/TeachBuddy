@@ -91,7 +91,7 @@ const PROBLEM_DEFINITIONS = {
   serviceUnavailable: { status: 503, type: 'service-unavailable', title: 'Service is unavailable' }
 };
 
-export class AuthProblem extends Error {
+class AuthProblem extends Error {
   constructor(definition, options = {}) {
     super(definition.type);
     this.name = 'AuthProblem';

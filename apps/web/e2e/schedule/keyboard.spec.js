@@ -1,4 +1,4 @@
-import { setScheduleField, expectScheduleField, openRepeat, scheduleAction } from './controls.mjs';
+import { setScheduleField, expectScheduleField, scheduleAction } from './controls.mjs';
 import { test, expect } from '@playwright/test';
 import { randomUUID } from 'node:crypto';
 import { createScheduleWorld, loginSchedule, closeScheduleWorld } from './fixture.mjs';
@@ -341,7 +341,7 @@ test.describe('菜单导航与键盘焦点', () => {
   });
 
   test('日周全天卡片不带颜色圆点，月视图仍保留',async({page})=>{
-    const c=content('两天全天');c.calendar.allDay=true;c.time.startTime='00:00';c.time.durationMinutes=2880;const task=await call('POST',E,c);
+    const c=content('两天全天');c.calendar.allDay=true;c.time.startTime='00:00';c.time.durationMinutes=2880;await call('POST',E,c);
     await page.goto(`${world.origin}/calendar`);const view=page.getByRole('button',{name:'日历视图',exact:true});
     for(const kind of ['日','周']){await view.click();await page.getByRole('menuitemradio',{name:new RegExp('^'+kind)}).click();const event=page.locator('.fc-daygrid-event').filter({hasText:'两天全天'}).first();await expect(event).toBeVisible();await expect(event.locator('.cal-event-content i')).toHaveCount(0);}
     await view.click();await page.getByRole('menuitemradio',{name:/^月/}).click();const event=page.locator('.fc-daygrid-event').filter({hasText:'两天全天'}).first();await expect(event).toBeVisible();await expect(event.locator('.cal-event-content i')).toHaveCount(1);

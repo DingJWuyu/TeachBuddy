@@ -43,7 +43,7 @@ function Flag({ flag, className }) {
   return <img className={className} src={FLAGS[`./flags/${flag}.svg`]} alt="" aria-hidden="true" />;
 }
 
-export function LanguageMenu({ current, onSelect, onClose, triggerRef }) {
+function LanguageMenu({ current, onSelect, onClose, triggerRef }) {
   useTranslation("workbench");
   const menuRef = useRef(null);
   const dismiss = useDismiss(true, onClose, [menuRef, triggerRef]);
@@ -79,7 +79,7 @@ export function LanguageMenu({ current, onSelect, onClose, triggerRef }) {
   );
 }
 
-export function SemesterPopover({
+function SemesterPopover({
   semesters, activeId, onPick, onEdit, onCreate, onClose, triggerRef
 }) {
   const { t } = useTranslation("workbench");

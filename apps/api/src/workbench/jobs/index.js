@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { validateSchema } from "../content/schema.js";
 import { contractError, problems, invalidInput, materialsError } from "../problems.js";
-export const jobKinds = ["preview", "extraction", "question-asset", "recognition"];
+const jobKinds = ["preview", "extraction", "question-asset", "recognition"];
 const active = new Set(["queued", "running", "cancelling"]);
 export function createJobs({ db, mutations, files, clock = () => new Date(), logger, isAccountActive = () => true }) {
   let handlers,

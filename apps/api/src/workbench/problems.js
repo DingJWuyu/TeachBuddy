@@ -59,7 +59,7 @@ export function isProblem(value) {
  * Status for a problem. Only statuses fixed by the frozen responses are
  * accepted, so a typo cannot invent a new status/type pairing.
  */
-export function problemStatus(problemValue) {
+function problemStatus(problemValue) {
   const status = workbenchProblemStatus[problemValue?.type];
   if (!status) {
     throw new Error(`Unknown workbench problem type: ${String(problemValue?.type)}`);

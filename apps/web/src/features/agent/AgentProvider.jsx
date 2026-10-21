@@ -183,7 +183,7 @@ export function AgentProvider({ accountKey, children }) {
       if (!prior && (!value || value.dirty)) return;
       const pending = prior ?? { key: uuid(), body: { draftVersion: value.version, modelId: intent.modelId }, text: intent.text, references: intent.references };
       persist(cid + ':send', pending); setSendPending(true);
-      const { body } = await workbenchPost(`${base}/${cid}/turns`, pending.body, pending.key);
+      await workbenchPost(`${base}/${cid}/turns`, pending.body, pending.key);
       if (!live.current || current.current.id !== cid) return;
       persist(cid + ':send', null); setSendPending(false);
       const confirmed = (await workbenchGet(`${base}/${cid}`)).body.draft;

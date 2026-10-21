@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { tx, useLocale, isEnglish } from '../../i18n/presentation.js';
+import { tx, useLocale } from '../../i18n/presentation.js';
 
 /*
  * The original sign-in cast, softened and given a classroom:

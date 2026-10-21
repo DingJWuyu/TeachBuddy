@@ -3,7 +3,7 @@ import path from "node:path";
 import { createRequire } from "node:module";
 
 const require = createRequire(import.meta.url);
-export const mathDependencyFiles = {
+const mathDependencyFiles = {
   mathjs: ["../../LICENSE", "../../NOTICE"],
   "@flatten-js/core": ["../LICENSE"],
   three: ["../LICENSE"],

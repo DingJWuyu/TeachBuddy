@@ -171,10 +171,6 @@ export default function AuthSurface() {
     setVerificationCode('');
   }
 
-  function resetChallengeInput() {
-    setVerificationCode('');
-  }
-
   function installChallenge(next) {
     clockSkewRef.current = Date.parse(next.serverTime) - Date.now();
     setChallenge({

@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test';
 const pageKeys = new WeakMap();
-export function track(page) {
+function track(page) {
   page.on('request', request => {
     const key = request.headers()['x-teachbuddy-page'];
     if (key) pageKeys.set(page, key);

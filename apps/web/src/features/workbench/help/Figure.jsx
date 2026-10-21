@@ -1,4 +1,3 @@
-import { Fragment } from 'react';
 
 /*
  * Small, quiet illustrations of the interface for help articles. They are

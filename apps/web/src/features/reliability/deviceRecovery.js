@@ -86,6 +86,7 @@ async function prepare(account, context) {
   }
   return Boolean(changed);
 }
+/** @public Preserved recovery archive reader; the management UI is not mounted. */
 export function recoveryArchives(account) {
   try {
     return Object.keys(localStorage)
@@ -110,6 +111,7 @@ export function recoveryArchives(account) {
     return [];
   }
 }
+/** @public Preserved access to binary records in recovery archives. */
 export async function archivedUploads(account, recoveryId) {
   const result = [];
   const archive = recoveryArchives(account).find(item => item.to === recoveryId);

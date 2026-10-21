@@ -5,8 +5,6 @@ import { fileURLToPath } from 'node:url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const srcRootDir = path.resolve(__dirname, '..');
-const apiRootDir = path.resolve(srcRootDir, '..');
-const repoRootDir = path.resolve(apiRootDir, '..', '..');
 const dataDir = path.resolve(srcRootDir, 'data');
 
 function defaultDatabasePath() {
@@ -32,7 +30,7 @@ function listValue(value) {
  * override and extra static implementations exist for the isolated runner and its
  * fixtures only; production refuses them too.
  */
-export function createWorkbenchEnv(overrides = {}) {
+function createWorkbenchEnv(overrides = {}) {
   const source = overrides.workbench ?? {};
   const publicOrigin = source.publicOrigin ?? process.env.WORKBENCH_PUBLIC_ORIGIN ?? '';
   const trustedOriginsInput = source.trustedOrigins

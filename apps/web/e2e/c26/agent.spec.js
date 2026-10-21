@@ -387,7 +387,7 @@ test('发送意图在点击时冻结，保存响应等待期间的新输入与�
   let lost = false; const turns = [];
   await page.route('**/api/agent/conversations/*/turns', async route => {
     turns.push({ key: route.request().headers()['idempotency-key'], body: route.request().postDataJSON() });
-    if (!lost) { lost = true; const response = await route.fetch(); return route.abort(); }
+    if (!lost) { lost = true; await route.fetch(); return route.abort(); }
     return route.continue();
   });
   try {

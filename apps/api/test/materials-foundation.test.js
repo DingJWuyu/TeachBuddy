@@ -4,7 +4,6 @@ import fs from 'node:fs';
 import path from 'node:path';
 import http from 'node:http';
 import { randomUUID } from 'node:crypto';
-import { once } from 'node:events';
 import sharp from 'sharp';
 import { startFixture } from './fixtures/materials/server.mjs';
 import { validateLocation } from '../src/workbench/content/index.js';

@@ -1,0 +1,73 @@
+{
+  "$schema": "./node_modules/knip/schema.json",
+  // Source ownership follows npm workspaces; package main/exports and Vite supply product entries.
+  "workspaces": {
+    ".": {
+      "entry": [
+        // Current standalone maintenance commands; nested lib helpers remain ordinary project files.
+        "scripts/*/*.mjs",
+        // Browser manifest scripts and packaged GeoGebra loader are loaded outside ESM imports.
+        "extensions/math-web-ai/{background,deepseek,workbench}.js",
+        "extensions/math-web-ai/test/*.mjs",
+        "tools/geogebra/loader.js"
+      ],
+      "project": [
+        "scripts/**/*.{js,mjs,cjs}",
+        "extensions/**/*.{js,mjs,cjs}",
+        "!extensions/math-web-ai/test/fixtures/legacy-0.1/**"
+      ]
+    },
+    "apps/api": {
+      "entry": [
+        "src/scripts/*.js",
+        "test/**/*.test.js"
+      ],
+      "project": [
+        "src/**/*.{js,mjs}",
+        "test/**/*.{js,mjs}"
+      ],
+      // Keep the three pi SDK packages pinned together, including the core transitive implementation.
+      "ignoreDependencies": [
+        "@earendil-works/pi-agent-core"
+      ]
+    },
+    "apps/web": {
+      "entry": [
+        "e2e/**/*.spec.js",
+        "e2e/**/*.config.mjs",
+        "e2e/**/playwright.config.mjs",
+        "e2e/fixtures/**/build.mjs",
+        "e2e/auth-restore-ui.mjs",
+        // These index.html entry scripts belong to independently built Vite fixtures.
+        "e2e/fixtures/**/main.jsx",
+        "e2e/fixtures/auth-contract/substitute-server.mjs",
+        "e2e/fixtures/math-integration/manual.mjs"
+      ],
+      "project": [
+        "src/**/*.{js,jsx}",
+        "e2e/**/*.{js,jsx,mjs}"
+      ],
+      "playwright": false
+    },
+    "packages/shared": {
+      "entry": [
+        "scripts/*.mjs"
+      ],
+      "project": [
+        "src/**/*.js",
+        "scripts/*.mjs"
+      ]
+    }
+  },
+  // Config modules require an isolated built Web directory when executed. Analyze them and
+  // their specs statically instead; explicit entries also cover the webServer command above.
+  "playwright": false,
+  // System OpenSSL generates isolated test certificates; it is not an npm dependency.
+  "ignoreBinaries": [
+    "openssl"
+  ],
+  // .github/workflows/prepare-release.yml requires semver in its inline Node script.
+  "ignoreDependencies": [
+    "semver"
+  ]
+}

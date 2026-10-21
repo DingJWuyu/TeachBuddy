@@ -130,7 +130,7 @@ function ResourceWorkspace({
     },
   });
   const { pending, busy, loaded, error, message, conflict,
-    confirmation: dialog, write, upload, requestPreview,
+    confirmation: dialog, write, upload,
     skipPending: skipDuplicate, reportError } = operations;
   const colorMigrationVersion = useRef(null);
   useEffect(() => {

@@ -6,7 +6,6 @@ import { Icon } from '../../../components/icons.jsx';
 import { getInstallation, isExtensionCompatible } from './installation.js';
 import { subscribeWebAiAvailability, webAiRequest } from './bridge.js';
 import { mathPrompt, readProposal } from './protocol.js';
-import { ModuleDisclosure, ModulePresence } from '../../../components/interaction/ModuleMotion.jsx';
 import './assistant.css';
 
 export function MathWebAssistant({ controller, title, accountKey, onStart, takeRequest }) {

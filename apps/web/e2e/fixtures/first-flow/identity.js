@@ -15,10 +15,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { TEST_ACCOUNT_KEYS } from '../../../../api/test/fixtures/first-flow/accounts.js';
 
-export const FIRST_FLOW_ACCOUNTS = TEST_ACCOUNT_KEYS;
-export const FIRST_FLOW_ORIGIN = process.env.FIRST_FLOW_ORIGIN ?? 'https://localhost:47112';
+const FIRST_FLOW_ACCOUNTS = TEST_ACCOUNT_KEYS;
+const FIRST_FLOW_ORIGIN = process.env.FIRST_FLOW_ORIGIN ?? 'https://localhost:47112';
 
-export function firstFlowDataDir(env = process.env) {
+function firstFlowDataDir(env = process.env) {
   return env.FIRST_FLOW_DATA_DIR
     ? path.resolve(env.FIRST_FLOW_DATA_DIR)
     : path.resolve(process.cwd(), 'test-results', 'first-flow', 'data');

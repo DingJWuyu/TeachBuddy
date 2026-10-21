@@ -2,6 +2,7 @@
  * Help articles (English). Same ids and blocks as content.zh.js.
  * Sample copy, written to set the layout; the real articles will replace it.
  */
+/** @public Read through the language namespace returned by HelpCenter.content(). */
 export const TOPICS = [
   {
     id: 'start',
@@ -319,6 +320,7 @@ export const TOPICS = [
   },
 ];
 
+/** @public Read through the language namespace returned by HelpCenter.content(). */
 export const HOME = {
   featured: [['start', 'welcome'], ['assistant', 'plan'], ['questions', 'import']],
   popular: [['schedule', 'repeat'], ['account', 'saving'], ['math', 'export'], ['questions', 'find'], ['account', 'export']],

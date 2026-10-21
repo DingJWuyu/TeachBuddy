@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { tx } from '../../i18n/presentation.js';
 import { cx } from '../../components/ui/classNames.js';

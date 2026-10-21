@@ -167,7 +167,7 @@ test.describe('任务读取与保存一致性', () => {
 
   test('提醒支持开始前后及结束前后，保存与摘要保持一致',async({page})=>{
    const task=await call('POST',E,entry('四种提醒时机'));await page.reload();await open(page,task.title);
-   for(const [mode,label,anchor,side] of [['start-before','开始前','start','before'],['start-after','开始后','start','after'],['end-before','结束前','end','before'],['end-after','结束后','end','after']]) {
+   for(const [,label,anchor,side] of [['start-before','开始前','start','before'],['start-after','开始后','start','after'],['end-before','结束前','end','before'],['end-after','结束后','end','after']]) {
     await action(page,'设置提醒');const dialog=page.getByRole('dialog',{name:'提醒',exact:true});
     await dialog.getByRole('combobox',{name:'提醒时机',exact:true}).selectOption({label});
     await dialog.getByRole('spinbutton').fill('5');await dialog.getByRole('button',{name:'完成',exact:true}).click();

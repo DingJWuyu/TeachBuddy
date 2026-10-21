@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 
-export const HARNESS_ROOT = path.join(HERE, 'harness');
+const HARNESS_ROOT = path.join(HERE, 'harness');
 export async function buildHarness() {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'auth-contract-harness-'));
   const { build } = await import('vite');

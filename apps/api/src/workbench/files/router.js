@@ -6,8 +6,7 @@ import {
   createGuards,
   asyncHandler,
   readIdempotencyKey,
-  canonicalRequestPath,
-  createWorkbenchErrorHandler
+  canonicalRequestPath
 } from '../http.js';
 import { contractError, problems, invalidInput, sendProblem } from '../problems.js';
 import { MAX_FILE_BYTES } from './index.js';

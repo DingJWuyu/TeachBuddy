@@ -9,7 +9,7 @@ import JSZip from 'jszip';
 import { createIntegration } from './fixtures/auth-integration/harness.js';
 import { registerMath } from './fixtures/math-real.mjs';
 import { emptySource } from '../../web/src/features/math/model.js';
-import { doc, question, http, Q } from './materials-http-fixture.js';
+import { question, http, Q } from './materials-http-fixture.js';
 import { replayRecognizer, sourceImage } from '../../../test/fixtures/questions/recognition/replay.mjs';
 import { weeklyEntry, overrideContent } from './fixtures/teaching-time-schedule/samples.js';
 

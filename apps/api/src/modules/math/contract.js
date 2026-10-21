@@ -165,7 +165,7 @@ export function workshopContractError(error) {
   return mathError("invalid-math-source", error.field, error.reason);
 }
 
-export function validateDynamic(source) {
+function validateDynamic(source) {
   if (source.kind !== "dynamic") return;
   const bad = (field) => {
     throw mathError(

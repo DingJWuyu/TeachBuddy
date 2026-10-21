@@ -5,7 +5,7 @@ export const defaultStyle = () => ({
   dash: "solid",
   fontSize: 18,
 });
-export const defaultViewport = () => ({
+const defaultViewport = () => ({
   xMin: -6,
   xMax: 6,
   yMin: -5,

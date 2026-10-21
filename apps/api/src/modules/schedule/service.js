@@ -13,13 +13,11 @@ import {
   addDays,
   compareDates,
   formatIsoZ,
-  instantAt,
   localPartsAt,
   isDate,
   isTimeOfDay,
   isTimeZone,
   parseInstant,
-  parseTimeOfDay,
   rangeInstants
 } from './time.js';
 import {
@@ -27,7 +25,6 @@ import {
   dueInstantMs,
   effectiveContent,
   fitsSeries,
-  instanceState,
   isRepeating,
   intersects,
   listReminderCandidates,
@@ -37,7 +34,7 @@ import {
   templateContent
 } from './occurrences.js';
 
-export const DEFAULT_TIME_ZONE = 'Asia/Shanghai';
+const DEFAULT_TIME_ZONE = 'Asia/Shanghai';
 
 function randomUuid() {
   return globalThis.crypto.randomUUID();

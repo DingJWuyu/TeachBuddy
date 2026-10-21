@@ -37,7 +37,7 @@ export default function Topbar({ route, collapsed, toggleSidebar, surface, setSu
   const topModules = workbenchModules.filter((m) => m.navigation === 'top');
   const ref = useRef(null);
   const navRef = useRef(null);
-  const { accountKey, narrow } = useWorkbenchShell();
+  const { accountKey } = useWorkbenchShell();
   const [scene, patch] = useScene(accountKey, 'topbar', { completed: [], coachDismissed: false });
   const [announcement, announce] = useState('');
   const [celebrating, celebrate] = useState(false);

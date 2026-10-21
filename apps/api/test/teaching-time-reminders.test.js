@@ -243,7 +243,6 @@ test('B16 database upgrades into the current composition without losing saved qu
     assert.deepEqual((await a.get(notices)).body, { items: [], unreadCount: 0 });
   } finally { await h.close(); fs.rmSync(dir, { recursive: true, force: true }); }
 });
-function randomKey() { return crypto.randomUUID(); }
 
 test('detaching keeps an unchanged overdue reminder without duplicating delivery, and preserves later repeats', async () => fixture(async f => {
   const calendar = { allDay: false, notes: '', tags: [] };

@@ -9,13 +9,3 @@ export const navigationUpdateSchema = {
     layout: navigationLayoutSchema
   }
 };
-
-export const navigationResponseSchema = {
-  type: 'object', required: ['id', 'version', 'layout', 'updatedAt'],
-  properties: {
-    id: { type: 'string', const: 'navigation' },
-    version: { type: 'integer', minimum: 1, maximum: Number.MAX_SAFE_INTEGER },
-    layout: navigationLayoutSchema,
-    updatedAt: { anyOf: [{ type: 'null' }, { type: 'string', format: 'date-time' }] }
-  }
-};

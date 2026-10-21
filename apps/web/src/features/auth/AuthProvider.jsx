@@ -18,7 +18,7 @@ import { listDeletions, readDeletion, rememberDeletion, forgetDeletion, deletion
 import i18n from '../../i18n/index.js';
 import { listRevocations, rememberRevocation, forgetRevocation } from './revocation.js';
 
-export const INTERNAL_AUTH = createContext(null);
+const INTERNAL_AUTH = createContext(null);
 export const PUBLIC_AUTH = createContext(null);
 
 const INITIAL_STATE = Object.freeze({
@@ -60,7 +60,7 @@ function signedOut(current, patch = {}) {
   };
 }
 
-export function logoutError(kind, outcome) {
+function logoutError(kind, outcome) {
   const error = new Error(kind === 'unconfirmed' ? t("退出结果暂未确认") : t("退出失败，请重试"));
   error.kind = kind === 'unconfirmed' ? 'logout-unconfirmed' : 'logout-failed';
   error.problemType = outcome?.type ?? outcome?.reason ?? null;
@@ -837,7 +837,10 @@ export default function AuthProvider({ children, timeoutMs = 10_000, onAccountDe
       profileRevisionRef.current += 1;
       if (profileRead !== profileReadRef.current && isCurrent()) {
         const refreshed = await recheckRef.current?.();
+        // A completed save must still fail if the final identity refresh cannot confirm it.
+        // oxlint-disable-next-line no-unsafe-finally
         if (saved && !isCurrent()) throw new Error(t('登录状态已变化，请重新登录。'));
+        // oxlint-disable-next-line no-unsafe-finally
         if (saved && !refreshed) throw new Error(t('昵称保存结果未确认，请重试。'));
       }
     }

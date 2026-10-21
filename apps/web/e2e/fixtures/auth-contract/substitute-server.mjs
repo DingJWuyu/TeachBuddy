@@ -26,7 +26,6 @@ import { fileURLToPath } from 'node:url';
 import { buildHarness } from './harness-build.mjs';
 import { WORKBENCH_STATUS, workbenchKey } from './workbench-operations.mjs';
 
-const HERE = path.dirname(fileURLToPath(import.meta.url));
 
 const EMAIL_RE =
   /^(?=.{1,254}$)(?=.{1,64}@)[a-z0-9_%+-]+(?:\.[a-z0-9_%+-]+)*@[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+$/;

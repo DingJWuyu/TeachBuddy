@@ -1,18 +1,5 @@
-import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import i18n from './index.js';
-
-export const t = (key, options) => i18n.t(key, options);
-export function usePrefersReducedMotion() {
-  const [reduced, setReduced] = useState(() => matchMedia('(prefers-reduced-motion: reduce)').matches);
-  useEffect(() => {
-    const q = matchMedia('(prefers-reduced-motion: reduce)');
-    const on = (e) => setReduced(e.matches);
-    q.addEventListener('change', on);
-    return () => q.removeEventListener('change', on);
-  }, []);
-  return reduced;
-}
 
 /*
  * Presentation copy is written in Chinese and looked up as-is. English lives in

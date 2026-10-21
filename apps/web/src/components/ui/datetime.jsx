@@ -17,7 +17,7 @@ function Glyph({ name, size = 16 }) {
   return <Icon2 name={name} size={size} strokeWidth={2} />;
 }
 
-export function monthTitle(month) {
+function monthTitle(month) {
   const [y, m] = month.split('-').map(Number);
   return isEnglish()
     ? new Date(Date.UTC(y, m - 1, 15)).toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' })

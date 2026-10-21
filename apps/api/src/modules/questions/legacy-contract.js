@@ -6,7 +6,7 @@ const MAX_PARAGRAPH_RUNS = workbenchLimits.paragraphRuns;
 const MAX_TEXT_LENGTH = workbenchLimits.textRunLength;
 const MAX_LATEX_LENGTH = workbenchLimits.latexLength;
 
-export function escapePointerSegment(segment) {
+function escapePointerSegment(segment) {
   return String(segment).replace(/~/g, '~0').replace(/\//g, '~1');
 }
 

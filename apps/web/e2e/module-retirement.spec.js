@@ -1,4 +1,3 @@
-import { moduleRow, navigationGroup, pointerDrag } from './catalog-navigation.helpers.mjs';
 import fs from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import { test, expect } from '@playwright/test';

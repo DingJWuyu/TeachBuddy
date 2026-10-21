@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import { test, expect } from '@playwright/test';
 import { createIntegration } from '../../api/test/fixtures/auth-integration/harness.js';
 import { randomUUID } from 'node:crypto';
-import { doc, question } from '../../api/test/materials-http-fixture.js';
+import { question } from '../../api/test/materials-http-fixture.js';
 import { register, headers } from './teaching-time-auth/helpers.mjs';
 let world;
 let errors;

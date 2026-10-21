@@ -1,0 +1,84 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  // ESLint correctness only; React rules below are explicit, without Compiler/performance policies.
+  "plugins": [],
+  "categories": {
+    "correctness": "error"
+  },
+  // Design input, generated distributions and frozen compatibility implementations stay unchanged.
+  "ignorePatterns": [
+    "docs/**",
+    "apps/web/public/vendor/**",
+    "extensions/math-web-ai/test/fixtures/legacy-0.1/**",
+    "apps/api/test/fixtures/legacy-source/{auth,dataStore}.js"
+  ],
+  "env": {
+    "node": true
+  },
+  "overrides": [
+    {
+      "files": [
+        "apps/web/src/**/*.{js,jsx}",
+        "extensions/math-web-ai/*.js",
+        "tools/geogebra/loader.js"
+      ],
+      "env": {
+        "node": false,
+        "browser": true
+      }
+    },
+    {
+      "files": [
+        "apps/web/src/**/*.{js,jsx}"
+      ],
+      "plugins": [
+        "react"
+      ],
+      "rules": {
+        "react/rules-of-hooks": "error",
+        "react/jsx-key": "error",
+        "react/jsx-no-duplicate-props": "error",
+        "react/jsx-no-undef": "error"
+      }
+    },
+    {
+      "files": [
+        "apps/web/e2e/**"
+      ],
+      "rules": {
+        // Playwright requires an object fixture parameter even when only testInfo is used.
+        "no-empty-pattern": "off"
+      }
+    },
+    {
+      "files": [
+        "apps/api/src/workbench/reliability/portable.js"
+      ],
+      "rules": {
+        // Portable filenames intentionally remove control characters from untrusted names.
+        "no-control-regex": "off"
+      }
+    }
+  ],
+  "rules": {
+    // Callback arity, optional catches and object-rest exclusion fields are intentional.
+    "no-unused-vars": [
+      "error",
+      {
+        "args": "none",
+        "caughtErrors": "none",
+        "ignoreRestSiblings": true
+      }
+    ],
+    // Optional regexp escaping is a readability choice, not a correctness failure.
+    "no-useless-escape": "off",
+    // Existing short-circuit and conditional expressions perform useful side effects.
+    "no-unused-expressions": [
+      "error",
+      {
+        "allowShortCircuit": true,
+        "allowTernary": true
+      }
+    ]
+  }
+}

@@ -7,7 +7,7 @@ import {
   workbenchPut,
   workbenchBlob,
 } from "../../platform/http/apiClient.js";
-export const base = "/api/modules/questions/v2";
+const base = "/api/modules/questions/v2";
 export async function get(path) {
   return (await workbenchGet(path.startsWith("/api/") ? path : base + path))
     .body;

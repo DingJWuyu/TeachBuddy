@@ -24,7 +24,7 @@ function validate(body, request) {
   return body;
 }
 
-export function readNavigation(db, principal, catalog) {
+function readNavigation(db, principal, catalog) {
   const row = db.prepare('SELECT * FROM workbench_navigation WHERE accountKey=?').get(principal.accountKey);
   if (!row) return { id: 'navigation', version: 1, layout: defaultNavigation(catalog), updatedAt: null };
   const layout = JSON.parse(row.layoutJson);

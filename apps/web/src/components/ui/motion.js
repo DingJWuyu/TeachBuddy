@@ -5,7 +5,7 @@ import { useLayoutEffect, useRef } from 'react';
  * overlay goes through useFlip, so reordering looks and feels the same in the
  * sidebar, checklists and boards.
  */
-export const EASE = 'cubic-bezier(0.22, 1, 0.36, 1)';
+const EASE = 'cubic-bezier(0.22, 1, 0.36, 1)';
 
 /*
  * FLIP: elements that moved since the last committed layout glide there.

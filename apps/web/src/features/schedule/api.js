@@ -81,14 +81,6 @@ export async function setEntryDeletion({ key, id, payload }) {
   return assertObject(body, t("安排"));
 }
 
-export async function listExceptions(id) {
-  const { body } = await workbenchGet(`/api/modules/schedule/entries/${id}/exceptions`);
-  if (!body || !Array.isArray(body.items)) {
-    throw new WorkbenchError(unexpectedSuccessProblem(t("单次调整列表无法识别")));
-  }
-  return body;
-}
-
 export async function setException({ key, id, originDate, payload }) {
   const { body } = await scheduleWrite(workbenchPut(
     `/api/modules/schedule/entries/${id}/exceptions/${originDate}`,

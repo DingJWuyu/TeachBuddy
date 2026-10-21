@@ -86,7 +86,7 @@ function readAccount(value) {
   return { accountKey: value.accountKey, email: value.email, nickname: value.nickname };
 }
 
-export function readSession(value) {
+function readSession(value) {
   if (!isPlainObject(value)) return null;
   const account = readAccount(value.account);
   if (!account) return null;
@@ -107,7 +107,7 @@ export function readSession(value) {
   };
 }
 
-export function readSessionStatus(value) {
+function readSessionStatus(value) {
   if (!isPlainObject(value)) return null;
   if (typeof value.browserReady !== 'boolean') return null;
   if (typeof value.registrationOpen !== 'boolean') return null;
@@ -132,18 +132,18 @@ export function readSessionStatus(value) {
 }
 
 /* I01/I03 answer with a pending session, never with an active one. */
-export function readPendingSession(value) {
+function readPendingSession(value) {
   const session = readSession(value);
   return session?.state === 'pending' ? session : null;
 }
 
 /* activate/restore answer with the confirmed active identity. */
-export function readActiveStatus(value) {
+function readActiveStatus(value) {
   const status = readSessionStatus(value);
   return status?.session?.state === 'active' ? status : null;
 }
 
-export function readChallenge(value, expectedPurpose) {
+function readChallenge(value, expectedPurpose) {
   if (!isPlainObject(value)) return null;
   if (!isFilledString(value.challengeId)) return null;
   if (value.purpose !== expectedPurpose) return null;

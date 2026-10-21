@@ -32,7 +32,7 @@ function requirePrincipal(req) {
 }
 
 /** One query is one value: unknown, repeated and non-string keys are rejected. */
-export function validateQuery(query, allowed) {
+function validateQuery(query, allowed) {
   for (const key of Object.keys(query ?? {}).sort()) {
     if (!allowed.includes(key)) throw invalidInput(`/query/${key}`, 'unknown-field');
     const value = query[key];

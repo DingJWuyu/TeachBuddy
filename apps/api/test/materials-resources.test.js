@@ -6,7 +6,6 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 import { randomUUID } from "node:crypto";
 import { startResourcesFixture } from "./fixtures/resources/server.mjs";
 const runDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'materials-resources-'));

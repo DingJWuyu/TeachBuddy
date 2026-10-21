@@ -6,7 +6,7 @@ import { cx } from './classNames.js';
  * same motion as the top bar's 首页 / 日程 and the calendar's 日历 / 任务.
  * Any "pick one of a few, shown in a row" control uses this.
  */
-export function useSlidingThumb(ref, selector, deps) {
+function useSlidingThumb(ref, selector, deps) {
   const [thumb, setThumb] = useState(null);
   useLayoutEffect(() => {
     const box = ref.current;

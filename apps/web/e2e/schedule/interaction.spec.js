@@ -1,4 +1,4 @@
-import { setScheduleField, expectScheduleField, openRepeat, scheduleAction } from './controls.mjs';
+import { setScheduleField, expectScheduleField, scheduleAction } from './controls.mjs';
 import { test, expect } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -1035,7 +1035,7 @@ test.describe('视图范围与字段边界', () => {
     });
 
   test('K7 创建标签后切换到标签分组，两区都正确出现新分类',async({page})=>{
-     const task=await named(page);await page.getByRole('button', { name: '新标签', exact: true }).click();const d=page.getByRole('dialog',{name:'创建标签',exact:true});await d.getByLabel('标签名称',{exact:true}).fill('新建分类');await d.getByRole('button',{name:'保存',exact:true}).click();await closed(page);const upcoming=page.getByRole('region',{name:'即将到来',exact:true});await upcoming.getByRole('button',{name:'按标签分组',exact:true}).click();await expect(upcoming.locator('.cal-upcoming-group')).toContainText('新建分类');
+     await named(page);await page.getByRole('button', { name: '新标签', exact: true }).click();const d=page.getByRole('dialog',{name:'创建标签',exact:true});await d.getByLabel('标签名称',{exact:true}).fill('新建分类');await d.getByRole('button',{name:'保存',exact:true}).click();await closed(page);const upcoming=page.getByRole('region',{name:'即将到来',exact:true});await upcoming.getByRole('button',{name:'按标签分组',exact:true}).click();await expect(upcoming.locator('.cal-upcoming-group')).toContainText('新建分类');
     });
 
   for(const until of ['', '2026-09-24','2101-01-01'])test(`K10 重复结束日期${until||'空'}不可提交且取消可用`,async({page})=>{

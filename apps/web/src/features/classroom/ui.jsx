@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import { Icon2 } from '../../components/icons.jsx';
 import { Popover } from '../../components/ui/popover.jsx';
 import { ConfirmDialog } from '../../components/ui/confirm.jsx';

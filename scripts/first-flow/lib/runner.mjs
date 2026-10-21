@@ -92,7 +92,7 @@ export function gitSha() {
   }
 }
 
-export function resetIsolatedData(dataDir) {
+function resetIsolatedData(dataDir) {
   for (const target of ['data', 'logs', 'principals.json', 'runner.json']) {
     fs.rmSync(path.join(dataDir, target), { recursive: true, force: true });
   }
@@ -103,7 +103,7 @@ export function resetIsolatedData(dataDir) {
  * directory. The test browser trusts it through the runner's explicit
  * configuration; the private key never leaves the isolated directory.
  */
-export function ensureCertificates(dataDir) {
+function ensureCertificates(dataDir) {
   const certDir = path.join(dataDir, 'certs');
   const cert = path.join(certDir, 'localhost-cert.pem');
   const key = path.join(certDir, 'localhost-key.pem');
@@ -133,7 +133,7 @@ function writeJson(filePath, value, mode = 0o600) {
   fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`, { encoding: 'utf-8', mode });
 }
 
-export function pathFor(dataDir, ...rest) {
+function pathFor(dataDir, ...rest) {
   return path.join(dataDir, ...rest);
 }
 

@@ -18,7 +18,7 @@ import { tx, useLocale } from '../../i18n/presentation.js';
  *
  *   2. A dialog, when the consequence needs a sentence (a repeating series, an
  *      account) or there is no control to grow from.
- *        <ConfirmDialog> / confirmDialog({...}) → Promise<boolean>
+ *        <ConfirmDialog>
  *
  * Copy can differ; the template, colours and motion never do.
  */
@@ -30,7 +30,7 @@ function Glyph({ name, size = 16, stroke = 1.9 }) {
 }
 
 /* armed state that falls back on its own, on Escape and on outside clicks */
-export function useArmed(ref) {
+function useArmed(ref) {
   const [armed, setArmed] = useState(false);
   useEffect(() => {
     if (!armed) return undefined;
@@ -213,25 +213,4 @@ export function AppConfirmDialog({ title, message, confirmLabel, secondaryLabel,
       onCancel={onCancel}
     />
   );
-}
-
-/* Imperative form, for code that isn't a component (and for the app's own screens). */
-let pending = null;
-const listeners = new Set();
-export function confirmDialog(options) {
-  return new Promise((resolve) => {
-    pending?.resolve(false);
-    pending = { ...options, resolve };
-    listeners.forEach((fn) => fn(pending));
-  });
-}
-export function ConfirmHost() {
-  const [req, setReq] = useState(pending);
-  useEffect(() => {
-    listeners.add(setReq);
-    return () => listeners.delete(setReq);
-  }, []);
-  if (!req) return null;
-  const done = (ok) => { req.resolve(ok); if (pending === req) pending = null; setReq(null); };
-  return <ConfirmDialog {...req} onConfirm={() => done(true)} onCancel={() => done(false)} />;
 }

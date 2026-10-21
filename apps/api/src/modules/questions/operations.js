@@ -1,5 +1,5 @@
 import { validateCopyQuestion, validateCreateQuestion, validateDerivativesQuery, validateQuestionsQuery, validateSetDeletion, validateUpdateQuestion } from '../questions/schema.js';
-import { validateIdPath, validateNoQuery } from '../../workbench/schema.js';
+import { validateIdPath } from '../../workbench/schema.js';
 import { uuidPattern } from '../../workbench/schema.js';
 import { contractError, problems } from '../../workbench/problems.js';
 

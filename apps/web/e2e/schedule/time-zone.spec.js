@@ -1,4 +1,4 @@
-import { setScheduleField, expectScheduleField, openRepeat, scheduleAction } from './controls.mjs';
+import { setScheduleField, expectScheduleField } from './controls.mjs';
 import { test, expect } from '@playwright/test';
 import fs from 'node:fs';
 import { randomUUID } from 'node:crypto';

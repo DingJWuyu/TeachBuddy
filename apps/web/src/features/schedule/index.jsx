@@ -79,7 +79,7 @@ const systemTimeZone = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
 const inZone = (content, timeZone) => content && ({ ...content, time: content.time ? { ...content.time, timeZone } : null });
 
 export default function SchedulePage({ route }) {
-  const { t, i18n } = useTranslation("schedule");
+  const { t } = useTranslation("schedule");
   const shell = useWorkbenchShell();
   const [systemZone, setSystemZone] = useState(systemTimeZone);
   const initialToday = todayInZone(systemZone);

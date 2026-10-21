@@ -46,7 +46,7 @@ function providerSchema(value) {
   if (currentDefinitions.has(value.$ref)) return currentDefinitions.get(value.$ref);
   return Object.fromEntries(Object.entries(value).map(([key, child]) => [key, providerSchema(child)]));
 }
-export const schemas = Object.fromEntries(Object.entries(agent.components.schemas).map(([name, value]) => [name, resolve(value)]));
+const schemas = Object.fromEntries(Object.entries(agent.components.schemas).map(([name, value]) => [name, resolve(value)]));
 const validators = new Map();
 const legacyValidators = new Map();
 export function legacyArguments(operationId, args) {

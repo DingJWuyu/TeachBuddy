@@ -4,6 +4,8 @@
 
 ## 工作现场与授权
 
+当前正在执行[静态检查与复盘落实](static-analysis-retro.md)，在短期分支 `chore/static-analysis-retro` 接入 Knip/Oxlint 并同步已确认的开发、范围与证据规则；范围和完成条件沿该记录。本轮不重启全站体验清查。
+
 七项已裁决体验修复及新一轮全站连续体验清查已完成并集成，见 [PR #51](https://github.com/DingJWuyu/TeachBuddy/pull/51)，具名结果统一在[核查入口](#核查入口)。产品、原型与相关文档已同步，preview 已核对，本轮临时工作树和分支已清理；当前没有正在执行的全站清查任务。界面参考从[设计输入](../design-system/README.md)进入，后续任务沿[开发约定](../agents/module-development.md)接手。
 
 用户体验运行 `TeachBuddy-preview` 的集成源码，维护方式见[已有实例](../SETUP.md#已有本机实例)。GitHub 默认分支与日常 trunk 是 `preview/integration`，`main` 是稳定发布分支。用户已授权仓库配置、CI、任务 PR、独立审查、trunk 集成与同步；执行[GitHub 工作流](../agents/github-workflow.md)。未授权实际版本准备、合 main、产品发布、公开部署、新增费用或社区自动运营。模型与外部账户操作沿各自授权，本轮不扩展。

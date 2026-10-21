@@ -23,7 +23,7 @@ export function shellRoot() {
   return host;
 }
 
-export function useDismiss(open, refs, onClose) {
+function useDismiss(open, refs, onClose) {
   useEffect(() => {
     if (!open) return undefined;
     const inside = (target) => refs.some((r) => r.current?.contains(target));

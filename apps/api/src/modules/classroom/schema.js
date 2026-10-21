@@ -37,7 +37,7 @@ export function integer(v, p, min = 1, max = Number.MAX_SAFE_INTEGER) {
   }
   return v;
 }
-export function date(v, p) {
+function date(v, p) {
   text(v, p, 10);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(v) || !Number.isFinite(Date.parse(v + 'T00:00:00Z')) || new Date(v + 'T00:00:00Z').toISOString().slice(0, 10) !== v) {
     fail(p);
@@ -47,7 +47,7 @@ export function date(v, p) {
 export function isScoreValue(value, positive = false) {
   return typeof value === 'number' && Number.isFinite(value) && value >= (positive ? 0.01 : 0) && value <= 100000 && value === Math.round(value * 100) / 100;
 }
-export function score(v, p, positive = false) {
+function score(v, p, positive = false) {
   if (typeof v !== 'number' || !Number.isFinite(v)) {
     fail(p, 'invalid-type');
   }
@@ -75,7 +75,7 @@ export function enumValue(v, options, p) {
   return v;
 }
 const nullableText = (v, p, max) => v === null ? null : text(v, p, max);
-export function seating(v, p = '/seating') {
+function seating(v, p = '/seating') {
   object(v, ['rows', 'columns', 'seats'], undefined, p);
   integer(v.rows, p + '/rows', 1, 50);
   integer(v.columns, p + '/columns', 1, 50);
@@ -88,7 +88,7 @@ export function seating(v, p = '/seating') {
   });
   return v;
 }
-export function question(v, p) {
+function question(v, p) {
   object(v, ['id', 'label', 'groupLabel', 'maxScore', 'tagIds', 'locations'], ['label', 'groupLabel', 'maxScore', 'tagIds', 'locations'], p);
   if (v.id !== undefined) {
     id(v.id, p + '/id');

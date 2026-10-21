@@ -15,7 +15,6 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
-import request from 'supertest';
 import { fileMigrations } from '../src/workbench/files/migrations.js';
 import { createMigrationRunner, prefixForModule } from '../src/workbench/migrations.js';
 import { openWorkbenchDatabase } from '../src/workbench/storage.js';

@@ -11,13 +11,13 @@ export function outcome(call) {
   if (['cancelled', 'interrupted'].includes(call.state)) return { state: call.state, operationId: call.operationId };
   return { state: call.state, operationId: call.operationId, problem: call.problem };
 }
-export function nativeResult(call) {
+function nativeResult(call) {
   const details = outcome(call);
   return { role: 'toolResult', toolCallId: call.toolCallId, toolName: call.name,
     content: [{ type: 'text', text: JSON.stringify(details) }], details,
     isError: !['read', 'confirmed'].includes(call.state), timestamp: Date.now() };
 }
-export function appendNative(doc, message) {
+function appendNative(doc, message) {
   if (message.role === 'toolResult' && doc.entries.some(e => e.message?.role === 'toolResult' && e.message.toolCallId === message.toolCallId)) return;
   const parentId = doc.entries.at(-1)?.id ?? null;
   doc.entries.push({ type: 'message', id: randomUUID(), parentId, timestamp: timestamp(), message: structuredClone(message) });

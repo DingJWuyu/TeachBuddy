@@ -118,7 +118,7 @@ test('公式编辑深浅主题与1024和窄屏布局', async ({ page }, info) =>
 });
 
 test('自有图形工具真实点击建点线圆和多边形，参数与三维同作品', async ({ page }, info) => {
-  const { installMathProbe, currentApi, savedMath, enterMath } = await import('./math-unified-helpers.mjs');
+  const { currentApi, savedMath, enterMath } = await import('./math-unified-helpers.mjs');
   // The page already loaded; install the read-only observation hook for the next engine load.
   await page.evaluate(() => { let Constructor; Object.defineProperty(window,'GGBApplet',{configurable:true,get:()=>Constructor,set:Value=>{Constructor=class extends Value{constructor(parameters,...rest){super({...parameters,appletOnLoad:api=>{(window.mathTestApis??={})[parameters.id]=api;window.mathTestApi=api;parameters.appletOnLoad?.(api);}},...rest);}};}}); });
   await page.getByRole('button',{name:'新建作品',exact:true}).click();

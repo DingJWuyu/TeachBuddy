@@ -8,7 +8,7 @@ export function initials(name = '') {
   if (/[一-鿿]/.test(n)) return n.length > 2 ? n.slice(-2) : n;
   return n.split(/\s+/).map((p) => p[0]).join('').slice(0, 2).toUpperCase();
 }
-export const HUES = ['blue', 'green', 'orange', 'purple', 'pink', 'teal', 'indigo', 'yellow'];
+const HUES = ['blue', 'green', 'orange', 'purple', 'pink', 'teal', 'indigo', 'yellow'];
 export function hueOf(seed = '') {
   let h = 0;
   for (const c of String(seed)) h = (h * 31 + c.charCodeAt(0)) >>> 0;

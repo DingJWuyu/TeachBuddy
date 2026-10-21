@@ -22,7 +22,7 @@ export function MonthTitle({ date, icon = 'calendar' }) {
   return <div className="cal-month-title"><span className="cal-title-icon"><CalendarIcon name={icon} size={22}/></span><h1>{title.month}<span>{title.year}</span></h1></div>;
 }
 
-export function CalendarMenu({ label, trigger, className = '', children }) {
+function CalendarMenu({ label, trigger, className = '', children }) {
   useTranslation("schedule");
   const [open, setOpen] = useState(false);
   const ref = useRef(null);

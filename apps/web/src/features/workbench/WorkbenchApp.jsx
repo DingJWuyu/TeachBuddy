@@ -19,7 +19,7 @@ import { ReferenceAction } from '../agent/ReferenceAction.jsx';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { AuxiliaryPanel } from './AuxiliaryPanel.jsx';
 import { Icon } from '../../components/icons.jsx';
-import { ShellContext, useWorkbenchShell } from './shellContext.js';
+import { ShellContext } from './shellContext.js';
 import { useScene } from '../../platform/device/useScene.js';
 import { followAnchor, navigate, useRoute } from './routes.js';
 import { WorkbenchSettings } from './WorkbenchSettings.jsx';
@@ -241,5 +241,3 @@ function WorkbenchContent({ boot }) {
     </ShellContext.Provider>
   );
 }
-
-export { useWorkbenchShell };

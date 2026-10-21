@@ -6,7 +6,6 @@ import { newRequestKey } from './uuid.js';
 const PREFIX = 'tb.workbench.v1';
 const PROBE_KEY = `${PREFIX}:probe`;
 const branchId = newRequestKey();
-export const currentEditorBranch = () => branchId;
 const selected = new Map();
 const blocked = new Set();
 const recovered = new Set();
@@ -133,7 +132,8 @@ export function listLocalNames(account) {
   } catch (error) { report(error); return []; }
 }
 /** Select existing snapshots for this tab's next document, without modifying
- * another tab or replacing any saved snapshot. The caller performs a reload. */
+ * another tab or replacing any saved snapshot. The caller performs a reload.
+ * @public Preserved recovery selection port; the management UI is not mounted. */
 export function selectLocalSnapshots(account, names, snapshots) {
   const store = storage();
   if (!store) throw new Error('浏览器存储不可用');

@@ -1,5 +1,5 @@
 import { useScene } from '../../platform/device/useScene.js';
-import React, { Fragment } from 'react';
+import React from 'react';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { tx, useLocale } from '../../i18n/presentation.js';
 import { cx } from '../../components/ui/classNames.js';

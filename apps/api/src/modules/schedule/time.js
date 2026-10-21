@@ -12,12 +12,10 @@
  *   jump - 02:30 becomes 03:30 - and reports `timeAdjusted`.
  */
 
-export const MIN_YEAR = 1900;
-export const MAX_YEAR = 2100;
-export const MIN_DATE = '1900-01-01';
-export const MAX_DATE = '2100-12-31';
-export const MS_PER_MINUTE = 60_000;
-export const MS_PER_DAY = 86_400_000;
+const MIN_YEAR = 1900;
+const MAX_YEAR = 2100;
+const MS_PER_MINUTE = 60_000;
+const MS_PER_DAY = 86_400_000;
 
 const DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
 const TIME_PATTERN = /^([01]\d|2[0-3]):([0-5]\d)$/;
@@ -47,7 +45,7 @@ function parseCalendarDate(value) {
 }
 
 /** Parse a real Gregorian date inside the supported window, or return null. */
-export function parseDate(value) {
+function parseDate(value) {
   const parts = parseCalendarDate(value);
   if (!parts) return null;
   if (parts.year < MIN_YEAR || parts.year > MAX_YEAR) return null;
@@ -58,17 +56,17 @@ export function isDate(value) {
   return parseDate(value) !== null;
 }
 
-export function toDateString({ year, month, day }) {
+function toDateString({ year, month, day }) {
   return `${pad(year, 4)}-${pad(month)}-${pad(day)}`;
 }
 
-export function dateToUtcMs(value) {
+function dateToUtcMs(value) {
   const parts = typeof value === 'string' ? parseCalendarDate(value) : value;
   if (!parts) return Number.NaN;
   return Date.UTC(parts.year, parts.month - 1, parts.day);
 }
 
-export function utcMsToDate(ms) {
+function utcMsToDate(ms) {
   const date = new Date(ms);
   return toDateString({
     year: date.getUTCFullYear(),
@@ -86,11 +84,6 @@ export function diffDays(from, to) {
   return Math.round((dateToUtcMs(to) - dateToUtcMs(from)) / MS_PER_DAY);
 }
 
-/** 0 = Sunday ... 6 = Saturday for a real date. */
-export function weekday(value) {
-  return new Date(dateToUtcMs(value)).getUTCDay();
-}
-
 export function compareDates(a, b) {
   if (a === b) return 0;
   return a < b ? -1 : 1;
@@ -106,11 +99,6 @@ export function parseTimeOfDay(value) {
 
 export function isTimeOfDay(value) {
   return parseTimeOfDay(value) !== null;
-}
-
-export function formatTimeOfDay(minutes) {
-  const normalized = ((minutes % 1440) + 1440) % 1440;
-  return `${pad(Math.floor(normalized / 60))}:${pad(normalized % 60)}`;
 }
 
 /** Whole-minute precision timestamp, independent of the runtime locale. */
@@ -167,7 +155,7 @@ function zoneParts(zone, utcMs) {
 }
 
 /** Offset of `zone` at `utcMs`, in milliseconds east of UTC. */
-export function zoneOffsetMs(zone, utcMs) {
+function zoneOffsetMs(zone, utcMs) {
   const instant = Math.floor(utcMs / 1000) * 1000;
   const local = zoneParts(zone, instant);
   const localMs = dateToUtcMs(local.date) + local.minutes * MS_PER_MINUTE;
@@ -195,11 +183,6 @@ export function instantAt(zone, dateStr, minutes) {
   });
   if (exact.length > 0) return { utcMs: exact[0], timeAdjusted: false };
   return { utcMs: candidates[candidates.length - 1], timeAdjusted: true };
-}
-
-/** First instant of a local calendar day in `zone`. */
-export function dayStartInstant(zone, dateStr) {
-  return instantAt(zone, dateStr, 0);
 }
 
 /** Half-open instant range of the inclusive local day range [from, to]. */

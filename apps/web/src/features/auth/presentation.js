@@ -75,11 +75,11 @@ const CODE_TYPES = new Set([
   PROBLEM.VERIFICATION_CODE_EXHAUSTED,
 ]);
 
-export function passwordLabel(operation) {
+function passwordLabel(operation) {
   return operation === 'password-reset' ? t("新密码") : t("密码");
 }
 
-export function codeMessage(type, remainingAttempts) {
+function codeMessage(type, remainingAttempts) {
   switch (type) {
     case PROBLEM.VERIFICATION_CODE_INVALID_FORMAT:
       return COPY.codeShape;

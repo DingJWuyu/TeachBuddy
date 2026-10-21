@@ -24,7 +24,7 @@ const LEGACY_PATHS = {
 };
 
 /* Shared outline icons on a 24x24 grid, with a 2-unit stroke. */
-export const ICON_PATHS = {
+const ICON_PATHS = {
   // MiniCalendar's original calendar grid, distinct from the four-tile view.
   calendarGrid: <><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M16 3v4M8 3v4M3 11h18M7 15h.01M12 15h.01M17 15h.01M7 18h.01M12 18h.01M17 18h.01" /></>,
   // Agent glyphs retain the fixed prototype geometry.

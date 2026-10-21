@@ -11,7 +11,7 @@ import { authProblem } from './problems.js';
 // of input, so a trailing newline cannot pass; tests pin those cases.
 export const PAGE_CONTEXT_PATTERN = /^[0-9a-f]{32}$/;
 export const OPAQUE_ID_PATTERN = /^[A-Za-z0-9_-]{1,200}$(?![\s\S])/;
-export const VERIFICATION_CODE_PATTERN = /^[0-9]{6}$/;
+const VERIFICATION_CODE_PATTERN = /^[0-9]{6}$/;
 
 // Exact CanonicalEmail pattern from auth.openapi.yaml, anchored to the whole
 // string so a trailing newline cannot slip through `$`.

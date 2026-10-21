@@ -1,10 +1,10 @@
 import { readLocal, writeLocal, removeLocal } from '../../platform/device/storage.js';
-import React, { Fragment } from 'react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import React from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { tx } from '../../i18n/presentation.js';
 import { cx } from '../../components/ui/classNames.js';
 import { Icon, Avatar, Dialog, Field, Seg, Spinner } from './ui.jsx';
-import { xlsx, download, fmt } from './util.js';
+import { xlsx, download } from './util.js';
 
 /*
  * Bringing in a score sheet: choose the file, say which columns are which,

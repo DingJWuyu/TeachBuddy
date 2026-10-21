@@ -10,7 +10,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import Database from 'better-sqlite3';
 
-export function ensureParentDirectory(filePath) {
+function ensureParentDirectory(filePath) {
   const directory = path.dirname(filePath);
   if (!fs.existsSync(directory)) {
     fs.mkdirSync(directory, { recursive: true });

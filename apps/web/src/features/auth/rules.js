@@ -8,7 +8,7 @@ const CANONICAL_EMAIL =
   /^(?=.{1,254}$)(?=.{1,64}@)[a-z0-9_%+-]+(?:\.[a-z0-9_%+-]+)*@[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+$/;
 const VERIFICATION_CODE_SHAPE = /^[0-9]{6}$/;
 
-export function codePointLength(value) {
+function codePointLength(value) {
   return Array.from(String(value)).length;
 }
 
@@ -24,7 +24,7 @@ export function normalizeEmail(value) {
   return asciiLower(trimmed(value));
 }
 
-export function isCanonicalEmail(value) {
+function isCanonicalEmail(value) {
   return CANONICAL_EMAIL.test(value);
 }
 
@@ -51,8 +51,4 @@ export function passwordIssue(value) {
   if (length < 8) return 'too-short';
   if (length > 128) return 'too-long';
   return null;
-}
-
-export function passwordLength(value) {
-  return codePointLength(value);
 }

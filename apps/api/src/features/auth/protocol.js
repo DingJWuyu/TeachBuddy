@@ -6,9 +6,9 @@ import express from 'express';
 import { authProblem } from './problems.js';
 import { PAGE_CONTEXT_PATTERN } from './validation.js';
 
-export const SESSION_COOKIE_NAME = '__Host-teachbuddy_session';
+const SESSION_COOKIE_NAME = '__Host-teachbuddy_session';
 export const REMEMBERED_SESSION_MS = 7 * 24 * 60 * 60 * 1000;
-export const MAX_REMEMBERED_COOKIE_AGE_SECONDS = REMEMBERED_SESSION_MS / 1000;
+const MAX_REMEMBERED_COOKIE_AGE_SECONDS = REMEMBERED_SESSION_MS / 1000;
 
 // The database stores only a digest of the browser token, so a database leak
 // does not hand out replayable Cookies. The raw value lives in the Cookie

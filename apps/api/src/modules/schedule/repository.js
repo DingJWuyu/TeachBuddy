@@ -11,7 +11,7 @@ function parseJson(value) {
   return value === null || value === undefined ? null : JSON.parse(value);
 }
 
-export function mapEntryRow(row) {
+function mapEntryRow(row) {
   if (!row) return null;
   return {
     id: row.id,
@@ -30,7 +30,7 @@ export function mapEntryRow(row) {
   };
 }
 
-export function mapExceptionRow(row) {
+function mapExceptionRow(row) {
   if (!row) return null;
   return {
     entryId: row.entryId,

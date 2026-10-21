@@ -21,6 +21,3 @@ export async function addNavigationGroup(page, name) {
   await page.getByRole('textbox', { name: '新分组名称', exact: true }).press('Enter');
   await expect(navigationGroup(page, name)).toBeVisible();
 }
-export async function toggleAssistant(page) {
-  await page.locator('.tbx-panel-toggle').click();
-}

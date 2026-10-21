@@ -165,6 +165,8 @@ export function createRecognition({ db, files, readBytes, mutations, jobs, conte
           derivations: output.derivations ?? [] });
         return readPage(principal, input);
       } catch (error) {
+        // Stopping the worker can provide the more relevant cleanup failure.
+        // oxlint-disable-next-line no-ex-assign
         try { await abortStop; } catch (stopError) { error = stopError; }
         const cleanupFailed = error?.code === 'recognition-cleanup';
         const timedOut = error?.code === 'recognition-timeout';

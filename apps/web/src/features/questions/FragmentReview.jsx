@@ -4,7 +4,7 @@ import { supportedDocument } from '@teachbuddy/shared';
 import { parseInlineRuns } from '../../components/materials/documents.js';
 import { DocumentView } from '../../components/materials/index.js';
 
-export function assignFragment(material, draftId, fragment, destination) {
+function assignFragment(material, draftId, fragment, destination) {
   const target = material.drafts.find(draft => draft.id === draftId);
   if (!target || target.disposition !== 'pending' || fragment.disposition !== 'unassigned') return material;
   const document = fragment.document ?? { version: 2, blocks: [{ type: 'paragraph', runs: parseInlineRuns(fragment.text) }] };

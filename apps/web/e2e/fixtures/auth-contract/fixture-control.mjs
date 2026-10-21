@@ -12,7 +12,7 @@ const SERVER = path.join(HERE, 'substitute-server.mjs');
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-export async function healthy(port) {
+async function healthy(port) {
   try {
     const response = await fetch(`http://127.0.0.1:${port}/__fixture/health`);
     if (!response.ok) return false;

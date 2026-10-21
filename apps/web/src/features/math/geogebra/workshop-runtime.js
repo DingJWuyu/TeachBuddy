@@ -20,7 +20,7 @@ function localLoader() {
   });
   return loaderPromise;
 }
-export function readWorkshopObjects(api) {
+function readWorkshopObjects(api) {
   return Array.from(api.getAllObjectNames()).map(name => {
     const type = api.getObjectType(name);
     const xml = new DOMParser().parseFromString(api.getXML(name), 'application/xml');

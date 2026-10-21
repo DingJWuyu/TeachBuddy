@@ -385,7 +385,7 @@ describe('CC-INPUT / CC-BOUNDARY 精确输入', () => {
   });
 
   it('B03 密码按原始字符串处理，不 trim/不归一化', async () => {
-    const account = await world.createAccount({
+    await world.createAccount({
       email: 'b03@example.com',
       password: ' TeAcH😀9x ',
       rememberMe: false

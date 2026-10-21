@@ -53,7 +53,7 @@ export async function seedClassroom(job) {
     const draft = await job.get(`${C}/imports/${created.id}`);
     if (draft.state === 'confirmed') continue;
     const n = exam.questions.length;
-    const mapped = await job.write(`classroom:mapping:${index}`, 'PUT', `${C}/imports/${created.id}`, {
+    await job.write(`classroom:mapping:${index}`, 'PUT', `${C}/imports/${created.id}`, {
       baseVersion: draft.version,
       mapping: { sheetIndex: 0, headerRow: 1, firstDataRow: 2, lastDataRow: data.classes[classIndex].students.length + 1, studentNumberColumn: 1, nameColumn: 2, totalColumn: n + 3, attendanceColumn: n + 4,
         questionColumns: exam.questions.map((q, i) => ({ questionId: q.id, column: i + 3 })), ignoredRows: [] }, rows: null,

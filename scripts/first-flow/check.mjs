@@ -68,10 +68,6 @@ function writeLog(name, content) {
   return file;
 }
 
-function tail(text, lines = 12) {
-  return String(text ?? '').split('\n').slice(-lines).join('\n');
-}
-
 /** Minimal HTTPS client that trusts the runner's isolated certificate. */
 function request(runner, requestPath, options = {}) {
   const url = new URL(runner.origin);

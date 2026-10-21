@@ -31,7 +31,7 @@ const MODELS = [
   { id: 'z-ai/glm-5.3-flash', name: 'GLM', get note() { return tx('中文表达自然'); } },
 ];
 
-export const SUGGESTIONS = [
+const SUGGESTIONS = [
   { icon: 'list', title: '梳理一节课的讲解顺序', prompt: '帮我梳理一节二次函数图像与性质的讲解顺序' },
   { icon: 'chat', title: '讨论一道题的不同讲法', prompt: '这道三角形全等的证明题，有哪几种讲法？' },
   { icon: 'graph', title: '构思一个数学演示', prompt: '构思一个演示，让学生看到抛物线开口方向如何随 a 变化' },
@@ -45,7 +45,7 @@ const KIND = {
 };
 
 /* ---------- glyphs ---------- */
-export function Glyph({ name, size = 18, stroke = 1.75 }) { return <Icon name={name} size={size} strokeWidth={stroke} className="tbx-glyph" />; }
+function Glyph({ name, size = 18, stroke = 1.75 }) { return <Icon name={name} size={size} strokeWidth={stroke} className="tbx-glyph" />; }
 
 /* ---------- small helpers ---------- */
 const uuid = () => crypto.randomUUID();
@@ -232,7 +232,7 @@ function ThreadMenu({ item, agent, onRename }) {
 }
 
 /* ---------- thread list (home) ---------- */
-export function ThreadList({ onPick, listRef }) {
+function ThreadList({ onPick, listRef }) {
   useLocale();
   const agent = useAgent();
   const [query, setQuery] = useState('');

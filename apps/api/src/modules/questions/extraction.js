@@ -14,7 +14,7 @@ import {
 const issue = (code, unitId, detail) => ({ code, unitId, field: null, detail });
 // A transport is explicitly injected by the authorized composition. No keys,
 // environment credentials or network fallback are read here.
-export function adaptProviderResponse(response, locations) {
+function adaptProviderResponse(response, locations) {
   const choice = response?.choices?.[0],
     raw = choice?.message?.content ?? response?.content ?? "";
   if (typeof raw !== "string" || !raw.trim())

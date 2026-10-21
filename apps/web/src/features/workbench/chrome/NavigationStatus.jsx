@@ -37,11 +37,6 @@ function Comparison({ nav, onClose }) {
     </div>
   </div>;
 }
-export function NavigationBusy({ navigation: nav }) {
-  const { t } = useTranslation("workbench");
-  const busy = ['saving', 'loading'].includes(nav.status) && nav.loadState !== 'error';
-  return busy ? <span className="tb-navigation-busy" role="status" data-navigation-status={nav.status}>{nav.status === 'saving' ? t("导航保存中…") : t("导航读取中…")}</span> : null;
-}
 export default function NavigationStatus({ navigation: nav, railCollapsed, onExpand }) {
   const { t } = useTranslation("workbench");
   const [comparing, setComparing] = useState(false);

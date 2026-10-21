@@ -2,10 +2,10 @@ import i18n from "../../i18n/index.js";
 const t = (key, options) => i18n.t(key, { ns: "schedule", ...options });
 import { addDays, diffDays, instantAt, localParts } from './zoned.js';
 import { formatClock, parseClock, todayInZone, titleOf } from './model.js';
-export { addDays, diffDays, formatClock, parseClock, todayInZone, titleOf };
+export { addDays, diffDays, formatClock, todayInZone, titleOf };
 
 export const COLORS = ['#ff6b75', '#3edc81', '#5b9cf5', '#a78bfa', '#ffb454', '#f27ab8', '#43c6c6', '#9ba0aa'];
-export const dateOnly = date => date.toISOString().slice(0, 10);
+const dateOnly = date => date.toISOString().slice(0, 10);
 export const weekday = date => new Date(`${date}T00:00:00Z`).getUTCDay();
 export const monday = date => addDays(date, -(weekday(date) + 6) % 7);
 export function shiftMonth(month, amount) {
@@ -14,7 +14,7 @@ export function shiftMonth(month, amount) {
 }
 export const monthDays = month => new Date(Date.UTC(Number(month.slice(0, 4)), Number(month.slice(5, 7)), 0)).getUTCDate();
 export const monthTitle = date => ({ month: new Intl.DateTimeFormat(i18n.resolvedLanguage, { month: 'long', timeZone: 'UTC' }).format(new Date(`${date.slice(0, 7)}-01T00:00:00Z`)), year: date.slice(0, 4) });
-export const blankCalendar = () => ({ allDay: false, notes: '', tags: [] });
+const blankCalendar = () => ({ allDay: false, notes: '', tags: [] });
 export function contentOf(entry) {
   return { title: entry.title, items: structuredClone(entry.items ?? []), time: entry.time ? { ...entry.time } : null,
     repeat: entry.repeat ? structuredClone(entry.repeat) : null,

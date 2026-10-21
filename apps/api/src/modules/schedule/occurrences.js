@@ -59,7 +59,7 @@ export function effectiveContent(entry, exception, originDate = null) {
  * Instance state. Hidden (past `until`) wins over cancelled; a deleted entry
  * wins over both, matching the single-instance read.
  */
-export function instanceState(entry, originDate, exception) {
+function instanceState(entry, originDate, exception) {
   if (entry.deletedAt) return 'deleted';
   if (originDate !== null && entry.repeat && compareDates(originDate, entry.repeat.until) > 0) {
     return 'outside-series';
@@ -68,7 +68,7 @@ export function instanceState(entry, originDate, exception) {
   return 'active';
 }
 
-export function instanceArmedAt(entry, armRow) {
+function instanceArmedAt(entry, armRow) {
   return armRow?.armedAt ?? entry.reminderArmedAt ?? entry.createdAt;
 }
 

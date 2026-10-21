@@ -4,7 +4,6 @@ const t = (key, options) => i18n.t(key, { ns: "schedule", ...options });
 import { useState } from 'react';
 import { CalendarDialog, CalendarIcon } from './CalendarControls.jsx';
 import { endOf, repeatLabel } from './calendarModel.js';
-import { weekdayLabel } from './model.js';
 
 export const reminderLabel = reminder => {
   const start = reminder.anchor === 'start';

@@ -74,7 +74,7 @@ function Runs({ runs }) {
     run.type === 'math' ? <Formula key={i} latex={run.latex} /> : <span key={i}>{run.text}</span>
   );
 }
-export function Blocks({ blocks, onOpenFile }) {
+function Blocks({ blocks, onOpenFile }) {
   const { t } = useTranslation("workbench");
   return blocks.map((block, i) => {
     switch (block.type) {

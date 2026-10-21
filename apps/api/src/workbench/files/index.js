@@ -10,7 +10,7 @@ import { validateSchema } from '../content/schema.js';
 export const MAX_FILE_BYTES = 100 * 1024 * 1024;
 export const imageTypes = new Set(['image/png', 'image/jpeg', 'image/webp']);
 const digest = (bytes) => createHash('sha256').update(bytes).digest('hex');
-export function storageError() {
+function storageError() {
   return Object.assign(new Error('Managed file storage unavailable'), {
     status: 503,
     problem: {

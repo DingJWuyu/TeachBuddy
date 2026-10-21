@@ -160,7 +160,7 @@ test("real auth export snapshot, secrets exclusion, all files, idempotency and o
     );
     assert.equal(deleted.status, 200, deleted.text);
     const contents = Buffer.from("原文件保留 <script> 文本");
-    const uploaded = await world.workbench.files.store(
+    await world.workbench.files.store(
       { accountKey: a.accountKey },
       { name: "原文.txt", bytes: contents },
       { key: randomUUID(), method: "POST", path: "/api/workbench/files" },

@@ -8,7 +8,6 @@ import { useId } from 'react';
 const SPARK = 'M32 9.2C32.9 16.3 34.2 17.6 41.3 18.5C34.2 19.4 32.9 20.7 32 27.8C31.1 20.7 29.8 19.4 22.7 18.5C29.8 17.6 31.1 16.3 32 9.2Z';
 const PAGE_L = 'M11.5 33.2C18.6 29.9 25.6 30 30.6 34.3V52.6C25.6 48.8 18.6 48.6 11.5 51.6Z';
 const PAGE_R = 'M52.5 33.2C45.4 29.9 38.4 30 33.4 34.3V52.6C38.4 48.8 45.4 48.6 52.5 51.6Z';
-export const MARK_PATHS = { SPARK, PAGE_L, PAGE_R };
 
 export function Mark({ size = 28, className = '' }) {
   const id = `tbx-mark-hi-${useId()}`;

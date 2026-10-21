@@ -4,7 +4,7 @@ import { Icon } from "../../components/icons.jsx";
 import { PdfText } from "./PdfText.jsx";
 import { PageFind } from "./PageFind.jsx";
 import { Recognition } from "./Recognition.jsx";
-export function FileImage({ client, id, alt, ...props }) {
+function FileImage({ client, id, alt, ...props }) {
   const { t } = useTranslation("resources");
   const [url, setUrl] = useState(""),
     [error, setError] = useState("");

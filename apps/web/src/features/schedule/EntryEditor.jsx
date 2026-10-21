@@ -22,7 +22,7 @@ import { dstAdjustment } from './model.js';
  * Repeat, reminder and label dialogs are the app's own.
  */
 
-export const PRIORITIES = [
+const PRIORITIES = [
   { id: 'high', label: '重要' },
   { id: 'normal', label: '普通' },
   { id: 'low', label: '稍后' },

@@ -53,7 +53,3 @@ export function AuxiliaryPanel({ hidden = false, available = true }) {
     </aside>
   );
 }
-
-export function AiWorkspace({ variant = 'panel' }) {
-  return <AgentWorkspace variant={variant} />;
-}

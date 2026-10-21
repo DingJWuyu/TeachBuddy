@@ -9,7 +9,6 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createScheduleHarness } from './fixtures/teaching-time-schedule/harness.js';
 import {
-  advanceFixtureNow,
   beforeChangeCalls,
   clearBeforeChangeCalls,
   failNextBeforeChange,

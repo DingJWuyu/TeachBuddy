@@ -22,7 +22,7 @@ test('AI取消保留即时手拖内容，关闭辅助栏继续运行，迟到构
     await page.getByRole('tab',{name:'AI 助理',exact:true}).click(); await page.getByLabel('向数学助理提问').fill('修改A并添加B');
     await page.evaluate(()=>{const api=mathCancelApi();const original=api.asyncEvalCommandGetLabels.bind(api);api.asyncEvalCommandGetLabels=command=>command.startsWith('B=')?new Promise((resolve,reject)=>{window.cancelTestRelease=()=>original(command).then(resolve,reject);}):original(command);});
     // Read view coordinates, then move A with real pointer input.
-    const point=await page.evaluate(()=>{const api=mathCancelApi(),view=JSON.parse(api.getViewProperties(1));const rect=document.querySelector('.mw-graph-host').getBoundingClientRect();return{x:view.left+(api.getXcoord('A')-view.xMin)/view.invXscale,y:view.top+view.height-(api.getYcoord('A')-view.yMin)/view.invYscale};});
+    const point=await page.evaluate(()=>{const api=mathCancelApi(),view=JSON.parse(api.getViewProperties(1));return{x:view.left+(api.getXcoord('A')-view.xMin)/view.invXscale,y:view.top+view.height-(api.getYcoord('A')-view.yMin)/view.invYscale};});
     await page.mouse.move(point.x,point.y);await page.mouse.down();await page.mouse.move(point.x+48,point.y-32,{steps:12});await page.mouse.up();
     await expect.poll(async()=>(await currentApi(page,'A'))?.coords).not.toEqual([2,3]); const manual=(await currentApi(page,'A')).coords;
     await page.getByRole('tab',{name:'AI 助理',exact:true}).click();

@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import { useEffect, useState } from 'react';
 import { tx } from '../../i18n/presentation.js';
 import { Icon, Avatar, Empty, Spinner } from './ui.jsx';

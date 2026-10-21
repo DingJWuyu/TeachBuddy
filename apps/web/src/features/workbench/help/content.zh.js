@@ -5,6 +5,7 @@
  * 行内：**界面上的名字** 加粗，`⌘K` 是按键。
  * 这些是示例文案，用来确定排版；正式内容以后替换。
  */
+/** @public Read through the language namespace returned by HelpCenter.content(). */
 export const TOPICS = [
   {
     id: 'start',
@@ -361,6 +362,7 @@ export const TOPICS = [
   },
 ];
 
+/** @public Read through the language namespace returned by HelpCenter.content(). */
 export const HOME = {
   featured: [['start', 'welcome'], ['assistant', 'plan'], ['questions', 'import']],
   popular: [['schedule', 'repeat'], ['account', 'saving'], ['math', 'export'], ['questions', 'find'], ['account', 'export']],
