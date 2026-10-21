@@ -448,3 +448,13 @@
   background-position: right 12px center !important;
   background-size: 16px 16px !important;
 }
+
+.tbx-confirm-presence { display: contents; }
+.tbx-confirm-presence[inert] > .tbx-confirm-scrim {
+  pointer-events: none;
+  animation: tbx-kit-fade-out 180ms ease both;
+}
+@keyframes tbx-kit-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}

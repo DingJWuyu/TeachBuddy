@@ -35,9 +35,13 @@ HTTP 写入由认证 transport 附加页面/保护头和逻辑 UUID key，router
 
 模块 [index](../../apps/api/src/modules/schedule/index.js) 合并业务与 reminders migrations 后统一导出；账户生命周期沿 [account-deletion](../../apps/api/src/workbench/account-deletion.js) 调用日程模块的 `deleteAccountData`，在外层事务中按 accountKey 显式清理该账户通知和日程数据，保留其他账户。reminders 工厂没有独立公开清理端口。日程不依赖题库、班级或教学记录业务。
 
-Web 的日历与任务看板在 [index.jsx](../../apps/web/src/features/schedule/index.jsx) 组合；[TaskBoard](../../apps/web/src/features/schedule/TaskBoard.jsx) 负责看板，[EntryEditor](../../apps/web/src/features/schedule/EntryEditor.jsx) 负责当前任务与事项编辑，[ScheduleDialogs](../../apps/web/src/features/schedule/ScheduleDialogs.jsx) 组合标签、重复、提醒及事项移动弹层，统一消费公共菜单、日期时间与对话框。既有安排、提醒与未确认写入继续经同一真实 API，不以演示数据替换。
+Web 的日历与任务看板在 [index.jsx](../../apps/web/src/features/schedule/index.jsx) 组合；[TaskBoard](../../apps/web/src/features/schedule/TaskBoard.jsx) 负责看板，[EntryEditor](../../apps/web/src/features/schedule/EntryEditor.jsx) 负责当前任务与事项编辑。[ScheduleDialogs](../../apps/web/src/features/schedule/ScheduleDialogs.jsx) 提供标签及重复弹层，提醒和事项移动分别在 [CalendarDetails](../../apps/web/src/features/schedule/CalendarDetails.jsx) 与 [CalendarItems](../../apps/web/src/features/schedule/CalendarItems.jsx)，统一消费公共菜单、日期时间与对话框。既有安排、提醒与未确认写入继续经同一真实 API，不以演示数据替换。
+
+看板事项完成操作按点击顺序保存在账户设备现场，前次写入确认后才读取下一次修改所需的版本；重复实例首次独立得到的新 ID 用于等待中的后续点击。中间写入不提前刷新列表，整批完成或失败后重新读取；看板保留尚未完成的乐观状态，早一操作的返回不回滚后写状态。刷新或切模块后，未确认写入先沿原请求确认入口处理，确认结果同时更新后续点击的对象身份，再继续保存，不能绕过共享保存协议。
 
 事项跟手卡通过公共 `shellRoot` 挂载在编辑器之外，固定坐标不受任务面板动效的变换祖先影响。任务打开错误与列表刷新错误分别保留：打开成功、新建草稿、退出编辑或切换深链接清除前一目标的错误；任务重试重新读取该目标，列表重试只刷新列表，未确认写入仍优先以原请求确认。深链接从首轮读取起受编辑意图编号约束，后续新建、打开其他任务或退出后，迟到的成功与错误均不得覆盖当前现场。
+
+月视图更多任务使用 FullCalendar 的外部 Draggable；`MonthMore` 在其 `eventData` 开始回调中暂时隐藏浮层，让下方日期参与命中测试，同时保留拖动源节点。拖动结束或取消后恢复浮层，成功落点沿原 `drop` 回调关闭；返回原日期不产生写入。任务编辑器的移回待安排及重复删除确认显式使用共享 `ConfirmDialog.enterConfirms`，保留日程 Enter 执行确认的约定。
 
 Web 的 [useScheduleSettings](../../apps/web/src/features/schedule/useScheduleSettings.js) 和 [useNotifications](../../apps/web/src/features/schedule/useNotifications.js) 拥有账户时区/日程设置及通知状态，不放公共平台层。它们通过 schedule/api 使用同一身份与请求协议。
 

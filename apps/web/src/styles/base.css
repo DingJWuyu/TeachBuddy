@@ -102,3 +102,13 @@
   color: inherit;
   font-size: inherit;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  :is(.wb-shell, .tbx-portal-host) *,
+  :is(.wb-shell, .tbx-portal-host) *::before,
+  :is(.wb-shell, .tbx-portal-host) *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

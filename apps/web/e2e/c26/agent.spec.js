@@ -880,3 +880,77 @@ for (const locale of ['zh-CN', 'en']) test(`AC04: ${locale}复制拒绝与不可
   await page.screenshot({ path: `${evidence}/ac04-${locale}-retry-success.png` });
   expect(model.requests()).toBe(1);
 });
+
+test('SW-AGENT-01: 模型与侧栏历史选择关闭后可继续键盘操作', async ({ page }) => {
+  const { provider } = await import('../../../api/test/fixtures/c26/provider.js');
+  const model = await provider([]);
+  await world.close(); world = await startWorld({ agent: model.config });
+  await register(page);
+  await page.locator('.tbx-composer.is-placeholder').click();
+  const modelTrigger = page.getByRole('button', { name: '选择模型', exact: true });
+  await modelTrigger.click();
+  await page.getByRole('option', { name: /GLM/ }).click();
+  await expect(modelTrigger).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(page.getByRole('button', { name: '引用工作台里的内容', exact: true })).toBeFocused();
+  await modelTrigger.click();
+  await page.keyboard.press('Tab');
+  await page.keyboard.press('Enter');
+  await page.keyboard.press('Space');
+  await expect(page.locator('.tbx-model-menu')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(modelTrigger).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(page.getByRole('button', { name: '引用工作台里的内容', exact: true })).toBeFocused();
+
+  await page.getByRole('button', { name: '新对话', exact: true }).click();
+  await expect(page.locator('.tbx-thread')).toHaveCount(2);
+  await page.getByRole('navigation', { name: '功能模块' }).getByRole('link', { name: /^题库/ }).click();
+  await page.getByRole('button', { name: '打开 AI 助理', exact: true }).click();
+  const historyTrigger = page.locator('.tbx-switch-button');
+  await historyTrigger.click();
+  await page.locator('.tbx-switch-row').last().click();
+  await expect(historyTrigger).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(page.locator('.tbx-agent-head button[aria-label="新对话"]')).toBeFocused();
+  await historyTrigger.click();
+  await page.keyboard.press('Tab');
+  await page.keyboard.press('Escape');
+  await expect(historyTrigger).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(page.locator('.tbx-agent-head button[aria-label="新对话"]')).toBeFocused();
+});
+
+test('SW-AGENT-02: 资源深链返回列表改看另一资料后不再声称旧资料是当前内容', async ({ page }) => {
+  const { headers } = await savedQuestion(page, '资源上下文核验题');
+  const resources = [];
+  for (const title of ['引用资料甲', '实际阅读资料乙']) {
+    const upload = await page.request.post(world.origin + '/api/workbench/files', {
+      headers: headers(), multipart: { file: { name: title + '.txt', mimeType: 'text/plain', buffer: Buffer.from(title) } },
+    });
+    expect(upload.status()).toBe(201);
+    const resource = await page.request.post(world.origin + '/api/modules/resources/items', {
+      headers: headers(), data: { title, fileId: (await upload.json()).id, folderId: null, tagIds: [], note: '' },
+    });
+    expect(resource.status()).toBe(201); resources.push(await resource.json());
+  }
+  await page.locator('.tbx-composer.is-placeholder').click();
+  await page.getByRole('textbox', { name: 'AI 输入' }).fill('@引用资料甲');
+  await page.getByRole('option', { name: '引用资料甲', exact: true }).click();
+  await page.locator('.tbx-drawer').getByRole('button', { name: '引用资料甲', exact: true }).click();
+  await page.getByRole('button', { name: '打开 AI 助理', exact: true }).click();
+  await expect(page.locator('.res-header h1')).toHaveText('引用资料甲');
+  await expect(page.locator('.tbx-panel-welcome')).toContainText('我能看到你正在看「引用资料甲」。');
+  await page.getByRole('button', { name: '返回资源库', exact: true }).click();
+  await page.locator(`.tbx-res-card[data-id="${resources[1].id}"] .tbx-res-open`).click();
+  await expect(page.locator('.res-header h1')).toHaveText('实际阅读资料乙');
+  await expect(page.locator('.tbx-panel-welcome')).toContainText('问一个问题，或者从下面开始。');
+  await expect(page.locator('.tbx-panel-welcome')).not.toContainText('引用资料甲');
+  // The teacher's explicitly chosen reference is independent of browsing context.
+  await expect(page.locator('.tbx-drawer')).toContainText('引用资料甲');
+  await expect(page.getByText('草稿已保存', { exact: true })).toBeVisible();
+  await page.reload();
+  await expect(page.locator('.res-header h1')).toHaveText('实际阅读资料乙');
+  await expect(page.locator('.tbx-panel-welcome')).toContainText('问一个问题，或者从下面开始。');
+  await expect(page.locator('.tbx-drawer')).toContainText('引用资料甲');
+});

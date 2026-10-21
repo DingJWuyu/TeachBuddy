@@ -135,7 +135,7 @@ export function useQuestionSession({ accountKey, transport, requestedId, onRetur
   }, [requestedId]);
   const localKey = `questions-materials-draft:${scene.kind}:${scene.id ?? "new"}`;
   const editorRef = useRef(null);
-  editorRef.current = {value, scene, localKey};
+  editorRef.current = {value, scene, localKey, selected};
   const refreshSequence = useRef(0);
   const viewRef = useRef({ scene, value, busy });
   viewRef.current = { scene, value, busy };
@@ -631,10 +631,23 @@ export function useQuestionSession({ accountKey, transport, requestedId, onRetur
     await refresh({ ...latestScene, ...filters });
   }
   async function createCategory() {
-    const kind = newCategory.kind;
+    const { kind, openingId, target } = newCategory;
     const item = { id: crypto.randomUUID(), name: categoryName.trim() };
     const next = await mutate('/taxonomy', { baseVersion: taxonomy.version, types: taxonomy.types, tags: taxonomy.tags, [kind]: [...taxonomy[kind], item] }, 'PUT');
-    setTaxonomy(next); newCategory.onAssign(item.id); setNewCategory(null); setMessage(t("分类已创建，保存题目后生效。"));
+    setTaxonomy(next);
+    const current = editorRef.current;
+    if (current.value && current.scene.kind === target.kind && current.scene.id === target.id
+      && (target.kind !== 'import' || current.selected === target.draftId)) {
+      const assign = question => ({ ...question, ...(kind === 'types'
+        ? { typeId: item.id } : { tagIds: [...new Set([...question.tagIds, item.id])] }) });
+      const value = target.kind === 'import'
+        ? { ...current.value, drafts: current.value.drafts.map(draft => draft.id === target.draftId ? assign(draft) : draft) }
+        : assign(current.value);
+      setValue(value);
+      writeLocal(accountKey, current.localKey, value);
+    }
+    setNewCategory(current => current?.openingId === openingId ? null : current);
+    setMessage(t("分类已创建，保存题目后生效。"));
   }
   async function supplement(files) {
     const saved = await save();
@@ -887,8 +900,10 @@ export function useQuestionSession({ accountKey, transport, requestedId, onRetur
       cancelCopy: () => setCopyCandidate(null),
       showTaxonomy: () => setManage(true),
       saveTaxonomy: next => action(() => saveTaxonomy(next)),
-      openCategory: (kind, onAssign) => {
-        setCategoryName(''); setMessage(''); setNewCategory({ openingId: crypto.randomUUID(), kind, onAssign });
+      openCategory: kind => {
+        setCategoryName(''); setMessage('');
+        setNewCategory({ openingId: crypto.randomUUID(), kind,
+          target: { kind: scene.kind, id: scene.id, draftId: selected } });
       },
       closeCategory: () => setNewCategory(null),
       changeCategoryName: name => setCategoryName(name),

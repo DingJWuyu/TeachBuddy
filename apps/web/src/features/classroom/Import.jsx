@@ -17,6 +17,17 @@ const STEPS = ['选择成绩表', '对应表格的列', '逐行校对'];
 const letter = (n) => { let s = ''; while (n > 0) { const m = (n - 1) % 26; s = String.fromCharCode(65 + m) + s; n = Math.floor((n - 1) / 26); } return s; };
 const clean = (s) => String(s ?? '').replace(/\s+/g, '').toLowerCase();
 
+function ColSelect({ value, onChange, label, optional, columns }) {
+  return (
+    <Field label={label} hint={optional ? tx('选填') : null}>
+      <select value={value ?? ''} onChange={(e) => onChange(e.target.value ? Number(e.target.value) : null)}>
+        <option value="">{optional ? tx('没有这一列') : tx('选择一列')}</option>
+        {columns.map(([n, text]) => <option key={n} value={n}>{text}</option>)}
+      </select>
+    </Field>
+  );
+}
+
 function guess(sheet, exam) {
   const rows = sheet.rows;
   let header = rows.findIndex((r) => r?.some((c) => /姓名|学号|name/i.test(c?.text ?? '')));
@@ -95,7 +106,7 @@ export function ImportDialog({ ctx, examId: givenExam, classId: givenClass, onCl
   };
 
   const choose = async (file) => {
-    if (!file) return;
+    if (!file || busy) return;
     setBusy(true);
     setError('');
     try {
@@ -133,13 +144,17 @@ export function ImportDialog({ ctx, examId: givenExam, classId: givenClass, onCl
   };
 
   const confirm = async () => {
+    if (busy) return;
     setBusy(true);
     setError('');
     try {
       await queue.current;
+      await ctx.api.recover();
       const latest = await ctx.api.get(`/imports/${draft.id}`);
-      const reviewed = await ctx.api.put(`/imports/${draft.id}`, { baseVersion: latest.version, rows: latest.rows });
-      await ctx.api.post(`/imports/${draft.id}/confirmation`, { baseVersion: reviewed.version });
+      if (latest.state !== 'confirmed') {
+        const reviewed = await ctx.api.put(`/imports/${draft.id}`, { baseVersion: latest.version, rows: latest.rows });
+        await ctx.api.post(`/imports/${draft.id}/confirmation`, { baseVersion: reviewed.version });
+      }
       await ctx.reload();
       setDone({ present: latest.rows.filter((r) => !r.ignored && r.studentId && r.status === 'present').length, absent: latest.rows.filter((r) => !r.ignored && r.studentId && r.status === 'absent').length, unrecorded: latest.unrecorded.length });
       setStep(3);
@@ -154,14 +169,6 @@ export function ImportDialog({ ctx, examId: givenExam, classId: givenClass, onCl
   const width = sheet ? Math.max(0, ...sheet.rows.map((r) => r?.length || 0)) : 0;
   const header = sheet && (sheet.rows[(mapping.headerRow || 1) - 1] || []);
   const columns = Array.from({ length: width }, (_, i) => [i + 1, `${letter(i + 1)}${header?.[i]?.text ? ` · ${header[i].text}` : ''}`]);
-  const ColSelect = ({ value, onChange, label, optional }) => (
-    <Field label={label} hint={optional ? tx('选填') : null}>
-      <select value={value ?? ''} onChange={(e) => onChange(e.target.value ? Number(e.target.value) : null)}>
-        <option value="">{optional ? tx('没有这一列') : tx('选择一列')}</option>
-        {columns.map(([n, text]) => <option key={n} value={n}>{text}</option>)}
-      </select>
-    </Field>
-  );
   const mappedCols = new Map();
   if (mapping) {
     if (mapping.nameCol) mappedCols.set(mapping.nameCol, tx('姓名'));
@@ -214,7 +221,7 @@ export function ImportDialog({ ctx, examId: givenExam, classId: givenClass, onCl
         )}
       </div>
     );
-    footer = <><span className="cr-grow" /><button type="button" className="cr-btn" onClick={onClose}>{tx('取消')}</button></>;
+    footer = <><span className="cr-grow" /><button type="button" className="cr-btn" disabled={busy} onClick={onClose}>{tx('取消')}</button></>;
   } else if (step === 1) {
     body = (
       <div className="cr-import-map">
@@ -228,16 +235,16 @@ export function ImportDialog({ ctx, examId: givenExam, classId: givenClass, onCl
           <Field label={tx('到第几行')}><input inputMode="numeric" value={mapping.lastRow ?? ''} onChange={(e) => setMapping({ ...mapping, lastRow: Number(e.target.value) || null })} /></Field>
         </div>
         <div className="cr-form-row is-4">
-          <ColSelect label={tx('姓名')} optional value={mapping.nameCol} onChange={(v) => setMapping({ ...mapping, nameCol: v })} />
-          <ColSelect label={tx('学号')} optional value={mapping.numberCol} onChange={(v) => setMapping({ ...mapping, numberCol: v })} />
-          <ColSelect label={tx('总分')} optional value={mapping.totalCol} onChange={(v) => setMapping({ ...mapping, totalCol: v })} />
-          <ColSelect label={tx('缺考')} optional value={mapping.absentCol} onChange={(v) => setMapping({ ...mapping, absentCol: v })} />
+          <ColSelect columns={columns} label={tx('姓名')} optional value={mapping.nameCol} onChange={(v) => setMapping({ ...mapping, nameCol: v })} />
+          <ColSelect columns={columns} label={tx('学号')} optional value={mapping.numberCol} onChange={(v) => setMapping({ ...mapping, numberCol: v })} />
+          <ColSelect columns={columns} label={tx('总分')} optional value={mapping.totalCol} onChange={(v) => setMapping({ ...mapping, totalCol: v })} />
+          <ColSelect columns={columns} label={tx('缺考')} optional value={mapping.absentCol} onChange={(v) => setMapping({ ...mapping, absentCol: v })} />
         </div>
         <details className="cr-import-questions" open={Object.keys(mapping.questionCols).length > 0 && Object.keys(mapping.questionCols).length < exam.questions.length}>
           <summary>{tx('逐题得分：已对应 {{a}} / {{b}} 题', { a: Object.keys(mapping.questionCols).length, b: exam.questions.length })}</summary>
           <div className="cr-form-row is-6">
             {exam.questions.map((q) => (
-              <ColSelect key={q.id} optional label={q.group ? `${q.group} ${q.label}` : q.label} value={mapping.questionCols[q.id]} onChange={(v) => { const qc = { ...mapping.questionCols }; if (v) qc[q.id] = v; else delete qc[q.id]; setMapping({ ...mapping, questionCols: qc }); }} />
+              <ColSelect key={q.id} columns={columns} optional label={q.group ? `${q.group} ${q.label}` : q.label} value={mapping.questionCols[q.id]} onChange={(v) => { const qc = { ...mapping.questionCols }; if (v) qc[q.id] = v; else delete qc[q.id]; setMapping({ ...mapping, questionCols: qc }); }} />
             ))}
           </div>
         </details>
@@ -261,7 +268,7 @@ export function ImportDialog({ ctx, examId: givenExam, classId: givenClass, onCl
     );
     footer = (
       <>
-        <button type="button" className="cr-btn" onClick={() => setStep(0)}>{tx('换一个文件')}</button>
+        <button type="button" className="cr-btn" disabled={busy} onClick={() => setStep(0)}>{tx('换一个文件')}</button>
         <span className="cr-grow" />
         <button type="button" className="cr-btn is-primary" disabled={busy || (!mapping.nameCol && !mapping.numberCol)} onClick={build}>{busy ? <Spinner small /> : null}{tx('生成校对表')}</button>
       </>
@@ -343,7 +350,7 @@ export function ImportDialog({ ctx, examId: givenExam, classId: givenClass, onCl
     );
     footer = (
       <>
-        <button type="button" className="cr-btn" onClick={() => setStep(1)}>{tx('重新对应列')}</button>
+        <button type="button" className="cr-btn" disabled={busy} onClick={() => setStep(1)}>{tx('重新对应列')}</button>
         <span className="cr-grow" />
         <button type="button" className="cr-btn is-primary" disabled={busy || (draft.summary?.errors ?? 0) > 0} onClick={confirm}>{busy ? <Spinner small /> : <Icon name="check" size={14} stroke={2.4} />}{tx('确认入库')}</button>
       </>
@@ -354,7 +361,7 @@ export function ImportDialog({ ctx, examId: givenExam, classId: givenClass, onCl
         <span className="cr-done-mark"><Icon name="check" size={30} stroke={2.6} /></span>
         <h3>{tx('成绩已保存')}</h3>
         <p>{tx('{{cls}} · {{exam}}：{{a}} 人参加，{{b}} 人缺考，{{c}} 人未记录。', { cls: cls.name, exam: exam.name, a: done.present, b: done.absent, c: done.unrecorded })}</p>
-        <p className="cr-muted">{tx('原表和校对结果都留着；之后发现错了，可以在学生的成绩里修正。')}</p>
+        <p className="cr-muted">{tx('原表和校对结果都留着，可以到班级或学生的成绩中查看。')}</p>
       </div>
     );
     footer = (
@@ -367,13 +374,13 @@ export function ImportDialog({ ctx, examId: givenExam, classId: givenClass, onCl
   }
 
   return (
-    <Dialog wide className="cr-import" title={tx('导入成绩')} subtitle={exam && cls ? `${exam.name} · ${cls.name}` : null} onClose={onClose} footer={<>{error && <span className="cr-error is-inline">{error}</span>}{footer}</>}>
+    <Dialog busy={busy} wide className="cr-import" title={tx('导入成绩')} subtitle={exam && cls ? `${exam.name} · ${cls.name}` : null} onClose={onClose} footer={<>{error && <span className="cr-error is-inline">{error}</span>}{footer}</>}>
       {step < 3 && (
         <ol className="cr-steps">
           {STEPS.map((label, i) => <li key={label} className={cx(i === step && 'is-current', i < step && 'is-done')}><span>{i < step ? <Icon name="check" size={11} stroke={3} /> : i + 1}</span>{tx(label)}</li>)}
         </ol>
       )}
-      <div className="cr-step" key={step}>{body}</div>
+      <fieldset className="cr-step" key={step} disabled={busy}>{body}</fieldset>
     </Dialog>
   );
 }

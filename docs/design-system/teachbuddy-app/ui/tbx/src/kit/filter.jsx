@@ -44,7 +44,7 @@ export function FilterMenu({ label, allLabel, options, value, onChange, icon, cl
         </span>
       </button>
       )}
-      <Popover anchor={ref} open={open} onClose={() => setOpen(false)} align="end" role="menu" label={menuLabel || label} className={menuClassName || 'tbx-filter-menu'}>
+      <Popover anchor={ref} open={open} onClose={(event) => { if (event?.type === 'keydown') ref.current?.focus(); setOpen(false); }} align="end" role="menu" label={menuLabel || label} className={menuClassName || 'tbx-filter-menu'}>
         <button type="button" role="menuitemradio" aria-checked={!active} onClick={() => onChange([])}>
           {allLabel}{!active && tick}
         </button>

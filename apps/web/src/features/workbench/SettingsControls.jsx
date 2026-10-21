@@ -30,6 +30,16 @@ function SettingsDialogBody({ title, children, confirmLabel, onConfirm, onClose,
   }, []);
   return <dialog ref={dialog} className={`settings-confirm ${className}`} aria-labelledby={titleId}
     onCancel={event => { event.preventDefault(); onClose(); }}
+    onKeyDown={event => {
+      if (event.key !== 'Tab') return;
+      const controls = [...event.currentTarget.querySelectorAll('button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), a[href], [tabindex="0"]')]
+        .filter(element => element.getClientRects().length && !element.closest('[inert]'));
+      const edge = event.shiftKey ? controls[0] : controls.at(-1);
+      if (document.activeElement === edge) {
+        event.preventDefault();
+        (event.shiftKey ? controls.at(-1) : controls[0])?.focus();
+      }
+    }}
     onClick={event => { if (event.target === event.currentTarget) {
       const box = event.currentTarget.getBoundingClientRect();
       if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) onClose();
@@ -82,9 +92,17 @@ async function encodeBackground(file) {
 export function BackgroundChoices({ value, image, disabled, onChange, choices }) {
   useLocale();
   const input = useRef(null);
+  const selection = useRef(0);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const custom = value === 'custom' && image;
+  useEffect(() => () => { selection.current += 1; }, []);
+
+  function select(patch) {
+    selection.current += 1;
+    setBusy(false);
+    onChange(patch);
+  }
 
   async function choose(event) {
     const file = event.target.files?.[0];
@@ -94,14 +112,16 @@ export function BackgroundChoices({ value, image, disabled, onChange, choices })
       setError(tx('请选择不超过 20 MB 的 JPG、PNG 或 WebP 图片。'));
       return;
     }
+    const request = ++selection.current;
     setError('');
     setBusy(true);
     try {
-      onChange({ background: 'custom', backgroundImage: await encodeBackground(file) });
+      const backgroundImage = await encodeBackground(file);
+      if (request === selection.current) onChange({ background: 'custom', backgroundImage });
     } catch {
-      setError(tx('这张图片读不出来，换一张试试。'));
+      if (request === selection.current) setError(tx('这张图片读不出来，换一张试试。'));
     } finally {
-      setBusy(false);
+      if (request === selection.current) setBusy(false);
     }
   }
 
@@ -109,7 +129,7 @@ export function BackgroundChoices({ value, image, disabled, onChange, choices })
     <>
       <div className="settings-background-options tbx-bg-options" role="group" aria-label={tx('内容背景')}>
         {choices.map(([id, label]) => (
-          <button key={id} type="button" disabled={disabled} aria-label={label} aria-pressed={value === id || (id === 'grid' && value === 'custom' && !image)} onClick={() => onChange({ background: id })}>
+          <button key={id} type="button" disabled={disabled} aria-label={label} aria-pressed={value === id || (id === 'grid' && value === 'custom' && !image)} onClick={() => select({ background: id })}>
             <span className="settings-background-swatch" data-pattern={id} />
             <span>{label}</span>
           </button>
@@ -121,7 +141,7 @@ export function BackgroundChoices({ value, image, disabled, onChange, choices })
           aria-pressed={Boolean(custom)}
           aria-label={image ? tx('自定义背景') : tx('上传背景图片')}
           title={custom ? tx('点按更换图片') : undefined}
-          onClick={() => (image && !custom ? onChange({ background: 'custom' }) : input.current?.click())}
+          onClick={() => (image && !custom ? select({ background: 'custom' }) : input.current?.click())}
         >
           <span className="settings-background-swatch" data-pattern="custom" style={image ? { backgroundImage: `url("${image}")` } : undefined}>
             <span className="tbx-bg-upload">

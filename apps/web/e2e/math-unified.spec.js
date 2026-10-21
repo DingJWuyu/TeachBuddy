@@ -625,6 +625,35 @@ test('按需展开：参数、连接与算式连续开合，快速反向和末�
   await page.getByRole('button', { name: '添加参数', exact: true }).click();
   await page.getByRole('button', { name: '加入作品', exact: true }).click();
   async function sample(root, trigger, name, opening) {
+    // The closing presence unmounts after 180 ms. Hold only that JS timer and
+    // inspect the browser's actual CSS interpolation, which is independent of RAF.
+    // A busy runner can skip every middle frame of this short transition.
+    if (!opening && await root.evaluate(el => el.classList.contains('wb-module-presence'))) {
+      await page.clock.install();
+      await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1000));
+      await root.evaluate(el => {
+        window.mathClosingTransitions = [];
+        el.addEventListener('transitionrun', () => {
+          const animations = el.getAnimations().filter(animation => ['grid-template-rows', 'opacity'].includes(animation.transitionProperty));
+          for (const animation of animations) animation.pause();
+          window.mathClosingTransitions = animations;
+        }, { once: true });
+      });
+      await trigger.click();
+      await expect.poll(() => page.evaluate(() => window.mathClosingTransitions.length)).toBe(2);
+      const frames = await root.evaluate(el => Array.from({ length: 26 }, (_, index) => {
+        for (const animation of window.mathClosingTransitions) animation.currentTime = animation.effect.getTiming().duration * index / 25;
+        return { progress: index / 25, height: el.getBoundingClientRect().height, opacity: Number(getComputedStyle(el).opacity) };
+      }));
+      fs.writeFileSync(info.outputPath(`${name}-close.json`), JSON.stringify(frames, null, 2));
+      expect(new Set(frames.map(frame => Math.round(frame.height * 10) / 10)).size, `${name} continuous height`).toBeGreaterThan(3);
+      expect(frames.some(frame => frame.opacity > 0 && frame.opacity < 1), `${name} continuous opacity`).toBe(true);
+      expect(frames[0].height).toBeGreaterThan(frames.at(-1).height);
+      expect(frames.at(-1).opacity).toBe(0);
+      await page.clock.runFor(200);
+      await page.clock.resume();
+      return;
+    }
     await root.evaluate(el => {
       window.mathFoldFrames = [];
       // Arm first, then sample from the real click after Playwright's actionability waits.
@@ -856,4 +885,121 @@ test('窄屏网页作品名称与保存下载操作互不遮挡', async ({ page 
     return bar.scrollWidth <= bar.clientWidth && (name.right <= actions.left || name.bottom <= actions.top || name.top >= actions.bottom);
   })).toBe(true);
   await page.screenshot({ path: info.outputPath('narrow-html-header.png'), animations: 'disabled' });
+});
+
+test('作品搜索的迟到结果不能覆盖随后输入的结果', async ({ page }, info) => {
+  const { importLegacy } = await import('./fixtures/math-workspace.js');
+  for (const title of ['Algebra', 'Geometry']) {
+    await importLegacy(page, 'formula', title);
+    await page.getByRole('button', { name: '返回工坊', exact: true }).click();
+  }
+  const held = Promise.withResolvers();
+  const release = Promise.withResolvers();
+  const delivered = Promise.withResolvers();
+  await page.route('**/api/modules/math/v1/works?*', async route => {
+    if (new URL(route.request().url()).searchParams.get('q') !== 'Algebra') return route.continue();
+    try {
+      const response = await route.fetch();
+      held.resolve();
+      await release.promise;
+      await route.fulfill({ response });
+      delivered.resolve();
+    } catch (error) { held.reject(error); delivered.reject(error); }
+  });
+  try {
+    const search = page.getByRole('textbox', { name: '搜索作品', exact: true });
+    await search.fill('Algebra');
+    await held.promise;
+    await search.fill('Geometry');
+    const title = page.locator('.tbx-mw-copy strong');
+    await expect(title).toHaveText(['Geometry']);
+    const oldResponse = page.waitForResponse(response => new URL(response.url()).searchParams.get('q') === 'Algebra');
+    release.resolve();
+    await delivered.promise;
+    await (await oldResponse).finished();
+    await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+    await expect(title).toHaveText(['Geometry']);
+    await expect(search).toHaveValue('Geometry');
+    await page.screenshot({ path: info.outputPath('latest-search.png') });
+  } finally {
+    release.resolve();
+    await delivered.promise;
+  }
+});
+
+test('作品列表读取失败的迟到提示不能覆盖当前搜索', async ({ page }, info) => {
+  const { importLegacy } = await import('./fixtures/math-workspace.js');
+  await importLegacy(page, 'formula', 'Geometry');
+  await page.getByRole('button', { name: '返回工坊', exact: true }).click();
+  const notice = await page.locator('.mw-notice').allTextContents();
+  const held = Promise.withResolvers();
+  const release = Promise.withResolvers();
+  const delivered = Promise.withResolvers();
+  await page.route('**/api/modules/math/v1/works?*', async route => {
+    if (new URL(route.request().url()).searchParams.get('q') !== 'Algebra') return route.continue();
+    held.resolve();
+    await release.promise;
+    try {
+      await route.fulfill({ status: 503, contentType: 'application/problem+json', body: JSON.stringify({ type: '/problems/workbench/temporarily-unavailable', status: 503 }) });
+      delivered.resolve();
+    } catch (error) { delivered.reject(error); }
+  });
+  try {
+    const search = page.getByRole('textbox', { name: '搜索作品', exact: true });
+    await search.fill('Algebra');
+    await held.promise;
+    await search.fill('Geometry');
+    await expect(page.locator('.tbx-mw-copy strong')).toHaveText(['Geometry']);
+    const oldResponse = page.waitForResponse(response => new URL(response.url()).searchParams.get('q') === 'Algebra');
+    release.resolve();
+    await delivered.promise;
+    await (await oldResponse).finished();
+    await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+    await expect(page.locator('.mw-notice')).toHaveText(notice);
+    await expect(page.locator('.tbx-mw-copy strong')).toHaveText(['Geometry']);
+    await page.screenshot({ path: info.outputPath('latest-search-after-old-error.png') });
+  } finally {
+    release.resolve();
+    await delivered.promise;
+  }
+});
+
+test('归档筛选的迟到结果不能覆盖活动作品列表', async ({ page }, info) => {
+  const { importLegacy } = await import('./fixtures/math-workspace.js');
+  await importLegacy(page, 'formula', 'Archived algebra');
+  await page.getByRole('button', { name: '作品操作', exact: true }).click();
+  await page.getByRole('menuitem', { name: '归档作品', exact: true }).click();
+  await expect(page.getByRole('button', { name: '新建作品', exact: true })).toBeVisible();
+  await importLegacy(page, 'formula', 'Active geometry');
+  await page.getByRole('button', { name: '返回工坊', exact: true }).click();
+  const held = Promise.withResolvers();
+  const release = Promise.withResolvers();
+  const delivered = Promise.withResolvers();
+  await page.route('**/api/modules/math/v1/works?*', async route => {
+    if (new URL(route.request().url()).searchParams.get('state') !== 'deleted') return route.continue();
+    try {
+      const response = await route.fetch();
+      held.resolve();
+      await release.promise;
+      await route.fulfill({ response });
+      delivered.resolve();
+    } catch (error) { held.reject(error); delivered.reject(error); }
+  });
+  try {
+    await page.getByRole('button', { name: '已归档', exact: true }).click();
+    await held.promise;
+    await page.getByRole('complementary', { name: '数学工坊导航', exact: true }).getByRole('button', { name: /^全部作品/ }).click();
+    await expect(page.locator('.tbx-mw-copy strong')).toHaveText(['Active geometry']);
+    const oldResponse = page.waitForResponse(response => new URL(response.url()).searchParams.get('state') === 'deleted');
+    release.resolve();
+    await delivered.promise;
+    await (await oldResponse).finished();
+    await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+    await expect(page.locator('.tbx-mw-copy strong')).toHaveText(['Active geometry']);
+    await expect(page.getByRole('heading', { name: '全部作品', exact: true })).toBeVisible();
+    await page.screenshot({ path: info.outputPath('latest-active-list.png') });
+  } finally {
+    release.resolve();
+    await delivered.promise;
+  }
 });

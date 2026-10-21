@@ -67,7 +67,7 @@ export function Topbar({ route, collapsed, toggleSidebar, surface, setSurface, a
 
   const toggle = (value) => setSurface(surface === value ? null : value);
   const entry = (name, icon, label, content, badge) => (
-    <span className={`tb-entry-wrap${name === 'tutorial' && !scene.coachDismissed ? ' is-coached' : ''}`}>
+    <span data-topbar-entry={name} className={`tb-entry-wrap${name === 'tutorial' && !scene.coachDismissed ? ' is-coached' : ''}`}>
       <button className="tb-entry" aria-label={label} aria-haspopup="dialog" aria-expanded={surface === name} onClick={() => toggle(name)}>
         <Icon2 name={icon} size={20} strokeWidth={1.8} />
         {badge > 0 && <span className="tb-badge is-amber">{badge}</span>}

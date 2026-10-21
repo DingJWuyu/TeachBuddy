@@ -212,9 +212,15 @@ export function TaskBoard({ entries, occurrences, daily, labels, zone, now, toda
 
   // Ticks show at once; the server copy catches up on the next reload.
   const [ticks, setTicks] = useState({});
+  const pendingTicks = useRef(new Map());
   // fresh data from the schedule replaces the optimistic ticks, so a change made
   // in the panel afterwards is never hidden behind an old tick
-  useEffect(() => { setTicks({}); }, [entries, occurrences, daily]);
+  useEffect(() => {
+    setTicks(current => Object.fromEntries(Object.entries(current).flatMap(([key, items]) => {
+      const pending = Object.fromEntries(Object.entries(items).filter(([itemId]) => pendingTicks.current.has(`${key}:${itemId}`)));
+      return Object.keys(pending).length ? [[key, pending]] : [];
+    })));
+  }, [entries, occurrences, daily]);
   const withTicks = (v) => {
     const key = v.key ? `${v.key.entryId}:${v.key.originDate}` : v.id;
     const t = ticks[key];
@@ -222,9 +228,14 @@ export function TaskBoard({ entries, occurrences, daily, labels, zone, now, toda
   };
   async function toggle(value, itemId) {
     const key = value.key ? `${value.key.entryId}:${value.key.originDate}` : value.id;
+    const changeKey = `${key}:${itemId}`;
+    const intent = {};
+    pendingTicks.current.set(changeKey, intent);
     const next = !(withTicks(value).items || []).find(item => item.id === itemId)?.completed;
     setTicks(current => ({ ...current, [key]: { ...current[key], [itemId]: next } }));
     const ok = await onToggle(value, itemId, next);
+    if (pendingTicks.current.get(changeKey) !== intent) return;
+    pendingTicks.current.delete(changeKey);
     if (!ok) setTicks(current => ({ ...current, [key]: { ...current[key], [itemId]: !next } }));
   }
 

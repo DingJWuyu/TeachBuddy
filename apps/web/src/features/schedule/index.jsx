@@ -105,6 +105,8 @@ export default function SchedulePage({ route }) {
   const [mobileSidebar, setMobileSidebar] = useState(false);
   const [itemToMove, setItemToMove] = useState(null);
   const flight = useRef(null);
+  const boardWrites = useRef(null);
+  const boardTargets = useRef(new Map());
   const lastWrite = useRef(null);
   const op = useIdempotentSubmit({ accountKey: shell.accountKey, name: 'pending:schedule-calendar' });
   const opRef = useRef(op); opRef.current = op;
@@ -184,9 +186,23 @@ export default function SchedulePage({ route }) {
     return () => { cancelled = true; };
   }, [range.from, range.to, revision, shell.generation, today, systemZone, scene.focus]);
   useForegroundRefresh(reload);
+  useEffect(() => {
+    const visible = new Set([...data.occurrences, ...data.daily].map(value => `${value.key.entryId}:${value.key.originDate ?? ''}`));
+    for (const key of boardTargets.current.keys()) if (!visible.has(key)) boardTargets.current.delete(key);
+  }, [data]);
+
+  function confirmBoardChange(result, payload) {
+    if (!payload.boardChangeId) return;
+    if (payload.kind === 'detach') boardTargets.current.set(`${payload.id}:${payload.origin}`, result.id);
+    const changes = (sceneRef.current.boardChanges ?? []).filter(change => change.clientId !== payload.boardChangeId)
+      .map(change => payload.kind === 'detach' && change.id === payload.id && change.origin === payload.origin
+        ? { ...change, id: result.id, origin: null } : change);
+    updateScene({ boardChanges: changes });
+  }
 
   async function applySaved(result, payload) {
     if (!mounted.current || !result) return false;
+    confirmBoardChange(result, payload);
     const current = sceneRef.current.draft;
     if (payload.kind === 'settings') {
       // 幂等重放可能返回旧版本；由 reload 读取当前设置后统一更新显示时区。
@@ -230,7 +246,9 @@ export default function SchedulePage({ route }) {
         }
       }
     }
-    setValidation(''); reload(); return true;
+    setValidation('');
+    if (!payload.boardChangeId) reload();
+    return true;
   }
   async function perform(payload, retry = false) {
     if (flight.current) return flight.current;
@@ -247,7 +265,7 @@ export default function SchedulePage({ route }) {
     flight.current = pending;
     try { return await pending; } finally { if (flight.current === pending) flight.current = null; }
   }
-  async function flush({ explicit = false, confirmConflict = false } = {}) {
+  async function flush({ explicit = false, confirmConflict = false, boardChangeId } = {}) {
     if (zoneFlight.current) { try { await zoneFlight.current; } catch { return false; } }
     if (flight.current) { await flight.current; }
     const current = sceneRef.current.draft;
@@ -281,7 +299,7 @@ export default function SchedulePage({ route }) {
     }
     if (single) content.repeat = null;
     return perform({ kind: !current.id ? 'create' : single ? 'detach' : 'update', id: current.id, origin: current.origin,
-      version: current.version, clientId: current.clientId, content, draftContent: current.content, ruleChangeId: current.ruleChangeId, ruleChange: Boolean(current.forceSeries && content.repeat) });
+      version: current.version, clientId: current.clientId, content, draftContent: current.content, ruleChangeId: current.ruleChangeId, ruleChange: Boolean(current.forceSeries && content.repeat), ...(boardChangeId ? { boardChangeId } : {}) });
   }
   async function discardReminderChange() {
     const attempt = lastWrite.current;
@@ -492,25 +510,62 @@ export default function SchedulePage({ route }) {
     ++editorIntent.current;
     setDraft(null); setOpenError(null); setValidation(''); setMobileSidebar(false);
   }
-  async function toggleBoardItem(value, itemId, completed) {
-    const id = value.key?.entryId ?? value.id;
-    const origin = value.key?.originDate ?? null;
-    try {
-      const current = sceneRef.current.draft;
-      if (current?.id === id && (current.origin ?? null) === origin) {
-        await patchContent({ items: current.content.items.map(item => item.id === itemId ? { ...item, completed } : item) });
-        return Boolean(await flush({ explicit: true }));
-      }
-      if (!await leaveEditor()) return false;
-      const entry = await api.getEntry(id);
-      const occurrence = origin ? await api.getOccurrence(id, origin) : null;
-      if (occurrence && occurrence.state !== 'active') { reload(); return false; }
-      const content = contentOf(occurrence ? { ...entry, ...occurrence, repeat: entry.repeat } : entry);
-      content.items = content.items.map(item => item.id === itemId ? { ...item, completed } : item);
-      if (origin) content.repeat = null;
-      return Boolean(await perform({ kind: origin ? 'detach' : 'update', id, origin, version: entry.version, content }));
-    } catch (error) { setLoadError(error.problem?.message ?? t('保存失败')); return false; }
+  async function saveBoardChanges() {
+    if (boardWrites.current) return boardWrites.current;
+    const pending = (async () => {
+      try {
+        if (zoneFlight.current) await zoneFlight.current;
+        if (flight.current) await flight.current;
+        while (mounted.current && sceneRef.current.boardChanges?.length) {
+          if (opRef.current.pending) return false;
+          const change = sceneRef.current.boardChanges[0];
+          const { id, origin, itemId, completed, clientId: boardChangeId } = change;
+          const current = sceneRef.current.draft;
+          if (current?.id === id && (current.origin ?? null) === origin) {
+            if (!change.inEditor) await patchContent({ items: current.content.items.map(item => item.id === itemId ? { ...item, completed } : item) });
+            if (!await flush({ explicit: true, boardChangeId })) return false;
+            // No write is needed when the editor already has the desired value.
+            if (sceneRef.current.boardChanges?.some(value => value.clientId === boardChangeId)) confirmBoardChange(current.entry, { boardChangeId });
+            continue;
+          }
+          if (!await leaveEditor()) return false;
+          // Each click reads the version confirmed by the previous click.
+          const entry = await api.getEntry(id);
+          const occurrence = origin ? await api.getOccurrence(id, origin) : null;
+          if (!mounted.current || occurrence && occurrence.state !== 'active') return false;
+          const content = contentOf(occurrence ? { ...entry, ...occurrence, repeat: entry.repeat } : entry);
+          content.items = content.items.map(item => item.id === itemId ? { ...item, completed } : item);
+          if (origin) content.repeat = null;
+          if (!await perform({ kind: origin ? 'detach' : 'update', id, origin, version: entry.version, content, boardChangeId })) return false;
+        }
+        return !sceneRef.current.boardChanges?.length;
+      } catch (error) { setLoadError(error.problem?.message ?? t('保存失败')); return false; }
+      finally { if (mounted.current) reload(); }
+    })();
+    boardWrites.current = pending;
+    try { return await pending; }
+    finally { if (boardWrites.current === pending) boardWrites.current = null; }
   }
+  function toggleBoardItem(value, itemId, completed) {
+    const originalId = value.key?.entryId ?? value.id;
+    const origin = value.key?.originDate ?? null;
+    const detachedId = boardTargets.current.get(`${originalId}:${origin ?? ''}`);
+    const id = detachedId ?? originalId;
+    const targetOrigin = detachedId ? null : origin;
+    const current = sceneRef.current.draft;
+    const inEditor = current?.id === id && (current.origin ?? null) === targetOrigin;
+    if (inEditor) patchContent({ items: current.content.items.map(item => item.id === itemId ? { ...item, completed } : item) });
+    const change = { clientId: crypto.randomUUID(), id, origin: targetOrigin, itemId, completed, inEditor };
+    updateScene({ boardChanges: [...(sceneRef.current.boardChanges ?? []), change] });
+    return saveBoardChanges();
+  }
+  async function retryBoardChanges() {
+    if (opRef.current.pending && !await perform(null, true)) return false;
+    return saveBoardChanges();
+  }
+  useEffect(() => {
+    if (sceneRef.current.boardChanges?.length && !opRef.current.pending) saveBoardChanges();
+  }, []);
   function changeView(view) {
     updateScene({ view, anchor: view.kind === 'week' ? monday(sceneRef.current.anchor) : sceneRef.current.anchor });
   }
@@ -567,7 +622,7 @@ export default function SchedulePage({ route }) {
   const zoneLabel = `${zoneOffset === 'GMT' ? 'UTC+00:00' : zoneOffset.replace(/^GMT/, 'UTC')} · ${zone}`;
   const labelsChanged = label => { setData(current => ({ ...current, labels: label.deleted ? current.labels.filter(x => x.id !== label.id) : [...current.labels.filter(x => x.id !== label.id), label] })); reload(); };
   return <div className={`cal-page${mobileSidebar ? ' sidebar-open' : ''}${shell.isPanelOpen ? ' has-ai' : ''}`} data-region="schedule" data-focus={scene.focus || 'calendar'} data-editing={draft ? 'true' : 'false'}>
-    {(loadError || openError || (op.problem && !draft && !reminderRejected)) && <div className="cal-load-error" role="alert">{loadError || openError?.message || op.problem?.message}<button onClick={() => op.pending ? perform(null, true) : loadError ? reload() : openError ? openEntry(openError.id, openError.origin, { preserveDraft: true }) : reload()}>{t("重试")}</button></div>}
+    {(loadError || openError || (op.problem && !draft && !reminderRejected)) && <div className="cal-load-error" role="alert">{loadError || openError?.message || op.problem?.message}<button onClick={() => sceneRef.current.boardChanges?.length ? retryBoardChanges() : op.pending ? perform(null, true) : loadError ? reload() : openError ? openEntry(openError.id, openError.origin, { preserveDraft: true }) : reload()}>{t("重试")}</button></div>}
     <section className="cal-board" aria-label={t("日历")}><header className="cal-toolbar"><div className="cal-calendar-title"><MonthTitle date={scene.view.kind === 'month' ? `${displayMonth}-01` : scene.anchor}/><span className="cal-time-zone" title={zone}>{zoneLabel}</span></div><div className="cal-toolbar-actions"><FocusToggle value={scene.focus || 'calendar'} onChange={focus => updateScene({ focus })}/><ViewMenu view={scene.view} onChange={changeView}/><button className="cal-today-button" onClick={() => { setDisplayMonth(today.slice(0, 7)); updateScene({ anchor: scene.view.kind === 'week' ? monday(today) : today, month: today.slice(0, 7), monthScroll: null, monthJump: (scene.monthJump || 0) + 1 }); }}>{t("今天")}</button><IconButton name="left" label={t("上一段")} onClick={() => navigate(-1)}/><IconButton name="right" label={t("下一段")} onClick={() => navigate(1)}/><span className="cal-mobile-toggle"><IconButton name="grid" label={t("打开月份与任务")} onClick={() => setMobileSidebar(true)}/></span></div></header>
       {scene.focus === 'tasks' ? <TaskBoard entries={data.entries} occurrences={data.occurrences} daily={data.daily} labels={data.labels} zone={zone} now={now} today={today} draft={draft} draftId={draft?.id} onOpen={openEntry} onClose={closeEditor} onNew={unscheduled => create(undefined, undefined, false, unscheduled)} onToggle={toggleBoardItem} accountKey={shell.accountKey} helpers={{ localParts, formatClock }} scroll={scene.boardScroll} onScroll={(column, top) => updateScene({ boardScroll: { ...sceneRef.current.boardScroll, [column]: top } })}/>
       : <TimeGrid key={scene.view.kind === 'month' ? `${zone}:${scene.anchor}:${scene.monthJump}` : `time:${zone}`} view={scene.view} anchor={scene.anchor} zone={zone} occurrences={data.occurrences} labels={data.labels} selected={draft}
@@ -599,7 +654,7 @@ export default function SchedulePage({ route }) {
       }}/>
       {draft ? <EntryEditor key={draft.clientId} draft={draft} onPatch={patchContent} onClose={closeEditor} onConfirm={() => flush({ explicit: true })} onDelete={() => { ++editorIntent.current; return draft.id ? setDeletePrompt(true) : closeEditor(); }} onRemove={discardOrRemove} onMoveItem={startItemMove} locked={op.pending?.payload.kind === 'moveItem'}
         labels={data.labels} onLabels={labelsChanged} accountKey={shell.accountKey} status={op.status} error={saveError}
-        onRetry={() => op.pending ? perform(null, true) : flush({ explicit: true, confirmConflict: true })} onAdoptServer={adoptServer}
+        onRetry={() => sceneRef.current.boardChanges?.length ? retryBoardChanges() : op.pending ? perform(null, true) : flush({ explicit: true, confirmConflict: true })} onAdoptServer={adoptServer}
         onReload={op.problem?.kind === 'conflict' ? reloadConflict : null}/>
         : <DailyTasks scroll={scene.sidebarScroll} onScroll={sidebarScroll => updateScene({ sidebarScroll })} entries={data.entries} occurrences={data.daily} labels={data.labels} zone={zone} now={now} grouped={scene.grouped} onGroup={() => updateScene({ grouped: !scene.grouped })} onNew={unscheduled => create(undefined, undefined, false, unscheduled)} onOpen={openEntry} unscheduledGrouped={Boolean(scene.unscheduledGrouped)} onUnscheduledGroup={() => updateScene({ unscheduledGrouped: !scene.unscheduledGrouped })}/>}
     </aside>

@@ -38,6 +38,7 @@ async function screenshot(page, info, name) {
     animations: "disabled",
   });
 }
+
 async function infoPanel(page) {
   await expect(page.getByLabel("资源名称")).toBeVisible();
 }
@@ -859,7 +860,7 @@ test("单份文件读取失败不阻断正常资料下载", async ({ page }) => 
   ).toBe(true);
 });
 
-test("不支持的预览格式给出明确原因而不是无效重试", async ({ page }) => {
+test("不支持的预览格式给出明确原因而不是无效重试", async ({ page }, info) => {
   await page.getByLabel("上传资料", { exact: true }).setInputFiles({
     name: "课堂记录.txt",
     mimeType: "text/plain",
@@ -867,6 +868,10 @@ test("不支持的预览格式给出明确原因而不是无效重试", async ({
   });
   await openUploaded(page);
   await expect(page.getByText("此格式暂不支持在线预览")).toBeVisible();
+  await screenshot(page, info, 'unsupported-preview');
+  const previewBox = await page.locator('.res-preview').boundingBox();
+  const iconBox = await page.locator('.res-empty-icon svg').boundingBox();
+  expect(Math.abs(iconBox.x + iconBox.width / 2 - previewBox.x - previewBox.width / 2)).toBeLessThan(2);
   await expect(
     page.getByRole("button", { name: "重试预览", exact: true }),
   ).toHaveCount(0);
@@ -2637,4 +2642,304 @@ test('上传后的预览完成会自动更新列表缩略图', async ({ page }) 
   await expect.poll(() => thumbnail.evaluate(image => image.naturalWidth)).toBeGreaterThan(100);
   await expect(page.locator('.tbx-res-thumb-error')).toHaveCount(0);
   expect(committedRead).toBe(true);
+});
+
+test('保留的资料链接在彻底删除后明确不可用，读取失败可重试', async ({ page }, info) => {
+  await upload(page);
+  const saved = (await api.request('GET', '/api/modules/resources/items')).json.items[0];
+  await page.goto(`${world.origin}/resources/${saved.id}`);
+  await expect(page.getByLabel('资源名称')).toHaveValue(saved.title);
+  const retainedLink = page.url();
+  await page.getByRole('button', { name: '资料更多操作', exact: true }).click();
+  await page.getByRole('menuitem', { name: '归档资料', exact: true }).click();
+  await page.getByRole('alertdialog').getByRole('button', { name: '归档', exact: true }).click();
+  await expect(page.locator('.res-detail')).toHaveCount(0);
+  await openArchive(page);
+  await openUploaded(page, saved.title);
+  await page.getByRole('button', { name: '资料更多操作', exact: true }).click();
+  await page.getByRole('menuitem', { name: '彻底删除', exact: true }).click();
+  await page.getByRole('alertdialog').getByRole('button', { name: '彻底删除', exact: true }).click();
+  await expect(page.locator('.res-detail')).toHaveCount(0);
+  await page.goto(`${world.origin}/`);
+  await page.goto(retainedLink);
+  await expect(page.locator('.tbx-res-main')).toHaveAttribute('aria-busy', 'false');
+  await screenshot(page, info, 'deleted-resource-link');
+  await expect(page.getByRole('heading', { name: '未找到资料', exact: true })).toBeVisible();
+  await expect(page.getByText('正在读取资料信息…', { exact: true })).toHaveCount(0);
+  await expect(page.locator('.res-detail')).toContainText('未找到资料，可能已删除或不属于当前账户。');
+  await expect(page.getByRole('button', { name: '重新读取', exact: true })).toHaveCount(0);
+  await page.getByRole('button', { name: '返回资源库', exact: true }).click();
+  await expect(page.locator('.res-detail')).toHaveCount(0);
+
+  await page.route('**/api/modules/resources/items?state=deleted', route => route.abort('connectionreset'));
+  await page.goto(`${world.origin}/`);
+  await page.goto(retainedLink);
+  await expect(page.getByRole('button', { name: '重新读取', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '未找到资料', exact: true })).toHaveCount(0);
+  await screenshot(page, info, 'resource-link-read-failed');
+  await page.unroute('**/api/modules/resources/items?state=deleted');
+  await page.getByRole('button', { name: '重新读取', exact: true }).click();
+  await expect(page.getByRole('heading', { name: '未找到资料', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '返回资源库', exact: true }).click();
+  await expect(page.locator('.res-detail')).toHaveCount(0);
+});
+
+for (const category of ['文件夹', '标签']) {
+  test(`删除${category}后，未保存的资料备注可继续保存`, async ({ page }, info) => {
+    await upload(page);
+    if (category === '文件夹') {
+      await page.locator('.res-field-heading').getByRole('button', { name: '新建', exact: true }).click();
+    } else {
+      await page.getByRole('button', { name: '添加第一个标签', exact: true }).click();
+    }
+    await page.getByRole('dialog').getByLabel('名称', { exact: true }).fill('即将删除');
+    await page.getByRole('button', { name: `创建${category}`, exact: true }).click();
+    await page.locator('.res-metadata').getByRole('button', {
+      name: category === '标签' ? '新建标签' : '添加第一个标签', exact: true,
+    }).click();
+    await page.getByRole('dialog').getByLabel('名称', { exact: true }).fill('保留标签');
+    await page.getByRole('button', { name: '创建标签', exact: true }).click();
+    await page.getByRole('button', { name: '保存修改', exact: true }).click();
+    await expect(page.getByRole('button', { name: '保存修改', exact: true })).toBeDisabled();
+    await page.getByLabel('资源笔记').fill('删除分类后保留这条未保存备注');
+    await page.getByRole('button', { name: '返回资源库', exact: true }).click();
+    const row = page.locator('.tbx-rail-item').filter({ has: page.locator('.tbx-rail-label', { hasText: /^即将删除$/ }) });
+    if (category === '文件夹') {
+      await row.getByRole('button', { name: '文件夹选项', exact: true }).click();
+      await page.getByRole('menuitem', { name: '删除文件夹', exact: true }).click();
+      await page.getByRole('menuitem', { name: '确认删除', exact: true }).click();
+    } else {
+      await row.getByRole('button', { name: '编辑标签 即将删除', exact: true }).click();
+      await page.getByRole('button', { name: '删除标签', exact: true }).click();
+      await page.getByRole('button', { name: '确认删除', exact: true }).click();
+    }
+    await expect(row).toHaveCount(0);
+    await openUploaded(page);
+    await expect(page.getByLabel('资源笔记')).toHaveValue('删除分类后保留这条未保存备注');
+    const result = page.waitForResponse(response => response.request().method() === 'PUT' && response.url().includes('/resources/items/'));
+    await page.getByRole('button', { name: '保存修改', exact: true }).click();
+    expect((await result).status()).toBe(409);
+    await page.getByRole('button', { name: '保留草稿并对照当前版本', exact: true }).click();
+    const retried = page.waitForResponse(value => value.request().method() === 'PUT' && value.url().includes('/resources/items/'));
+    await page.getByRole('button', { name: '保存修改', exact: true }).click();
+    const response = await retried;
+    await screenshot(page, info, `save-after-${category}-deletion`);
+    expect(response.status()).toBe(200);
+    await expect(page.getByRole('button', { name: '保存修改', exact: true })).toBeDisabled();
+    await page.reload();
+    await expect(page.getByLabel('资源笔记')).toHaveValue('删除分类后保留这条未保存备注');
+    await expect(page.locator('.res-metadata').getByLabel('保留标签', { exact: true })).toBeChecked();
+    await expect(page.getByLabel('资源文件夹')).toHaveValue('');
+  });
+}
+
+test('空库拖入文件时只显示拖放提示，移出后恢复上传入口', async ({ page }, info) => {
+  const transfer = await page.evaluateHandle(bytes => {
+    const data = new DataTransfer();
+    data.items.add(new File([new Uint8Array(bytes)], 'page.png', { type: 'image/png' }));
+    return data;
+  }, [...fs.readFileSync(image)]);
+  await page.locator('.tbx-res').dispatchEvent('dragover', { dataTransfer: transfer });
+  await expect(page.getByText('松开即可上传', { exact: true })).toBeVisible();
+  await screenshot(page, info, 'empty-external-drop');
+  await expect(page.locator('.tbx-res-empty')).toBeHidden();
+  await page.locator('.tbx-res').dispatchEvent('dragleave', { dataTransfer: transfer });
+  await expect(page.locator('.tbx-res-empty')).toBeVisible();
+  await expect(page.getByText('松开即可上传', { exact: true })).toHaveCount(0);
+  await page.locator('.tbx-res').dispatchEvent('dragover', { dataTransfer: transfer });
+  await page.locator('.tbx-res').dispatchEvent('drop', { dataTransfer: transfer });
+  await expect(page.locator('.tbx-res-open')).toHaveCount(1);
+  await expect(page.locator('.res-detail')).toHaveCount(0);
+});
+
+for (const kind of ['批量归档', '文件历史', '新建文件夹']) {
+  test(`资源${kind}取消立即还焦并保留退场，快速重开使用当前现场`, async ({ page }, info) => {
+    await upload(page);
+    let trigger;
+    let next;
+    let open;
+    if (kind === '批量归档') {
+      await page.getByRole('button', { name: '返回资源库', exact: true }).click();
+      await page.getByRole('button', { name: '选择', exact: true }).click();
+      await page.locator('.tbx-res-open').click();
+      trigger = page.getByRole('toolbar').getByRole('button', { name: '归档', exact: true });
+      next = page.locator('.tbx-rail').getByRole('button', { name: /^全部资料/ });
+      open = () => trigger.click();
+    } else if (kind === '文件历史') {
+      trigger = page.getByRole('button', { name: '资料更多操作', exact: true });
+      next = page.getByLabel('缩放', { exact: true });
+      open = async () => {
+        await trigger.click();
+        await page.getByRole('menuitem', { name: '文件历史版本', exact: true }).click();
+      };
+    } else {
+      trigger = page.locator('.res-field-heading').getByRole('button', { name: '新建', exact: true });
+      next = page.getByLabel('资源文件夹', { exact: true });
+      open = () => trigger.click();
+    }
+    await open();
+    const dialog = page.locator('.res-dialog');
+    await expect(dialog).toBeVisible();
+    await page.evaluate(() => Promise.allSettled(document.getAnimations().filter(animation => animation.effect?.getTiming().iterations !== Infinity).map(animation => animation.finished)));
+    const now = Date.now();
+    await page.clock.install({ time: new Date(now) });
+    await page.clock.pauseAt(new Date(now + 1000));
+    await dialog.getByRole('button', { name: kind === '文件历史' ? '关闭历史版本' : '取消', exact: true }).click();
+    const closing = await page.evaluate(() => {
+      const node = document.querySelector('.res-dialog');
+      const boundary = node?.closest('[inert]');
+      return {
+        retained: Boolean(node), inert: Boolean(boundary),
+        focusedDialog: Boolean(document.activeElement?.closest('.res-dialog')),
+        fadesOut: Boolean(boundary?.getAnimations({ subtree: true }).some(animation => animation.effect?.getKeyframes().at(-1)?.opacity === '0')),
+      };
+    });
+    await info.attach('resource-dialog-cancel', { body: JSON.stringify({ kind, closing }), contentType: 'application/json' });
+    await expect(trigger).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(next).toBeFocused();
+    expect(closing).toEqual({ retained: true, inert: true, focusedDialog: false, fadesOut: true });
+    // Inspect the actual CSS transition while the JS unmount clock is held.
+    const midpoint = await page.evaluate(() => {
+      const overlay = document.querySelector('.res-overlay');
+      for (const animation of overlay.parentElement.getAnimations({ subtree: true })) {
+        animation.pause();
+        animation.currentTime = 90;
+      }
+      return Number(getComputedStyle(overlay).opacity);
+    });
+    expect(midpoint).toBeGreaterThan(0);
+    expect(midpoint).toBeLessThan(1);
+    await page.screenshot({ path: info.outputPath('cancel-midpoint.png') });
+    await open();
+    await page.clock.runFor(40);
+    await expect(dialog).toHaveCount(1);
+    if (kind === '新建文件夹') await expect(dialog.getByLabel('名称', { exact: true })).toBeFocused();
+    await page.keyboard.press('Escape');
+    await page.clock.resume();
+    await expect(dialog).toHaveCount(0);
+    await expect(trigger).toBeFocused();
+    expect((await api.request('GET', '/api/modules/resources/items')).json.items).toHaveLength(1);
+  });
+}
+
+test('上传入口可用键盘打开真实文件选择器，取消与多文件收录可连续进行', async ({ page }, info) => {
+  const uploadButton = page.getByRole('button', { name: '上传资料', exact: true });
+  await expect(uploadButton).toBeVisible();
+  await uploadButton.focus();
+  let chooser = page.waitForEvent('filechooser');
+  await page.keyboard.press('Enter');
+  await (await chooser).setFiles([]);
+  await expect(uploadButton).toBeFocused();
+  await expect(page.locator('.tbx-res-open')).toHaveCount(0);
+  let release;
+  await page.route('**/api/workbench/files', async route => {
+    if (route.request().method() === 'POST' && !release) {
+      await new Promise(resolve => { release = resolve; });
+    }
+    await route.continue();
+  });
+  chooser = page.waitForEvent('filechooser');
+  await page.keyboard.press('Space');
+  await (await chooser).setFiles([image, pdf]);
+  await expect.poll(() => typeof release).toBe('function');
+  await expect(uploadButton).toBeDisabled();
+  await screenshot(page, info, 'keyboard-upload-pending');
+  release();
+  await expect(page.locator('.tbx-res-open')).toHaveCount(2);
+  await expect(uploadButton).toBeEnabled();
+  await expect(page.locator('.res-detail')).toHaveCount(0);
+  await uploadButton.focus();
+  chooser = page.waitForEvent('filechooser');
+  await page.keyboard.press('Enter');
+  await (await chooser).setFiles([]);
+  await expect(uploadButton).toBeFocused();
+  await screenshot(page, info, 'keyboard-toolbar-upload');
+});
+
+test('上传原件响应丢失后刷新，错误重选可纠正并用原键接续队列', async ({ page }, info) => {
+  const keys = [];
+  let dropped = false;
+  await page.route('**/api/workbench/files', async route => {
+    if (route.request().method() !== 'POST') return route.continue();
+    keys.push(route.request().headers()['idempotency-key']);
+    if (!dropped) {
+      dropped = true;
+      await route.fetch();
+      await route.abort('connectionreset');
+    } else await route.continue();
+  });
+  await page.getByLabel('上传资料', { exact: true }).setInputFiles([image, pdf]);
+  await expect(page.getByRole('button', { name: '重试确认原请求', exact: true })).toBeVisible();
+  await page.reload();
+  const original = page.getByLabel('重新选择原文件', { exact: true });
+  await expect(original).toHaveCount(1);
+  await original.setInputFiles(pdf);
+  await expect(page.locator('.res-status')).toContainText('文件名称、长度或内容不匹配');
+  expect(keys).toHaveLength(1);
+  await screenshot(page, info, 'wrong-original-reselection');
+  await original.setInputFiles(image);
+  await expect(page.locator('.tbx-res-open')).toHaveCount(2);
+  await expect(page.locator('.res-status')).toContainText('已处理 2 / 2 份资料');
+  expect(keys).toHaveLength(3);
+  expect(keys[1]).toBe(keys[0]);
+  expect(keys[2]).not.toBe(keys[0]);
+  expect((await api.request('GET', '/api/modules/resources/items')).json.items).toHaveLength(2);
+  await screenshot(page, info, 'original-reselection-continued');
+});
+
+test('当前文件夹拖入收录后，替换和历史恢复使用各自版本的补充预览', async ({ page }, info) => {
+  await page.getByRole('button', { name: '新建文件夹', exact: true }).click();
+  await page.getByLabel('新文件夹名称', { exact: true }).fill('补充预览版本核对');
+  await page.getByLabel('新文件夹名称', { exact: true }).press('Enter');
+  await page.locator('.tbx-rail-item').filter({ has: page.getByText('补充预览版本核对', { exact: true }) }).locator('.tbx-rail-hit').click();
+  const transfer = await page.evaluateHandle(bytes => {
+    const data = new DataTransfer();
+    data.items.add(new File([new Uint8Array(bytes)], 'page.png', { type: 'image/png' }));
+    return data;
+  }, [...fs.readFileSync(image)]);
+  await page.locator('.tbx-res').dispatchEvent('dragover', { dataTransfer: transfer });
+  await expect(page.getByText('放进“补充预览版本核对”', { exact: true })).toBeVisible();
+  await page.locator('.tbx-res').dispatchEvent('drop', { dataTransfer: transfer });
+  await expect(page.locator('.tbx-res-open')).toHaveCount(1);
+  await openUploaded(page);
+  await page.getByRole('button', { name: '资料更多操作', exact: true }).click();
+  let chooser = page.waitForEvent('filechooser');
+  await page.getByRole('menuitem', { name: '补充 PDF 预览', exact: true }).click();
+  await (await chooser).setFiles(pdf);
+  await expect(page.getByAltText('第 1 页', { exact: true })).toBeVisible();
+  for (const number of [2, 3]) {
+    await page.getByRole('button', { name: '下一页', exact: true }).click();
+    await expect(page.getByAltText(`第 ${number} 页`, { exact: true })).toBeVisible();
+  }
+  await page.getByRole('button', { name: '采用补充 PDF', exact: true }).click();
+  await expect(page.getByText('正在查看本版本补充 PDF，原件保持不变。')).toBeVisible();
+  const original = (await api.request('GET', '/api/modules/resources/items')).json.items[0];
+  expect(original.folderId).toBeTruthy();
+  expect(original.supplementPreviewFileId).toBeTruthy();
+  await page.getByRole('button', { name: '资料更多操作', exact: true }).click();
+  chooser = page.waitForEvent('filechooser');
+  await page.getByRole('menuitem', { name: '更新文件', exact: true }).click();
+  await (await chooser).setFiles(path.resolve('apps/web/e2e/fixtures/materials-resources/samples/page.jpg'));
+  await page.getByRole('alertdialog').getByRole('button', { name: '更新', exact: true }).click();
+  await expect(page.getByAltText('第 1 页', { exact: true })).toBeVisible();
+  await expect(page.getByText('正在查看本版本补充 PDF，原件保持不变。')).toHaveCount(0);
+  let current = (await api.request('GET', `/api/modules/resources/items/${original.id}`)).json;
+  expect(current.supplementPreviewFileId).toBeNull();
+  expect(current.fileId).not.toBe(original.fileId);
+  await page.getByRole('button', { name: '资料更多操作', exact: true }).click();
+  await page.getByRole('menuitem', { name: '文件历史版本', exact: true }).click();
+  const prior = page.locator('.res-history-entry').filter({ hasText: '含补充 PDF' });
+  await prior.getByRole('button', { name: '恢复为当前文件', exact: true }).click();
+  await page.getByRole('button', { name: '确认恢复文件', exact: true }).click();
+  await expect(page.getByText('正在查看本版本补充 PDF，原件保持不变。')).toBeVisible();
+  await expect(page.getByAltText('第 3 页', { exact: true })).toBeVisible();
+  current = (await api.request('GET', `/api/modules/resources/items/${original.id}`)).json;
+  expect(current.fileId).toBe(original.fileId);
+  expect(current.supplementPreviewFileId).toBe(original.supplementPreviewFileId);
+  expect(current.folderId).toBe(original.folderId);
+  const download = page.waitForEvent('download');
+  await page.getByRole('button', { name: '下载原件', exact: true }).click();
+  expect(fs.readFileSync(await (await download).path()).equals(fs.readFileSync(image))).toBe(true);
+  await screenshot(page, info, 'restored-supplement-version');
 });

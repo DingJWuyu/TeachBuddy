@@ -400,16 +400,17 @@ export function ExamDetail({ ctx, exam }) {
 export function TagManager({ ctx }) {
   const [name, setName] = useState('');
   const [editing, setEditing] = useState(null);
-  const [draft, setDraft] = useState('');
   const usage = new Map();
   for (const e of ctx.data.exams) for (const q of e.questions) for (const id of q.tagIds) usage.set(id, (usage.get(id) || 0) + 1);
   const create = async (e) => {
     e.preventDefault();
     if (!name.trim()) return;
-    try { await ctx.api.post('/tags', { name }); setName(''); await ctx.reload(); } catch (err) { ctx.toast(err.message, 'error'); }
+    const submitted = name;
+    try { await ctx.api.post('/tags', { name: submitted }); setName(current => current === submitted ? '' : current); await ctx.reload(); } catch (err) { ctx.toast(err.message, 'error'); }
   };
   const rename = async (tag) => {
-    try { await ctx.api.put(`/tags/${tag.id}`, { baseVersion: tag.version, name: draft }); setEditing(null); await ctx.reload(); } catch (err) { ctx.toast(err.message, 'error'); }
+    const submitted = editing;
+    try { await ctx.api.put(`/tags/${tag.id}`, { baseVersion: tag.version, name: submitted.draft }); setEditing(current => current === submitted ? null : current); await ctx.reload(); } catch (err) { ctx.toast(err.message, 'error'); }
   };
   const merge = (tag, target) => ctx.open('confirm', {
     title: tx('把“{{a}}”合并到“{{b}}”？', { a: tag.name, b: target.name }),
@@ -438,9 +439,9 @@ export function TagManager({ ctx }) {
             {ctx.data.tags.map((t, i) => (
               <li key={t.id} style={{ '--i': i }}>
                 <span className="cr-tag-icon"><Icon name="tag" size={14} stroke={2} /></span>
-                {editing === t.id ? (
+                {editing?.id === t.id ? (
                   <form className="cr-tag-edit" onSubmit={(e) => { e.preventDefault(); rename(t); }}>
-                    <input autoFocus value={draft} maxLength={40} aria-label={tx('标签名称')} onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => e.key === 'Escape' && setEditing(null)} />
+                    <input autoFocus value={editing.draft} maxLength={40} aria-label={tx('标签名称')} onChange={(e) => setEditing({ ...editing, draft: e.target.value })} onKeyDown={(e) => e.key === 'Escape' && setEditing(null)} />
                     <button type="submit" className="cr-btn is-primary is-small">{tx('保存')}</button>
                   </form>
                 ) : (
@@ -449,7 +450,7 @@ export function TagManager({ ctx }) {
                     <small>{usage.get(t.id) ? tx('{{n}} 道题', { n: usage.get(t.id) }) : tx('还没用过')}</small>
                     <span className="cr-grow" />
                     <Menu label={tx('标签操作')} items={[
-                      { label: tx('改名'), icon: 'pencil', onClick: () => { setEditing(t.id); setDraft(t.name); } },
+                      { label: tx('改名'), icon: 'pencil', onClick: () => setEditing({ id: t.id, draft: t.name }) },
                       ...(ctx.data.tags.length > 1 ? ['-', ...ctx.data.tags.filter((x) => x.id !== t.id).map((x) => ({ label: tx('合并到“{{b}}”', { b: x.name }), onClick: () => merge(t, x) }))] : []),
                     ]} />
                   </>

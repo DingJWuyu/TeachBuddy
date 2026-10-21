@@ -331,10 +331,11 @@ function Search({ initial, onClose }) {
 
   useEffect(() => {
     const node = dialog.current;
+    const previous = document.activeElement;
     node.showModal();
     input.current.focus();
     input.current.setSelectionRange(initial.length, initial.length);
-    return () => node.close();
+    return () => { node.close(); if (previous?.isConnected) previous.focus(); };
   }, []);
   useEffect(() => setActive(0), [query]);
   useEffect(() => { dialog.current?.querySelector('.is-active')?.scrollIntoView({ block: 'nearest' }); }, [active]);

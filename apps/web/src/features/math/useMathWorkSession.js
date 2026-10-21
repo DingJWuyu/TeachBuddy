@@ -49,6 +49,9 @@ export function useMathWorkSession({ transport, route, confirm, reselectHtml }) 
     [background, setBackground] = useState("transparent"),
     [exportWidth, setExportWidth] = useState(1600),
     [conflict, setConflict] = useState(null);
+  const listQuery = useRef({ search, deleted });
+  const listRequest = useRef(0);
+  listQuery.current = { search, deleted };
   const history = useDraftHistory();
   const ggbFlush = useRef(null);
   const assistantRequest = useRef(null);
@@ -291,13 +294,17 @@ export function useMathWorkSession({ transport, route, confirm, reselectHtml }) 
   }, [route?.workId, storage, loadedStorage]);
   async function refresh() {
     const epoch = generation.current;
+    const query = listQuery.current;
+    const request = ++listRequest.current;
+    const current = () => epoch === generation.current && request === listRequest.current
+      && query.search === listQuery.current.search && query.deleted === listQuery.current.deleted;
     try {
       const result = await mathRequest(
-        `${base}?q=${encodeURIComponent(search)}&state=${deleted ? "deleted" : "active"}`,
+        `${base}?q=${encodeURIComponent(query.search)}&state=${query.deleted ? "deleted" : "active"}`,
       );
-      if (epoch === generation.current) setItems(result.items);
+      if (current()) setItems(result.items);
     } catch (e) {
-      if (epoch === generation.current) handleError(e);
+      if (current()) handleError(e);
     }
   }
   useForegroundRefresh(async () => {

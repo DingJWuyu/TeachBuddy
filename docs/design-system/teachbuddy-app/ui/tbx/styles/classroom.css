@@ -732,7 +732,7 @@
 .cr-steps li.is-current { color: var(--tb-ink); }
 .cr-steps li.is-current span { background: var(--tb-accent); color: #fff; }
 .cr-steps li.is-done span { background: var(--cr-green); color: #fff; }
-.cr-step { animation: cr-in 320ms var(--tb-ease) both; }
+.cr-step { min-inline-size: 0; margin: 0; padding: 0; border: 0; animation: cr-in 320ms var(--tb-ease) both; }
 .cr-import-start { display: grid; gap: 16px; }
 .cr-drop {
   display: grid;

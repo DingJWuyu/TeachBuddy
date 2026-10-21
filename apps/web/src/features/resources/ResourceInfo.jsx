@@ -12,12 +12,16 @@ export function ResourceInfo({
   onManage,
   disabled,
   dirty,
+  loading,
+  error,
 }) {
   const { t } = useTranslation("resources");
   if (!item || !draft)
     return (
       <div className="res-info res-ui">
-        <p className="res-muted">{t("正在读取资料信息…")}</p>
+        <p className="res-muted">{loading
+          ? t("正在读取资料信息…")
+          : error ? t("资料暂时无法读取") : t("未找到资料")}</p>
       </div>
     );
   return (

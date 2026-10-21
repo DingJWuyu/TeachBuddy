@@ -21,7 +21,7 @@ import { ConfirmDialog } from "../../components/ui/confirm.jsx";
 import { LABEL_COLORS } from "../../components/ui/colors.js";
 import { Menu as Popover } from "../../components/ui/menu.jsx";
 import "./resources.css";
-import { ResourceDialog } from "./ResourceDialog.jsx";
+import { ResourceDialog, ResourceDialogPresence } from "./ResourceDialog.jsx";
 import { ModulePresence } from "../../components/interaction/ModuleMotion.jsx";
 import { FileHistory } from "./FileHistory.jsx";
 import { Organize } from "./Organize.jsx";
@@ -101,6 +101,7 @@ function ResourceWorkspace({
     [previews, setPreviews] = useState({});
   const tax = { ...storedTax, tags: storedTax.tags.map(tag => ({ ...tag, ...(!tag.color && LABEL_COLORS.includes(scene.tagColors?.[tag.id]) ? { color: scene.tagColors[tag.id] } : {}) })) };
   const [listLoading, setListLoading] = useState(true);
+  const [listError, setListError] = useState("");
   const [revision, setRevision] = useState(0);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [organize, setOrganize] = useState(null);
@@ -161,6 +162,7 @@ function ResourceWorkspace({
     let active = true;
     let searchTimer;
     setListLoading(true);
+    setListError("");
     setSearchInfo(null);
     const query = new URLSearchParams();
     if (searchQuery) query.set("q", searchQuery);
@@ -245,7 +247,11 @@ function ResourceWorkspace({
           );
         }
       })
-      .catch((e) => active && reportError(e.message))
+      .catch((e) => {
+        if (!active) return;
+        setListError(e.message);
+        reportError(e.message);
+      })
       .finally(() => active && setListLoading(false));
     return () => {
       active = false;
@@ -307,7 +313,16 @@ function ResourceWorkspace({
   }, [client, pendingPreviews, revision]);
   const item = allItems.find((i) => i.id === scene.openId),
     file = item && files[item.fileId];
-  const draft = item ? (scene.drafts[item.id] ?? metadata(item)) : null;
+  const storedDraft = item ? (scene.drafts[item.id] ?? metadata(item)) : null;
+  // Taxonomy removal also removes associations on the server. A device draft
+  // must follow that removal while retaining the teacher's other edits and
+  // base version, so genuine concurrent changes still require comparison.
+  const draft = storedDraft && taxonomyLoaded ? {
+    ...storedDraft,
+    folderId: tax.folders.some(folder => folder.id === storedDraft.folderId)
+      ? storedDraft.folderId : null,
+    tagIds: storedDraft.tagIds.filter(id => tax.tags.some(tag => tag.id === id)),
+  } : storedDraft;
   useEffect(() => {
     if (!scene.openId && listRef.current)
       listRef.current.scrollTop = scene.scroll;
@@ -455,7 +470,8 @@ function ResourceWorkspace({
       {scene.openId && <Rail label={t("资料信息")} className="res-info-rail">
         <ResourceInfo item={item} file={file} draft={draft} tax={tax} onEdit={edit}
           onSave={() => write(`${root}/items/${item.id}`, draft, "metadata")}
-          onManage={(kind) => manageTaxonomy(kind, null, true)} disabled={disabled} dirty={dirty} />
+          onManage={(kind) => manageTaxonomy(kind, null, true)} disabled={disabled} dirty={dirty}
+          loading={listLoading} error={listError} />
       </Rail>}
       <Library
         scene={scene}
@@ -507,7 +523,9 @@ function ResourceWorkspace({
               <span>{t("返回资源库")}</span>
             </button>
             <div className="res-detail-title">
-              <h1>{item?.title ?? t("读取资料…")}</h1>
+              <h1>{item?.title ?? (listLoading
+                ? t("读取资料…")
+                : listError ? t("资料暂时无法读取") : t("未找到资料"))}</h1>
               <span className="res-muted">
                 {item?.deletedAt ? t("已归档资料") : file?.name}
               </span>
@@ -536,6 +554,7 @@ function ResourceWorkspace({
                 label={t("资料更多操作")}
                 className="res-menu"
                 buttonClassName="res-icon-button"
+                disabled={!item}
               >
                 {({ close: closeMenu }) => (
                   <>
@@ -643,6 +662,18 @@ function ResourceWorkspace({
               }}
             />
           </header>
+          {!item && !listLoading && (
+            <div className="res-preview-column res-surface">
+              <div className="res-empty" role="alert">
+                <span className="res-empty-icon"><Icon name="file" size={30} /></span>
+                <p>{listError || t("problem.notFound")}</p>
+                {listError && <button onClick={() => {
+                  reportError("");
+                  refresh();
+                }}>{t("重新读取")}</button>}
+              </div>
+            </div>
+          )}
           {item && (
             <div className="res-preview-column res-surface">
               {fileErrors[item.fileId] && (
@@ -784,7 +815,7 @@ function ResourceWorkspace({
           )}
         </div>
       </ModulePresence>
-      <ModulePresence present={Boolean(pending?.duplicateMatches?.length)}>
+      <ResourceDialogPresence present={Boolean(pending?.duplicateMatches?.length)}>
         {pending?.duplicateMatches?.length > 0 && (
           <ResourceDialog label={t("发现重复资料")} onClose={skipDuplicate}>
             <h2>{t("这份文件已经收录过")}</h2>
@@ -811,8 +842,8 @@ function ResourceWorkspace({
             </div>
           </ResourceDialog>
         )}
-      </ModulePresence>
-      <ModulePresence present={!!scene.taxonomyDraft?.edit}>
+      </ResourceDialogPresence>
+      <ResourceDialogPresence present={!!scene.taxonomyDraft?.edit}>
         {scene.taxonomyDraft?.edit && (
           <TaxonomyDialog
             value={tax}
@@ -824,8 +855,8 @@ function ResourceWorkspace({
             items={allItems}
           />
         )}
-      </ModulePresence>
-      <ModulePresence present={historyOpen && !!item}>
+      </ResourceDialogPresence>
+      <ResourceDialogPresence present={historyOpen && !!item}>
         {historyOpen && item && (
           <FileHistory
             client={client}
@@ -843,8 +874,8 @@ function ResourceWorkspace({
             }}
           />
         )}
-      </ModulePresence>
-      <ModulePresence present={!!organize}>
+      </ResourceDialogPresence>
+      <ResourceDialogPresence present={!!organize}>
         {organize && (
           <Organize
             {...organize}
@@ -857,8 +888,8 @@ function ResourceWorkspace({
             }}
           />
         )}
-      </ModulePresence>
-      <ModulePresence present={!!conflict}>
+      </ResourceDialogPresence>
+      <ResourceDialogPresence present={!!conflict}>
         {conflict && (
           <ResourceDialog label={t("版本冲突")} onClose={() => operations.dismissConflict()}>
             <h2>{t("内容已在其他地方更新")}</h2>
@@ -879,7 +910,7 @@ function ResourceWorkspace({
             <button onClick={() => operations.dismissConflict()}>{t("稍后处理")}</button>
           </ResourceDialog>
         )}
-      </ModulePresence>
+      </ResourceDialogPresence>
       <ConfirmDialog
         present={!!dialog}
         title={dialog?.kind === "replace"

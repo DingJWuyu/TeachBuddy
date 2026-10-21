@@ -345,6 +345,7 @@
 :root[data-workbench-theme="dark"] .tbx-res-empty-art .is-b { background: #0d2a4a; }
 
 /* drag to upload */
+.tbx-res-main.is-drop .tbx-res-empty { visibility: hidden; }
 .tbx-res-main.is-drop::after {
   content: "";
   position: absolute;

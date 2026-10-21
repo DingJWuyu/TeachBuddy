@@ -43,13 +43,24 @@ export default function OriginalPane({
   const setBox = box => onScene({ selection: { fileId, page, box } });
   const locationRole = scene.locationRole ?? 'body';
   const setLocationRole = locationRole => onScene({ locationRole });
+  const originalNode = useRef(null);
   const pageNode = useRef(null);
   const scrollKey = `${fileId}:${page}`;
   const restoreScroll = () => {
-    if (!pageNode.current) return;
+    const image = pageNode.current?.querySelector('img');
+    if (!image?.complete || !image.naturalWidth) return;
     const saved = scene.scrollPositions?.[scrollKey];
     pageNode.current.scrollTop = saved?.top ?? 0;
     pageNode.current.scrollLeft = saved?.left ?? 0;
+    originalNode.current.scrollTop = saved?.paneTop ?? 0;
+  };
+  const rememberScroll = () => {
+    const image = pageNode.current?.querySelector('img');
+    if (!image?.complete || !image.naturalWidth) return;
+    onScene({ scrollPositions: { ...scene.scrollPositions, [scrollKey]: {
+      top: pageNode.current.scrollTop, left: pageNode.current.scrollLeft,
+      paneTop: originalNode.current.scrollTop,
+    } } });
   };
   useEffect(restoreScroll, [fileId, page, preview?.pages]);
   const focusedIssue = useRef(null);
@@ -147,7 +158,7 @@ export default function OriginalPane({
     unassigned: t("未分配"),
   };
   return (
-    <section className={`q-original${paragraphView ? " is-word-view" : ""}`} aria-label={t("原始材料")}>
+    <section ref={originalNode} onScroll={rememberScroll} className={`q-original${paragraphView ? " is-word-view" : ""}`} aria-label={t("原始材料")}>
       <header>
         <strong>{t("原始材料")}</strong>
         {fileId && <button onClick={() => download(fileId)}>{t("下载原稿")}</button>}
@@ -227,8 +238,7 @@ export default function OriginalPane({
           )}
           {current && !paragraphView ? (
             <div className="q-page-scroll" ref={pageNode} onLoadCapture={() => {restoreScroll(); focusIssue();}}
-              onScroll={event => onScene({ scrollPositions: { ...scene.scrollPositions,
-                [scrollKey]: { top: event.currentTarget.scrollTop, left: event.currentTarget.scrollLeft } } })}>
+              onScroll={rememberScroll}>
               <div
                 className="q-page"
                 style={{ width: `${(scene.zoom ?? 1) * 100}%` }}
@@ -252,6 +262,7 @@ export default function OriginalPane({
                 }}
               >
                 <ControlledImage
+                  key={current.imageFileId}
                   fileId={current.imageFileId}
                   alt={t("原稿第 {{page}} 页", { page: page })}
                   widthMm={170}

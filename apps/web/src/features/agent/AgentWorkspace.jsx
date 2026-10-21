@@ -100,7 +100,11 @@ function useOutside(open, ref, close) {
   useEffect(() => {
     if (!open) return undefined;
     const down = (e) => { if (!ref.current?.contains(e.target)) close(); };
-    const key = (e) => { if (e.key === 'Escape') close(); };
+    const key = (e) => {
+      if (e.key !== 'Escape') return;
+      ref.current?.querySelector('button')?.focus();
+      close();
+    };
     document.addEventListener('pointerdown', down);
     document.addEventListener('keydown', key);
     return () => { document.removeEventListener('pointerdown', down); document.removeEventListener('keydown', key); };
@@ -162,8 +166,10 @@ function useCurrentContext(enabled, accountKey) {
   const [ctx, setCtx] = useState(null);
   const [picked, setPicked] = useState(null);
   useEffect(() => {
-    if (!enabled || !path.startsWith('/questions')) { setPicked(null); return undefined; }
-    const read = () => setPicked(selectedQuestionId(accountKey));
+    if (!enabled || !/^\/(questions|resources)(?:\/|$)/.test(path)) { setPicked(null); return undefined; }
+    const read = () => setPicked(path.startsWith('/resources')
+      ? readLocal(accountKey, 'scene:resources')?.openId ?? null
+      : selectedQuestionId(accountKey));
     read();
     const id = setInterval(read, 700);
     return () => clearInterval(id);
@@ -172,8 +178,10 @@ function useCurrentContext(enabled, accountKey) {
     if (!enabled) { setCtx(null); return undefined; }
     let live = true;
     const m = /^\/(questions|resources)\/([^/]+)$/.exec(path);
-    const target = m ? { kind: m[1] === 'questions' ? 'question' : 'resource', id: decodeURIComponent(m[2]), area: m[1] }
-      : picked ? { kind: 'question', id: picked, area: 'questions' } : null;
+    // Resource deep links are consumed once; later browsing is owned by its scene.
+    const target = m && (m[1] !== 'resources' || picked === decodeURIComponent(m[2]))
+      ? { kind: m[1] === 'questions' ? 'question' : 'resource', id: decodeURIComponent(m[2]), area: m[1] }
+      : picked && path.startsWith('/questions') ? { kind: 'question', id: picked, area: 'questions' } : null;
     (async () => {
       if (target) {
         const where = target.kind === 'question' ? '/api/modules/questions/v2/items/' : '/api/modules/resources/items/';
@@ -641,7 +649,7 @@ function ModelPicker({ agent }) {
             return (
               <button key={m.id} type="button" role="option" aria-selected={m.id === agent.model} disabled={!ready}
                 className={cx('tbx-model-option', m.id === agent.model && 'is-selected')}
-                onClick={() => { agent.setModel(m.id); setOpen(false); }}>
+                onClick={() => { ref.current?.querySelector('.tbx-model-button')?.focus(); agent.setModel(m.id); setOpen(false); }}>
                 <span><strong>{m.name}</strong><small>{ready ? m.note : tx('暂不可用')}</small></span>
                 {m.id === agent.model && <Glyph name="check" size={15} />}
               </button>
@@ -973,7 +981,7 @@ function PanelHead({ agent }) {
             <h4>{tx('最近的对话')}</h4>
             {agent.list.length === 0 && <p className="tbx-mention-empty">{tx('还没有对话。')}</p>}
             {agent.list.slice(0, 8).map((item) => (
-              <button key={item.id} role="option" aria-selected={item.id === agent.id} className={cx('tbx-switch-row', item.id === agent.id && 'is-selected')} onClick={() => { agent.select(item.id); setOpen(false); }}>
+              <button key={item.id} role="option" aria-selected={item.id === agent.id} className={cx('tbx-switch-row', item.id === agent.id && 'is-selected')} onClick={() => { ref.current?.querySelector('.tbx-switch-button')?.focus(); agent.select(item.id); setOpen(false); }}>
                 <span><strong>{threadTitle(item.title)}</strong><small>{item.preview || tx('还没有回答')}</small></span>
                 <span className="tbx-thread-time">{relativeTime(item.updatedAt)}</span>
               </button>

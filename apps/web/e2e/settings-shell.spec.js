@@ -137,8 +137,13 @@ test('外观和背景覆盖外壳与全部页面并在刷新后保留', async ({
 test('头像上传删除同步侧栏、自定义背景按账户跨设备保存，弹层退出连续', async ({ page, browser }, info) => {
   const settings = page.locator('[data-region="settings"]');
   const avatar = await sharp({ create: { width: 48, height: 64, channels: 3, background: '#927acb' } }).png().toBuffer();
-  await settings.locator('.settings-avatar input[type="file"]').setInputFiles({ name: 'avatar.png', mimeType: 'image/png', buffer: avatar });
+  const choosing = page.waitForEvent('filechooser');
+  await settings.getByRole('button', { name: '选择头像', exact: true }).click();
+  await (await choosing).setFiles({ name: 'avatar.png', mimeType: 'image/png', buffer: avatar });
   await expect(settings.getByAltText('账户头像')).toBeVisible();
+  await expect(settings.getByRole('button', { name: '修改昵称', exact: true })).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(settings.getByRole('button', { name: '浅色', exact: true })).toBeFocused();
   await expect(page.locator('.tb-account-row img')).toHaveAttribute('src', await settings.getByAltText('账户头像').getAttribute('src'));
   await expect(page.locator('.settings-save-status')).toHaveText('已保存');
   await settings.locator('.tbx-bg-options input[type="file"]').setInputFiles({ name: 'background.png', mimeType: 'image/png', buffer: avatar });
@@ -165,6 +170,7 @@ test('头像上传删除同步侧栏、自定义背景按账户跨设备保存�
   await settings.locator('.settings-avatar').hover();
   await settings.getByRole('button', { name: '删除头像' }).click();
   await expect(settings.getByAltText('账户头像')).toHaveCount(0);
+  await expect(settings.getByRole('button', { name: '选择头像', exact: true })).toBeFocused();
   await expect(page.locator('.tb-account-row img')).toHaveCount(0);
   await expect(page.locator('.settings-save-status')).toHaveText('已保存');
   await page.reload();
@@ -238,6 +244,13 @@ test('导出回执丢失后刷新可确认并下载同一资料包', async ({ pa
   });
   await page.getByRole('button', { name: '导出数据', exact: true }).click();
   await expect(page.getByRole('button', { name: '重试确认操作', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '查看待确认请求', exact: true }).click();
+  await expect(page.locator('.reliability-pending pre')).toContainText(keys[0]);
+  await expect(page.getByRole('button', { name: '放弃重试', exact: true })).toHaveCount(0);
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: '重试确认操作', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: '放弃重试', exact: true })).toHaveCount(0);
   await page.reload();
   await page.getByRole('button', { name: '重试确认操作', exact: true }).click();
   await expect(page.getByRole('button', { name: '下载', exact: true })).toBeVisible();
@@ -245,6 +258,8 @@ test('导出回执丢失后刷新可确认并下载同一资料包', async ({ pa
   expect(keys[0]).toBeTruthy();
   expect(keys[1]).toBe(keys[0]);
   await expect(page.getByRole('list', { name: '个人资料导出记录' }).locator('li')).toHaveCount(1);
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('button', { name: '导出数据', exact: true })).toBeEnabled();
 });
 
 
@@ -269,6 +284,7 @@ test('删除资料包丢失回执后刷新用原键确认，下载权限已撤�
   expect(keys).toHaveLength(2);
   expect(keys[1]).toBe(keys[0]);
   expect((await (await page.request.get(world.origin + '/api/reliability/v1/exports', { headers: headers(page) })).json()).items).toHaveLength(0);
+  await expect(page.getByRole('button', { name: '导出数据', exact: true })).toBeFocused();
 });
 
 

@@ -10,7 +10,9 @@
 
 “载入一周的示例数据”仍经真实 API 保存业务记录，接线见[外壳示例入口](foundation.md#显式载入示例)。真实引用由 Agent 接受事务捕获 question/resource/entry 公开快照；教学提案由持久 ToolCall 保存，点击执行由 Operation.proposalSource 定位，详见[契约](../contracts/agent.md#教学提案与点击执行)。
 
-[AgentWorkspace](../../apps/web/src/features/agent/AgentWorkspace.jsx) 的选课引用记录只拥有本会话由选择器带入的引用；取消和替换不清除独立加入的日程引用。Composer 按光标前触发的起止范围移除 `@关键词` 并恢复插入位置；复制成功状态等待浏览器剪贴板写入完成，失败沿现有提示样式保留重试入口。
+[AgentWorkspace](../../apps/web/src/features/agent/AgentWorkspace.jsx) 的选课引用记录只拥有本会话由选择器带入的引用；取消和替换不清除独立加入的日程引用。课程、模型及侧栏历史选择器在选项卸载前归焦触发器，Escape 关闭也保留该入口的键盘接续。Composer 按光标前触发的起止范围移除 `@关键词` 并恢复插入位置；复制成功状态等待浏览器剪贴板写入完成，失败沿现有提示样式保留重试入口。
+
+资源深链上下文沿 `useCurrentContext` 观察当前账户的 `scene:resources.openId`；深链只作为首次进入的目标，实际 scene 不再指向它时取消该上下文，不创建另一份业务选择状态。普通资源浏览继续使用通用建议。
 
 Web [apps/web/src/features/agent/](../../apps/web/src/features/agent)，API [apps/api/src/agent/](../../apps/api/src/agent)；入口由 WorkbenchApp 组合。
 

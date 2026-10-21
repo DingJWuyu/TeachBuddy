@@ -487,6 +487,7 @@ test('提醒弹窗退出动效、Escape焦点和快速反向', async ({ page }) 
     const frame = window.calendarExitFrame;
     return frame?.inert && frame.duration > 0 && frame.to === '0' && frame.opacity > 0 && frame.opacity < 1;
   })).toBeTruthy();
+  await page.screenshot({ path: test.info().outputPath('reminder-exit-midpoint.png') });
   await page.evaluate(async () => {
     window.calendarExitTransition.play();
     await window.calendarExitTransition.finished;

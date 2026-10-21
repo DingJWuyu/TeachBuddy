@@ -1,5 +1,5 @@
 import { h, Fragment } from '../shim.js';
-import { tb, useEffect, useRef, useState, cx, tx, useLocale } from '../react.js';
+import { tb, useContext, useEffect, useId, useRef, useState, cx, tx, useLocale } from '../react.js';
 
 /*
  * Deleting always asks twice — and always in one of two ways, so a teacher
@@ -103,30 +103,91 @@ function shellRoot() {
   return document.querySelector('.wb-shell') || document.body;
 }
 
-export function ConfirmDialog({
+let confirmVisible;
+function visibleContext() {
+  return confirmVisible ||= tb().React.createContext(true);
+}
+
+export function ConfirmDialog({ present, ...props }) {
+  const { createPortal, ModulePresence } = tb();
+  const ConfirmVisible = visibleContext();
+  const opening = useRef({ present: false, key: 0 });
+  // A retained exit belongs inside the portal so its inert boundary contains the dialog.
+  if (present === undefined) return createPortal(<ConfirmContent {...props} />, shellRoot());
+  if (present && !opening.current.present) opening.current.key += 1;
+  opening.current.present = Boolean(present);
+  return createPortal(
+    <ConfirmVisible.Provider value={Boolean(present)}>
+      <ModulePresence key={opening.current.key} present={present} mode="overlay" className="tbx-confirm-presence">
+        {present && <ConfirmContent {...props} />}
+      </ModulePresence>
+    </ConfirmVisible.Provider>,
+    shellRoot(),
+  );
+}
+
+function ConfirmContent({
   title, message, confirmLabel, cancelLabel, danger = true, icon, onConfirm, onCancel, children, busy, disabled,
-  secondaryLabel, onSecondary,
+  secondaryLabel, onSecondary, enterConfirms = false,
 }) {
   useLocale();
-  const { createPortal } = tb();
+  const active = useContext(visibleContext());
   const ref = useRef(null);
   const [working, setWorking] = useState(false);
+  const titleId = useId();
+  const running = useRef(false);
+  const actions = useRef(null);
+  actions.current = { onConfirm, onCancel, busy, disabled, active, enterConfirms };
   useEffect(() => {
+    if (!active) return undefined;
     const prev = document.activeElement;
     ref.current?.querySelector('[data-autofocus], .tbx-confirm-actions button:last-child')?.focus();
-    const key = (e) => { if (e.key === 'Escape') { e.stopPropagation(); onCancel(); } };
+    const key = (e) => {
+      const dialogs = [...document.querySelectorAll('[role="dialog"], [role="alertdialog"]')].filter((node) => node.getClientRects().length && !node.closest('[inert]'));
+      if (dialogs.at(-1) !== ref.current || ref.current?.closest('[inert]')) return;
+      if (document.querySelector('.tbx-popover[role=menu]')) return;
+      if (e.key === 'Escape') { e.stopPropagation(); actions.current.onCancel(); }
+      if (e.key === 'Enter') {
+        if (e.target.closest?.('textarea, [contenteditable="true"]')) return;
+        if ((e.isComposing || e.keyCode === 229) && e.target.closest?.('input')) return;
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.isComposing || e.keyCode === 229 || e.repeat || e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
+        const focusedButton = e.target.closest?.('button');
+        if (!actions.current.enterConfirms && focusedButton && ref.current?.contains(focusedButton)) {
+          if (!focusedButton.disabled) focusedButton.click();
+        } else {
+          ref.current?.querySelector('.tbx-confirm-ok:not(:disabled)')?.click();
+        }
+      }
+      if (e.key !== 'Tab') return;
+      const controls = [...ref.current.querySelectorAll('button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), a[href], [tabindex="0"]')].filter((el) => el.getClientRects().length);
+      if (!controls.length) { e.preventDefault(); return; }
+      const first = controls[0];
+      const last = controls[controls.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    };
     document.addEventListener('keydown', key, true);
-    return () => { document.removeEventListener('keydown', key, true); prev?.focus?.(); };
-  }, []);
+    return () => {
+      document.removeEventListener('keydown', key, true);
+      const current = [...document.querySelectorAll('[role="dialog"], [role="alertdialog"]')]
+        .filter(node => node !== ref.current && node.getClientRects().length && !node.closest('[inert]')).at(-1);
+      if (current && !current.contains(prev)) return;
+      if (prev?.isConnected && !prev.closest('[inert]')) prev.focus();
+    };
+  }, [active]);
   const run = async () => {
+    if (!actions.current.active || running.current || actions.current.busy || actions.current.disabled) return;
+    running.current = true;
     setWorking(true);
-    try { await onConfirm(); } finally { setWorking(false); }
+    try { await actions.current.onConfirm(); } finally { running.current = false; setWorking(false); }
   };
-  const node = (
-    <div className="tbx-confirm-scrim" onPointerDown={(e) => { if (e.target === e.currentTarget) onCancel(); }}>
-      <div className={cx('tbx-confirm', danger && 'is-danger')} role="alertdialog" aria-modal="true" aria-labelledby="tbx-confirm-title" ref={ref}>
+  return (
+    <div className="tbx-confirm-scrim" onPointerDown={(e) => { if (active && e.target === e.currentTarget) onCancel(); }}>
+      <div className={cx('tbx-confirm', danger && 'is-danger')} role="alertdialog" aria-modal="true" aria-labelledby={titleId} ref={ref}>
         <span className="tbx-confirm-icon" aria-hidden="true"><Glyph name={icon || (danger ? 'trash' : 'info')} size={22} /></span>
-        <h2 id="tbx-confirm-title">{title}</h2>
+        <h2 id={titleId}>{title}</h2>
         {message && <p>{message}</p>}
         {children}
         <div className="tbx-confirm-actions">
@@ -137,15 +198,15 @@ export function ConfirmDialog({
       </div>
     </div>
   );
-  return createPortal ? createPortal(node, shellRoot()) : node;
 }
 
 /* The app's own module dialog (ModuleOverlays ConfirmDialog) renders through this. */
 const DESTRUCTIVE = /删除|移除|清空|解散|丢弃|放弃|delete|remove|discard/i;
-export function AppConfirmDialog({ title, message, confirmLabel, secondaryLabel, onSecondary, onConfirm, onCancel }) {
+export function AppConfirmDialog({ title, message, confirmLabel, secondaryLabel, onSecondary, onConfirm, onCancel, ...props }) {
   const danger = DESTRUCTIVE.test(`${confirmLabel || ''} ${title || ''}`);
   return (
     <ConfirmDialog
+      {...props}
       title={title}
       message={message}
       confirmLabel={confirmLabel || tx('确认')}

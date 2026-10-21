@@ -36,6 +36,9 @@ function MonthMore({ date, events, onClose, onOpen, disabled, anchor }) {
     const draggable = new Draggable(panel.current, {
       itemSelector: '.cal-month-more-event', minDistance: 5, longPressDelay: 250,
       eventData: node => {
+        // Keep the drag source mounted while exposing the calendar underneath.
+        panel.current?.classList.add('is-dragging');
+        if (gesture.current) gesture.current.dragged = true;
         const event = eventsRef.current.find(value => value.id === node.dataset.eventId);
         return { title: event.title, color: event.extendedProps.color, duration: { days: event.extendedProps.displayDays }, create: false };
       }
@@ -44,8 +47,21 @@ function MonthMore({ date, events, onClose, onOpen, disabled, anchor }) {
       const current = gesture.current;
       if (current && Math.hypot(event.clientX - current.x, event.clientY - current.y) >= 5) current.dragged = true;
     };
+    const restore = () => panel.current?.classList.remove('is-dragging');
+    const cancel = event => { if (event.key === 'Escape') restore(); };
     window.addEventListener('pointermove', track);
-    return () => { draggable.destroy(); window.removeEventListener('pointermove', track); };
+    window.addEventListener('mouseup', restore);
+    window.addEventListener('touchend', restore);
+    window.addEventListener('touchcancel', restore);
+    window.addEventListener('keydown', cancel, true);
+    return () => {
+      draggable.destroy(); restore();
+      window.removeEventListener('pointermove', track);
+      window.removeEventListener('mouseup', restore);
+      window.removeEventListener('touchend', restore);
+      window.removeEventListener('touchcancel', restore);
+      window.removeEventListener('keydown', cancel, true);
+    };
   }, [disabled]);
   const label = new Intl.DateTimeFormat(i18n.resolvedLanguage, { dateStyle: 'long', timeZone: 'UTC' }).format(new Date(`${date}T00:00:00Z`));
   useModuleDialogFocus(panel, onClose);

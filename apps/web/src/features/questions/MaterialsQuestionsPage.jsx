@@ -131,7 +131,7 @@ export default function MaterialsQuestionsPage({
           ))}
         </select>
       </label>
-      <button type="button" className="q-text-button" onClick={() => { openCategory('types', id => onChange({ typeId: id })); }}><QuestionIcon name="plus" size={14} />{t("新建题型")}</button>
+      <button type="button" className="q-text-button" onClick={() => openCategory('types')}><QuestionIcon name="plus" size={14} />{t("新建题型")}</button>
       <span className="q-classify-label">{t("标签")}</span>
       {taxonomy.tags.map((t) => (
         <label key={t.id}>
@@ -149,7 +149,7 @@ export default function MaterialsQuestionsPage({
           {t.name}
         </label>
       ))}
-      <button type="button" className="q-text-button" onClick={() => { openCategory('tags', id => onChange({ tagIds: [...q.tagIds, id] })); }}><QuestionIcon name="plus" size={14} />{t("新建标签")}</button>
+      <button type="button" className="q-text-button" onClick={() => openCategory('tags')}><QuestionIcon name="plus" size={14} />{t("新建标签")}</button>
     </div>
   );
   const taxonomyTools = (

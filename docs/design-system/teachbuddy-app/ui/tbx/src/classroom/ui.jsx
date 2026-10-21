@@ -64,24 +64,28 @@ export function Menu({ label, icon = 'more', items, align = 'end', className, tr
   );
 }
 
-export function Dialog({ title, subtitle, onClose, children, footer, wide, className }) {
+export function Dialog({ title, subtitle, onClose, children, footer, wide, className, busy = false }) {
   const ref = useRef(null);
+  const closing = useRef({ busy, onClose });
+  closing.current = { busy, onClose };
+  const dismiss = () => { if (!closing.current.busy) closing.current.onClose(); };
   useEffect(() => {
-    const key = (e) => { if (e.key === 'Escape') { e.stopPropagation(); onClose(); } };
+    const key = (e) => { if (e.key === 'Escape') { e.stopPropagation(); dismiss(); } };
     document.addEventListener('keydown', key);
     const first = ref.current?.querySelector('input:not([type=hidden]), textarea, select');
     first?.focus({ preventScroll: true });
     return () => document.removeEventListener('keydown', key);
   }, []);
+  useEffect(() => { if (busy) ref.current?.focus({ preventScroll: true }); }, [busy]);
   return (
-    <div className="cr-scrim" onPointerDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <section ref={ref} className={cx('cr-dialog', wide && 'is-wide', className)} role="dialog" aria-modal="true" aria-label={title}>
+    <div className="cr-scrim" onPointerDown={(e) => { if (e.target === e.currentTarget) dismiss(); }}>
+      <section ref={ref} className={cx('cr-dialog', wide && 'is-wide', className)} role="dialog" tabIndex={-1} aria-modal="true" aria-label={title}>
         <header className="cr-dialog-head">
           <div>
             <h2>{title}</h2>
             {subtitle && <p>{subtitle}</p>}
           </div>
-          <button type="button" className="cr-icon-btn is-filled" aria-label={tx('关闭')} onClick={onClose}><Icon name="close" size={13} stroke={2.4} /></button>
+          <button type="button" className="cr-icon-btn is-filled" aria-label={tx('关闭')} disabled={busy} onClick={dismiss}><Icon name="close" size={13} stroke={2.4} /></button>
         </header>
         <div className="cr-dialog-body">{children}</div>
         {footer && <footer className="cr-dialog-foot">{footer}</footer>}

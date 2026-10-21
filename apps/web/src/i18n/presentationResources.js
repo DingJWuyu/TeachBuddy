@@ -605,7 +605,7 @@ export const EN = {
   '历次得分率': 'Score Rate Over Time',
   '原卷': 'Exam Paper',
   '原卷已上传': 'Paper uploaded',
-  '原表和校对结果都留着；之后发现错了，可以在学生的成绩里修正。': 'The original sheet and your review are kept. If you spot a mistake later, fix it in the student’s scores.',
+  '原表和校对结果都留着，可以到班级或学生的成绩中查看。': 'The original sheet and your review are kept. View the scores for the class or an individual student.',
   '参加': 'Took it',
   '取消': 'Cancel',
   '只有姓名是必填的。性格、兴趣想到再写，不必一次填完。': 'Only the name is required. Add personality and interests whenever they come to mind.',

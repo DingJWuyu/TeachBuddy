@@ -94140,7 +94140,7 @@ $$${math3}$$
     }, [requestedId]);
     const localKey = `questions-materials-draft:${scene.kind}:${scene.id ?? "new"}`;
     const editorRef = (0, import_react35.useRef)(null);
-    editorRef.current = { value, scene, localKey };
+    editorRef.current = { value, scene, localKey, selected: selected2 };
     const refreshSequence = (0, import_react35.useRef)(0);
     const viewRef = (0, import_react35.useRef)({ scene, value, busy });
     viewRef.current = { scene, value, busy };
@@ -94644,12 +94644,22 @@ $$${math3}$$
       await refresh({ ...latestScene, ...filters });
     }
     async function createCategory() {
-      const kind = newCategory.kind;
+      const { kind, openingId, target } = newCategory;
       const item = { id: crypto.randomUUID(), name: categoryName.trim() };
       const next = await mutate("/taxonomy", { baseVersion: taxonomy.version, types: taxonomy.types, tags: taxonomy.tags, [kind]: [...taxonomy[kind], item] }, "PUT");
       setTaxonomy(next);
-      newCategory.onAssign(item.id);
-      setNewCategory(null);
+      const current = editorRef.current;
+      if (current.value && current.scene.kind === target.kind && current.scene.id === target.id
+        && (target.kind !== "import" || current.selected === target.draftId)) {
+        const assign = (question) => ({ ...question, ...(kind === "types"
+          ? { typeId: item.id } : { tagIds: [...new Set([...question.tagIds, item.id])] }) });
+        const value = target.kind === "import"
+          ? { ...current.value, drafts: current.value.drafts.map((draft) => draft.id === target.draftId ? assign(draft) : draft) }
+          : assign(current.value);
+        setValue(value);
+        writeLocal(accountKey, current.localKey, value);
+      }
+      setNewCategory((current) => current?.openingId === openingId ? null : current);
       setMessage(t67("\u5206\u7C7B\u5DF2\u521B\u5EFA\uFF0C\u4FDD\u5B58\u9898\u76EE\u540E\u751F\u6548\u3002"));
     }
     async function supplement(files) {
@@ -94943,10 +94953,11 @@ $$${math3}$$
         cancelCopy: () => setCopyCandidate(null),
         showTaxonomy: () => setManage(true),
         saveTaxonomy: (next) => action(() => saveTaxonomy(next)),
-        openCategory: (kind, onAssign) => {
+        openCategory: (kind) => {
           setCategoryName("");
           setMessage("");
-          setNewCategory({ openingId: crypto.randomUUID(), kind, onAssign });
+          setNewCategory({ openingId: crypto.randomUUID(), kind,
+            target: { kind: scene.kind, id: scene.id, draftId: selected2 } });
         },
         closeCategory: () => setNewCategory(null),
         changeCategoryName: (name25) => setCategoryName(name25),
@@ -95387,13 +95398,24 @@ $$${math3}$$
     const setBox = (box3) => onScene({ selection: { fileId, page, box: box3 } });
     const locationRole = scene.locationRole ?? "body";
     const setLocationRole = (locationRole2) => onScene({ locationRole: locationRole2 });
+    const originalNode = (0, import_react39.useRef)(null);
     const pageNode = (0, import_react39.useRef)(null);
     const scrollKey = `${fileId}:${page}`;
     const restoreScroll = () => {
-      if (!pageNode.current) return;
+      const image2 = pageNode.current?.querySelector("img");
+      if (!image2?.complete || !image2.naturalWidth) return;
       const saved = scene.scrollPositions?.[scrollKey];
       pageNode.current.scrollTop = saved?.top ?? 0;
       pageNode.current.scrollLeft = saved?.left ?? 0;
+      originalNode.current.scrollTop = saved?.paneTop ?? 0;
+    };
+    const rememberScroll = () => {
+      const image2 = pageNode.current?.querySelector("img");
+      if (!image2?.complete || !image2.naturalWidth) return;
+      onScene({ scrollPositions: { ...scene.scrollPositions, [scrollKey]: {
+        top: pageNode.current.scrollTop, left: pageNode.current.scrollLeft,
+        paneTop: originalNode.current.scrollTop
+      } } });
     };
     (0, import_react39.useEffect)(restoreScroll, [fileId, page, preview?.pages]);
     const focusedIssue = (0, import_react39.useRef)(null);
@@ -95478,7 +95500,7 @@ $$${math3}$$
       figure: t67("\u914D\u56FE"),
       unassigned: t67("\u672A\u5206\u914D")
     };
-    return /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("section", { className: `q-original${paragraphView ? " is-word-view" : ""}`, "aria-label": t67("\u539F\u59CB\u6750\u6599"), children: [
+    return /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("section", { ref: originalNode, onScroll: rememberScroll, className: `q-original${paragraphView ? " is-word-view" : ""}`, "aria-label": t67("\u539F\u59CB\u6750\u6599"), children: [
       /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("header", { children: [
         /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("strong", { children: t67("\u539F\u59CB\u6750\u6599") }),
         fileId && /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("button", { onClick: () => download(fileId), children: t67("\u4E0B\u8F7D\u539F\u7A3F") })
@@ -95598,10 +95620,7 @@ $$${math3}$$
               restoreScroll();
               focusIssue();
             },
-            onScroll: (event) => onScene({ scrollPositions: {
-              ...scene.scrollPositions,
-              [scrollKey]: { top: event.currentTarget.scrollTop, left: event.currentTarget.scrollLeft }
-            } }),
+            onScroll: rememberScroll,
             children: /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)(
               "div",
               {
@@ -95631,7 +95650,8 @@ $$${math3}$$
                       fileId: current.imageFileId,
                       alt: t67("\u539F\u7A3F\u7B2C {{page}} \u9875", { page }),
                       widthMm: 170
-                    }
+                    },
+                    current.imageFileId
                   ),
                   box2 && /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
                     "span",
@@ -96017,7 +96037,7 @@ $$${math3}$$
         )
       ] }),
       /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("button", { type: "button", className: "q-text-button", onClick: () => {
-        openCategory("types", (id3) => onChange({ typeId: id3 }));
+        openCategory("types");
       }, children: [
         /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(QuestionIcon, { name: "plus", size: 14 }),
         t67("\u65B0\u5EFA\u9898\u578B")
@@ -96037,7 +96057,7 @@ $$${math3}$$
         t68.name
       ] }, t68.id)),
       /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("button", { type: "button", className: "q-text-button", onClick: () => {
-        openCategory("tags", (id3) => onChange({ tagIds: [...q4.tagIds, id3] }));
+        openCategory("tags");
       }, children: [
         /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(QuestionIcon, { name: "plus", size: 14 }),
         t67("\u65B0\u5EFA\u6807\u7B7E")
@@ -96995,19 +97015,19 @@ $$${math3}$$
             ] }),
             message && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "q-error", role: "alert", children: message })
           ] }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(ModulePresence, { present: confirmDiscard, children: confirmDiscard && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(ConfirmDialog, { title: t67("\u653E\u5F03\u672A\u4FDD\u5B58\u7684\u4FEE\u6539\uFF1F"), message: t67("\u6B64\u8BBE\u5907\u4E0A\u7684\u8FD9\u4EFD\u8349\u7A3F\u5C06\u88AB\u5220\u9664\uFF0C\u5DF2\u7ECF\u4FDD\u5B58\u7684\u9898\u76EE\u4E0D\u53D7\u5F71\u54CD\u3002"), confirmLabel: t67("\u653E\u5F03\u4FEE\u6539"), onCancel: () => cancelDiscard(), onConfirm: discardDraft }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(ModulePresence, { present: Boolean(copyCandidate), children: copyCandidate && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(ConfirmDialog, { title: t67("\u66FF\u6362\u672A\u5B8C\u6210\u7684\u9898\u76EE\uFF1F"), message: t67("\u4F60\u8FD8\u6709\u4E00\u4EFD\u672A\u5B8C\u6210\u7684\u65B0\u9898\u8349\u7A3F\u3002\u5F00\u59CB\u8FD9\u6B21\u6539\u7F16\u4F1A\u66FF\u6362\u5B83\uFF0C\u5DF2\u4FDD\u5B58\u7684\u9898\u76EE\u4E0D\u53D7\u5F71\u54CD\u3002"), confirmLabel: t67("\u66FF\u6362\u5E76\u5F00\u59CB\u6539\u7F16"), onCancel: () => cancelCopy(), onConfirm: replaceWithCopy }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(ModulePresence, { present: Boolean(lifecycleAction), children: lifecycleAction && (0, import_jsx_runtime29.jsx)(globalThis.__tbx.KitConfirmDialog, {
-              title: `${lifecycleAction.mode === "purge" ? t67("\u5F7B\u5E95\u5220\u9664") : lifecycleAction.mode === "restore" ? t67("\u6062\u590D") : t67("\u5F52\u6863")}${lifecycleAction.kind === "import" ? t67("\u6750\u6599") : t67("\u9898\u76EE")}\uFF1F`,
-              message: lifecycleAction.mode === "purge" ? t67("\u201C{{value}}\u201D\u53CA\u5176\u672C\u5730\u8349\u7A3F\u5C06\u5F7B\u5E95\u5220\u9664\uFF0C\u65E0\u6CD5\u6062\u590D\u3002{{detail}}", { value: lifecycleAction.item.title || t67("\u672A\u547D\u540D\u9898\u76EE"), detail: lifecycleAction.kind === "import" ? t67("\u5DF2\u5165\u5E93\u7684\u9898\u76EE\u4F1A\u4FDD\u7559\u3002") : t67("\u5DF2\u6709\u6539\u7F16\u9898\u4F1A\u4FDD\u7559\u3002") }) : lifecycleAction.mode === "restore" ? t67("\u6062\u590D\u540E\uFF0C\u4F1A\u91CD\u65B0\u51FA\u73B0\u5728\u9898\u5E93\u4E2D\u3002") : t67("\u5C06\u79FB\u51FA\u5F53\u524D\u5217\u8868\u3002\u4E4B\u540E\u53EF\u4EE5\u5728\u5DE6\u4FA7\u7684\u201C\u5DF2\u5F52\u6863\u201D\u91CC\u6062\u590D\u6216\u5F7B\u5E95\u5220\u9664\u3002"),
-              danger: lifecycleAction.mode === "purge",
-              icon: lifecycleAction.mode === "restore" ? "restore" : "trash",
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(ConfirmDialog, { present: confirmDiscard, title: t67("\u653E\u5F03\u672A\u4FDD\u5B58\u7684\u4FEE\u6539\uFF1F"), message: t67("\u6B64\u8BBE\u5907\u4E0A\u7684\u8FD9\u4EFD\u8349\u7A3F\u5C06\u88AB\u5220\u9664\uFF0C\u5DF2\u7ECF\u4FDD\u5B58\u7684\u9898\u76EE\u4E0D\u53D7\u5F71\u54CD\u3002"), confirmLabel: t67("\u653E\u5F03\u4FEE\u6539"), onCancel: () => cancelDiscard(), onConfirm: discardDraft }),
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(ConfirmDialog, { present: Boolean(copyCandidate), title: t67("\u66FF\u6362\u672A\u5B8C\u6210\u7684\u9898\u76EE\uFF1F"), message: t67("\u4F60\u8FD8\u6709\u4E00\u4EFD\u672A\u5B8C\u6210\u7684\u65B0\u9898\u8349\u7A3F\u3002\u5F00\u59CB\u8FD9\u6B21\u6539\u7F16\u4F1A\u66FF\u6362\u5B83\uFF0C\u5DF2\u4FDD\u5B58\u7684\u9898\u76EE\u4E0D\u53D7\u5F71\u54CD\u3002"), confirmLabel: t67("\u66FF\u6362\u5E76\u5F00\u59CB\u6539\u7F16"), onCancel: () => cancelCopy(), onConfirm: replaceWithCopy }),
+          (0, import_jsx_runtime29.jsx)(globalThis.__tbx.KitConfirmDialog, { present: Boolean(lifecycleAction),
+              title: `${lifecycleAction?.mode === "purge" ? t67("\u5F7B\u5E95\u5220\u9664") : lifecycleAction?.mode === "restore" ? t67("\u6062\u590D") : t67("\u5F52\u6863")}${lifecycleAction?.kind === "import" ? t67("\u6750\u6599") : t67("\u9898\u76EE")}\uFF1F`,
+              message: lifecycleAction?.mode === "purge" ? t67("\u201C{{value}}\u201D\u53CA\u5176\u672C\u5730\u8349\u7A3F\u5C06\u5F7B\u5E95\u5220\u9664\uFF0C\u65E0\u6CD5\u6062\u590D\u3002{{detail}}", { value: lifecycleAction?.item.title || t67("\u672A\u547D\u540D\u9898\u76EE"), detail: lifecycleAction?.kind === "import" ? t67("\u5DF2\u5165\u5E93\u7684\u9898\u76EE\u4F1A\u4FDD\u7559\u3002") : t67("\u5DF2\u6709\u6539\u7F16\u9898\u4F1A\u4FDD\u7559\u3002") }) : lifecycleAction?.mode === "restore" ? t67("\u6062\u590D\u540E\uFF0C\u4F1A\u91CD\u65B0\u51FA\u73B0\u5728\u9898\u5E93\u4E2D\u3002") : t67("\u5C06\u79FB\u51FA\u5F53\u524D\u5217\u8868\u3002\u4E4B\u540E\u53EF\u4EE5\u5728\u5DE6\u4FA7\u7684\u201C\u5DF2\u5F52\u6863\u201D\u91CC\u6062\u590D\u6216\u5F7B\u5E95\u5220\u9664\u3002"),
+              danger: lifecycleAction?.mode === "purge",
+              icon: lifecycleAction?.mode === "restore" ? "restore" : "trash",
               busy,
-              confirmLabel: busy ? t67("\u6B63\u5728\u5904\u7406\u2026") : lifecycleAction.mode === "purge" ? t67("\u5F7B\u5E95\u5220\u9664") : lifecycleAction.mode === "restore" ? t67("\u786E\u8BA4\u6062\u590D") : t67("\u786E\u8BA4\u5F52\u6863"),
+              confirmLabel: busy ? t67("\u6B63\u5728\u5904\u7406\u2026") : lifecycleAction?.mode === "purge" ? t67("\u5F7B\u5E95\u5220\u9664") : lifecycleAction?.mode === "restore" ? t67("\u786E\u8BA4\u6062\u590D") : t67("\u786E\u8BA4\u5F52\u6863"),
               onConfirm: confirmLifecycle,
               onCancel: () => cancelLifecycle(),
               children: message && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "q-error", role: "alert", children: message })
-            }) }),
+            }),
           /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(ModulePresence, { present: Boolean(newCategory), children: newCategory && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(QuestionDialog, { title: newCategory.kind === "types" ? t67("\u65B0\u5EFA\u9898\u578B") : t67("\u65B0\u5EFA\u6807\u7B7E"), onClose: () => closeCategory(), children: /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("form", { onSubmit: (event) => {
             event.preventDefault();
             createCategory();
@@ -97097,7 +97117,8 @@ $$${math3}$$
             {
               "aria-label": t67(k3 === "types" ? "\u5220\u9664\u9898\u578B\u201C{{name}}\u201D" : "\u5220\u9664\u6807\u7B7E\u201C{{name}}\u201D", { name: category.name }),
               disabled: disabled || deleting,
-              onClick: async () => {
+              onClick: async (event) => {
+                event.currentTarget.closest('.q-taxonomy-row')?.querySelector('input')?.focus();
                 setDeleting(true);
                 setError("");
                 try {
@@ -97126,19 +97147,20 @@ $$${math3}$$
       ] }, k3)),
       /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("button", { disabled: disabled || deleting, onClick: () => onSave(draft), children: t67("\u4FDD\u5B58\u5206\u7C7B") }),
       error2 && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { role: "alert", children: error2 }),
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(ModulePresence, { present: Boolean(pendingDelete), children: pendingDelete && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
         ConfirmDialog,
         {
-          title: t67(pendingDelete.kind === "types" ? "\u5220\u9664\u9898\u578B" : "\u5220\u9664\u6807\u7B7E"),
-          message: t67(pendingDelete.kind === "types" ? "\u5220\u9664\u9898\u578B\u201C{{name}}\u201D\u5E76\u89E3\u9664 {{affected}} \u9053\u9898\u7684\u5173\u8054\uFF1F\u9898\u76EE\u672C\u8EAB\u4F1A\u4FDD\u7559\u3002" : "\u5220\u9664\u6807\u7B7E\u201C{{name}}\u201D\u5E76\u89E3\u9664 {{affected}} \u9053\u9898\u7684\u5173\u8054\uFF1F\u9898\u76EE\u672C\u8EAB\u4F1A\u4FDD\u7559\u3002", { name: pendingDelete.name, affected: pendingDelete.affected }),
-          confirmLabel: t67(pendingDelete.kind === "types" ? "\u5220\u9664\u9898\u578B" : "\u5220\u9664\u6807\u7B7E"),
+          present: Boolean(pendingDelete),
+          title: t67(pendingDelete?.kind === "types" ? "\u5220\u9664\u9898\u578B" : "\u5220\u9664\u6807\u7B7E"),
+          message: t67(pendingDelete?.kind === "types" ? "\u5220\u9664\u9898\u578B\u201C{{name}}\u201D\u5E76\u89E3\u9664 {{affected}} \u9053\u9898\u7684\u5173\u8054\uFF1F\u9898\u76EE\u672C\u8EAB\u4F1A\u4FDD\u7559\u3002" : "\u5220\u9664\u6807\u7B7E\u201C{{name}}\u201D\u5E76\u89E3\u9664 {{affected}} \u9053\u9898\u7684\u5173\u8054\uFF1F\u9898\u76EE\u672C\u8EAB\u4F1A\u4FDD\u7559\u3002", { name: pendingDelete?.name, affected: pendingDelete?.affected }),
+          confirmLabel: t67(pendingDelete?.kind === "types" ? "\u5220\u9664\u9898\u578B" : "\u5220\u9664\u6807\u7B7E"),
           onCancel: () => setPendingDelete(null),
           onConfirm: () => {
-            setDraft((current) => ({ ...current, [pendingDelete.kind]: current[pendingDelete.kind].filter((item) => item.id !== pendingDelete.id) }));
+            setDraft((current) => ({ ...current, [pendingDelete?.kind]: current[pendingDelete?.kind].filter((item) => item.id !== pendingDelete?.id) }));
             setPendingDelete(null);
           }
         }
-      ) })
+      )
     ] });
   }
 
@@ -99482,12 +99504,26 @@ $$${math3}$$
   init_define_import_meta_env();
   var import_react49 = __toESM(require_react(), 1);
   var import_jsx_runtime37 = __toESM(require_jsx_runtime(), 1);
+  var ResourceDialogVisible = (0, import_react49.createContext)(true);
+  function ResourceDialogPresence({ present, children }) {
+    const opening2 = (0, import_react49.useRef)({ present: false, key: 0 });
+    if (present && !opening2.current.present) opening2.current.key += 1;
+    opening2.current.present = Boolean(present);
+    return /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(ResourceDialogVisible.Provider, {
+      value: Boolean(present),
+      children: /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(ModulePresence, { present, children }, opening2.current.key)
+    });
+  }
+  function ResourceDialogFocus({ dialogRef, onClose }) {
+    useModuleDialogFocus(dialogRef, onClose);
+    (0, import_react49.useEffect)(() => {
+      dialogRef.current?.querySelector("input:not([type=file]), textarea, select")?.focus();
+    }, [dialogRef]);
+    return null;
+  }
   function ResourceDialog({ label: label2, onClose, children }) {
     const ref = (0, import_react49.useRef)(null);
-    useModuleDialogFocus(ref, onClose);
-    (0, import_react49.useEffect)(() => {
-      ref.current?.querySelector("input:not([type=file]), textarea, select")?.focus();
-    }, []);
+    const active4 = (0, import_react49.useContext)(ResourceDialogVisible);
     return /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(
       "div",
       {
@@ -99495,7 +99531,7 @@ $$${math3}$$
         onClick: (event) => {
           if (event.target === event.currentTarget) onClose();
         },
-        children: /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(
+        children: /* @__PURE__ */ (0, import_jsx_runtime37.jsxs)(
           "div",
           {
             ref,
@@ -99503,7 +99539,10 @@ $$${math3}$$
             role: "dialog",
             "aria-modal": "true",
             "aria-label": label2,
-            children
+            children: [
+              active4 && /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(ResourceDialogFocus, { dialogRef: ref, onClose }),
+              children
+            ]
           }
         )
       }
@@ -100058,6 +100097,7 @@ $$${math3}$$
     const sceneRef = (0, import_react52.useRef)(scene);
     sceneRef.current = scene;
     const [items, setItems] = (0, import_react52.useState)([]), [searchInfo, setSearchInfo] = (0, import_react52.useState)(null), [allItems, setAllItems] = (0, import_react52.useState)([]), [tax, setTax] = (0, import_react52.useState)({ version: 1, folders: [], tags: [] }), [files, setFiles] = (0, import_react52.useState)({}), [fileErrors, setFileErrors] = (0, import_react52.useState)({}), [previews, setPreviews] = (0, import_react52.useState)({});
+    const [taxonomyLoaded, setTaxonomyLoaded] = (0, import_react52.useState)(false);
     const [listLoading, setListLoading] = (0, import_react52.useState)(true);
     const [revision, setRevision] = (0, import_react52.useState)(0);
     const [historyOpen, setHistoryOpen] = (0, import_react52.useState)(false);
@@ -100142,6 +100182,7 @@ $$${math3}$$
         receiveSearch(list3);
         setAllItems([...activeItems.items, ...deleted.items]);
         setTax(taxonomy);
+        setTaxonomyLoaded(true);
         const ids = [
           ...new Set(
             [...activeItems.items, ...deleted.items].map((i4) => i4.fileId)
@@ -100191,7 +100232,12 @@ $$${math3}$$
       revision
     ]);
     const item = allItems.find((i4) => i4.id === scene.openId), file = item && files[item.fileId];
-    const draft = item ? scene.drafts[item.id] ?? metadata(item) : null;
+    const storedDraft = item ? scene.drafts[item.id] ?? metadata(item) : null;
+    const draft = storedDraft && taxonomyLoaded ? {
+      ...storedDraft,
+      folderId: tax.folders.some((folder) => folder.id === storedDraft.folderId) ? storedDraft.folderId : null,
+      tagIds: storedDraft.tagIds.filter((id3) => tax.tags.some((tag) => tag.id === id3))
+    } : storedDraft;
     (0, import_react52.useEffect)(() => {
       if (!scene.openId && listRef.current)
         listRef.current.scrollTop = scene.scroll;
@@ -100778,7 +100824,7 @@ $$${math3}$$
           )
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(ModulePresence, { present: Boolean(pending?.duplicateMatches?.length), children: pending?.duplicateMatches?.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)(ResourceDialog, { label: t67("\u53D1\u73B0\u91CD\u590D\u8D44\u6599"), onClose: skipDuplicate, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(ResourceDialogPresence, { present: Boolean(pending?.duplicateMatches?.length), children: pending?.duplicateMatches?.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)(ResourceDialog, { label: t67("\u53D1\u73B0\u91CD\u590D\u8D44\u6599"), onClose: skipDuplicate, children: [
         /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("h2", { children: t67("\u8FD9\u4EFD\u6587\u4EF6\u5DF2\u7ECF\u6536\u5F55\u8FC7") }),
         /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)("p", { children: [
           "\u201C",
@@ -100818,7 +100864,7 @@ $$${math3}$$
           )
         ] })
       ] }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(ModulePresence, { present: !!scene.taxonomyDraft?.edit, children: scene.taxonomyDraft?.edit && /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(ResourceDialogPresence, { present: !!scene.taxonomyDraft?.edit, children: scene.taxonomyDraft?.edit && /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
         TaxonomyDialog,
         {
           value: tax,
@@ -100830,7 +100876,7 @@ $$${math3}$$
           items: allItems
         }
       ) }),
-      /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(ModulePresence, { present: historyOpen && !!item, children: historyOpen && item && /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(ResourceDialogPresence, { present: historyOpen && !!item, children: historyOpen && item && /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
         FileHistory,
         {
           client,
@@ -100848,7 +100894,7 @@ $$${math3}$$
           }
         }
       ) }),
-      /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(ModulePresence, { present: !!organize, children: organize && /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(ResourceDialogPresence, { present: !!organize, children: organize && /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
         Organize,
         {
           ...organize,
@@ -100861,7 +100907,7 @@ $$${math3}$$
           }
         }
       ) }),
-      /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(ModulePresence, { present: !!conflict, children: conflict && /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)(ResourceDialog, { label: t67("\u7248\u672C\u51B2\u7A81"), onClose: () => operations.dismissConflict(), children: [
+      /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(ResourceDialogPresence, { present: !!conflict, children: conflict && /* @__PURE__ */ (0, import_jsx_runtime41.jsxs)(ResourceDialog, { label: t67("\u7248\u672C\u51B2\u7A81"), onClose: () => operations.dismissConflict(), children: [
         /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("h2", { children: t67("\u5185\u5BB9\u5DF2\u5728\u5176\u4ED6\u5730\u65B9\u66F4\u65B0") }),
         /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("p", { children: conflict.record.purpose === "organize" ? t67("\u6240\u9009\u8D44\u6599\u4E2D\u6709\u5185\u5BB9\u5DF2\u53D8\u5316\uFF0C\u672C\u6B21\u6574\u7406\u5168\u90E8\u672A\u751F\u6548\u3002\u8BF7\u5173\u95ED\u63D0\u793A\u540E\u91CD\u65B0\u9009\u62E9\u8D44\u6599\u3002") : t67("\u4F60\u7684\u8F93\u5165\u4ECD\u4FDD\u7559\u3002\u5F53\u524D\u8D44\u6E90\uFF1A{{value}}\uFF0C\u7248\u672C {{detail}}\u3002", { value: item?.title ?? "", detail: item?.version ?? "" }) }),
         /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("pre", { children: item?.note }),
@@ -100883,17 +100929,17 @@ $$${math3}$$
         ),
         /* @__PURE__ */ (0, import_jsx_runtime41.jsx)("button", { onClick: () => operations.dismissConflict(), children: t67("\u7A0D\u540E\u5904\u7406") })
       ] }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(ModulePresence, { present: !!dialog, children: dialog && (0, import_jsx_runtime41.jsx)(globalThis.__tbx.KitConfirmDialog, {
-        title: dialog.kind === "replace" ? t67("\u66F4\u65B0\u5F53\u524D\u6587\u4EF6") : dialog.kind === "purge" ? t67("\u5F7B\u5E95\u5220\u9664\u8D44\u6599") : dialog.item.deletedAt ? t67("\u6062\u590D\u8D44\u6599") : t67("\u5F52\u6863\u8D44\u6599"),
-        message: dialog.kind === "replace" ? `${file?.name ?? ""} \u2192 ${dialog.source.name}` : dialog.kind === "purge" ? t67("\u201C{{title}}\u201D\u5C06\u4ECE\u8D44\u6E90\u5E93\u6C38\u4E45\u5220\u9664\uFF0C\u65E0\u6CD5\u6062\u590D\u3002", { title: dialog.item.title }) : dialog.item.deletedAt ? t67("\u6062\u590D\u540E\u53EF\u4EE5\u7EE7\u7EED\u67E5\u770B\u548C\u6574\u7406\u8FD9\u4EFD\u8D44\u6599\u3002") : t67("\u8D44\u6599\u4F1A\u79FB\u5165\u201C\u5DF2\u5F52\u6863\u8D44\u6599\u201D\uFF0C\u53EF\u4EE5\u968F\u65F6\u6062\u590D\u3002"),
-        children: dialog.kind === "replace" ? (0, import_jsx_runtime41.jsx)("p", { children: t67("\u540D\u79F0\u3001\u6587\u4EF6\u5939\u3001\u6807\u7B7E\u548C\u5907\u6CE8\u90FD\u4F1A\u4FDD\u7559\u3002") }) : null,
-        danger: dialog.kind === "purge",
-        icon: dialog.kind === "replace" ? "upload" : dialog.item?.deletedAt ? "restore" : "trash",
+      (0, import_jsx_runtime41.jsx)(globalThis.__tbx.KitConfirmDialog, { present: !!dialog,
+        title: dialog?.kind === "replace" ? t67("\u66F4\u65B0\u5F53\u524D\u6587\u4EF6") : dialog?.kind === "purge" ? t67("\u5F7B\u5E95\u5220\u9664\u8D44\u6599") : dialog?.item.deletedAt ? t67("\u6062\u590D\u8D44\u6599") : t67("\u5F52\u6863\u8D44\u6599"),
+        message: dialog?.kind === "replace" ? `${file?.name ?? ""} \u2192 ${dialog?.source.name}` : dialog?.kind === "purge" ? t67("\u201C{{title}}\u201D\u5C06\u4ECE\u8D44\u6E90\u5E93\u6C38\u4E45\u5220\u9664\uFF0C\u65E0\u6CD5\u6062\u590D\u3002", { title: dialog?.item.title }) : dialog?.item.deletedAt ? t67("\u6062\u590D\u540E\u53EF\u4EE5\u7EE7\u7EED\u67E5\u770B\u548C\u6574\u7406\u8FD9\u4EFD\u8D44\u6599\u3002") : t67("\u8D44\u6599\u4F1A\u79FB\u5165\u201C\u5DF2\u5F52\u6863\u8D44\u6599\u201D\uFF0C\u53EF\u4EE5\u968F\u65F6\u6062\u590D\u3002"),
+        children: dialog?.kind === "replace" ? (0, import_jsx_runtime41.jsx)("p", { children: t67("\u540D\u79F0\u3001\u6587\u4EF6\u5939\u3001\u6807\u7B7E\u548C\u5907\u6CE8\u90FD\u4F1A\u4FDD\u7559\u3002") }) : null,
+        danger: dialog?.kind === "purge",
+        icon: dialog?.kind === "replace" ? "upload" : dialog?.item?.deletedAt ? "restore" : "trash",
         disabled,
-        confirmLabel: dialog.kind === "replace" ? t67("\u66F4\u65B0") : dialog.kind === "purge" ? t67("\u5F7B\u5E95\u5220\u9664") : dialog.item.deletedAt ? t67("\u6062\u590D") : t67("\u5F52\u6863"),
+        confirmLabel: dialog?.kind === "replace" ? t67("\u66F4\u65B0") : dialog?.kind === "purge" ? t67("\u5F7B\u5E95\u5220\u9664") : dialog?.item.deletedAt ? t67("\u6062\u590D") : t67("\u5F52\u6863"),
         onConfirm: operations.confirmOperation,
         onCancel: () => operations.dismissConfirmation()
-      }) })
+      })
     ] });
   }
 
@@ -101032,14 +101078,10 @@ $$${math3}$$
       resolveRef.current = resolve;
       setMessage({ text: message2, ...options });
     });
-    const dialog = /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(ModulePresence, { present: !!message, children: message && /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(MathConfirmDialog, { title: message.title ?? t67("\u786E\u8BA4\u64CD\u4F5C"), message: message.text, confirmLabel: message.confirmLabel ?? t67("\u7EE7\u7EED"), onConfirm: () => finish(true), onCancel: () => finish(false) }) });
+    const dialog = /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(ConfirmDialog, { present: !!message, title: message?.title ?? t67("\u786E\u8BA4\u64CD\u4F5C"), message: message?.text, confirmLabel: message?.confirmLabel ?? t67("\u7EE7\u7EED"), onConfirm: () => finish(true), onCancel: () => finish(false) });
     return [confirm, dialog];
   }
-  function MathConfirmDialog(props) {
-    const ref = (0, import_react55.useRef)(null);
-    useMathDialogKeys(ref);
-    return /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("div", { ref, className: "wb-dialog-host", children: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(ConfirmDialog, { ...props }) });
-  }
+  // Shared confirmation owns the keyboard and retained exit.
 
   // apps/web/src/features/math/useMathWorkSession.js
   init_define_import_meta_env();
@@ -101665,6 +101707,9 @@ $$${math3}$$
     );
     const mathRequest = client.json;
     const [account, setAccount] = (0, import_react58.useState)(null), [loadedStorage, setLoadedStorage] = (0, import_react58.useState)(null), [busy, setBusy] = (0, import_react58.useState)(false), [locked, setLocked] = (0, import_react58.useState)(false), [draft, setDraft] = (0, import_react58.useState)(null), [items, setItems] = (0, import_react58.useState)([]), [selected2, setSelected] = (0, import_react58.useState)(0), [status, setStatus] = (0, import_react58.useState)("\u672A\u4FDD\u5B58"), [message, setMessage] = (0, import_react58.useState)(""), [pending, setPending] = (0, import_react58.useState)(null), [search3, setSearch] = (0, import_react58.useState)(""), [deleted, setDeleted] = (0, import_react58.useState)(false), [format4, setFormat] = (0, import_react58.useState)("png"), [background, setBackground] = (0, import_react58.useState)("transparent"), [exportWidth, setExportWidth] = (0, import_react58.useState)(1600), [conflict, setConflict] = (0, import_react58.useState)(null);
+    const listQuery = (0, import_react58.useRef)({ search: search3, deleted });
+    const listRequest = (0, import_react58.useRef)(0);
+    listQuery.current = { search: search3, deleted };
     const history = useDraftHistory();
     const ggbFlush = (0, import_react58.useRef)(null);
     const assistantRequest = (0, import_react58.useRef)(null);
@@ -101933,13 +101978,17 @@ $$${math3}$$
     }, [route?.workId, storage2, loadedStorage]);
     async function refresh() {
       const epoch = generation.current;
+      const query = listQuery.current;
+      const request2 = ++listRequest.current;
+      const current = () => epoch === generation.current && request2 === listRequest.current
+        && query.search === listQuery.current.search && query.deleted === listQuery.current.deleted;
       try {
         const result = await mathRequest(
-          `${base3}?q=${encodeURIComponent(search3)}&state=${deleted ? "deleted" : "active"}`
+          `${base3}?q=${encodeURIComponent(query.search)}&state=${query.deleted ? "deleted" : "active"}`
         );
-        if (epoch === generation.current) setItems(result.items);
+        if (current()) setItems(result.items);
       } catch (e3) {
-        if (epoch === generation.current) handleError(e3);
+        if (current()) handleError(e3);
       }
     }
     useForegroundRefresh(async () => {
@@ -151830,6 +151879,8 @@ ${face.svg()}`;
         minDistance: 5,
         longPressDelay: 250,
         eventData: (node2) => {
+          panel.current?.classList.add("is-dragging");
+          if (gesture.current) gesture.current.dragged = true;
           const event = eventsRef.current.find((value) => value.id === node2.dataset.eventId);
           return { title: event.title, color: event.extendedProps.color, duration: { days: event.extendedProps.displayDays }, create: false };
         }
@@ -151838,10 +151889,20 @@ ${face.svg()}`;
         const current = gesture.current;
         if (current && Math.hypot(event.clientX - current.x, event.clientY - current.y) >= 5) current.dragged = true;
       };
+      const restore = () => panel.current?.classList.remove("is-dragging");
+      const cancel = (event) => { if (event.key === "Escape") restore(); };
       window.addEventListener("pointermove", track);
+      window.addEventListener("mouseup", restore);
+      window.addEventListener("touchend", restore);
+      window.addEventListener("touchcancel", restore);
+      window.addEventListener("keydown", cancel, true);
       return () => {
-        draggable.destroy();
+        draggable.destroy(); restore();
         window.removeEventListener("pointermove", track);
+        window.removeEventListener("mouseup", restore);
+        window.removeEventListener("touchend", restore);
+        window.removeEventListener("touchcancel", restore);
+        window.removeEventListener("keydown", cancel, true);
       };
     }, [disabled]);
     const label2 = new Intl.DateTimeFormat(i18n_default.resolvedLanguage, { dateStyle: "long", timeZone: "UTC" }).format(/* @__PURE__ */ new Date(`${date2}T00:00:00Z`));
@@ -156065,6 +156126,16 @@ ${face.svg()}`;
           event.preventDefault();
           onClose();
         },
+        onKeyDown: (event) => {
+          if (event.key !== "Tab") return;
+          const controls = [...event.currentTarget.querySelectorAll('button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), a[href], [tabindex="0"]')]
+            .filter((element) => element.getClientRects().length && !element.closest("[inert]"));
+          const edge = event.shiftKey ? controls[0] : controls.at(-1);
+          if (document.activeElement === edge) {
+            event.preventDefault();
+            (event.shiftKey ? controls.at(-1) : controls[0])?.focus();
+          }
+        },
         onClick: (event) => {
           if (event.target === event.currentTarget) {
             const box2 = event.currentTarget.getBoundingClientRect();
@@ -156078,7 +156149,7 @@ ${face.svg()}`;
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime83.jsx)("div", { className: "settings-confirm-copy", children }),
           /* @__PURE__ */ (0, import_jsx_runtime83.jsxs)("div", { className: "settings-confirm-actions", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime83.jsx)("button", { type: "button", className: "wb-button", onClick: onClose, autoFocus: true, children: closeLabel || (confirmLabel ? t67("\u53D6\u6D88") : t67("\u5173\u95ED")) }),
+            /* @__PURE__ */ (0, import_jsx_runtime83.jsx)("button", { type: "button", className: "wb-button", onClick: onClose, children: closeLabel || (confirmLabel ? t67("\u53D6\u6D88") : t67("\u5173\u95ED")) }),
             confirmLabel && /* @__PURE__ */ (0, import_jsx_runtime83.jsx)("button", { type: "button", className: `wb-button ${danger ? "settings-danger-button" : "settings-primary"}`, disabled: confirmDisabled, onClick: onConfirm, children: confirmLabel })
           ] })
         ]
@@ -156106,12 +156177,23 @@ ${face.svg()}`;
     const { t: t67 } = useTranslation("reliability");
     const [exports, setExports] = (0, import_react97.useState)([]), [error2, setError] = (0, import_react97.useState)(""), [message, setMessage] = (0, import_react97.useState)(""), [busy, setBusy] = (0, import_react97.useState)("");
     const { accountKey } = useWorkbenchShell();
+    const exportContent = (0, import_react97.useRef)(null);
+    const exportTrigger = (0, import_react97.useRef)(null);
+    const returnToExport = (0, import_react97.useRef)(false);
+    function focusExportAction() {
+      const dialog = exportContent.current?.closest("dialog");
+      if (dialog?.contains(document.activeElement)) dialog.querySelector(".settings-confirm-actions button")?.focus();
+    }
     const [exportOpen, setExportOpen] = (0, import_react97.useState)(false);
-    const [resetOpen, setResetOpen] = (0, import_react97.useState)(false);
     const action = useIdempotentSubmit({
       accountKey,
       name: "pending:manual-data"
     });
+    (0, import_react97.useEffect)(() => {
+      if (busy || action.pending || !returnToExport.current) return;
+      returnToExport.current = false;
+      if (document.activeElement === document.body) exportTrigger.current?.focus();
+    }, [busy, action.pending]);
     const mounted = (0, import_react97.useRef)(true);
     async function run({ key, payload }) {
       const allowed = /^\/api\/modules\/(questions\/v2\/(items|imports)|resources\/items|math\/v1\/works|schedule\/entries)\/[0-9a-f-]{36}\/deletion$/.test(
@@ -156166,6 +156248,7 @@ ${face.svg()}`;
       }
     }
     async function download2(item) {
+      focusExportAction();
       setBusy(item.id);
       setError("");
       try {
@@ -156183,6 +156266,7 @@ ${face.svg()}`;
       }
     }
     async function remove2(item) {
+      focusExportAction();
       setBusy(item.id);
       setError("");
       try {
@@ -156196,6 +156280,8 @@ ${face.svg()}`;
     }
     async function retry() {
       const isExport = action.pending?.payload.path === `${base4}/exports`;
+      returnToExport.current = !exportOpen && Boolean(document.activeElement?.closest(".reliability-pending"));
+      focusExportAction();
       setBusy("retry");
       try {
         if (await action.retry(run)) {
@@ -156216,7 +156302,7 @@ ${face.svg()}`;
             /* @__PURE__ */ (0, import_jsx_runtime84.jsx)("h2", { id: "personal-data-title", children: t67("\u60A8\u7684\u6570\u636E") }),
             /* @__PURE__ */ (0, import_jsx_runtime84.jsx)("p", { children: t67("\u4EE5 ZIP \u6587\u4EF6\u4E0B\u8F7D\u4F60\u7684 TeachBuddy \u4E2A\u4EBA\u8D44\u6599") })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime84.jsxs)("button", { className: "wb-button", disabled: !!busy || !!action.pending, onClick: () => {
+          /* @__PURE__ */ (0, import_jsx_runtime84.jsxs)("button", { ref: exportTrigger, className: "wb-button", disabled: !!busy || !!action.pending, onClick: () => {
             setExportOpen(true);
             createExport();
           }, children: [
@@ -156231,13 +156317,12 @@ ${face.svg()}`;
           /* @__PURE__ */ (0, import_jsx_runtime84.jsx)("button", { className: "wb-button", disabled: !!busy, onClick: retry, children: t67("\u91CD\u8BD5\u786E\u8BA4\u64CD\u4F5C") }),
           /* @__PURE__ */ (0, import_jsx_runtime84.jsxs)(SettingsDisclosure, { title: t67("\u67E5\u770B\u5F85\u786E\u8BA4\u8BF7\u6C42"), children: [
             /* @__PURE__ */ (0, import_jsx_runtime84.jsx)("pre", { children: JSON.stringify(action.pending, null, 2) }),
-            /* @__PURE__ */ (0, import_jsx_runtime84.jsx)("button", { className: "wb-button", onClick: () => setResetOpen(true), children: t67("\u653E\u5F03\u91CD\u8BD5") })
           ] })
         ] })
       ] }),
       dangerActions,
       /* @__PURE__ */ (0, import_jsx_runtime84.jsxs)(SettingsConfirm, { show: exportOpen, title: t67("\u5BFC\u51FA\u4E2A\u4EBA\u8D44\u6599"), onClose: () => setExportOpen(false), children: [
-        /* @__PURE__ */ (0, import_jsx_runtime84.jsx)("p", { children: t67("\u8D44\u6599\u5305\u5305\u542B\u5DF2\u4FDD\u5B58\u53CA\u5DF2\u5220\u9664\u7684\u8D44\u6599\u3001\u539F\u6587\u4EF6\u4E0E\u5BF9\u8BDD\u3002\u4E0B\u8F7D\u540E\u89E3\u538B\uFF0C\u6253\u5F00 index.html \u9605\u8BFB\u3002") }),
+        /* @__PURE__ */ (0, import_jsx_runtime84.jsx)("p", { ref: exportContent, children: t67("\u8D44\u6599\u5305\u5305\u542B\u5DF2\u4FDD\u5B58\u53CA\u5DF2\u5220\u9664\u7684\u8D44\u6599\u3001\u539F\u6587\u4EF6\u4E0E\u5BF9\u8BDD\u3002\u4E0B\u8F7D\u540E\u89E3\u538B\uFF0C\u6253\u5F00 index.html \u9605\u8BFB\u3002") }),
         /* @__PURE__ */ (0, import_jsx_runtime84.jsx)("p", { className: "wb-note", children: t67("\u6587\u4EF6\u53EF\u91CD\u65B0\u4E0A\u4F20\uFF0C\u6B63\u6587\u4E0E\u516C\u5F0F\u53EF\u590D\u5236\uFF1B\u8D44\u6599\u5305\u4E0D\u80FD\u8986\u76D6\u8D26\u6237\u6216\u6062\u590D\u539F\u5173\u8054\u3002") }),
         busy === "export" && /* @__PURE__ */ (0, import_jsx_runtime84.jsx)("p", { role: "status", children: t67("\u6B63\u5728\u751F\u6210\u8D44\u6599\u5305\u2026") }),
         visibleError && !action.pending && /* @__PURE__ */ (0, import_jsx_runtime84.jsx)("button", { className: "wb-button", disabled: !!busy, onClick: createExport, children: t67("\u91CD\u8BD5\u751F\u6210") }),
@@ -156254,14 +156339,9 @@ ${face.svg()}`;
           /* @__PURE__ */ (0, import_jsx_runtime84.jsx)("button", { className: "wb-button", disabled: !!busy, onClick: retry, children: t67("\u91CD\u8BD5\u786E\u8BA4\u64CD\u4F5C") }),
           /* @__PURE__ */ (0, import_jsx_runtime84.jsxs)(SettingsDisclosure, { title: t67("\u67E5\u770B\u5F85\u786E\u8BA4\u8BF7\u6C42"), children: [
             /* @__PURE__ */ (0, import_jsx_runtime84.jsx)("pre", { children: JSON.stringify(action.pending, null, 2) }),
-            /* @__PURE__ */ (0, import_jsx_runtime84.jsx)("button", { className: "wb-button", onClick: () => setResetOpen(true), children: t67("\u653E\u5F03\u91CD\u8BD5") })
           ] })
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime84.jsx)(SettingsConfirm, { show: resetOpen, title: t67("\u653E\u5F03\u91CD\u8BD5\uFF1F"), confirmLabel: t67("\u653E\u5F03\u91CD\u8BD5"), onClose: () => setResetOpen(false), onConfirm: () => {
-        action.reset();
-        setResetOpen(false);
-      }, children: /* @__PURE__ */ (0, import_jsx_runtime84.jsx)("p", { children: t67("\u653E\u5F03\u91CD\u8BD5\u4E0D\u4F1A\u64A4\u9500\u5DF2\u5B8C\u6210\u7684\u64CD\u4F5C\u3002\u8BF7\u4FDD\u7559\u8BF7\u6C42\u5E76\u6838\u5BF9\u5F53\u524D\u8D44\u6599\u540E\u518D\u5F00\u59CB\u65B0\u64CD\u4F5C\u3002") }) })
     ] });
   }
 
@@ -156420,8 +156500,15 @@ ${face.svg()}`;
       document.addEventListener("pointerdown", outside);
       return () => document.removeEventListener("pointerdown", outside);
     }, [open2]);
-    return /* @__PURE__ */ (0, import_jsx_runtime85.jsxs)("div", { className: "settings-language", ref: root6, onKeyDown: (event) => {
+    return /* @__PURE__ */ (0, import_jsx_runtime85.jsxs)("div", { className: "settings-language", ref: root6, onBlur: (event) => {
+      if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false);
+    }, onKeyDown: (event) => {
       if (disabled) return;
+      if (event.key === "Tab" && open2) {
+        setOpen(false);
+        trigger.current?.focus();
+        return;
+      }
       if (event.key === "Escape") {
         event.stopPropagation();
         setOpen(false);
@@ -156465,6 +156552,7 @@ ${face.svg()}`;
     const { account, deleteAccount, updateNickname, logoutState, pendingDeletions, resumeDeletion } = useAuth();
     const running = (0, import_react98.useRef)(false);
     const avatarInput = (0, import_react98.useRef)(null);
+    const avatarTrigger = (0, import_react98.useRef)(null);
     const { theme, background, avatar } = shell.appearance;
     const preferences = shell.preferences;
     const appearanceDisabled = !preferences.baseline || preferences.status === "identity";
@@ -156498,6 +156586,9 @@ ${face.svg()}`;
         return;
       }
       const request2 = ++avatarRequest.current;
+      if (document.activeElement === avatarTrigger.current) {
+        avatarInput.current?.closest(".settings-profile")?.querySelector(".settings-nickname-trigger, #settings-nickname")?.focus();
+      }
       setAvatarError("");
       setAvatarLoading(true);
       let bitmap;
@@ -156521,11 +156612,12 @@ ${face.svg()}`;
           /* @__PURE__ */ (0, import_jsx_runtime85.jsxs)("div", { className: "settings-avatar", children: [
             avatar ? /* @__PURE__ */ (0, import_jsx_runtime85.jsx)("img", { src: avatar, alt: t67("\u8D26\u6237\u5934\u50CF") }) : /* @__PURE__ */ (0, import_jsx_runtime85.jsx)("span", { children: Array.from(nickname || "T")[0] }),
             /* @__PURE__ */ (0, import_jsx_runtime85.jsxs)("div", { className: "settings-avatar-tools", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime85.jsx)("button", { type: "button", "aria-label": t67("\u9009\u62E9\u5934\u50CF"), disabled: avatarLoading || appearanceDisabled, onClick: () => avatarInput.current?.click(), children: /* @__PURE__ */ (0, import_jsx_runtime85.jsxs)("svg", { width: "18", height: "18", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.8", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime85.jsx)("button", { ref: avatarTrigger, type: "button", "aria-label": t67("\u9009\u62E9\u5934\u50CF"), disabled: avatarLoading || appearanceDisabled, onClick: () => avatarInput.current?.click(), children: /* @__PURE__ */ (0, import_jsx_runtime85.jsxs)("svg", { width: "18", height: "18", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.8", children: [
                 /* @__PURE__ */ (0, import_jsx_runtime85.jsx)("path", { d: "M8 5 9.5 3h5L16 5h4v15H4V5Z" }),
                 /* @__PURE__ */ (0, import_jsx_runtime85.jsx)("circle", { cx: "12", cy: "12", r: "4" })
               ] }) }),
-              /* @__PURE__ */ (0, import_jsx_runtime85.jsx)("button", { type: "button", "aria-label": t67("\u5220\u9664\u5934\u50CF"), disabled: !avatar || avatarLoading || appearanceDisabled, onClick: () => {
+              /* @__PURE__ */ (0, import_jsx_runtime85.jsx)("button", { type: "button", "aria-label": t67("\u5220\u9664\u5934\u50CF"), disabled: !avatar || avatarLoading || appearanceDisabled, onClick: (event) => {
+                if (document.activeElement === event.currentTarget) avatarTrigger.current?.focus();
                 setAvatarError("");
                 shell.setAppearance({ avatar: "" });
               }, children: /* @__PURE__ */ (0, import_jsx_runtime85.jsx)("svg", { width: "17", height: "17", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "1.8", children: /* @__PURE__ */ (0, import_jsx_runtime85.jsx)("path", { d: "M4 6h16M9 6V3h6v3M6 6l1 15h10l1-15M10 10v7m4-7v7" }) }) })
@@ -157002,6 +157094,7 @@ ${face.svg()}`;
   globalThis.__tb = {
     React: require_react(),
     createPortal: require_react_dom().createPortal,
+    ModulePresence,
     i18n: i18n_default,
     useTranslation,
     useAuth,

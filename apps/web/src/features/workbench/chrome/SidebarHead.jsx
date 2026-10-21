@@ -4,6 +4,8 @@ import { useScene } from '../../../platform/device/useScene.js';
 import { useWorkbenchShell } from '../shellContext.js';
 import { createPortal } from 'react-dom';
 import { Icon } from '../../../components/icons.jsx';
+import { ConfirmMenuItem } from '../../../components/ui/confirm.jsx';
+import { tx } from '../../../i18n/presentation.js';
 import { routeClick } from './routes.js';
 import {
   COPYABLE_ITEMS, LANGUAGES,
@@ -351,16 +353,15 @@ function SemesterDialog({ mode, semester, semesters, onClose, onSubmit, onDelete
                   </button>
                   {moreOpen ? (
                     <div className="tb-dialog-more-menu" role="menu">
-                      <button
-                        type="button"
-                        role="menuitem"
+                      <ConfirmMenuItem
                         className="tb-dialog-more-item"
+                        label={tx('删除学期')}
                         disabled={semesters.length <= 1}
-                        onClick={() => {
+                        onConfirm={() => {
                           setMoreOpen(false);
                           onDelete(semester);
                         }}
-                      > {t("删除")} </button>
+                      />
                     </div>
                   ) : null}
                 </div>

@@ -124,7 +124,7 @@ export function ConfirmDialog({ present, ...props }) {
 
 function ConfirmContent({
   title, message, confirmLabel, cancelLabel, danger = true, icon, onConfirm, onCancel, children, busy, disabled,
-  secondaryLabel, onSecondary,
+  secondaryLabel, onSecondary, enterConfirms = false,
 }) {
   useLocale();
   const active = useContext(ConfirmVisible);
@@ -133,7 +133,7 @@ function ConfirmContent({
   const titleId = useId();
   const running = useRef(false);
   const actions = useRef(null);
-  actions.current = { onConfirm, onCancel, busy, disabled, active };
+  actions.current = { onConfirm, onCancel, busy, disabled, active, enterConfirms };
   useEffect(() => {
     if (!active) return undefined;
     const prev = document.activeElement;
@@ -150,7 +150,7 @@ function ConfirmContent({
         e.stopPropagation();
         if (e.isComposing || e.keyCode === 229 || e.repeat || e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
         const focusedButton = e.target.closest?.('button');
-        if (focusedButton && ref.current?.contains(focusedButton)) {
+        if (!actions.current.enterConfirms && focusedButton && ref.current?.contains(focusedButton)) {
           if (!focusedButton.disabled) focusedButton.click();
         } else {
           ref.current?.querySelector('.tbx-confirm-ok:not(:disabled)')?.click();

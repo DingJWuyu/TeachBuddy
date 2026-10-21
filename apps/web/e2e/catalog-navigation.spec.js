@@ -1,4 +1,4 @@
-import { moduleRow, navigationGroup, pointerDrag } from './catalog-navigation.helpers.mjs';
+import { addNavigationGroup, moduleRow, navigationGroup, pointerDrag } from './catalog-navigation.helpers.mjs';
 import fs from 'node:fs';
 import { test, expect } from '@playwright/test';
 import { createIntegration } from '../../api/test/fixtures/auth-integration/harness.js';
@@ -275,6 +275,150 @@ test('全局搜索键盘焦点限制在弹层内，关闭后返回入口', async
   await page.keyboard.press('Escape');
   await expect(page.getByRole('dialog', { name: '全局搜索', exact: true })).toHaveCount(0);
   await expect(trigger).toBeFocused();
+});
+
+test('侧栏分组选项取消后可立即用键盘重开和重命名', async ({ page }) => {
+  await page.getByRole('button', { name: '新建分组', exact: true }).click();
+  await page.getByRole('textbox', { name: '新分组名称' }).fill('课堂资料');
+  await page.getByRole('textbox', { name: '新分组名称' }).press('Enter');
+  const group = navigationGroup(page, '课堂资料');
+  const trigger = group.getByRole('button', { name: '分组选项', exact: true });
+  await trigger.click();
+  await page.keyboard.press('Escape');
+  await expect(trigger).toBeFocused();
+  await page.keyboard.press('Space');
+  await page.getByRole('menuitem', { name: '重命名分组', exact: true }).press('Enter');
+  const rename = page.getByRole('textbox', { name: '重命名分组', exact: true });
+  await expect(rename).toBeFocused();
+  await rename.fill('课堂精选');
+  await rename.press('Enter');
+  await expect(navigationGroup(page, '课堂精选')).toBeVisible();
+  await navigationGroup(page, '课堂精选').getByRole('button', { name: '分组选项', exact: true }).click();
+  await page.getByRole('menuitem', { name: '解散分组', exact: true }).click();
+  await page.getByRole('menuitem', { name: '确认解散', exact: true }).click();
+  await expect(navigationGroup(page, '课堂精选')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: '新建分组', exact: true })).toBeFocused();
+});
+
+test('资料类型多选筛选关闭后可用键盘重开并清除选择', async ({ page }) => {
+  await route(page, '/resources', 'resources');
+  await page.getByLabel('上传资料', { exact: true }).setInputFiles({
+    name: '课堂图.png', mimeType: 'image/png',
+    buffer: fs.readFileSync(new URL('../../../test/fixtures/questions/figure.png', import.meta.url)),
+  });
+  const trigger = page.locator('.tbx-filter-btn').filter({ hasText: '类型' });
+  await trigger.click();
+  await page.getByRole('menuitemcheckbox', { name: '图片', exact: true }).click();
+  await page.keyboard.press('Escape');
+  await expect(trigger).toBeFocused();
+  await page.keyboard.press('Space');
+  await expect(page.getByRole('menuitemcheckbox', { name: '图片', exact: true })).toHaveAttribute('aria-checked', 'true');
+  await page.getByRole('menuitemradio').click();
+  await expect(page.getByRole('menuitemcheckbox', { name: '图片', exact: true })).toHaveAttribute('aria-checked', 'false');
+  await page.keyboard.press('Escape');
+  await expect(trigger).toBeFocused();
+});
+
+test('侧栏拖动到无效位置或 Escape 取消，仍可随后正常移动', async ({ page }) => {
+  await addNavigationGroup(page, '取消目标');
+  const target = navigationGroup(page, '取消目标');
+  const source = row(page, 'math');
+  const origin = await source.evaluate(node => node.closest('[data-group]').dataset.group);
+  for (const cancel of ['outside', 'escape']) {
+    const from = await source.boundingBox();
+    const to = await target.locator('.tbx-drop-hint').boundingBox();
+    await page.mouse.move(from.x + 30, from.y + from.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(from.x + 40, from.y + from.height / 2, { steps: 3 });
+    await page.mouse.move(to.x + 50, to.y + to.height / 2, { steps: 12 });
+    await expect(page.locator('.tbx-drag-ghost')).toBeVisible();
+    if (cancel === 'outside') await page.mouse.move(900, 500, { steps: 12 });
+    else { await page.keyboard.press('Escape'); await expect(page.locator('.tbx-drag-ghost')).toHaveCount(0); }
+    await page.mouse.up();
+    await expect(page.locator('.tbx-drag-ghost')).toHaveCount(0);
+    expect(await source.evaluate(node => node.closest('[data-group]').dataset.group)).toBe(origin);
+  }
+  await pointerDrag(page, source, target.locator('.tbx-drop-hint'));
+  await expect(target.locator('[data-row="math"]')).toBeVisible();
+  await page.reload();
+  await expect(target.locator('[data-row="math"]')).toBeVisible();
+});
+
+test('新设备窄屏首次进入不会留下不可见教程的遮罩', async ({ page, browser }) => {
+  const state = await page.context().storageState();
+  const fresh = await browser.newContext({ ignoreHTTPSErrors: true, viewport: { width: 390, height: 844 }, storageState: { cookies: state.cookies, origins: [] } });
+  try {
+    const next = await fresh.newPage();
+    await next.goto(world.origin);
+    await expect(next.locator('.wb-shell')).toBeVisible();
+    await expect(next.locator('.tb-coach-scrim')).toBeHidden();
+    await next.getByRole('button', { name: '打开工作台导航', exact: true }).click();
+    await expect(row(next, 'questions')).toBeVisible();
+    await row(next, 'questions').click();
+    await expect(next.locator('.wb-shell')).toHaveAttribute('data-route', 'questions');
+    await next.setViewportSize({ width: 1440, height: 900 });
+    await expect(next.getByRole('button', { name: '知道了', exact: true })).toBeVisible();
+    await next.getByRole('button', { name: '知道了', exact: true }).click();
+    await expect(next.locator('.tb-coach-scrim')).toHaveCount(0);
+  } finally { await fresh.close(); }
+});
+
+test('已有学期删除先确认，取消保留，确认后刷新只剩另一学期', async ({ page }) => {
+  for (const name of ['保留学期甲', '删除目标乙']) {
+    await page.locator('.tb-term-button').click();
+    await page.getByRole('button', { name: '新学期', exact: true }).click();
+    await page.locator('#tb-semester-name').fill(name);
+    await page.locator('#tb-semester-start').fill('2026-09-01');
+    await page.locator('#tb-semester-end').fill('2027-01-31');
+    await page.locator('.tb-dialog-submit').click();
+  }
+  await page.locator('.tb-term-button').click();
+  await page.getByRole('button', { name: '编辑删除目标乙', exact: true }).click();
+  await page.locator('.tb-dialog-more').click();
+  await page.getByRole('menuitem', { name: '删除学期', exact: true }).click();
+  await expect(page.locator('.tb-term-button')).toContainText('删除目标乙');
+  await expect(page.getByRole('menuitem', { name: '确认删除', exact: true })).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog', { name: '编辑学期', exact: true })).toBeVisible();
+  await expect(page.locator('.tb-term-button')).toContainText('删除目标乙');
+  await page.locator('.tb-dialog-more').click();
+  await page.getByRole('menuitem', { name: '删除学期', exact: true }).click();
+  await page.getByRole('menuitem', { name: '确认删除', exact: true }).click();
+  await expect(page.getByRole('dialog', { name: '编辑学期', exact: true })).toHaveCount(0);
+  await page.reload();
+  await expect(page.locator('.tb-term-button')).toContainText('保留学期甲');
+  await page.locator('.tb-term-button').click();
+  await expect(page.getByRole('button', { name: '编辑删除目标乙', exact: true })).toHaveCount(0);
+});
+
+test('减少动效下窄屏导航直接展开，仍能进入业务页', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.getByRole('button', { name: '打开工作台导航', exact: true }).click();
+  const drawer = page.locator('.tbx-side');
+  const moving = await drawer.evaluate(node => node.getAnimations().filter(animation => animation.playState === 'running' && animation.effect.getTiming().duration > 1).length);
+  expect(moving, '减少动效时侧栏不再执行滑入过渡').toBe(0);
+  await expect(row(page, 'questions')).toBeVisible();
+  await row(page, 'questions').click();
+  await expect(page.locator('.wb-shell')).toHaveAttribute('data-route', 'questions');
+  await expect(drawer).toBeHidden();
+});
+
+test('窄屏顶栏的入口显隐不随中英文翻译改变', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  for (const name of ['发送反馈', '使用教程', '隐私与数据保护']) {
+    await expect(page.getByRole('button', { name, exact: true, includeHidden: true })).toBeHidden();
+  }
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.locator('.tb-language-row').click();
+  await page.getByRole('menuitemradio', { name: 'English', exact: true }).click();
+  const english = ['Send feedback', 'Tutorial', 'Privacy and data protection'];
+  for (const name of english) await expect(page.getByRole('button', { name, exact: true })).toBeVisible();
+  await page.setViewportSize({ width: 390, height: 844 });
+  for (const name of english) {
+    await expect(page.getByRole('button', { name, exact: true, includeHidden: true })).toBeHidden();
+  }
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 
 test('首页窄屏对话列表支持 Escape 与点击外部收起', async ({ page }) => {
