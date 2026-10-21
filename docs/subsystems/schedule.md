@@ -37,7 +37,7 @@ HTTP 写入由认证 transport 附加页面/保护头和逻辑 UUID key，router
 
 Web 的日历与任务看板在 [index.jsx](../../apps/web/src/features/schedule/index.jsx) 组合；[TaskBoard](../../apps/web/src/features/schedule/TaskBoard.jsx) 负责看板，[EntryEditor](../../apps/web/src/features/schedule/EntryEditor.jsx) 负责当前任务与事项编辑，[ScheduleDialogs](../../apps/web/src/features/schedule/ScheduleDialogs.jsx) 组合标签、重复、提醒及事项移动弹层，统一消费公共菜单、日期时间与对话框。既有安排、提醒与未确认写入继续经同一真实 API，不以演示数据替换。
 
-事项跟手卡通过公共 `shellRoot` 挂载在编辑器之外，固定坐标不受任务面板动效的变换祖先影响。任务打开错误与列表刷新错误分别保留：打开成功或切换深链接清除前一目标的错误；任务重试重新读取该目标，列表重试只刷新列表，未确认写入仍优先以原请求确认。
+事项跟手卡通过公共 `shellRoot` 挂载在编辑器之外，固定坐标不受任务面板动效的变换祖先影响。任务打开错误与列表刷新错误分别保留：打开成功、新建草稿、退出编辑或切换深链接清除前一目标的错误；任务重试重新读取该目标，列表重试只刷新列表，未确认写入仍优先以原请求确认。深链接从首轮读取起受编辑意图编号约束，后续新建、打开其他任务或退出后，迟到的成功与错误均不得覆盖当前现场。
 
 Web 的 [useScheduleSettings](../../apps/web/src/features/schedule/useScheduleSettings.js) 和 [useNotifications](../../apps/web/src/features/schedule/useNotifications.js) 拥有账户时区/日程设置及通知状态，不放公共平台层。它们通过 schedule/api 使用同一身份与请求协议。
 

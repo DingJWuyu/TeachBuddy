@@ -15,7 +15,7 @@
 | M03 | MathHome | 搜索输入/清除按钮/空结果清除，快速连续改词 | 通过：library-pair双端无结果、清空及继续过滤 |
 | M04 | MathHome | 缩略图/列表，重载保持，公式/图形/HTML 缩略图与加载失败回落 | 通过：library-pair双端网格/列表和公式/HTML缩略；图形海报沿baseline-tests；产品失效图像回落/刷新恢复通过，原型旧源直接插图回落，同画面对照 |
 | M05 | MathHome | 当前/归档切换，恢复，彻底删除确认/取消及回焦 | 通过：library-pair双端归档/恢复/删除取消；compatibility-tests真实永久删除及未知结果 |
-| M06 | MathHome/index | 新建空白、返回不建记录、未加入输入离开取消/确认 | 通过：baseline-tests空白退出；protection-tests未加入输入确认、取消、切换刷新 |
+| M06 | MathHome/index | 新建空白、返回不建记录、未加入输入离开取消/确认 | 通过：baseline-tests空白退出；protection-tests未加入输入确认、取消、切换刷新；审查返工confirm-lifecycle-green取消即刻归焦、快速重开和Enter确认 |
 | M07 | index | JSON 导入有效/无效/过大，独立作品、错误后重试、未决接续 | 保留真实能力差异：compatibility-tests导入独立作品、错误保护；library-pair双端1MiB/坏JSON边界，原键接续沿compatibility/session专项 |
 | M08 | index/HtmlEditor | HTML 导入、保存原件、首次不运行、运行/停止/重开 | 通过：library-pair双端HTML首次不运行、保存与运行/停止/源码 |
 | M09 | WorkshopWorkspace | 作品名 Enter/失焦，等待/保存中/保存成功/失败/未决状态 | 通过：baseline-tests保存状态；session-tests真实失败、冲突与同键接续 |
@@ -50,7 +50,7 @@
 | M38 | WorkshopDownloadDialog | 整作品 PNG、1200/1600/2400、白底/透明、未保存禁用 | 通过：baseline-tests真实PNG下载打开；explore双端下载面板，未保存禁用源码核对 |
 | M39 | WorkshopDownloadDialog | 图形 PNG/SVG 条件、三维/双视图白底限制 | 通过：baseline-tests真实图形导出；editor-pair三维/双视图；导出类型条件源码核对 |
 | M40 | WorkshopDownloadDialog | 选公式、PNG/SVG、制作源 JSON、仅图形 GGB、课堂 ZIP | 通过：baseline-tests整PNG/公式SVG/JSON/课堂ZIP实际下载及禁网打开；GGB现有能力保留 |
-| M41 | WorkHistory | 读取/失败重试、选择记录、预览失败重试、取消/Enter 恢复确认 | 通过：baseline-tests历史读取/海报失败重试/切版恢复；native-confirm全屏嵌套恢复确认 |
+| M41 | WorkHistory | 读取/失败重试、选择记录、预览失败重试、取消/Enter 恢复确认 | 通过：baseline-tests历史读取/海报失败重试/切版恢复；native-confirm全屏嵌套恢复确认；confirm-native-lifecycle补普通/全屏受控退出、快速重开与键盘确认 |
 | M42 | useMathWorkSession | 修改保存刷新重开、历史恢复生成新版、冲突三条恢复路径 | 保留真实能力差异：session-tests真实409三路径、未决同键、即时离开；不以原型内存模拟替代持久化 |
 | M43 | MathWebAssistant | 首页/作品共用上下文，灵感填充、未连接保输入展开引导 | 通过：baseline-tests缺连接保输入、首页自动起稿/共享上下文；library-pair双端助理开关 |
 | M44 | MathWebAssistant | 模型选择弹层焦点、外点/Escape；检查中/未安装/不支持浏览器 | 通过：connection-tests实际Chrome扩展热安装和中英窄屏引导/焦点；不支持浏览器提示沿源码与基线 |
@@ -83,3 +83,9 @@
 53组中49组按表完成交互核对，4组记录真实能力/兼容或外部边界（M07、M42、M45、M51）。这不是53次截图：两端同输入操作、真实GeoGebra、真实保存/文件和故障注入证据分别归回执。原型运行时在复杂GGB布局/保存与旧源海报产物上存在能力差异，未改写原型或用模拟数据替换产品真实输出。需要真实商店、用户外部账户、线上模型或目标设备的边界仍未验。
 
 末次补验 `native-reset-exit-final/` 1/1通过：重置尚在运行时原生退出全屏，等待当前试演任务完成再恢复编辑。所有本线浏览器、HTTP服务和测试进程均已结束，待总控固定候选审查/CI，作者不再修改。
+
+## 集中审查返工：共享确认生命周期
+
+2026-10-21，按总控任务仅调整 `useMathConfirm.jsx`：无条件挂载 `AppConfirmDialog` 并传 `present`，移除业务外层 `ModulePresence`，可空消息字段安全读取。退出内容、立即 inert、键盘撤除、归焦与快速重开的 fresh key 由共享确认框统一拥有，数学不保留第二份退出快照。
+
+未变 `candidate-web` 真实复现取消后旧 Portal 仍不 inert、焦点仍在旧“取消”，证据 `confirm-lifecycle-red.json/png`。这是共享既存 EA-shared-02 的同根消费者，数学不另加产品问题，仍为3项。新隔离构建 `confirm-controlled-web` 通过，普通未加入输入取消/快速重开/连续 Tab/Enter 正向放弃，以及原生全屏历史嵌套确认取消/快速重开/连续 Tab/Enter 正向恢复全部通过，证据 `confirm-lifecycle-green.json`、`confirm-native-lifecycle.json/png`。本轮未重跑全套或扩数学功能，作者重新冻结，等待总控集中收口。

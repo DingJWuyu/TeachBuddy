@@ -853,3 +853,99 @@ test('导入校对原键恢复完成后才打开草稿，首次刷新显示恢�
   expect(keys[2]).toBe(keys[3]);
   expect(keys[3]).toBe(keys[4]);
 });
+
+for (const kind of ['exam', 'student']) {
+  test(`${kind}表单保存期间禁止退出，读回失败重试不重复创建或使用旧版本`, async ({ page }) => {
+    await register(page, world, `classroom-${kind}-lifecycle@example.test`);
+    const coach = page.getByRole('button', { name: /知道了/ });
+    if (await coach.count()) await coach.first().click();
+    let classId;
+    if (kind === 'student') {
+      const response = await page.request.post(`${world.origin}/api/modules/classroom/classes`, {
+        headers: { ...headers(page), Origin: world.origin, 'X-TeachBuddy-Request': '1', 'Idempotency-Key': crypto.randomUUID() }, data: { name: '生命周期班' },
+      });
+      expect(response.status()).toBe(201);
+      classId = (await response.json()).id;
+    }
+    await page.goto(world.origin + '/classroom');
+    if (kind === 'exam') {
+      await page.locator('.tbx-rail').getByRole('button', { name: /^考试/ }).click();
+      await page.locator('.cr-empty').getByRole('button', { name: '新建考试', exact: true }).click();
+    } else {
+      await page.getByRole('tab', { name: '学生', exact: true }).click();
+      await page.locator('.cr-toolbar').getByRole('button', { name: '添加学生', exact: true }).click();
+    }
+    const dialog = page.getByRole('dialog', { name: kind === 'exam' ? '新建考试' : '添加学生', exact: true });
+    const name = dialog.getByLabel(kind === 'exam' ? '考试名称' : '姓名', { exact: true });
+    await name.fill('保存生命周期');
+    if (kind === 'exam') {
+      await dialog.getByLabel('题数', { exact: true }).fill('1');
+      await dialog.getByRole('button', { name: '添加', exact: true }).click();
+    }
+    const writes = [];
+    page.on('request', request => {
+      if (['POST', 'PUT'].includes(request.method()) && new RegExp(`/classroom/${kind === 'exam' ? 'exams' : 'students'}(?:/[^/]+)?$`).test(new URL(request.url()).pathname)) writes.push(request.method());
+    });
+    let release, started;
+    const gate = new Promise(resolve => { release = resolve; });
+    const pending = new Promise(resolve => { started = resolve; });
+    await page.route('**/api/modules/classroom/classes', async route => {
+      started();
+      await gate;
+      await route.fulfill({ status: 503, contentType: 'application/problem+json', body: JSON.stringify({ type: '/problems/workbench/temporarily-unavailable' }) });
+    }, { times: 1 });
+    const save = dialog.getByRole('button', { name: kind === 'exam' ? '创建考试' : '添加', exact: true });
+    await save.click();
+    await pending;
+    try {
+      await page.keyboard.press('Escape');
+      await expect(dialog).toBeVisible();
+      await expect(name).toBeDisabled();
+      await expect(dialog.getByRole('button', { name: '取消', exact: true })).toBeDisabled();
+      await page.locator('.cr-scrim').click({ position: { x: 30, y: 30 } });
+      await expect(dialog).toBeVisible();
+      await page.keyboard.press('Enter');
+      expect(writes).toEqual(['POST']);
+    } finally { release(); }
+    await expect(dialog.locator('.cr-error')).toContainText('班级暂时无法读取');
+    await expect(name).toHaveValue('保存生命周期');
+    // Repeated read failures must not repeat the already confirmed create.
+    await page.route('**/api/modules/classroom/classes', route => route.fulfill({ status: 503, contentType: 'application/problem+json', body: JSON.stringify({ type: '/problems/workbench/temporarily-unavailable' }) }), { times: 1 });
+    await save.click();
+    await expect(save).toBeEnabled();
+    expect(writes).toEqual(['POST']);
+    // Editing after a failed read updates that newly created entity at its current version.
+    await name.fill('读回失败后修改');
+    await page.route('**/api/modules/classroom/classes', route => route.fulfill({ status: 503, contentType: 'application/problem+json', body: JSON.stringify({ type: '/problems/workbench/temporarily-unavailable' }) }), { times: 1 });
+    await save.click();
+    await expect(save).toBeEnabled();
+    expect(writes).toEqual(['POST', 'PUT']);
+    await save.click();
+    await expect(dialog).toHaveCount(0);
+    expect(writes).toEqual(['POST', 'PUT']);
+    const items = (await read(page, kind === 'exam' ? 'exams' : `students?classId=${classId}`)).items;
+    expect(items).toHaveLength(1);
+    expect(items[0].name).toBe('读回失败后修改');
+    if (kind === 'exam') await page.getByRole('button', { name: '编辑', exact: true }).click();
+    else {
+      await page.locator('.cr-card').click();
+      await page.getByRole('button', { name: '编辑资料', exact: true }).click();
+    }
+    const edit = page.getByRole('dialog', { name: kind === 'exam' ? '编辑考试' : '学生资料', exact: true });
+    const editName = edit.getByLabel(kind === 'exam' ? '考试名称' : '姓名', { exact: true });
+    await editName.fill('编辑写入后读取失败');
+    await page.route('**/api/modules/classroom/classes', route => route.fulfill({ status: 503, contentType: 'application/problem+json', body: JSON.stringify({ type: '/problems/workbench/temporarily-unavailable' }) }), { times: 1 });
+    await edit.getByRole('button', { name: '保存', exact: true }).click();
+    await expect(edit.locator('.cr-error')).toContainText('班级暂时无法读取');
+    await editName.fill('继续编辑使用最新版本');
+    await edit.getByRole('button', { name: '保存', exact: true }).click();
+    await expect(edit).toHaveCount(0);
+    expect(writes).toEqual(['POST', 'PUT', 'PUT', 'PUT']);
+    const edited = (await read(page, kind === 'exam' ? 'exams' : `students?classId=${classId}`)).items;
+    expect(edited).toHaveLength(1);
+    expect(edited[0].id).toBe(items[0].id);
+    expect(edited[0].name).toBe('继续编辑使用最新版本');
+    await page.locator('.tbx-rail').getByRole('button', { name: /^题目标签/ }).click();
+    await expect(page.getByRole('heading', { name: '题目标签', exact: true })).toBeVisible();
+  });
+}

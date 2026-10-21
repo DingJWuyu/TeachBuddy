@@ -44,7 +44,9 @@
 
 全站原型对照又发现共享 Menu 的 Tab 关闭只卸载浮层，焦点同样落到 BODY；修正为关闭前回到触发器，再由浏览器继续原顺序。依据：[修复 PR #49](https://github.com/DingJWuyu/TeachBuddy/pull/49)；连续 Tab/Shift+Tab、Escape 与不误选会话的保护在[历史菜单回归](apps/web/e2e/c26/agent.spec.js)。
 
-出现日期：2026-10-20。已核实 1 个不同日期。
+题库删除分类前读取影响数，会先禁用当前删除按钮；取消确认后曾回到 BODY，Tab/Enter 跳到工作台首页。现在禁用前交给同行名称输入，再用取消、Tab、重开验证接续。依据：[原删除入口](https://github.com/DingJWuyu/TeachBuddy/blob/a91cc0e0306a2c5537cab6f868db94aa466b0bf1/apps/web/src/features/questions/MaterialsQuestionsPage.jsx)；当前保护在[题库交互回归](apps/web/e2e/questions-ux.spec.js)。
+
+出现日期：2026-10-20、2026-10-21。已核实 2 个不同日期。
 
 ### 区分业务时钟与浏览器动效时间线
 

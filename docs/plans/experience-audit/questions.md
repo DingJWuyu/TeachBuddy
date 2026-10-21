@@ -19,7 +19,7 @@
 | F05 | 读取/失败重载/图片成功失败/刷新选中和滚动恢复 | `QuestionFinder / ImportList / Taxonomy` | 通过：edge-errors 双方故障注入和重载；persistence-export 真实带图延迟与刷新恢复。 |
 | F06 | 继续新题/继续收录/已完成折叠/归档列表 | `QuestionFinder / ImportList / Taxonomy` | 通过：comparison 归档与完成材料折叠；baseline-regression 新稿/继续收录/未分配完成条件。 |
 | F07 | 分类管理进入取消保存退出/新增类别 | `QuestionFinder / ImportList / Taxonomy` | 通过：comparison 双方新增题型标签、保存退出；edge-errors 取消重开。 |
-| F08 | 改名空名重复名/删除影响数确认取消 | `QuestionFinder / ImportList / Taxonomy` | 通过：edge-errors 双方重复名、删除取消/确认；baseline-regression 同名类别改名/影响数。空名拒绝双方已验见 continuity-focused-diagnosis。 |
+| F08 | 改名空名重复名/删除影响数确认取消 | `QuestionFinder / ImportList / Taxonomy` | 通过：edge-errors 双方重复名、删除取消/确认；baseline-regression 同名类别改名/影响数。空名拒绝双方已验见 continuity-focused-diagnosis；EA-questions-06取消后同名输入框归焦、Tab继续同一删除按钮已在confirm-focus-final通过。 |
 | E01 | 新题空稿退出/题干聚焦/标题可选/粘贴与行内公式 | `QuestionDocumentEditor / useQuestionSession` | 通过：comparison 同题干输入和公式即时预览；edge-comparison 自动聚焦；baseline-regression 空稿退出。 |
 | E02 | 插公式源/插图取消失败/更多四种结构 | `QuestionDocumentEditor / useQuestionSession` | 通过：edge-comparison 四种结构；files-focused 双方真实插图取消、422拒绝、重试成功。 |
 | E03 | 段落移动删除/结构撤销保留后续输入/嵌套结构 | `QuestionDocumentEditor / useQuestionSession` | 通过：edge-comparison 双方移动/删除/撤销；baseline-regression 嵌套表格和后续输入保留。 |
@@ -57,7 +57,7 @@
 | O05 | 调整选区/指针框选/用途定位/裁图保存 | `OriginalPane` | 通过：original-focused-final 双方真实指针框选、题面/答案用途切换、保存定位、裁图并保存；产品刷新保持由native专项验证。 |
 | X01 | 中英浅深四组合空态阅读编辑管理收录校对菜单 | `questions.css / shared interactions` | 通过：comparison 中英浅深阅读/编辑；aux-focused 英文深色校对/菜单；files-focused 对话框。保留共有英文复数建议。 |
 | X02 | 1440/900/740/600/390和aux断点/无溢出 | `questions.css / shared interactions` | 通过：comparison 1440及900/740/600/390，两套有关联语言主题组合零页面溢出；aux-focused 双方辅助栏和英文校对600。 |
-| X03 | 菜单键盘/Tab焦点/模态陷阱返回 | `questions.css / shared interactions` | 通过：baseline-regression 模态焦点返回；comparison 菜单Escape；continuity-focused-diagnosis 验证Home/Enter及关闭后Tab；连续标签弹窗聚焦属原型共有建议。 |
+| X03 | 菜单键盘/Tab焦点/模态陷阱返回 | `questions.css / shared interactions` | 通过：baseline-regression 模态焦点返回；comparison 菜单Escape；continuity-focused-diagnosis 验证Home/Enter及关闭后Tab；连续标签弹窗聚焦属原型共有建议；confirm-focus-final四类确认取消后键盘与快速重开通过，分类取消不再落BODY。 |
 | X04 | 加载关闭切题折叠连续过程/reduced-motion | `questions.css / shared interactions` | 通过：comparison 实际逐步执行并等待动画稳定拍摄；baseline-regression reduced-motion与关闭返回。不中间截空白为通过。 |
 
 ## 问题与差异
@@ -69,10 +69,23 @@
 | EA-questions-03 | 疑点卡浅深底色偏黄，与原型中性底不一致。 | 恢复#f8f8fa/#272728，candidate-comparison及aux-focused深浅实际复验。 |
 | EA-questions-04 | 保存校对导致材料升版，OriginalPane随material.version清空并重读相同原件；受控延迟预览时，成功提示已出现但原稿图片消失。 | 移除预览effect对校对版本的依赖，文件切换/显式重试仍更新。original-save-red已稳定失败；original-final-regression新场景与预览重试/文件切换/Word来源共8项通过。 |
 | EA-questions-05 | 原型app.css全局表单width:100%未迁移到原稿控件，产品按内容宽度并排，PDF 88/100px、Word 100/128px；原型填满各自513px容器。 | 经总控定点授权，仅questions CSS给OriginalPane所有select补width:100%；select-width-confirmed双方PDF/Word、中英、1440/600共16组合通过；每个select宽度与父容器相等，换页/缩放/视图/用途正常。 |
+| EA-questions-06 | 分类删除先禁用当前按钮，再异步读取影响数，焦点落BODY；确认取消后Tab到TeachBuddy品牌，Enter跳首页。旧candidate-web的taxonomy-focus-before已真实复现。 | 禁用前把焦点交给同一行分类名称输入框；taxonomy-focus-after取消后为名称输入、Tab到同一删除按钮，confirm-focus-final四类消费者连续过程及快速重开通过，分类仍在。 |
 | EA-questions-T01 | manual-questions前置断言失败、world尚未创建时，afterEach又读world.directory抛TypeError，掩盖原错误。 | 清理前检查world；故意缺Office配置复验只剩原始前置错误。此项为既有测试缺陷。 |
 
-产品独立根因5项，既有测试缺陷1项，本轮新引入产品缺陷0项。原型共有 `1 materials` 英文单复数问题已报告总控，按总控要求保留并作为buffer建议，不改翻译。原型内存存储、模拟识别/来源与真实持久能力差异按本轮授权保留。
+产品独立根因6项，既有测试缺陷1项，本轮新引入产品缺陷0项。原型共有 `1 materials` 英文单复数问题已报告总控，按总控要求保留并作为buffer建议，不改翻译。原型内存存储、模拟识别/来源与真实持久能力差异按本轮授权保留。
 
-原稿控件补验已完成：original-focused-final/receipt.json双方PDF页码/缩放/定位/裁图/原件下载、Word视图和多原稿切换通过。本工作线47行行为组已逐行回填，5项产品偏差已修并定点通过，EA-questions-05的16组合中英宽窄复验完成；本线再次冻结，待集中审查与CI。Word原型模拟适配器没有可信docx位置，实际段落下拉所有选项禁用；产品真实定位沿native专项保留，不伪造原型定位。连续分类弹窗聚焦双方相同，已交总控作为共有问题建议，不计复刻偏差。
+原稿控件补验已完成：original-focused-final/receipt.json双方PDF页码/缩放/定位/裁图/原件下载、Word视图和多原稿切换通过。本工作线47行行为组已逐行回填，6项产品偏差已修并定点通过，EA-questions-05的16组合中英宽窄复验完成；本线再次冻结，待集中审查与CI。Word原型模拟适配器没有可信docx位置，实际段落下拉所有选项禁用；产品真实定位沿native专项保留，不伪造原型定位。连续分类弹窗聚焦双方相同，已交总控作为共有问题建议，不计复刻偏差。
 
 原稿选择器布局由题库本地 `.q-workspace .q-original select` 维护；EA-questions-05经总控授权恢复原型满宽约束。实际匹配CSS规则及computed来源保留在 `select-width-before/receipt.json`，不改变共享表单或日程输入。
+
+## 集中审查返修：共享确认生命周期
+
+`EA-shared-02` 由总控统一计数，共享项不重复计入本线6个产品根因。基线 `candidate-web` 的真实题库入口复现：新建保存题目，归档确认点取消，再Tab/Enter，仍向 `/items/{id}/deletion` 发送真实归档请求；证据 `questions/confirm-lifecycle-before/receipt.json`。取消后portal确认框没有inert祖先，焦点由取消移到确认归档。
+
+迁移范围只有 `MaterialsQuestionsPage.jsx` 的四类确认消费者：`confirmDiscard`、`copyCandidate`、`lifecycleAction`、`pendingDelete`。移除确认框外层ModulePresence及条件挂载，直接传共享 `present`；关闭时可空数据只作安全读取，不自建lastData或业务退出层。其余收录/分类编辑对话框未调整。
+
+共享实现由总控负责。题库候选 `confirm-web` 已构建，同根最小复验取消后确认portal为inert、真实归档写入0、原题仍活动；既有分类删除/归档恢复/设备稿三项定点回归通过。最终独立候选 `confirm-focus-web` 已通过新增四类消费者连续键盘与快速重开回归（1项），证据 `questions/confirm-focus-final/`。
+
+该连续回归另发现独立基线焦点问题EA-questions-06，经总控授权同批修复：分类删除禁用前交接焦点到同一行名称输入框。`taxonomy-focus-before/receipt.json`记录旧候选取消后BODY、Tab到品牌；`taxonomy-focus-after/receipt.json`记录修后取消回名称输入、Tab到同一删除按钮。没有回首页再绕回题库的测试路径。
+
+本线再次冻结：47行已覆盖，题库独立产品根因6项、既有测试缺陷1项，共享EA-shared-02由总控单计，本轮新引入产品缺陷0项。集中审查返修只跑3项既有消费者回归、1项新增连续回归和定点探针，未重跑完整CI或其余已通过场景。

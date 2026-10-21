@@ -29,7 +29,7 @@
 | SH21 | 原型各菜单 → components/ui/menu | 打开后方向键/首尾、选择/取消/Tab及反向Tab，文本框自己的键位 | 通过：`complement`语言菜单键位；math、questions菜单与日程事项候选覆盖。筛选菜单原型无方向键导航，资源线如实保留Tab路径，不扩大成新交互。 |
 | SH22 | kit/filter → 同名 | 多选不关、全部清除、宽度稳定、胶囊清除 | 实际消费者见classroom EA01及resources批量标签；班级统计加载期间保留多选菜单，资源三态标签与清除通过。 |
 | SH23 | kit/datetime → 同名 | 日期月/年逐级选择、小时不关分钟提交、取消/屏幕边界 | 日期月/年、小时/分钟、关闭等实际结果沿schedule/classroom清单；不以公共源码相同代替其消费场景。 |
-| SH24 | kit/confirm → 同名 | 就地确认的等待/超时/取消/提交；对话框二次确认/输入/忙碌/键盘与归焦 | `second/last-branches`就地确认；资源确认框改回公共组件；math原生全屏嵌套确认及键盘回焦实跑通过。 |
+| SH24 | kit/confirm → 同名 | 就地确认的等待/超时/取消/提交；对话框二次确认/输入/忙碌/键盘与归焦 | `second/last-branches`就地确认通过；EA-shared-02修复后，题库四类消费者、资源四类操作及原PDF流程、数学普通/原生全屏的取消、快重开、正向确认均通过，证据按各线receipt。 |
 | SH25 | 底层ModuleMotion及kit → components/interaction、ui/dialog | 弹层首帧模糊、关闭中间态/不可操作、快速重开、焦点接续 | schedule实测关闭80ms静止副本；questions连续弹窗及math嵌套弹窗实际对照。题库快速重开共有焦点缺陷单列buffer，未擅改原型。 |
 | SH26 | kit/segmented、rail、motion → 同名 | 分段宽度与滑动，折叠箭头、列表拖放FLIP、辅助栏覆盖且页面不挤动 | 侧栏拖放/折叠沿`second/finish`；日程分段、资源轨道与aux实际消费者见各清单。 |
 | SH27 | shell/glyphs、tokens/base → icons/styles | 同名图标、字号/色彩/焦点环，浅深色/英文长文案/减少动效 | `second/complement`中英浅深和减少动效；模块图标/控件/长文案以各线双端结果为证据。移除错误的英文静态词库疑点，实际两端都显示Resource library。 |
@@ -40,5 +40,6 @@
 | 编号 | 类别与触发 | 修复与证据 |
 | --- | --- | --- |
 | EA-shared-01 | 本轮恢复数学原生全屏后暴露的组合问题：菜单Portal仍在外壳，落在全屏层外，DOM存在但用户无法点击。不是基线既存复刻偏差。 | `components/ui/popover.jsx` 的宿主优先原生全屏元素；math/fullscreen-menu-red 证明失败，math/final-regression 与 native-confirm 证明菜单、下载、历史及嵌套确认可点、可退出、归焦正确。 |
+| EA-shared-02 | 基线共享缺陷：ModulePresence在确认框portal外，取消后保留的旧确认不受inert/退场约束。题库取消后Tab/Enter实际归档；数学退出期仍占焦点；资源本轮迁移复用了相同错误结构。三处同根只计1。 | 红证据为 `review/standards-confirm-lifecycle.json`、`questions/confirm-lifecycle-before/receipt.json`、`math/confirm-lifecycle-red.json`。ConfirmDialog通过受控present在portal内拥有退出与焦点，保留原入场，取消立即禁用、快速重开新实例。绿证据为resources/lifecycle-green及lifecycle-recheck、questions/confirm-focus与taxonomy-focus-after、math/confirm-lifecycle-green及confirm-native-lifecycle；独立增量复核待完成。 |
 
-root未另确认基线独立偏差。早期脚本的静态选择器、前置草稿、布局动画坐标、文本归一化错误均已修正，并在上述定点中重新实际操作，不计产品问题。反馈文件选择丢附件、其他分区提交的原型共有未决行为集中在根buffer。
+共享基线独立缺陷1项。早期脚本的静态选择器、前置草稿、布局动画坐标、文本归一化错误均已修正，并在上述定点中重新实际操作，不计产品问题。反馈文件选择丢附件、其他分区提交的原型共有未决行为集中在根buffer。

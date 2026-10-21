@@ -19,7 +19,7 @@
 | C07 | useData：读取失败与重新加载 | ClassroomPage | 候选 errors：真实503读取错误与重新加载成功；学生统计失败重开恢复 |
 | C08 | Seating：无人空态及添加学生入口 | Seating | 两端 sweep2：新班座位空态 |
 | C09 | StudentForm：姓名必填、学号选填、额外资料展开 | Students | 两端 sweep2及基线新增学生 |
-| C10 | StudentForm：生日/兴趣/性格、保存并继续、字段清空 | Students | 两端 lifecycle：生日兴趣性格保存；sweep2继续添加 |
+| C10 | StudentForm：生日/兴趣/性格、保存并继续、字段清空 | Students | 两端 lifecycle：生日兴趣性格保存；sweep2继续添加；EA06扩展student-lifecycle-green含busy关闭/失败重试/最新版本 |
 | C11 | StudentForm：重复学号错误与输入保留 | Students | 两端 sweep2：重复001拒绝、输入保留、改002保存 |
 | C12 | Roster：按学号排序、座位位置、兴趣、最近成绩胶囊 | Students | 两端 sweep：完整名单、位置/兴趣/最近场次 |
 | C13 | Roster/Search：姓名/学号、无结果、清除搜索 | Students | 两端 sweep：201检索、无结果与清除 |
@@ -38,7 +38,7 @@
 | C26 | Journal：悬停编辑、自动焦点、保存、Escape/取消 | Records | 两端 sweep/lifecycle：自动焦点、Escape、编辑保存 |
 | C27 | Journal：归档记录确认/取消及恢复 | Records | 两端 lifecycle；产品基线取消归档后确认及恢复 |
 | C28 | ExamList：空态新建、日历卡、班级导入状态 | Exams | 基线新账户空考试、新建；两端sweep卡片 |
-| C29 | ExamForm：名称/日期/学科/总满分，空题禁用 | Exams | 基线实际新建考试；两端sweep编辑字段 |
+| C29 | ExamForm：名称/日期/学科/总满分，空题禁用 | Exams | 基线实际新建考试；两端sweep编辑字段；EA06扩展forms-lifecycle-green考试创建/编辑读回失败重试通过 |
 | C30 | ExamForm：批量添加、题数与分数、分组/题号/满分、移除 | Exams | 基线批量添加3题/改题号；两端final-branches移除受用题 |
 | C31 | ExamForm：总满分留空合计、不完整覆盖提示、保存 | Exams | 基线满分留空合计保存；两端sweep覆盖提醒 |
 | C32 | TagPicker：已有标签多选不关、新建、重名、失败保留、Escape焦点 | Exams | 产品基线完整标签键盘/503重试通过；prototype-boundaries真实多选和新增通过，原型Escape关闭整个考试而非仅菜单，按共享键盘规范保留产品增强 |
@@ -95,7 +95,7 @@
 - EA-classroom-04：真实后端对姓名/学号矛盾保留studentId=null并返回student-match-required，页面原有快捷确认分支不可达。适配层只按唯一精确学号提供建议，选择仍空白，老师显式确认才提交。`name-red/`红；`name-green-recheck/`绿，覆盖同名、改选与缺证据无建议。
 
 - EA-classroom-05：原卷Word点击取回丢失原名，字节仍相同；原型runtime也转blob，有共同问题。复用链接原生download属性仅为不能内联查看的Word保留原名，PDF/图片继续预览。`download-red/`红、`download-green/`绿。
-- EA-classroom-06：班级资料保存后提前关弹层，未等待reload/onSaved结束；用户已切标签仍被迟到go拉回。原型标签探查两次回班级与产品class-save-race确定同根因，不计脚本错误。ClassForm保存等待onSaved后关闭，精确回归`class-save-red/`红、`class-save-complete-recheck/`绿，覆盖busy退出和读回失败重试不重复写入。
+- EA-classroom-06：班级资料保存后提前关弹层，未等待reload/onSaved结束；用户已切标签仍被迟到go拉回。原型标签探查两次回班级与产品class-save-race确定同根因，不计脚本错误。ClassForm保存等待onSaved后关闭，精确回归`class-save-red/`红、`class-save-complete-recheck/`绿，覆盖busy退出和读回失败重试不重复写入。 独立审查固定a91cc0e0发现ExamForm/StudentForm同根遗漏，`forms-lifecycle-red/`两条真实Escape断言红；补齐两表单busy、传播读回失败及已确认版本复用。`forms-lifecycle-green/`中原完整教师路径、班级及考试3条通过，学生补classId测试前置后`student-lifecycle-green/`1条通过，覆盖创建后连续读失败不重写、改字段同ID更新、编辑后读失败再改用最新版本。归本项扩展，不增加根因数。
 
 - EA-classroom-07：恢复原键PUT与弹层早读GET竞态，首次刷新仍见65，第二次才45。实际校对45已保存，不能把UI旧值当数据丢失。导入弹层等待现有loaded且无error再挂载；恢复失败沿原重新加载重试。`import-recover-red/`红、`import-recover-green/`1/1绿，首次刷新读45，恢复再失败沿原键重试读46；原型为内存模拟、不具备此真实恢复链。
 

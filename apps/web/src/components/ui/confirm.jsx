@@ -1,7 +1,8 @@
 import { createPortal } from 'react-dom';
 import { shellRoot } from './popover.jsx';
 import { Icon as Icon2 } from '../icons.jsx';
-import { useEffect, useId, useRef, useState } from 'react';
+import { createContext, useContext, useEffect, useId, useRef, useState } from 'react';
+import { ModulePresence } from '../interaction/ModuleMotion.jsx';
 import { cx } from './classNames.js';
 import { tx, useLocale } from '../../i18n/presentation.js';
 
@@ -103,18 +104,38 @@ export function ConfirmMenuItem({ icon, label, confirmLabel, onConfirm, classNam
 
 /* ---------- the dialog ---------- */
 
-export function ConfirmDialog({
+const ConfirmVisible = createContext(true);
+
+export function ConfirmDialog({ present, ...props }) {
+  const opening = useRef({ present: false, key: 0 });
+  // A retained exit belongs inside the portal so its inert boundary contains the dialog.
+  if (present === undefined) return createPortal(<ConfirmContent {...props} />, shellRoot());
+  if (present && !opening.current.present) opening.current.key += 1;
+  opening.current.present = Boolean(present);
+  return createPortal(
+    <ConfirmVisible.Provider value={Boolean(present)}>
+      <ModulePresence key={opening.current.key} present={present} mode="overlay" className="tbx-confirm-presence">
+        {present && <ConfirmContent {...props} />}
+      </ModulePresence>
+    </ConfirmVisible.Provider>,
+    shellRoot(),
+  );
+}
+
+function ConfirmContent({
   title, message, confirmLabel, cancelLabel, danger = true, icon, onConfirm, onCancel, children, busy, disabled,
   secondaryLabel, onSecondary,
 }) {
   useLocale();
+  const active = useContext(ConfirmVisible);
   const ref = useRef(null);
   const [working, setWorking] = useState(false);
   const titleId = useId();
   const running = useRef(false);
   const actions = useRef(null);
-  actions.current = { onConfirm, onCancel, busy, disabled };
+  actions.current = { onConfirm, onCancel, busy, disabled, active };
   useEffect(() => {
+    if (!active) return undefined;
     const prev = document.activeElement;
     ref.current?.querySelector('[data-autofocus], .tbx-confirm-actions button:last-child')?.focus();
     const key = (e) => {
@@ -144,16 +165,22 @@ export function ConfirmDialog({
       else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
     };
     document.addEventListener('keydown', key, true);
-    return () => { document.removeEventListener('keydown', key, true); prev?.focus?.(); };
-  }, []);
+    return () => {
+      document.removeEventListener('keydown', key, true);
+      const current = [...document.querySelectorAll('[role="dialog"], [role="alertdialog"]')]
+        .filter(node => node !== ref.current && node.getClientRects().length && !node.closest('[inert]')).at(-1);
+      if (current && !current.contains(prev)) return;
+      if (prev?.isConnected && !prev.closest('[inert]')) prev.focus();
+    };
+  }, [active]);
   const run = async () => {
-    if (running.current || actions.current.busy || actions.current.disabled) return;
+    if (!actions.current.active || running.current || actions.current.busy || actions.current.disabled) return;
     running.current = true;
     setWorking(true);
     try { await actions.current.onConfirm(); } finally { running.current = false; setWorking(false); }
   };
-  const node = (
-    <div className="tbx-confirm-scrim" onPointerDown={(e) => { if (e.target === e.currentTarget) onCancel(); }}>
+  return (
+    <div className="tbx-confirm-scrim" onPointerDown={(e) => { if (active && e.target === e.currentTarget) onCancel(); }}>
       <div className={cx('tbx-confirm', danger && 'is-danger')} role="alertdialog" aria-modal="true" aria-labelledby={titleId} ref={ref}>
         <span className="tbx-confirm-icon" aria-hidden="true"><Glyph name={icon || (danger ? 'trash' : 'info')} size={22} /></span>
         <h2 id={titleId}>{title}</h2>
@@ -167,7 +194,6 @@ export function ConfirmDialog({
       </div>
     </div>
   );
-  return createPortal ? createPortal(node, shellRoot()) : node;
 }
 
 /* The app's own module dialog (ModuleOverlays ConfirmDialog) renders through this. */

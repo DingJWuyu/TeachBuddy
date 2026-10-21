@@ -1,5 +1,5 @@
 import React, { Fragment } from 'react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { tx } from '../../i18n/presentation.js';
 import { cx } from '../../components/ui/classNames.js';
 import { Icon, Avatar, Seg, Menu, Dialog, Field, Empty, Search, Spinner } from './ui.jsx';
@@ -19,24 +19,39 @@ export function StudentForm({ ctx, classId, initial, onClose }) {
   });
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const written = useRef(null);
   const [more, setMore] = useState(Boolean(initial));
   const set = (key) => (e) => setForm({ ...form, [key]: e.target.value });
   const save = async (again) => {
+    if (busy || !form.name.trim()) return;
     setBusy(true);
     setError('');
+    let completing = false;
     try {
       const body = { name: form.name, studentNo: form.studentNo, birthday: form.birthday || null, interests: form.interests, personality: form.personality };
-      if (initial) await ctx.api.put(`/students/${initial.id}`, { baseVersion: initial.version, ...body, classId: form.classId });
-      else await ctx.api.post('/students', { ...body, classId });
-      await ctx.reload();
+      body.classId = form.classId;
+      const signature = JSON.stringify(body);
+      if (written.current?.signature !== signature) {
+        const target = written.current?.saved || initial;
+        const saved = target
+          ? await ctx.api.put(`/students/${target.id}`, { baseVersion: target.version, ...body })
+          : await ctx.api.post('/students', body);
+        written.current = { saved, signature };
+      }
+      completing = true;
+      await ctx.reload({ propagate: true });
       ctx.toast(initial ? tx('已保存') : tx('已添加 {{name}}', { name: form.name.trim() }));
-      if (again) setForm({ ...form, name: '', studentNo: '', birthday: '', interests: '', personality: '' });
+      if (again) {
+        written.current = null;
+        setForm({ ...form, name: '', studentNo: '', birthday: '', interests: '', personality: '' });
+      }
       else onClose();
-    } catch (err) { setError(err.message); } finally { setBusy(false); }
+    } catch (err) { setError(completing ? tx('班级暂时无法读取') : err.message); } finally { setBusy(false); }
   };
   const moving = initial && form.classId !== initial.classId;
   return (
     <Dialog
+      busy={busy}
       title={initial ? tx('学生资料') : tx('添加学生')}
       subtitle={initial ? null : tx('只有姓名是必填的。性格、兴趣想到再写，不必一次填完。')}
       onClose={onClose}
@@ -44,27 +59,27 @@ export function StudentForm({ ctx, classId, initial, onClose }) {
         <>
           {!initial && <button type="button" className="cr-btn is-quiet" disabled={busy || !form.name.trim()} onClick={() => save(true)}>{tx('保存并继续添加')}</button>}
           <span className="cr-grow" />
-          <button type="button" className="cr-btn" onClick={onClose}>{tx('取消')}</button>
+          <button type="button" className="cr-btn" disabled={busy} onClick={onClose}>{tx('取消')}</button>
           <button type="button" className="cr-btn is-primary" disabled={busy || !form.name.trim()} onClick={() => save(false)}>{initial ? tx('保存') : tx('添加')}</button>
         </>
       )}
     >
       <form className="cr-form" onSubmit={(e) => { e.preventDefault(); save(!initial); }}>
         <div className="cr-form-row">
-          <Field label={tx('姓名')}><input value={form.name} maxLength={40} onChange={set('name')} /></Field>
-          <Field label={tx('学号')} hint={tx('选填')}><input value={form.studentNo} maxLength={32} inputMode="numeric" onChange={set('studentNo')} /></Field>
+          <Field label={tx('姓名')}><input disabled={busy} value={form.name} maxLength={40} onChange={set('name')} /></Field>
+          <Field label={tx('学号')} hint={tx('选填')}><input disabled={busy} value={form.studentNo} maxLength={32} inputMode="numeric" onChange={set('studentNo')} /></Field>
         </div>
-        {!more && <button type="button" className="cr-link" onClick={() => setMore(true)}><Icon name="plus" size={13} stroke={2.4} />{tx('生日、兴趣与性格')}</button>}
+        {!more && <button type="button" className="cr-link" disabled={busy} onClick={() => setMore(true)}><Icon name="plus" size={13} stroke={2.4} />{tx('生日、兴趣与性格')}</button>}
         {more && (
           <>
-            <Field label={tx('生日')} hint={tx('选填')}><input type="date" value={form.birthday || ''} onChange={set('birthday')} /></Field>
-            <Field label={tx('兴趣')} hint={tx('选填')}><input value={form.interests} maxLength={400} placeholder={tx('例如：篮球、科幻小说、画画')} onChange={set('interests')} /></Field>
-            <Field label={tx('性格')} hint={tx('选填，用你自己的话写')}><textarea rows={3} value={form.personality} maxLength={1000} placeholder={tx('例如：安静，但讲到感兴趣的题会抢着回答')} onChange={set('personality')} /></Field>
+            <Field label={tx('生日')} hint={tx('选填')}><input disabled={busy} type="date" value={form.birthday || ''} onChange={set('birthday')} /></Field>
+            <Field label={tx('兴趣')} hint={tx('选填')}><input disabled={busy} value={form.interests} maxLength={400} placeholder={tx('例如：篮球、科幻小说、画画')} onChange={set('interests')} /></Field>
+            <Field label={tx('性格')} hint={tx('选填，用你自己的话写')}><textarea disabled={busy} rows={3} value={form.personality} maxLength={1000} placeholder={tx('例如：安静，但讲到感兴趣的题会抢着回答')} onChange={set('personality')} /></Field>
           </>
         )}
         {initial && (
           <Field label={tx('所在班级')}>
-            <select value={form.classId} onChange={set('classId')}>
+            <select disabled={busy} value={form.classId} onChange={set('classId')}>
               {ctx.data.classes.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </Field>

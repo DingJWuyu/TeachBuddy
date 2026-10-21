@@ -73,7 +73,7 @@ export function ExamList({ ctx }) {
 }
 
 /* ---------- create / edit an exam ---------- */
-function TagPicker({ ctx, value, onChange }) {
+function TagPicker({ ctx, value, onChange, disabled = false }) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
   const ref = useRef(null);
@@ -114,10 +114,10 @@ function TagPicker({ ctx, value, onChange }) {
   };
   return (
     <span className="cr-menuwrap" ref={ref}>
-      <button type="button" className={cx('cr-tagcell', open && 'is-on')} onClick={() => setOpen(!open)} aria-expanded={open}>
+      <button type="button" disabled={disabled} className={cx('cr-tagcell', open && 'is-on')} onClick={() => setOpen(!open)} aria-expanded={open}>
         {value.length ? value.map((id) => <span key={id} className="cr-tagmini">{ctx.data.tags.find((t) => t.id === id)?.name}</span>) : <span className="cr-muted">{tx('添加标签')}</span>}
       </button>
-      <Popover anchor={ref} surfaceRef={surface} open={open} onClose={close} align="end" className="cr-menu is-end cr-tagmenu" role="menu" label={tx('标签')} onKeyDown={(event) => {
+      <Popover anchor={ref} surfaceRef={surface} open={open && !disabled} onClose={close} align="end" className="cr-menu is-end cr-tagmenu" role="menu" label={tx('标签')} onKeyDown={(event) => {
         if (event.key !== 'Tab') return;
         const nodes = [...event.currentTarget.querySelectorAll('button:not(:disabled), input:not(:disabled)')];
         if ((event.shiftKey && document.activeElement === nodes[0]) || (!event.shiftKey && document.activeElement === nodes.at(-1))) {
@@ -152,6 +152,7 @@ export function ExamForm({ ctx, initial, onClose }) {
   const [bulk, setBulk] = useState({ count: '10', score: '10' });
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const written = useRef(null);
   const set = (key) => (e) => setForm({ ...form, [key]: e.target.value });
   const total = sum(form.questions.map((q) => Number(q.fullScore) || 0));
   const patchQ = (i, patch) => setForm({ ...form, questions: form.questions.map((q, j) => (j === i ? { ...q, ...patch } : q)) });
@@ -161,24 +162,35 @@ export function ExamForm({ ctx, initial, onClose }) {
     setForm({ ...form, questions: [...form.questions, ...Array.from({ length: n }, (_, i) => ({ label: String(start + i + 1), group: '', fullScore: bulk.score, tagIds: [] }))] });
   };
   const save = async () => {
+    if (busy) return;
     setBusy(true);
     setError('');
+    let completing = false;
     try {
       const body = {
         name: form.name, date: form.date, subject: form.subject,
         fullScore: form.fullScore ? Number(form.fullScore) : total,
         questions: form.questions.map((q) => ({ ...(q.id ? { id: q.id } : {}), label: q.label, group: q.group || '', fullScore: Number(q.fullScore), tagIds: q.tagIds })),
       };
-      const saved = initial ? await ctx.api.put(`/exams/${initial.id}`, { baseVersion: initial.version, ...body }) : await ctx.api.post('/exams', body);
-      await ctx.reload();
+      const signature = JSON.stringify(body);
+      if (written.current?.signature !== signature) {
+        const target = written.current?.saved || initial;
+        const saved = target
+          ? await ctx.api.put(`/exams/${target.id}`, { baseVersion: target.version, ...body })
+          : await ctx.api.post('/exams', body);
+        written.current = { saved, signature };
+      }
+      completing = true;
+      await ctx.reload({ propagate: true });
       ctx.toast(initial ? tx('已保存') : tx('考试已创建'));
-      ctx.go({ view: 'exams', examId: saved.id });
+      ctx.go({ view: 'exams', examId: written.current.saved.id });
       onClose();
-    } catch (err) { setError(err.message); } finally { setBusy(false); }
+    } catch (err) { setError(completing ? tx('班级暂时无法读取') : err.message); } finally { setBusy(false); }
   };
   const covered = form.fullScore && total && Number(form.fullScore) !== total;
   return (
     <Dialog
+      busy={busy}
       wide
       title={initial ? tx('编辑考试') : tx('新建考试')}
       subtitle={tx('计分题是最小的计分单位，可以是小问。大题标题写在“分组”里，不会再算一次分。')}
@@ -187,37 +199,37 @@ export function ExamForm({ ctx, initial, onClose }) {
         <>
           <span className="cr-muted">{tx('{{n}} 道题，合计 {{s}} 分', { n: form.questions.length, s: fmt(total) })}</span>
           <span className="cr-grow" />
-          <button type="button" className="cr-btn" onClick={onClose}>{tx('取消')}</button>
+          <button type="button" className="cr-btn" disabled={busy} onClick={onClose}>{tx('取消')}</button>
           <button type="button" className="cr-btn is-primary" disabled={busy || !form.name.trim() || !form.questions.length} onClick={save}>{initial ? tx('保存') : tx('创建考试')}</button>
         </>
       )}
     >
       <div className="cr-form">
         <div className="cr-form-row is-exam">
-          <Field label={tx('考试名称')}><input value={form.name} maxLength={80} placeholder={tx('例如：期中考试')} onChange={set('name')} /></Field>
-          <Field label={tx('日期')}><input type="date" value={form.date} onChange={set('date')} /></Field>
-          <Field label={tx('学科')}><input value={form.subject} maxLength={40} onChange={set('subject')} /></Field>
-          <Field label={tx('总满分')} hint={tx('选填')}><input inputMode="decimal" value={form.fullScore} placeholder={total ? fmt(total) : '100'} title={tx('留空就用计分题合计')} onChange={set('fullScore')} /></Field>
+          <Field label={tx('考试名称')}><input disabled={busy} value={form.name} maxLength={80} placeholder={tx('例如：期中考试')} onChange={set('name')} /></Field>
+          <Field label={tx('日期')}><input disabled={busy} type="date" value={form.date} onChange={set('date')} /></Field>
+          <Field label={tx('学科')}><input disabled={busy} value={form.subject} maxLength={40} onChange={set('subject')} /></Field>
+          <Field label={tx('总满分')} hint={tx('选填')}><input disabled={busy} inputMode="decimal" value={form.fullScore} placeholder={total ? fmt(total) : '100'} title={tx('留空就用计分题合计')} onChange={set('fullScore')} /></Field>
         </div>
         {covered && <p className="cr-note"><Icon name="info" size={14} stroke={2} />{tx('计分题合计 {{s}}，和总满分 {{f}} 不同。只有逐题完整覆盖整卷时，才会检查总分和逐题之和是否一致。', { s: fmt(total), f: form.fullScore })}</p>}
         <div className="cr-qtable">
           {form.questions.length > 0 && <div className="cr-qtable-head"><span>{tx('分组')}</span><span>{tx('题号')}</span><span>{tx('满分')}</span><span>{tx('标签')}</span><span /></div>}
           {form.questions.map((q, i) => (
             <div key={q.id || i} className="cr-qrow">
-              <input aria-label={tx('分组')} value={q.group} placeholder={tx('如：一、选择题')} onChange={(e) => patchQ(i, { group: e.target.value })} />
-              <input aria-label={tx('题号')} value={q.label} onChange={(e) => patchQ(i, { label: e.target.value })} />
-              <input aria-label={tx('满分')} inputMode="decimal" value={q.fullScore} onChange={(e) => patchQ(i, { fullScore: e.target.value })} />
-              <TagPicker ctx={ctx} value={q.tagIds} onChange={(tagIds) => patchQ(i, { tagIds })} />
-              <button type="button" className="cr-icon-btn is-small" aria-label={tx('移除这道题')} onClick={() => setForm({ ...form, questions: form.questions.filter((_, j) => j !== i) })}><Icon name="close" size={12} stroke={2.4} /></button>
+              <input disabled={busy} aria-label={tx('分组')} value={q.group} placeholder={tx('如：一、选择题')} onChange={(e) => patchQ(i, { group: e.target.value })} />
+              <input disabled={busy} aria-label={tx('题号')} value={q.label} onChange={(e) => patchQ(i, { label: e.target.value })} />
+              <input disabled={busy} aria-label={tx('满分')} inputMode="decimal" value={q.fullScore} onChange={(e) => patchQ(i, { fullScore: e.target.value })} />
+              <TagPicker disabled={busy} ctx={ctx} value={q.tagIds} onChange={(tagIds) => patchQ(i, { tagIds })} />
+              <button type="button" className="cr-icon-btn is-small" disabled={busy} aria-label={tx('移除这道题')} onClick={() => setForm({ ...form, questions: form.questions.filter((_, j) => j !== i) })}><Icon name="close" size={12} stroke={2.4} /></button>
             </div>
           ))}
           <div className="cr-qadd">
             <span>{tx('添加')}</span>
-            <input aria-label={tx('题数')} inputMode="numeric" value={bulk.count} onChange={(e) => setBulk({ ...bulk, count: e.target.value })} />
+            <input disabled={busy} aria-label={tx('题数')} inputMode="numeric" value={bulk.count} onChange={(e) => setBulk({ ...bulk, count: e.target.value })} />
             <span>{tx('道题，每题')}</span>
-            <input aria-label={tx('每题满分')} inputMode="decimal" value={bulk.score} onChange={(e) => setBulk({ ...bulk, score: e.target.value })} />
+            <input disabled={busy} aria-label={tx('每题满分')} inputMode="decimal" value={bulk.score} onChange={(e) => setBulk({ ...bulk, score: e.target.value })} />
             <span>{tx('分')}</span>
-            <button type="button" className="cr-btn is-small" onClick={addMany}><Icon name="plus" size={13} stroke={2.4} />{tx('添加')}</button>
+            <button type="button" className="cr-btn is-small" disabled={busy} onClick={addMany}><Icon name="plus" size={13} stroke={2.4} />{tx('添加')}</button>
           </div>
         </div>
         {error && <p className="cr-error">{error}</p>}

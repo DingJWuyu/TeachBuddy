@@ -618,21 +618,21 @@ export default function MaterialsQuestionsPage({
         </QuestionDialog>
       )}
       </ModulePresence>
-      <ModulePresence present={confirmDiscard}>{confirmDiscard && <ConfirmDialog title={t("放弃未保存的修改？")} message={t("此设备上的这份草稿将被删除，已经保存的题目不受影响。")} confirmLabel={t("放弃修改")} onCancel={() => cancelDiscard()} onConfirm={discardDraft} />}</ModulePresence>
-      <ModulePresence present={Boolean(copyCandidate)}>{copyCandidate && <ConfirmDialog title={t("替换未完成的题目？")} message={t("你还有一份未完成的新题草稿。开始这次改编会替换它，已保存的题目不受影响。")} confirmLabel={t("替换并开始改编")} onCancel={() => cancelCopy()} onConfirm={replaceWithCopy} />}</ModulePresence>
-      <ModulePresence present={Boolean(lifecycleAction)}>{lifecycleAction && <LifecycleConfirmDialog
-        title={t(lifecycleTitles[lifecycleAction.kind === 'import' ? 'import' : 'question'][lifecycleAction.mode])}
-        message={lifecycleAction.mode === 'purge'
+      <ConfirmDialog present={confirmDiscard} title={t("放弃未保存的修改？")} message={t("此设备上的这份草稿将被删除，已经保存的题目不受影响。")} confirmLabel={t("放弃修改")} onCancel={() => cancelDiscard()} onConfirm={discardDraft} />
+      <ConfirmDialog present={Boolean(copyCandidate)} title={t("替换未完成的题目？")} message={t("你还有一份未完成的新题草稿。开始这次改编会替换它，已保存的题目不受影响。")} confirmLabel={t("替换并开始改编")} onCancel={() => cancelCopy()} onConfirm={replaceWithCopy} />
+      <LifecycleConfirmDialog present={Boolean(lifecycleAction)}
+        title={lifecycleAction ? t(lifecycleTitles[lifecycleAction.kind === 'import' ? 'import' : 'question'][lifecycleAction.mode]) : ''}
+        message={lifecycleAction ? (lifecycleAction.mode === 'purge'
           ? t("“{{value}}”及其本地草稿将彻底删除，无法恢复。{{detail}}", { value: lifecycleAction.item.title || t("未命名题目"), detail: lifecycleAction.kind === 'import' ? t("已入库的题目会保留。") : t("已有改编题会保留。") })
-          : lifecycleAction.mode === 'restore' ? t("恢复后，会重新出现在题库中。") : tx("将移出当前列表。之后可以在左侧的“已归档”里恢复或彻底删除。")}
-        danger={lifecycleAction.mode === 'purge'}
-        icon={lifecycleAction.mode === 'restore' ? 'restore' : 'trash'}
+          : lifecycleAction?.mode === 'restore' ? t("恢复后，会重新出现在题库中。") : tx("将移出当前列表。之后可以在左侧的“已归档”里恢复或彻底删除。")) : ''}
+        danger={lifecycleAction?.mode === 'purge'}
+        icon={lifecycleAction?.mode === 'restore' ? 'restore' : 'trash'}
         busy={busy}
-        confirmLabel={busy ? t("正在处理…") : lifecycleAction.mode === 'purge' ? t("彻底删除") : lifecycleAction.mode === 'restore' ? t("确认恢复") : t("确认归档")}
+        confirmLabel={busy ? t("正在处理…") : lifecycleAction?.mode === 'purge' ? t("彻底删除") : lifecycleAction?.mode === 'restore' ? t("确认恢复") : t("确认归档")}
         onConfirm={confirmLifecycle}
         onCancel={cancelLifecycle}>
         {message && <p className="q-error" role="alert">{message}</p>}
-      </LifecycleConfirmDialog>}</ModulePresence>
+      </LifecycleConfirmDialog>
       <ModulePresence present={Boolean(newCategory)}>{newCategory && <QuestionDialog title={newCategory.kind === 'types' ? t("新建题型") : t("新建标签")} onClose={() => closeCategory()}>
         <form onSubmit={event => { event.preventDefault(); createCategory(); }}>
           <label>{t("名称")}<input aria-label={t("分类名称")} value={categoryName} maxLength={80} onChange={event => changeCategoryName(event.target.value)} /></label>
@@ -704,7 +704,9 @@ function Taxonomy({ taxonomy, disabled, onSave }) {
               <button
                 aria-label={t(k === "types" ? "删除题型“{{name}}”" : "删除标签“{{name}}”", { name: category.name })}
                 disabled={disabled || deleting}
-                onClick={async () => {
+                onClick={async (event) => {
+                  // 删除按钮将暂时禁用，先为确认取消后的继续操作保留焦点。
+                  event.currentTarget.closest('.q-taxonomy-row')?.querySelector('input')?.focus();
                   setDeleting(true);
                   setError("");
                   try {
@@ -728,13 +730,13 @@ function Taxonomy({ taxonomy, disabled, onSave }) {
       ))}
       <button disabled={disabled || deleting} onClick={() => onSave(draft)}>{t("保存分类")}</button>
       {error && <p role="alert">{error}</p>}
-      <ModulePresence present={Boolean(pendingDelete)}>{pendingDelete && <ConfirmDialog
-        title={t(pendingDelete.kind === "types" ? "删除题型" : "删除标签")}
-        message={t(pendingDelete.kind === "types" ? "删除题型“{{name}}”并解除 {{affected}} 道题的关联？题目本身会保留。" : "删除标签“{{name}}”并解除 {{affected}} 道题的关联？题目本身会保留。", { name: pendingDelete.name, affected: pendingDelete.affected })}
-        confirmLabel={t(pendingDelete.kind === "types" ? "删除题型" : "删除标签")} onCancel={() => setPendingDelete(null)} onConfirm={() => {
+      <ConfirmDialog present={Boolean(pendingDelete)}
+        title={pendingDelete ? t(pendingDelete.kind === "types" ? "删除题型" : "删除标签") : ''}
+        message={pendingDelete ? t(pendingDelete.kind === "types" ? "删除题型“{{name}}”并解除 {{affected}} 道题的关联？题目本身会保留。" : "删除标签“{{name}}”并解除 {{affected}} 道题的关联？题目本身会保留。", { name: pendingDelete.name, affected: pendingDelete.affected }) : ''}
+        confirmLabel={t(pendingDelete?.kind === "types" ? "删除题型" : "删除标签")} onCancel={() => setPendingDelete(null)} onConfirm={() => {
           setDraft(current => ({ ...current, [pendingDelete.kind]: current[pendingDelete.kind].filter(item => item.id !== pendingDelete.id) }));
           setPendingDelete(null);
-        }} />}</ModulePresence>
+        }} />
     </div>
   );
 }

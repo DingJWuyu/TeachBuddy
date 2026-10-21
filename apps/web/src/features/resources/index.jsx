@@ -880,40 +880,37 @@ function ResourceWorkspace({
           </ResourceDialog>
         )}
       </ModulePresence>
-      <ModulePresence present={!!dialog}>
-        {dialog && (
-          <ConfirmDialog
-            title={dialog.kind === "replace"
-              ? t("更新当前文件")
-              : dialog.kind === "purge"
-                ? t("彻底删除资料")
-                : dialog.item.deletedAt
-                  ? t("恢复资料")
-                  : t("归档资料")}
-            message={dialog.kind === "replace"
-              ? `${file?.name ?? ""} → ${dialog.source.name}`
-              : dialog.kind === "purge"
-                ? t("“{{title}}”将从资源库永久删除，无法恢复。", { title: dialog.item.title })
-                : dialog.item.deletedAt
-                  ? t("恢复后可以继续查看和整理这份资料。")
-                  : t("资料会移入“已归档资料”，可以随时恢复。")}
-            danger={dialog.kind === "purge"}
-            icon={dialog.kind === "replace" ? "upload" : dialog.item?.deletedAt ? "restore" : "trash"}
-            disabled={disabled}
-            confirmLabel={dialog.kind === "replace"
-              ? t("更新")
-              : dialog.kind === "purge"
-                ? t("彻底删除")
-                : dialog.item.deletedAt
-                  ? t("恢复")
-                  : t("归档")}
-            onConfirm={operations.confirmOperation}
-            onCancel={() => operations.dismissConfirmation()}
-          >
-            {dialog.kind === "replace" && <p>{t("名称、文件夹、标签和备注都会保留。")}</p>}
-          </ConfirmDialog>
-        )}
-      </ModulePresence>
+      <ConfirmDialog
+        present={!!dialog}
+        title={dialog?.kind === "replace"
+          ? t("更新当前文件")
+          : dialog?.kind === "purge"
+            ? t("彻底删除资料")
+            : dialog?.item?.deletedAt
+              ? t("恢复资料")
+              : t("归档资料")}
+        message={dialog?.kind === "replace"
+          ? `${file?.name ?? ""} → ${dialog?.source?.name}`
+          : dialog?.kind === "purge"
+            ? t("“{{title}}”将从资源库永久删除，无法恢复。", { title: dialog?.item?.title })
+            : dialog?.item?.deletedAt
+              ? t("恢复后可以继续查看和整理这份资料。")
+              : t("资料会移入“已归档资料”，可以随时恢复。")}
+        danger={dialog?.kind === "purge"}
+        icon={dialog?.kind === "replace" ? "upload" : dialog?.item?.deletedAt ? "restore" : "trash"}
+        disabled={disabled}
+        confirmLabel={dialog?.kind === "replace"
+          ? t("更新")
+          : dialog?.kind === "purge"
+            ? t("彻底删除")
+            : dialog?.item?.deletedAt
+              ? t("恢复")
+              : t("归档")}
+        onConfirm={operations.confirmOperation}
+        onCancel={() => operations.dismissConfirmation()}
+      >
+        {dialog?.kind === "replace" && <p>{t("名称、文件夹、标签和备注都会保留。")}</p>}
+      </ConfirmDialog>
     </div>
   );
 }

@@ -1197,3 +1197,59 @@ test('失效通知的读取错误不覆盖后续任务，重试重新读取目�
   expect(targetReads).toBe(2);
   await expect(page.locator('.cal-load-error')).toHaveCount(0);
 });
+
+
+for (const unscheduled of [false, true]) test(`失效目标后新建${unscheduled ? '待安排' : '排期'}清除旧目标错误`, async ({ page }) => {
+  await page.goto(`${world.origin}/calendar?entry=${randomUUID()}`);
+  await expect(page.locator('.cal-load-error')).toContainText('可能已被删除');
+  if (unscheduled) await page.getByRole('button', { name: '新建待安排任务', exact: true }).click();
+  else await page.getByRole('button', { name: '新建任务', exact: true }).click();
+  await expect(page.locator('#calendar-entry-title')).toHaveValue('');
+  await expect(page.locator('.cal-load-error')).toHaveCount(0);
+  await page.keyboard.press('Escape');
+  await expect(page.locator('.tbx-sheet')).toHaveCount(0);
+  await expect(page.locator('.cal-load-error')).toHaveCount(0);
+});
+
+for (const outcome of ['success', 'error']) for (const next of ['create', 'open', 'close']) {
+  test(`深链接迟到${outcome}遵守后续${next}意图`, async ({ page }) => {
+    const target = await call('POST', E, input('先前通知目标'));
+    const active = await call('POST', E, input('教师当前选择'));
+    let release, started;
+    const gate = new Promise(resolve => { release = resolve; });
+    const reading = new Promise(resolve => { started = resolve; });
+    await page.route(`**${E}/${target.id}`, async route => {
+      const response = await route.fetch();
+      started();
+      await gate;
+      if (outcome === 'success') await route.fulfill({ response });
+      else await route.fulfill({ status: 404, contentType: 'application/problem+json', body: JSON.stringify({ type: '/problems/workbench/not-found', status: 404, title: '先前目标已删除' }) });
+    }, { times: 1 });
+    try {
+      await page.goto(`${world.origin}/calendar?entry=${target.id}`);
+      await reading;
+      if (next === 'create') {
+        await page.getByRole('button', { name: '新建任务', exact: true }).click();
+        await page.locator('#calendar-entry-title').fill('读取期间的新草稿');
+      } else if (next === 'open') await open(page, active.title);
+      else await page.keyboard.press('Escape');
+      release();
+      await page.waitForLoadState('networkidle');
+      if (next === 'close') await expect(page.locator('.tbx-sheet')).toHaveCount(0);
+      else await expect(page.locator('#calendar-entry-title')).toHaveValue(next === 'create' ? '读取期间的新草稿' : active.title);
+      await expect(page.locator('.cal-load-error')).toHaveCount(0);
+    } finally { release(); }
+  });
+}
+
+test('任务读取失败后Escape退出清除旧目标错误', async ({ page }) => {
+  const target = await call('POST', E, input('暂时读不到的任务'));
+  await page.reload();
+  await page.route(`**${E}/${target.id}`, route => route.fulfill({ status: 503, contentType: 'application/problem+json', body: JSON.stringify({ type: '/problems/workbench/unavailable', status: 503, title: '暂时无法读取' }) }), { times: 1 });
+  await open(page, target.title);
+  await expect(page.locator('.cal-load-error')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page).toHaveURL(`${world.origin}/calendar`);
+  await expect(page.locator('.cal-load-error')).toHaveCount(0);
+  await expect(page.locator('.tbx-sheet')).toHaveCount(0);
+});

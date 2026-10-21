@@ -139,6 +139,15 @@
     opacity: 0;
   }
 }
+.tbx-confirm-presence { display: contents; }
+.tbx-confirm-presence[inert] > .tbx-confirm-scrim {
+  pointer-events: none;
+  animation: tbx-kit-fade-out 180ms ease both;
+}
+@keyframes tbx-kit-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
 :is(.wb-shell, .tbx-portal-host) .tbx-confirm {
   width: min(420px, 100%);
   padding: 24px 24px 20px;

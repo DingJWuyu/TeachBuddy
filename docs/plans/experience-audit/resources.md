@@ -53,7 +53,7 @@
 | D01 | 详情入口 | 返回、标题、文件名、下载、更多、资料右轨 | 两端通过图片/PDF详情入口、返回、标题文件名、下载与右轨；`*-D01-image.png` / `*-U03-pdf.png`。 |
 | D02 | 资料编辑 | 名称/文件夹/标签/备注、保存状态、未保存草稿刷新 | 两端通过名称与备注保存、保存按钮状态；`*-D02-edit.png`。产品草稿及刷新保留通过 `baseline-states` 保存响应丢失流程。 |
 | D03 | 详情就地创建 | 新文件夹/标签选入草稿，保存后归属生效 | 两端通过详情就地创建文件夹/标签、选入草稿并保存；`dual-preview-2.log` D03。产品刷新读回通过 `baseline-existing` 首条。 |
-| D04 | 详情更多菜单 | 历史/更新/补充PDF/移除补充/归档、键盘与焦点 | 两端更多菜单与Escape归焦通过 `*-D04-menu.png`；详情确认弹层偏差EA-resources-01已修，候选闭环见green证据。 |
+| D04 | 详情更多菜单 | 历史/更新/补充PDF/移除补充/归档、键盘与焦点 | 两端更多菜单与Escape归焦通过 `*-D04-menu.png`；EA-resources-01已修。复审发现的portal退场新消费回归并入EA-shared-02，四类取消/原生Tab Enter/实际inert淡出/快重开及原PDF共5例通过 `lifecycle-green.log`。 |
 | D05 | 更新文件 | 新旧文件名确认、取消、成功保留元数据、失败保留旧件 | 两端通过新旧文件名确认、取消保留旧件、实际更新保留备注和标签；`dual-preview-2.log` D05。候选更新确认键盘取消、归焦、重新更新通过 `final-confirmation.log`。 |
 | D06 | 文件历史 | 倒序、当前/历史标记、真实下载、恢复确认与取消 | 两端通过倒序历史、取消恢复再确认恢复、当前文件与备注保护；`dual-preview-2.log` D06。产品实际历史原件字节下载与归档只读通过 `green-confirmation` 历史流程。 |
 | D07 | 归档详情 | 立即返回列表、恢复后编辑、历史只下载、永久删除 | 两端归档立即回列表通过 `*-A02-archive.png`；产品恢复/删除取消、刷新、检索不再出现均真实通过 `green-confirmation`。 |
@@ -86,11 +86,12 @@
 ## 问题
 
 - **EA-resources-01，原有偏差，已修复**：详情更新/归档/恢复/彻底删除确认使用旧 ResourceDialog，缺统一图标、alertdialog、取消在左与确认在右，归档错误使用危险色。完整原型 `ui/app.js:100888` 使用 KitConfirmDialog。基线真实PDF新断言红证据 `red-confirmation`，候选复用共享 ConfirmDialog；真实更新取消的键盘环回、原件保留、重新更新、归档恢复删除通过 `green-confirmation-focus.log`。
+- **EA-shared-02 的资源新消费者回归，已修复**：本轮将详情确认迁移为portal后，原外层ModulePresence仍保留旧组件180ms，实际portal跳出inert，取消后Tab/Enter可执行旧操作。独立审查固定 `a91cc0e0` 已真实复现归档POST。共享生命周期由总控修复，资源四类确认移除外层包装、始终渲染并传受控present。旧候选四条新回归均红；新候选四类关闭/淡出/快重开加原PDF流程5条通过，原始复现复制重跑无写请求。证据 `lifecycle-red.log`、`lifecycle-green.log`、`lifecycle-recheck/standards-confirm-lifecycle.json`。此共享根因由总控计一次，资源迁移引入的新消费面不再新增基线问题数。
 - **测试缺陷，已修复**：确认文本迁移时曾误改批量Organize的按钮查询，导致green批量用例失败；还原批量的“确认 归档/恢复”后 `green-batch-recheck.log` 通过，不计产品问题。
 - **排除项**：折叠层被裁切节点Playwright仍报可见、文件Buffer上传50MB上限、单文件明确拒绝不保留队列、FilterMenu无End/Home导航，均已按真实动作/源码修正审计判据；没有据此制造产品问题。
 
 ## 接续
 
-69行均已记录实际结果或明确模拟差异，双端120个具名检查点通过；本轮按缺口选择的35个不同现有资源E2E已实际通过，真实OCR运行1例依费用边界跳过。原型静态模拟与真实产品的转换/任务/持久性差异已在相应行明确，不用静态适配器代签真实服务。
+69行均已记录实际结果或明确模拟差异，双端120个具名检查点通过；此前按缺口选择的35个不同现有资源E2E已实际通过；复审仅定点新增4类退场回归及重跑1条既有PDF流程，5例通过，未重跑全套。真实OCR运行1例依费用边界跳过。原型静态模拟与真实产品的转换/任务/持久性差异已在相应行明确，不用静态适配器代签真实服务。
 
-本线源码冻结供集中审查：`apps/web/src/features/resources/index.jsx`、`apps/web/e2e/resources-ui.spec.js`，稳定行为同步 `docs/features/resources.md`，清单为本页。固定基线 `test-results/experience-audit/baseline-web`，本线候选 `test-results/experience-audit/resources/candidate-web`。回执及精确输入摘要见 `test-results/experience-audit/resources/receipt.md`，有效证据保留至总控集成收口。未提交Git，未触及50880、私人配置或付费模型；独立审查/完整CI/集成由总控执行。
+本线源码冻结供集中审查：`apps/web/src/features/resources/index.jsx`、`apps/web/e2e/resources-ui.spec.js`，稳定行为同步 `docs/features/resources.md`，清单为本页。固定基线 `test-results/experience-audit/baseline-web`，当前复审候选 `test-results/experience-audit/resources/lifecycle-candidate-web`（复审基线 `a91cc0e0`，未提交）。回执及精确输入摘要见 `test-results/experience-audit/resources/receipt.md`，有效证据保留至总控集成收口。未提交Git，未触及50880、私人配置或付费模型；独立审查/完整CI/集成由总控执行。

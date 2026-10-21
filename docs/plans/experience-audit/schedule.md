@@ -23,7 +23,7 @@
 | S13 | 看板 | 今天/之后/待安排、日期分组、全空/有数据、卡片进场及完成进度环 | TaskBoard | 通过：配对空态/已有事项/完成进度/优先级 |
 | S14 | 看板筛选 | 每列标签多选/无标签、全部清除、筛空提示/显示全部、切换恢复 | TagFilter | 通过：配对无标签筛空/显示全部/多选；真实产品刷新恢复，menu-probe.json |
 | S15 | 看板任务 | 打开/再次点关闭、事项直接完成/恢复、优先级、事项过多渐隐、长标题 | TaskCard | 通过：配对打开/关闭/直接完成恢复、7项折叠与备注 |
-| S16 | 编辑开关 | 新建排期/待安排、空标题取消、有效标题自动保存、关闭静止副本收起、快速重开 | EntryEditor/index | 通过：新建/关闭/空标题、未知保存阻断与静止副本 |
+| S16 | 编辑开关 | 新建排期/待安排、空标题取消、有效标题自动保存、关闭静止副本收起、快速重开 | EntryEditor/index | 通过：新建/关闭/空标题、未知保存阻断与静止副本；EA07新建排期/待安排清旧错误与退出，review-green/exit-green.log |
 | S17 | 标题备注 | 多行/长内容自适应、清空备注占位、Enter移出焦点/ShiftEnter换行、滚动 | EntryEditor | 通过：长标签/备注1675及390、Enter与清空/重输 |
 | S18 | 时间输入 | 日期Picker日/月/年与时间小时分钟、结束跨日、非法结束、字段Enter、全天开关 | Pill/EntryEditor | 通过：日期/时间共享Picker、非法结束/恢复、AX无效状态、全天 |
 | S19 | 排期转换 | 待安排安排时间、移回待安排确认/取消、保留标题标签备注事项、时间控件按需显示 | EntryEditor | 通过：排期未过期默认值；无效排期取消保留待安排 |
@@ -40,18 +40,21 @@
 | S30 | 删除任务 | 普通就地确认、重复仅一次/全部对话框、取消与键盘确认、删除无恢复 | EntryEditor/index | 通过：普通确认、重复只删一次、删除全部保留独立、未知结果原键确认均真实读回 |
 | S31 | 通知 | 空态、未读/已读撤销、全部已读、拖桶二次确认直至空态、通知定位、目标删除状态 | Notifications/NotificationPanel | 通过：全部已读/撤销/逐条拖桶至空态/二次确认、已删除/取消/移出范围通知定位与真实dismiss；无批量清空入口见裁决 |
 | S32 | 通知关闭 | 入口切换、外点含顶部空白、Escape只关闭通知保留日程编辑 | Notifications/Topbar | 通过：通知Escape保留编辑、顶部外点关闭及重开重试，remaining.log |
-| S33 | 保存故障 | 读取失败旧内容/重试、未知结果原请求确认、冲突比较/采用、保存中继续输入/切换 | index/ConflictPreview | 通过：读取503保留旧内容/重试，冲突采用取消/确认及读回、EA07任务错误隔离/重试、原未知与迟到路径均已验 |
+| S33 | 保存故障 | 读取失败旧内容/重试、未知结果原请求确认、冲突比较/采用、保存中继续输入/切换 | index/ConflictPreview | 通过：读取503保留旧内容/重试，冲突采用取消/确认及读回、EA07任务错误隔离/重试；EA08深链迟到成功/失败均遵守新建、打开其它、退出意图，review-green.log；原未知保存路径已验 |
 | S34 | 现场恢复 | 刷新/跨模块保留视图/选段/月滚动/草稿/右轨滚动，账户隔离 | index/TaskBoard | 通过：真实账户甲未知请求及后续输入切乙隔离、回甲恢复确认；任务列滚动往返/刷新独立于网格 |
 | S35 | 关联布局 | 中英深浅、390窄屏辅助卡片、AI覆盖月份右轨、长编辑末端操作可达、无横溢出 | schedule.css/presentation.css | 通过：中英深浅390/1675弹层/看板/长内容/Every间隔；1100英文AI容器换行与11天选择保留AI输入均已验 |
 | S36 | 系统时区 | IANA偏移、窗口focus/15秒检查、DST提示、分钟边界当前线 | index/model | 通过：系统时区变化、15秒检测、DST真实时长与时间线5条专项 |
 
-当前：原型与隔离真实产品已完成36组源码分支清查，首次冻结保留的11组剩余浏览器条件均已补齐。7项原有问题已修复并定点复验，等待总控集中审查；证据与独立问题分类见 `test-results/experience-audit/schedule/receipt.md`。真实触屏、真实输入法和读屏器为单列未验条件。
+当前：原型与隔离真实产品已完成36组源码分支清查，首次冻结保留的11组剩余浏览器条件均已补齐。8项原有问题已修复并定点复验，独立审查返工已闭合并再次冻结；证据与独立问题分类见 `test-results/experience-audit/schedule/receipt.md`。真实触屏、真实输入法和读屏器为单列未验条件。
 
-证据入口：`pair-results.json` / `pair-complete.log` 为同日期、同数据、同视口配对；`menu-probe.json` 为原型与候选键盘焦点及AX树；`regression.log` 为首次失败基线；`fixes-final.log`、`invalid-verified.log`、`month-drop.log`、`final-targets.log`、`resize-verified.log`、`timezone.log` 记录逐项复验。最终冻结编译产物 `candidate-complete-web`，源码摘要 `complete-sha256.txt`，独立outDir不覆盖共享基线。
+证据入口：`pair-results.json` / `pair-complete.log` 为同日期、同数据、同视口配对；`menu-probe.json` 为原型与候选键盘焦点及AX树；`regression.log` 为首次失败基线；`fixes-final.log`、`invalid-verified.log`、`month-drop.log`、`final-targets.log`、`resize-verified.log`、`timezone.log` 记录逐项复验。最终冻结编译产物 `review-web`，源码摘要 `review-sha256.txt`，独立outDir不覆盖共享基线。
 
 
 冻结状态：原分母36组均已实际覆盖，本轮追加清单11组剩余浏览器条件已闭合。原型自身的ghost偏移、拖动Escape关闭父编辑器、英文Every遮挡等保留原始对照，产品按现行规则修正；不将原型错误当作必须保留的行为。实际未验仅真实触屏、真实输入法和真实读屏器，未运行全CI。
 
 通知裁决：总控核对Design System外壳通知段后确认，行尾›跳转、拖桶二次确认删除，无批量清空入口。旧规格TT-U10已由总控修正；本线实际验证逐条dismiss至空态，不新增按钮，不计新增产品问题。
 
-追加证据：`completion.log` 13条通过；`completion-extra.log` 中草稿/重叠、移动加载异常、读取失败/采用、整组删除保留独立4条通过；`completion-red.log` 的EA06/EA07均在旧候选具名失败，`completion-green.log` 4条通过；`completion-extra-final.log` 原生ghost中间帧及通知失效目标/逐条删空2条通过。最终构建改为 `candidate-complete-web`，摘要见 `complete-sha256.txt`。
+追加证据：`completion.log` 13条通过；`completion-extra.log` 中草稿/重叠、移动加载异常、读取失败/采用、整组删除保留独立4条通过；`completion-red.log` 的EA06/EA07均在旧候选具名失败，`completion-green.log` 4条通过；`completion-extra-final.log` 原生ghost中间帧及通知失效目标/逐条删空2条通过。该阶段构建为 `candidate-complete-web`，摘要见 `complete-sha256.txt`；独立审查返工产物见下。
+
+
+独立审查返工：EA07补齐失效目标后新建排期/待安排的清错，不新增问题编号。EA08为原有深链接竞态，基线a5daad25即缺少首轮读取的编辑意图约束；固定a91cc0e0中，迟到成功覆盖新草稿/已打开任务，迟到404污染有效任务。现从首轮读取开始捕获意图，在两次读取后与错误分支检查，新建、打开其它和关闭均可使旧结果失效。原有问题累计8项，开发临时错误和13类旧测试假设仍分开计数。原型36组及剩余11组覆盖不变，此次只定点复验，不重跑已通过123项；完整证据与红绿分类见receipt末节。
