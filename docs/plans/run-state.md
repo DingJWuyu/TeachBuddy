@@ -4,18 +4,17 @@
 
 ## 工作现场与授权
 
-上一轮全站体验清查已集成，见 [PR #50](https://github.com/DingJWuyu/TeachBuddy/pull/50)，具名结果统一在[核查入口](#核查入口)。用户已采纳其中七项原型共有问题的修复建议，并授权先同步修复产品和原型，再重新全面清查全站。两阶段顺序、写入边界、覆盖与证据沿[当前任务记录](experience-completion-audit.md)接续；界面参考从[设计输入](../design-system/README.md)进入，工程通则沿[开发约定](../agents/module-development.md)。
+七项已裁决体验修复及新一轮全站连续体验清查已完成并集成，见 [PR #51](https://github.com/DingJWuyu/TeachBuddy/pull/51)，具名结果统一在[核查入口](#核查入口)。产品、原型与相关文档已同步，preview 已核对，本轮临时工作树和分支已清理；当前没有正在执行的全站清查任务。界面参考从[设计输入](../design-system/README.md)进入，后续任务沿[开发约定](../agents/module-development.md)接手。
 
 用户体验运行 `TeachBuddy-preview` 的集成源码，维护方式见[已有实例](../SETUP.md#已有本机实例)。GitHub 默认分支与日常 trunk 是 `preview/integration`，`main` 是稳定发布分支。用户已授权仓库配置、CI、任务 PR、独立审查、trunk 集成与同步；执行[GitHub 工作流](../agents/github-workflow.md)。未授权实际版本准备、合 main、产品发布、公开部署、新增费用或社区自动运营。模型与外部账户操作沿各自授权，本轮不扩展。
 
 | 现场 | 当前安排 |
 | --- | --- |
 | `TeachBuddy-preview` / `preview/integration` | 集成及用户体验入口，保护私有配置和数据；当前分支与 HEAD 以 Git 核对 |
-| `TeachBuddy-experience-completion` / `fix/experience-completion-audit` | 本轮七项裁决修复及全站复查的独立现场；由总控维护并在完整交付后清理 |
 | `TeachBuddy` / `main` | 保留稳定分支工作树，不在本轮开发范围 |
 | `TeachBuddy-resources` / `feat/resources-core` | 保留已有资源库现场；本轮不修改或删除，接续前核对其成果和负责 session |
 
-下表能力已集成到 preview，上一轮临时现场已清理。根 [buffer](../../buffer.md) 保留用户暂缓的学期和反馈收件；已采纳的七项修复移入当前任务记录，不继续作为待裁决事项。
+下表能力已集成到 preview。根 [buffer](../../buffer.md) 仅保留用户暂缓的学期数据定义和反馈实际收件方式；已采纳的七项修复均完成，本轮没有新增未决产品问题。
 
 总控管理公共文件唯一写者、工作树和集成。未提交成果、固定输入、私有配置和有效证据须保留；测试业务数据可按已授权范围处置。证据不充当运行依赖，换机从入库输入与[SETUP](../SETUP.md)重建。
 
@@ -105,7 +104,8 @@
 
 | 范围 | 已集成证据 | 可重建入口及边界 |
 | --- | --- | --- |
-| 全站连续体验清查与当前运行 | [PR #50](https://github.com/DingJWuyu/TeachBuddy/pull/50)，`6e5413ed`；[CI](https://github.com/DingJWuyu/TeachBuddy/actions/runs/39563243128) 对应候选 `754ee72a`，squash 后文件树一致 | 去重确认35项既存发现，28项已修复，7项原型共有未决体验留buffer；此前暂缓的学期与反馈收件不重复计数。Standards/Spec 在代码候选 `ce0b58a2` 的硬问题均关闭，后续只更新任务记录。全工作区构建、284项HTTP/SQLite、51项真实输出、387项浏览器回归首轮通过，2项因缺私人E原稿跳过；本地按影响补验连续操作、焦点、动效、尺寸与跨模块实际保存。preview已同步，服务、匿名登录实页及变更模块已核对，未写私人业务数据。覆盖清单、回执及有效证据归档本机 `test-results/experience-audit/`，临时工作树与分支已清理。原型与后端未修改，真实邮件、线上模型、Office及目标设备仍沿具名边界另验 |
+| 七项原型裁决修复与全站连续体验复查 | [PR #51](https://github.com/DingJWuyu/TeachBuddy/pull/51)，`90fec3a7`；[最终 CI](https://github.com/DingJWuyu/TeachBuddy/actions/runs/39594819440) 对应候选 `7a2ee40f`，squash 后文件树一致 | 七项既有裁决全部修复；本轮另确认并修复30项既存产品根因、3项原型独有问题，2项既存测试缺陷单列。产品与原型同步，当前原型构建可从检出重建，重复生成一致；无后端、数据结构或依赖变更。两轴独立审查及增量复核无开放发现。全工作区构建、284项HTTP/SQLite、51项真实输出、423项浏览器回归通过，2项缺私人E原稿跳过；首轮数学动效采样误报已定点修正，原用例、忙帧及4项负对照留证。本地按实际入口和状态分支对照双端，补验连续操作、异步切换、保存重开与跨模块往返。preview已同步，服务、匿名登录实页、变更组件及控制台已核对，未写私人业务数据。任务与覆盖记录、审查及有效证据归档本机 `test-results/experience-completion/`；临时数据、构建和工作树已清理。真实邮件、收费模型、实体设备、系统IME及Office人工体验仍沿具名边界另验 |
+| 前一轮全站连续体验清查 | [PR #50](https://github.com/DingJWuyu/TeachBuddy/pull/50)，`6e5413ed`；[CI](https://github.com/DingJWuyu/TeachBuddy/actions/runs/39563243128) 对应候选 `754ee72a`，squash 后文件树一致 | 当轮去重确认35项既存发现并修复28项，7项原型共有体验随后已在PR #51完成修复；此前暂缓的学期与反馈收件不重复计数。Standards/Spec 在代码候选 `ce0b58a2` 的硬问题均关闭，后续只更新任务记录。全工作区构建、284项HTTP/SQLite、51项真实输出、387项浏览器回归首轮通过，2项因缺私人E原稿跳过；本地按影响补验连续操作、焦点、动效、尺寸与跨模块实际保存。preview已同步，服务、匿名登录实页及变更模块已核对，未写私人业务数据。覆盖清单、回执及有效证据归档本机 `test-results/experience-audit/`，临时工作树与分支已清理。原型与后端未修改，真实邮件、线上模型、Office及目标设备仍沿具名边界另验 |
 | 原型功能收口 | [PR #48](https://github.com/DingJWuyu/TeachBuddy/pull/48)，`7725aa69`；[CI](https://github.com/DingJWuyu/TeachBuddy/actions/runs/39478174882) 对应候选 `adb016da`，squash 后文件树一致 | 全工作区构建、284 项 HTTP/SQLite、51 项真实输出、355 项浏览器回归通过；2 项缺私人原稿跳过。资源、背景、资料包、会话与提案、班级成绩和归档已接通；历史设备选择及已提交请求接续定点通过。Standards/Spec 无未关闭发现。preview 已同步、重启并核对真实登录入口及新模块，未写私人业务数据；证据在本机 `test-results/prototype-capabilities/`，临时现场已清理。学期、反馈暂缓，真实外部环境仍沿下方具名边界 |
 | 全站原型对照 | [PR #49](https://github.com/DingJWuyu/TeachBuddy/pull/49)，`b20ad461`；[CI](https://github.com/DingJWuyu/TeachBuddy/actions/runs/39501334092) 对应候选 `9255745c`，squash 后文件树一致 | 全工作区构建、284 项 HTTP/SQLite、51 项真实输出、360 项浏览器检查通过；2 项缺私人原稿跳过。七个模块工作线及总控按页面、状态核对全部八个分区和公共外壳，修复呈现、交互与数据更新偏差；Standards/Spec 无未关闭发现。原型仅同步已裁决的上级先恢复，静态运行与构建入口已核对。两处旧测试的错误稳定态预期与动效采样已据实际失败修正。preview 已同步，服务、匿名登录实页及新模块已核对，未写私人业务数据；有效证据在本机 `test-results/prototype-parity/`，临时现场已清理。真实邮件、模型、Office 与目标设备仍按具名边界另验 |
 | 命名与安装基线 | [PR #45](https://github.com/DingJWuyu/TeachBuddy/pull/45)，`afaf7880`；[CI](https://github.com/DingJWuyu/TeachBuddy/actions/runs/38699507239) 对应候选 `0bdb426d`，squash 后文件树一致 | TeachBuddy 包、全工作区构建、274 项 HTTP/SQLite、50 项真实输出和 317 项浏览器检查通过；2 项缺私人原稿明确跳过。Standards/Spec 独立审查无未关闭发现。现有旧库升级、本机目录及服务、文件转换、OCR 固定环境和实际登录入口已验；数据库与附件保留，真实 GPU 推理和外部服务不在本次命名核对中重跑 |
