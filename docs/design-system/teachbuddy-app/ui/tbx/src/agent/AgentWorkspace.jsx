@@ -1,5 +1,6 @@
 import { h, Fragment } from '../shim.js';
 import { ConfirmMenuItem } from '../kit/confirm.jsx';
+import { Popover } from '../kit/popover.jsx';
 import { tb, useEffect, useLayoutEffect, useRef, useState, useMemo, useCallback, t, cx, tx, useLocale, isEnglish, monthDay } from '../react.js';
 import { seedDemo } from '../demo/seed.js';
 import { Prose, Inline } from './Prose.jsx';
@@ -137,7 +138,11 @@ function useOutside(open, ref, close) {
   useEffect(() => {
     if (!open) return undefined;
     const down = (e) => { if (!ref.current?.contains(e.target)) close(); };
-    const key = (e) => { if (e.key === 'Escape') close(); };
+    const key = (e) => {
+      if (e.key !== 'Escape') return;
+      ref.current?.querySelector('button')?.focus();
+      close();
+    };
     document.addEventListener('pointerdown', down);
     document.addEventListener('keydown', key);
     return () => { document.removeEventListener('pointerdown', down); document.removeEventListener('keydown', key); };
@@ -211,13 +216,23 @@ function selectedQuestionId() {
     return null;
   }
 }
+function selectedResourceId() {
+  try {
+    const store = globalThis.__teachbuddyLocalStorage;
+    const key = Object.keys(store).find((k) => k.endsWith(':scene:resources') && !k.includes(':branch:') && !k.includes(':head:'));
+    const scene = key ? JSON.parse(store.getItem(key)) : null;
+    return scene?.openId ?? null;
+  } catch {
+    return null;
+  }
+}
 function useCurrentContext(enabled) {
   const path = useRoute();
   const [ctx, setCtx] = useState(null);
   const [picked, setPicked] = useState(null);
   useEffect(() => {
-    if (!enabled || !path.startsWith('/questions')) { setPicked(null); return undefined; }
-    const read = () => setPicked(selectedQuestionId());
+    if (!enabled || !/^\/(questions|resources)(?:\/|$)/.test(path)) { setPicked(null); return undefined; }
+    const read = () => setPicked(path.startsWith('/resources') ? selectedResourceId() : selectedQuestionId());
     read();
     const id = setInterval(read, 700);
     return () => clearInterval(id);
@@ -226,8 +241,10 @@ function useCurrentContext(enabled) {
     if (!enabled) { setCtx(null); return undefined; }
     let live = true;
     const m = /^\/(questions|resources)\/([^/]+)$/.exec(path);
-    const target = m ? { kind: m[1] === 'questions' ? 'question' : 'resource', id: decodeURIComponent(m[2]), area: m[1] }
-      : picked ? { kind: 'question', id: picked, area: 'questions' } : null;
+    // Resource deep links are consumed once; later browsing is owned by its scene.
+    const target = m && (m[1] !== 'resources' || picked === decodeURIComponent(m[2]))
+      ? { kind: m[1] === 'questions' ? 'question' : 'resource', id: decodeURIComponent(m[2]), area: m[1] }
+      : picked && path.startsWith('/questions') ? { kind: 'question', id: picked, area: 'questions' } : null;
     (async () => {
       if (target) {
         const where = target.kind === 'question' ? '/api/modules/questions/v2/items/' : '/api/modules/resources/items/';
@@ -613,20 +630,36 @@ function UserMessage({ m }) {
   );
 }
 
-function CopyButton({ text }) {
+function CopyButton({ text, onError }) {
   const [copied, setCopied] = useState(false);
-  return (
-    <button className={cx('tbx-meta-btn', copied && 'is-done')} aria-label={tx('复制')} title={copied ? tx('已复制') : tx('复制')} onClick={() => {
-      navigator.clipboard?.writeText(text);
+  const [copying, setCopying] = useState(false);
+  const reset = useRef(null);
+  useEffect(() => () => clearTimeout(reset.current), []);
+  async function copy() {
+    clearTimeout(reset.current);
+    setCopied(false);
+    setCopying(true);
+    onError(false);
+    try {
+      if (!navigator.clipboard?.writeText) throw new Error('clipboard-unavailable');
+      await navigator.clipboard.writeText(text);
       setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    }}>
+      reset.current = setTimeout(() => setCopied(false), 1500);
+    } catch {
+      onError(true);
+    } finally {
+      setCopying(false);
+    }
+  }
+  return (
+    <button className={cx('tbx-meta-btn', copied && 'is-done')} aria-label={tx('复制')} title={copied ? tx('已复制') : tx('复制')} disabled={copying} onClick={copy}>
       <span className="tbx-morph"><Glyph name="copy" size={15} /><Glyph name="check" size={15} stroke={2.2} /></span>
     </button>
   );
 }
 
 function AssistantMessage({ m, agent, last, onRegenerate, model }) {
+  const [copyError, setCopyError] = useState(false);
   const streaming = m.state === 'streaming';
   return (
     <article className={cx('tbx-msg is-assistant', streaming && 'is-streaming', last && 'is-last')}>
@@ -640,13 +673,14 @@ function AssistantMessage({ m, agent, last, onRegenerate, model }) {
       {m.state === 'partial' && <p className="tbx-msg-note">{tx('回答被停止了，只保留了前面的部分。')}</p>}
       {!streaming && m.text && (
         <div className="tbx-meta">
-          <CopyButton text={m.text} />
+          <CopyButton text={m.text} onError={setCopyError} />
           {last && onRegenerate && (
             <button className="tbx-meta-btn" aria-label={tx('重新回答')} title={tx('重新回答')} onClick={onRegenerate}><Glyph name="retry" size={15} /></button>
           )}
           <span className="tbx-meta-text tbx-num">{clock(m.createdAt)}{model ? ` · ${model}` : ''}</span>
         </div>
       )}
+      {copyError && <div className="tbx-notice is-error" role="alert">{tx('复制失败，请重试')}</div>}
     </article>
   );
 }
@@ -673,7 +707,7 @@ function ModelPicker({ agent }) {
             return (
               <button key={m.id} type="button" role="option" aria-selected={m.id === agent.model} disabled={!ready}
                 className={cx('tbx-model-option', m.id === agent.model && 'is-selected')}
-                onClick={() => { agent.setModel(m.id); setOpen(false); }}>
+                onClick={() => { ref.current?.querySelector('.tbx-model-button')?.focus(); agent.setModel(m.id); setOpen(false); }}>
                 <span><strong>{m.name}</strong><small>{ready ? m.note : tx('暂不可用')}</small></span>
                 {m.id === agent.model && <Glyph name="check" size={15} />}
               </button>
@@ -686,11 +720,10 @@ function ModelPicker({ agent }) {
 }
 
 /* The @ menu: questions, upcoming lessons and resources, searchable. */
-function MentionMenu({ query, onPick, onClose }) {
+function MentionMenu({ query, onPick, onClose, anchor }) {
   const [rows, setRows] = useState(null);
   const [active, setActive] = useState(0);
   const ref = useRef(null);
-  useOutside(true, ref, onClose);
   useEffect(() => {
     let live = true;
     const q = query.trim();
@@ -722,7 +755,8 @@ function MentionMenu({ query, onPick, onClose }) {
   }, [rows, active]);
   let lastKind = null;
   return (
-    <div className="tbx-mention" ref={ref} role="listbox" aria-label={tx('引用工作台里的内容')}>
+    <Popover anchor={anchor} open onClose={onClose} className="tbx-agent-popover" role="listbox" label={tx('引用工作台里的内容')} offset={10}>
+    <div className="tbx-mention" ref={ref}>
       {rows === null && <p className="tbx-mention-empty">{tx('正在找…')}</p>}
       {rows?.length === 0 && <p className="tbx-mention-empty">{query ? tx('没有找到“{{query}}”。', { query }) : tx('没有找到可以引用的内容。')}</p>}
       {rows?.map((r, i) => {
@@ -740,13 +774,22 @@ function MentionMenu({ query, onPick, onClose }) {
         );
       })}
     </div>
+    </Popover>
   );
 }
 
 function Composer({ agent, running, ready, variant, autoFocus, focusKey, context }) {
   const { draft } = agent;
   const area = useRef(null);
+  const mentionAnchor = useRef(null);
   const [mention, setMention] = useState(null);
+  const pendingCaret = useRef(null);
+  useLayoutEffect(() => {
+    if (pendingCaret.current === null || !area.current) return;
+    area.current.focus();
+    area.current.setSelectionRange(pendingCaret.current, pendingCaret.current);
+    pendingCaret.current = null;
+  }, [draft?.text]);
   useLayoutEffect(() => {
     const el = area.current;
     if (!el) return;
@@ -767,16 +810,21 @@ function Composer({ agent, running, ready, variant, autoFocus, focusKey, context
   }
   function pick(r) {
     if (r) addRef(r);
-    const text = draft.text.replace(/@([^\s@]*)$/, '');
+    const text = mention?.start === undefined ? draft.text : draft.text.slice(0, mention.start) + draft.text.slice(mention.end);
+    pendingCaret.current = mention?.start ?? area.current?.selectionStart ?? draft.text.length;
     if (text !== draft.text) agent.edit({ text });
     setMention(null);
     area.current?.focus();
+    if (text === draft.text && area.current) {
+      area.current.setSelectionRange(pendingCaret.current, pendingCaret.current);
+      pendingCaret.current = null;
+    }
   }
 
   return (
     <div className={cx('tbx-composer-shell', (refs.length || suggest) && 'has-drawer')}>
       <form className={cx('tbx-composer', running && 'is-running')} onSubmit={(e) => { e.preventDefault(); if (canSend && !running) sendReliably(); }}>
-        {mention && <MentionMenu query={mention.query} onPick={pick} onClose={() => setMention(null)} />}
+        {mention && <MentionMenu anchor={mentionAnchor} query={mention.query} onPick={pick} onClose={() => setMention(null)} />}
         <textarea
           ref={area}
           className="tbx-input"
@@ -788,7 +836,7 @@ function Composer({ agent, running, ready, variant, autoFocus, focusKey, context
             const text = e.target.value;
             agent.edit({ text });
             const m = /@([^\s@]*)$/.exec(text.slice(0, e.target.selectionStart));
-            setMention(m ? { query: m[1] } : null);
+            setMention(m ? { query: m[1], start: m.index, end: e.target.selectionStart } : null);
           }}
           onKeyDown={(e) => {
             if (mention && ['ArrowDown', 'ArrowUp', 'Enter', 'Tab'].includes(e.key)) return;
@@ -801,7 +849,7 @@ function Composer({ agent, running, ready, variant, autoFocus, focusKey, context
         />
         <div className="tbx-composer-bar">
           <ModelPicker agent={agent} />
-          <button type="button" className="tbx-tool-btn" aria-label={tx('引用工作台里的内容')} title={tx('引用题目、日程或资料')} onClick={() => setMention(mention ? null : { query: '' })}>
+          <button ref={mentionAnchor} type="button" className="tbx-tool-btn" aria-label={tx('引用工作台里的内容')} title={tx('引用题目、日程或资料')} onClick={() => setMention(mention ? null : { query: '' })}>
             <Glyph name="at" size={17} />
           </button>
           {running ? (
@@ -844,6 +892,11 @@ function LessonPicker({ lessons, lesson, onChange }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
   useOutside(open, ref, () => setOpen(false));
+  function choose(next) {
+    ref.current?.querySelector('.tbx-inline-button')?.focus();
+    onChange(next);
+    setOpen(false);
+  }
   return (
     <span className="tbx-inline-pick" ref={ref}>
       <button type="button" className="tbx-inline-button" onClick={() => setOpen(!open)} aria-expanded={open}>
@@ -853,13 +906,13 @@ function LessonPicker({ lessons, lesson, onChange }) {
         <div className="tbx-pick-menu" role="listbox">
           <h4>{tx('接下来的课')}</h4>
           {lessons.map((l) => (
-            <button key={l.id} role="option" aria-selected={lesson?.id === l.id} className={cx('tbx-pick-row', lesson?.id === l.id && 'is-selected')} onClick={() => { onChange(l); setOpen(false); }}>
+            <button key={l.id} role="option" aria-selected={lesson?.id === l.id} className={cx('tbx-pick-row', lesson?.id === l.id && 'is-selected')} onClick={() => choose(l)}>
               <span className="tbx-pick-when tbx-num">{whenLabel(l)}</span>
               <span className="tbx-pick-title">{l.title}{l.todo[0] ? <small>{l.todo[0]}</small> : null}</span>
               {lesson?.id === l.id && <Glyph name="check" size={15} />}
             </button>
           ))}
-          <button className={cx('tbx-pick-row is-plain', !lesson && 'is-selected')} onClick={() => { onChange(null); setOpen(false); }}>
+          <button className={cx('tbx-pick-row is-plain', !lesson && 'is-selected')} onClick={() => choose(null)}>
             <span className="tbx-pick-title">{tx('不针对某节课')}</span>
             {!lesson && <Glyph name="check" size={15} />}
           </button>
@@ -988,7 +1041,7 @@ function PanelHead({ agent }) {
             <h4>{tx('最近的对话')}</h4>
             {agent.list.length === 0 && <p className="tbx-mention-empty">{tx('还没有对话。')}</p>}
             {agent.list.slice(0, 8).map((item) => (
-              <button key={item.id} role="option" aria-selected={item.id === agent.id} className={cx('tbx-switch-row', item.id === agent.id && 'is-selected')} onClick={() => { agent.select(item.id); setOpen(false); }}>
+              <button key={item.id} role="option" aria-selected={item.id === agent.id} className={cx('tbx-switch-row', item.id === agent.id && 'is-selected')} onClick={() => { ref.current?.querySelector('.tbx-switch-button')?.focus(); agent.select(item.id); setOpen(false); }}>
                 <span><strong>{threadTitle(item.title)}</strong><small>{item.preview || tx('还没有回答')}</small></span>
                 <span className="tbx-thread-time">{relativeTime(item.updatedAt)}</span>
               </button>
@@ -1018,6 +1071,7 @@ export function AgentWorkspace({ variant = 'panel' }) {
   const [dockH, setDockH] = useState(140);
   const [lessons, refreshLessons] = useLessons(agent.businessRevision);
   const [lesson, setLesson] = useState(null);
+  const lessonReference = useRef(null);
   const context = useCurrentContext(variant === 'panel');
   const { snapshot, draft } = agent;
 
@@ -1045,7 +1099,8 @@ export function AgentWorkspace({ variant = 'panel' }) {
   }, [growth]);
   useEffect(() => {
     if (!agent.draft || pending.current === null) return;
-    const { text, refs } = pending.current;
+    const { text, refs, lessonId } = pending.current;
+    if (lessonId) lessonReference.current = { conversationId: agent.id, id: lessonId };
     pending.current = null;
     agent.edit({ text, ...(refs ? { references: refs } : {}) });
     setFocusComposer((n) => n + 1);
@@ -1075,7 +1130,7 @@ export function AgentWorkspace({ variant = 'panel' }) {
       agent.edit({ text, references: extra ? [...refs, extra] : refs });
       setFocusComposer((n) => n + 1);
     } else {
-      pending.current = { text, refs: extra ? [extra] : null };
+      pending.current = { text, refs: extra ? [extra] : null, lessonId: !ctx ? lessonRef?.id : null };
       void agent.create();
     }
   }
@@ -1085,11 +1140,18 @@ export function AgentWorkspace({ variant = 'panel' }) {
     agent.edit({ text: user.text, references: user.references.map((r) => r.input) });
     setTimeout(sendReliably, 0);
   }
-  // A lesson picked on the home page rides along with the first message.
+  // Only references introduced by this picker belong to its cancel/replace action.
   useEffect(() => {
-    if (!lesson || !agent.draft || !empty) return;
-    if (agent.draft.references.some((r) => r.kind === 'entry' && r.id === lesson.id)) return;
-    agent.edit({ references: [...agent.draft.references.filter((r) => r.kind !== 'entry'), lessonRef] });
+    if (!agent.draft || !empty) { lessonReference.current = null; return; }
+    const owned = lessonReference.current?.conversationId === agent.id ? lessonReference.current : null;
+    const refs = agent.draft.references;
+    let next = owned && owned.id !== lesson?.id ? refs.filter(r => !(r.kind === 'entry' && r.id === owned.id)) : refs;
+    if (owned?.id !== lesson?.id) lessonReference.current = null;
+    if (lesson && !next.some(r => r.kind === 'entry' && r.id === lesson.id)) {
+      next = [...next, lessonRef];
+      lessonReference.current = { conversationId: agent.id, id: lesson.id };
+    }
+    if (next !== refs) agent.edit({ references: next });
   }, [lesson?.id, Boolean(agent.draft), agent.id]);
 
   const lastTurn = snapshot?.turns[snapshot.turns.length - 1];
@@ -1116,7 +1178,7 @@ export function AgentWorkspace({ variant = 'panel' }) {
         <Composer agent={agent} running={running} ready={ready} variant={variant} autoFocus={variant === 'home'} focusKey={focusComposer} context={context} />
       ) : (
         <div className="tbx-composer-shell">
-          <button className="tbx-composer is-placeholder" onClick={() => { setFocusComposer((n) => n + 1); pending.current = lessonRef ? { text: '', refs: [lessonRef] } : null; void agent.create(); }} disabled={agent.busy}>
+          <button className="tbx-composer is-placeholder" onClick={() => { setFocusComposer((n) => n + 1); pending.current = lessonRef ? { text: '', refs: [lessonRef], lessonId: lessonRef.id } : null; void agent.create(); }} disabled={agent.busy}>
             <span className="tbx-input-placeholder">{tx(variant === 'panel' ? '问一个问题，或输入 @ 引用题目、日程' : '描述你想准备的课、想讨论的题，输入 @ 引用工作台里的内容')}</span>
             <span className="tbx-composer-bar"><span /><span className="tbx-send" aria-hidden="true"><Glyph name="arrowUp" size={17} stroke={2.2} /></span></span>
           </button>

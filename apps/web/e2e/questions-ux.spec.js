@@ -1437,11 +1437,10 @@ test('分类管理、多视口与普通查找切页后保留AI草稿', async ({ 
   expect(saved.tags.map(item => item.name)).toEqual(['长名称标签边界检验']);
 });
 
-test('保存校对时持续显示同一原稿，预览读取延迟不清空已显示内容', async ({ page }, info) => {
+test('保存校对和导航重开保留真实原稿的显示、缩放及长滚动', async ({ page }, info) => {
   await finder(page).getByRole('button', { name: '从资料收录', exact: true }).click();
   await page.getByRole('button', { name: /上传图片 截图/ }).click();
-  await page.getByLabel('选择原稿').setInputFiles({ name: '保存期间原稿.png', mimeType: 'image/png',
-    buffer: await sharp({ create: { width: 320, height: 1000, channels: 3, background: '#f2f4f7' } }).png().toBuffer() });
+  await page.getByLabel('选择原稿').setInputFiles('test/fixtures/questions/recognition/I-1/page.png');
   await page.getByRole('button', { name: '开始整理', exact: true }).click();
   const original = page.getByRole('region', { name: '原始材料' });
   const image = original.locator('.q-page img');
@@ -1452,9 +1451,11 @@ test('保存校对时持续显示同一原稿，预览读取延迟不清空已�
   await page.getByRole('button', { name: '修改题目', exact: true }).click();
   await page.getByLabel('题干段落 1', { exact: true }).fill('保存时对照原稿继续校对。');
   await page.getByRole('button', { name: '完成修改', exact: true }).click();
-  await original.getByLabel('原稿缩放').selectOption('1.5');
-  await original.locator('.q-page-scroll').evaluate(node => { node.scrollTop = 120; });
-  const scrollTop = await original.locator('.q-page-scroll').evaluate(node => node.scrollTop);
+  await original.getByLabel('原稿缩放').selectOption('2');
+  await original.hover({ position: { x: 100, y: 300 } });
+  await page.mouse.wheel(0, 500);
+  await expect.poll(() => original.evaluate(node => node.scrollTop)).toBeGreaterThan(100);
+  const scrollTop = await original.evaluate(node => node.scrollTop);
   let release;
   const held = new Promise(resolve => { release = resolve; });
   await page.route('**/api/workbench/files/*/preview', async route => {
@@ -1466,10 +1467,20 @@ test('保存校对时持续显示同一原稿，预览读取延迟不清空已�
     await expect(page.locator('.q-message')).toContainText('校对已保存');
     await expect(image).toBeVisible();
     await expect.poll(() => image.evaluate(node => node.complete && node.naturalWidth > 0)).toBe(true);
-    await expect(original.getByLabel('原稿缩放')).toHaveValue('1.5');
-    expect(await original.locator('.q-page-scroll').evaluate(node => node.scrollTop)).toBe(scrollTop);
+    await expect(original.getByLabel('原稿缩放')).toHaveValue('2');
+    expect(await original.evaluate(node => node.scrollTop)).toBe(scrollTop);
     await page.screenshot({ path: info.outputPath('original-retained-after-review-save.png') });
   } finally { release(); }
+  const navigation = page.getByRole('navigation', { name: '功能模块' });
+  await navigation.getByRole('link', { name: /^资源库/ }).click();
+  await navigation.getByRole('link', { name: /^题库/ }).click();
+  await expect.poll(() => image.evaluate(node => node.complete && node.naturalWidth > 0)).toBe(true);
+  await expect.poll(() => original.evaluate(node => node.scrollTop)).toBe(scrollTop);
+  await page.reload();
+  await expect.poll(() => image.evaluate(node => node.complete && node.naturalWidth > 0)).toBe(true);
+  await expect.poll(() => original.evaluate(node => node.scrollTop)).toBe(scrollTop);
+  await expect(original.getByLabel('原稿缩放')).toHaveValue('2');
+  await page.screenshot({ path: info.outputPath('original-long-scroll-restored.png') });
 });
 
 test('确认取消后键盘不会归档、丢弃草稿、替换新题或删除分类，快速重开可正常确认', async ({ page }, info) => {
@@ -1528,4 +1539,178 @@ test('确认取消后键盘不会归档、丢弃草稿、替换新题或删除�
   await page.getByRole('alertdialog', { name: '删除题型', exact: true }).getByRole('button', { name: '删除题型', exact: true }).click();
   await expect(page.getByRole('textbox', { name: '题型名称', exact: true })).toHaveCount(0);
   await page.screenshot({ path: info.outputPath('cancelled-confirmations-preserve-content.png') });
+});
+
+test('就地分类连续创建与快速重开始终聚焦名称并保留键盘接续', async ({ page }, info) => {
+  await finder(page).getByRole('button', { name: '新建题目', exact: true }).click();
+  await page.getByRole('textbox', { name: '题干段落 1', exact: true }).fill('连续分类操作不改变题干。');
+  await page.getByRole('button', { name: '题型、标签与笔记', exact: true }).click();
+  const openType = page.getByRole('button', { name: '新建题型', exact: true });
+  const openTag = page.getByRole('button', { name: '新建标签', exact: true });
+  await openType.click();
+  const typeDialog = page.getByRole('dialog', { name: '新建题型', exact: true });
+  await expect(typeDialog.getByLabel('分类名称')).toBeFocused();
+  await page.keyboard.type('Sequential type');
+  await page.keyboard.press('Enter');
+  await openTag.click();
+  const tagDialog = page.getByRole('dialog', { name: '新建标签', exact: true });
+  await expect(tagDialog.getByLabel('分类名称')).toBeFocused();
+  await page.keyboard.type('Sequential tag');
+  await expect(tagDialog.getByLabel('分类名称')).toHaveValue('Sequential tag');
+  await page.screenshot({ path: info.outputPath('category-name-focused-after-type.png') });
+  await page.keyboard.press('Enter');
+  await expect(openTag).toBeFocused();
+  const transitions = [];
+  for (const [index, trigger] of [openTag, openType, openTag].entries()) {
+    if (index === 2) await page.emulateMedia({ reducedMotion: 'reduce' });
+    await trigger.click();
+    const dialog = page.getByRole('dialog', { name: await trigger.textContent(), exact: true });
+    await expect(dialog.getByLabel('分类名称')).toBeFocused();
+    await page.keyboard.type('Cancel and reopen');
+    await page.keyboard.press('Escape');
+    const closedAt = await page.evaluate(() => {
+      const dialog = [...document.querySelectorAll('.q-modal')].at(-1);
+      const surface = dialog?.closest('.wb-module-presence');
+      return { time: performance.now(), state: surface?.dataset.state, inert: surface?.inert,
+        duration: surface && getComputedStyle(surface.firstElementChild).transitionDuration, opacity: surface && getComputedStyle(surface.firstElementChild).opacity, animations: surface?.getAnimations({ subtree: true }).map(animation => ({ state: animation.playState, time: animation.currentTime })), reduced: matchMedia('(prefers-reduced-motion: reduce)').matches };
+    });
+    if (!closedAt.reduced) {
+      expect(closedAt.state).toBe('closed');
+      expect(closedAt.inert).toBe(true);
+    }
+    // The exiting surface remains mounted; reopen through the real trigger now.
+    await trigger.click();
+    await expect(dialog.getByLabel('分类名称')).toBeFocused();
+    await expect(dialog.getByLabel('分类名称')).toHaveValue('');
+    transitions.push({ ...closedAt, reopenedAfterMs: await page.evaluate(time => performance.now() - time, closedAt.time) });
+    await page.keyboard.type('Keyboard cancellation');
+    await page.keyboard.press('Tab');
+    await expect(dialog.getByRole('button', { name: '取消', exact: true })).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(trigger).toBeFocused();
+  }
+  const transitionEvidence = info.outputPath('category-dialog-transitions.json');
+  fs.writeFileSync(transitionEvidence, JSON.stringify(transitions, null, 2));
+  await info.attach('category-dialog-transitions', { path: transitionEvidence, contentType: 'application/json' });
+  const taxonomy = (await client.request('GET', '/api/modules/questions/v2/taxonomy')).json;
+  expect(taxonomy.types.map(item => item.name)).toEqual(['Sequential type']);
+  expect(taxonomy.tags.map(item => item.name)).toEqual(['Sequential tag']);
+  await page.getByRole('button', { name: '保存题目', exact: true }).click();
+  await page.reload();
+  const [saved] = await records();
+  expect(saved.typeId).toBe(taxonomy.types[0].id);
+  expect(saved.tagIds).toEqual([taxonomy.tags[0].id]);
+  await expect(page.getByRole('button', { name: '编辑题目', exact: true })).toBeVisible();
+});
+
+test('分类创建迟到响应只接续原窗口和编辑目标，保留后续输入', async ({ page }, info) => {
+  await createQuestion(page, '另一道已保存题目');
+  const other = (await records())[0];
+  await finder(page).getByRole('button', { name: '新建题目', exact: true }).click();
+  await page.getByLabel('题目标题').fill('等待分类的新题');
+  await page.getByRole('textbox', { name: '题干段落 1', exact: true }).fill('开始创建分类前的题干');
+  await page.getByRole('button', { name: '题型、标签与笔记', exact: true }).click();
+  await page.getByRole('button', { name: '新建题型', exact: true }).click();
+  await page.getByLabel('分类名称').fill('迟到的题型');
+  let accepted;
+  let release;
+  const received = new Promise(resolve => { accepted = resolve; });
+  const waiting = new Promise(resolve => { release = resolve; });
+  await page.route('**/api/modules/questions/v2/taxonomy', async route => {
+    if (route.request().method() !== 'PUT') return route.continue();
+    const response = await route.fetch();
+    accepted();
+    await waiting;
+    await route.fulfill({ response });
+  }, { times: 1 });
+  await page.getByRole('button', { name: '创建并选用', exact: true }).click();
+  await received;
+  await page.getByRole('dialog', { name: '新建题型', exact: true }).getByRole('button', { name: '关闭', exact: true }).click();
+  await page.getByRole('textbox', { name: '题干段落 1', exact: true }).fill('创建等待期间补充的题干');
+  await page.getByRole('button', { name: '新建标签', exact: true }).click();
+  const nextDialog = page.getByRole('dialog', { name: '新建标签', exact: true });
+  await nextDialog.getByLabel('分类名称').fill('新窗口正在输入的标签');
+  release();
+  await expect(page.locator('.q-message')).toContainText('分类已创建');
+  await expect(nextDialog).toBeVisible();
+  await expect(nextDialog.getByLabel('分类名称')).toHaveValue('新窗口正在输入的标签');
+  await expect(page.getByRole('textbox', { name: '题干段落 1', exact: true })).toHaveValue('创建等待期间补充的题干');
+  await nextDialog.getByRole('button', { name: '创建并选用', exact: true }).click();
+  await expect(nextDialog).toHaveCount(0);
+  await expect(page.getByLabel('题型', { exact: true })).not.toHaveValue('');
+  await page.getByRole('button', { name: '保存题目', exact: true }).click();
+  await expect(page.getByRole('heading', { name: '等待分类的新题', exact: true })).toBeVisible();
+  await page.reload();
+  const created = (await records()).find(question => question.id !== other.id);
+  expect(created.body.blocks[0].runs[0].text).toBe('创建等待期间补充的题干');
+  expect(created.typeId).toBeTruthy();
+  expect(created.tagIds).toHaveLength(1);
+
+  // A response from this question must not replace another question opened meanwhile.
+  await page.getByRole('button', { name: '编辑题目', exact: true }).click();
+  const details = page.getByRole('button', { name: '题型、标签与笔记', exact: true });
+  if (await details.getAttribute('aria-expanded') !== 'true') await details.click();
+  await page.getByRole('button', { name: '新建标签', exact: true }).click();
+  await page.getByLabel('分类名称').fill('原题的第二个标签');
+  let acceptedOther;
+  let releaseOther;
+  const receivedOther = new Promise(resolve => { acceptedOther = resolve; });
+  const waitingOther = new Promise(resolve => { releaseOther = resolve; });
+  await page.route('**/api/modules/questions/v2/taxonomy', async route => {
+    if (route.request().method() !== 'PUT') return route.continue();
+    const response = await route.fetch();
+    acceptedOther();
+    await waitingOther;
+    await route.fulfill({ response });
+  }, { times: 1 });
+  await page.getByRole('button', { name: '创建并选用', exact: true }).click();
+  await receivedOther;
+  await page.getByRole('dialog', { name: '新建标签', exact: true }).getByRole('button', { name: '关闭', exact: true }).click();
+  await finder(page).locator('.tbx-qn-row').filter({ hasText: '另一道已保存题目' }).click();
+  await expect(page.getByRole('heading', { name: '另一道已保存题目', exact: true })).toBeVisible();
+  releaseOther();
+  await expect(page.locator('.q-message')).toContainText('分类已创建');
+  await expect(page.getByRole('heading', { name: '另一道已保存题目', exact: true })).toBeVisible();
+  await page.screenshot({ path: info.outputPath('category-response-keeps-current-target.png') });
+  expect((await records()).find(question => question.id === other.id)).toEqual(other);
+});
+
+test('校对分类创建返回时尊重当前草稿，仍可就地选用并保存新分类', async ({ page }) => {
+  await collectText(page, '1. 计算 1+1。\n2. 计算 2+2。');
+  await page.getByRole('button', { name: '题型与标签', exact: true }).click();
+  await page.getByRole('button', { name: '新建题型', exact: true }).click();
+  await page.getByLabel('分类名称').fill('校对中的题型');
+  let accepted;
+  let release;
+  const received = new Promise(resolve => { accepted = resolve; });
+  const waiting = new Promise(resolve => { release = resolve; });
+  await page.route('**/api/modules/questions/v2/taxonomy', async route => {
+    if (route.request().method() !== 'PUT') return route.continue();
+    const response = await route.fetch();
+    accepted();
+    await waiting;
+    await route.fulfill({ response });
+  }, { times: 1 });
+  await page.getByRole('button', { name: '创建并选用', exact: true }).click();
+  await received;
+  await page.getByRole('dialog', { name: '新建题型', exact: true }).getByRole('button', { name: '关闭', exact: true }).click();
+  await page.getByRole('button', { name: '2 待检查', exact: true }).click();
+  release();
+  await expect(page.locator('.q-message')).toContainText('分类已创建');
+  await expect(page.getByRole('article', { name: '待检查题干' })).toContainText('2+2');
+  const classification = page.getByRole('button', { name: '题型与标签', exact: true });
+  if (await classification.getAttribute('aria-expanded') !== 'true') await classification.click();
+  await expect(page.getByLabel('题型', { exact: true })).toBeVisible();
+  await expect(page.getByLabel('题型', { exact: true })).toHaveValue('');
+  await expect(page.getByLabel('题型', { exact: true }).locator('option')).toContainText(['未分类', '校对中的题型']);
+  await page.getByRole('button', { name: '新建标签', exact: true }).click();
+  await page.getByLabel('分类名称').fill('第二题标签');
+  await page.getByRole('button', { name: '创建并选用', exact: true }).click();
+  await expect(page.getByRole('dialog', { name: '新建标签', exact: true })).toHaveCount(0);
+  await page.getByRole('button', { name: '保存检查进度', exact: true }).click();
+  await expect(page.locator('.q-message')).toContainText('校对已保存');
+  await page.reload();
+  const material = (await client.request('GET', '/api/modules/questions/v2/imports')).json.items[0];
+  expect(material.drafts.map(draft => draft.typeId)).toEqual([null, null]);
+  expect(material.drafts.map(draft => draft.tagIds.length)).toEqual([0, 1]);
 });

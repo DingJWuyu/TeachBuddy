@@ -26,7 +26,16 @@ export function DataManagement({ accountActions, dangerActions }) {
     [message, setMessage] = useState(""),
     [busy, setBusy] = useState("");
   const { accountKey } = useWorkbenchShell();
+  const exportContent = useRef(null);
+  const exportTrigger = useRef(null);
+  const returnToExport = useRef(false);
+  function focusExportAction() {
+    const dialog = exportContent.current?.closest('dialog');
+    if (dialog?.contains(document.activeElement)) dialog.querySelector('.settings-confirm-actions button')?.focus();
+    else document.activeElement?.closest('.reliability-pending')?.querySelector('.settings-disclosure-trigger')?.focus();
+  }
   async function remove(item) {
+    focusExportAction();
     setBusy(item.id);
     setError('');
     try {
@@ -35,11 +44,15 @@ export function DataManagement({ accountActions, dangerActions }) {
     finally { setBusy(''); }
   }
   const [exportOpen, setExportOpen] = useState(false);
-  const [resetOpen, setResetOpen] = useState(false);
   const action = useIdempotentSubmit({
     accountKey,
     name: "pending:manual-data",
   });
+  useEffect(() => {
+    if (busy || action.pending || !returnToExport.current) return;
+    returnToExport.current = false;
+    if (document.activeElement === document.body) exportTrigger.current?.focus();
+  }, [busy, action.pending]);
   const mounted = useRef(true);
   async function run({ key, payload }) {
     const allowed =
@@ -95,6 +108,7 @@ export function DataManagement({ accountActions, dangerActions }) {
     }
   }
   async function download(item) {
+    focusExportAction();
     setBusy(item.id);
     setError("");
     try {
@@ -115,6 +129,8 @@ export function DataManagement({ accountActions, dangerActions }) {
   }
   async function retry() {
     const isExport = action.pending?.payload.path === `${base}/exports`;
+    returnToExport.current = !exportOpen && Boolean(document.activeElement?.closest('.reliability-pending'));
+    focusExportAction();
     setBusy("retry");
     try {
       if (await action.retry(run)) {
@@ -133,23 +149,22 @@ export function DataManagement({ accountActions, dangerActions }) {
     <div className="settings-sheet settings-account-sheet"><h2 className="settings-account-title">{t("账户")}</h2>
     <section className="settings-row reliability-export-row" aria-labelledby="personal-data-title">
       <div className="settings-row-copy"><h2 id="personal-data-title">{t("您的数据")}</h2><p>{t("以 ZIP 文件下载你的 TeachBuddy 个人资料")}</p></div>
-      <button className="wb-button" disabled={!!busy || !!action.pending} onClick={() => { setExportOpen(true); createExport(); }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M5 15v5h14v-5"/></svg>{t("导出数据")}</button>
+      <button ref={exportTrigger} className="wb-button" disabled={!!busy || !!action.pending} onClick={() => { setExportOpen(true); createExport(); }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M5 15v5h14v-5"/></svg>{t("导出数据")}</button>
     </section>
     {accountActions}
     {message && <p role="status">{message}</p>}
     {!exportOpen && (visibleError || action.problem) && <p role="alert">{visibleError || action.problem.message}</p>}
-    {!exportOpen && action.pending && <div className="reliability-pending"><button className="wb-button" disabled={!!busy} onClick={retry}>{t("重试确认操作")}</button><SettingsDisclosure title={t("查看待确认请求")}><pre>{JSON.stringify(action.pending, null, 2)}</pre><button className="wb-button" onClick={() => setResetOpen(true)}>{t("放弃重试")}</button></SettingsDisclosure></div>}
+    {!exportOpen && action.pending && <div className="reliability-pending"><button className="wb-button" disabled={!!busy} onClick={retry}>{t("重试确认操作")}</button><SettingsDisclosure title={t("查看待确认请求")}><pre>{JSON.stringify(action.pending, null, 2)}</pre></SettingsDisclosure></div>}
     </div>
     {dangerActions}
     <SettingsConfirm show={exportOpen} title={t("导出个人资料")} onClose={() => setExportOpen(false)}>
-      <p>{t("资料包包含已保存及已删除的资料、原文件与对话。下载后解压，打开 index.html 阅读。")}</p>
+      <p ref={exportContent}>{t("资料包包含已保存及已删除的资料、原文件与对话。下载后解压，打开 index.html 阅读。")}</p>
       <p className="wb-note">{t("文件可重新上传，正文与公式可复制；资料包不能覆盖账户或恢复原关联。")}</p>
       {busy === 'export' && <p role="status">{t("正在生成资料包…")}</p>}
       {visibleError && !action.pending && <button className="wb-button" disabled={!!busy} onClick={createExport}>{t("重试生成")}</button>}
       {exports.length > 0 && <ul className="reliability-list" aria-label={t("个人资料导出记录")}>{exports.map(item => <ExportItem key={item.id} item={item} date={date(item.snapshotAt)} state={t(states[item.state])} busy={!!busy || !!action.pending} working={busy === item.id} onDownload={() => download(item)} onDelete={() => remove(item)} />)}</ul>}
       {(visibleError || action.problem) && <p role="alert">{visibleError || action.problem.message}</p>}
-      {action.pending && <div className="reliability-pending"><button className="wb-button" disabled={!!busy} onClick={retry}>{t("重试确认操作")}</button><SettingsDisclosure title={t("查看待确认请求")}><pre>{JSON.stringify(action.pending, null, 2)}</pre><button className="wb-button" onClick={() => setResetOpen(true)}>{t("放弃重试")}</button></SettingsDisclosure></div>}
+      {action.pending && <div className="reliability-pending"><button className="wb-button" disabled={!!busy} onClick={retry}>{t("重试确认操作")}</button><SettingsDisclosure title={t("查看待确认请求")}><pre>{JSON.stringify(action.pending, null, 2)}</pre></SettingsDisclosure></div>}
     </SettingsConfirm>
-    <SettingsConfirm show={resetOpen} title={t("放弃重试？")} confirmLabel={t("放弃重试")} onClose={() => setResetOpen(false)} onConfirm={() => { action.reset(); setResetOpen(false); }}><p>{t("放弃重试不会撤销已完成的操作。请保留请求并核对当前资料后再开始新操作。")}</p></SettingsConfirm>
   </>;
 }

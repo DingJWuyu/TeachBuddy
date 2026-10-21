@@ -472,3 +472,85 @@ test('维护恢复清除删除回执后明确无法核实，可重新准备登�
   await page.reload();
   await expect(page.locator('.wb-shell')).toBeVisible();
 });
+
+test('设置语言菜单的 Tab 和离焦关闭后延续原顺序', async ({ page }) => {
+  const trigger = page.getByRole('button', { name: '语言', exact: true });
+  const grid = page.getByRole('button', { name: '网格', exact: true });
+  await trigger.focus();
+  await page.keyboard.press('ArrowDown');
+  await expect(page.getByRole('menuitemradio').first()).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(page.getByRole('menu')).toHaveCount(0);
+  await expect(grid).toBeFocused();
+  await page.keyboard.press('Shift+Tab');
+  await expect(trigger).toBeFocused();
+  await page.keyboard.press('ArrowUp');
+  await expect(page.getByRole('menuitemradio').last()).toBeFocused();
+  await page.keyboard.press('Shift+Tab');
+  await expect(page.getByRole('menu')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: '深色', exact: true })).toBeFocused();
+  await trigger.click();
+  await grid.focus();
+  await expect(page.getByRole('menu')).toHaveCount(0);
+  await trigger.click();
+  await page.keyboard.press('Escape');
+  await expect(trigger).toBeFocused();
+});
+
+test('背景图片读取完成保留期间更新的背景选择，刷新后仍正确', async ({ page }, info) => {
+  const sharp = (await import('sharp')).default;
+  const buffer = await sharp({ create: { width: 800, height: 400, channels: 3, background: '#517fa4' } }).png().toBuffer();
+  await page.evaluate(() => {
+    const decode = window.createImageBitmap;
+    window.__backgroundDecode = decode;
+    window.createImageBitmap = async (...args) => {
+      const bitmap = await decode(...args);
+      window.__backgroundDecoded = true;
+      await new Promise(resolve => { window.__releaseBackgroundDecode = resolve; });
+      return bitmap;
+    };
+  });
+  const image = page.locator('.tbx-bg-options input[type=file]');
+  await image.setInputFiles({ name: 'background.png', mimeType: 'image/png', buffer });
+  await expect.poll(() => page.evaluate(() => window.__backgroundDecoded)).toBe(true);
+  const circles = page.getByRole('button', { name: '圆形', exact: true });
+  await circles.click();
+  await expect(circles).toHaveAttribute('aria-pressed', 'true');
+  await page.evaluate(() => { window.createImageBitmap = window.__backgroundDecode; window.__releaseBackgroundDecode(); });
+  await expect(page.locator('.tbx-spinner')).toHaveCount(0);
+  await expect(circles).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('.settings-save-status')).toHaveText('已保存');
+  await page.screenshot({ path: info.outputPath('latest-background-selection.png') });
+  await page.reload();
+  await expect(circles).toHaveAttribute('aria-pressed', 'true');
+  await image.setInputFiles({ name: 'background.png', mimeType: 'image/png', buffer });
+  await expect(page.getByRole('button', { name: '自定义背景', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('.settings-save-status')).toHaveText('已保存');
+});
+
+test('资料包下载与删除完成后保留弹层焦点，可继续键盘操作', async ({ page }, info) => {
+  const trigger = page.getByRole('button', { name: '导出数据', exact: true });
+  await trigger.click();
+  const dialog = page.getByRole('dialog', { name: '导出个人资料', exact: true });
+  await expect(dialog.getByRole('button', { name: '下载', exact: true })).toBeVisible({ timeout: 30000 });
+  const downloaded = page.waitForEvent('download');
+  await dialog.getByRole('button', { name: '下载', exact: true }).click();
+  await downloaded;
+  await expect(dialog.getByRole('button', { name: '下载', exact: true })).toBeEnabled();
+  await expect(dialog.locator('.settings-confirm-actions button')).toBeFocused();
+  await dialog.getByRole('button', { name: '删除资料包', exact: true }).click();
+  await dialog.locator('.settings-confirm-copy > p').first().click();
+  await expect(dialog.getByRole('button', { name: '删除资料包', exact: true })).toBeVisible();
+  await dialog.getByRole('button', { name: '删除资料包', exact: true }).click();
+  await dialog.getByRole('button', { name: '确认删除', exact: true }).click();
+  await expect(dialog.locator('.reliability-list li')).toHaveCount(0);
+  await expect(dialog.locator('.settings-confirm-actions button')).toBeFocused();
+  await page.screenshot({ path: info.outputPath('export-deleted-focus.png') });
+  await page.keyboard.press('Tab');
+  await expect(dialog.getByRole('button', { name: '关闭', exact: true }).first()).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(dialog).toHaveCount(0);
+  await expect(trigger).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(page.getByRole('button', { name: '签署协议', exact: true })).toBeFocused();
+});

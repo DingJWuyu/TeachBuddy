@@ -615,6 +615,7 @@ export function EntryEditor(props) {
       </K.CalendarOverlay>
       {dialog === 'unschedule' && (
         <ConfirmDialog
+          enterConfirms
           danger={false}
           icon="inbox"
           title={tx('移回待安排？')}
@@ -626,6 +627,7 @@ export function EntryEditor(props) {
       )}
       {dialog === 'delete' && (
         <ConfirmDialog
+          enterConfirms
           title={tx('删除重复的任务？')}
           message={tx('可以只删掉这一次，也可以把整组重复的任务一起删掉。')}
           confirmLabel={tx('只删这一次')}

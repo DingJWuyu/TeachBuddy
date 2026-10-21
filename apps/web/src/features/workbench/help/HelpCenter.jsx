@@ -118,6 +118,7 @@ function Article({ topic, article, scroller }) {
   const next = all[index + 1];
   const heads = article.blocks.filter((b) => b[0] === 'h2').map((b) => b[1]);
   const [active, setActive] = useState(0);
+  const jumped = useRef(null);
   useEffect(() => {
     const root = scroller.current;
     if (!root || heads.length < 2) return undefined;
@@ -125,15 +126,36 @@ function Article({ topic, article, scroller }) {
       const line = root.getBoundingClientRect().top + 120;
       let current = 0;
       root.querySelectorAll('.tbx-help-prose h2').forEach((el, i) => { if (el.getBoundingClientRect().top <= line) current = i; });
-      setActive(current);
+      // The final heading may never reach the reading line in a short tail.
+      if (root.scrollTop > 0 && root.scrollHeight - root.clientHeight - root.scrollTop <= 1) current = heads.length - 1;
+      setActive(jumped.current ?? current);
     };
+    // A clamped jump can show several headings; preserve the teacher's choice
+    // until they resume scrolling, including a wheel gesture at the bottom.
+    const resume = () => { jumped.current = null; spy(); };
+    const key = (event) => { if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '].includes(event.key)) resume(); };
+    spy();
     root.addEventListener('scroll', spy, { passive: true });
-    return () => root.removeEventListener('scroll', spy);
+    root.addEventListener('wheel', resume, { passive: true });
+    root.addEventListener('touchstart', resume, { passive: true });
+    root.addEventListener('pointerdown', resume);
+    root.addEventListener('keydown', key);
+    return () => {
+      root.removeEventListener('scroll', spy);
+      root.removeEventListener('wheel', resume);
+      root.removeEventListener('touchstart', resume);
+      root.removeEventListener('pointerdown', resume);
+      root.removeEventListener('keydown', key);
+    };
   }, [article]);
   const jump = (i) => {
     const root = scroller.current;
     const el = root?.querySelector(`#s${i}`);
-    if (el) root.scrollTo({ top: el.offsetTop - 28, behavior: 'smooth' });
+    if (el) {
+      jumped.current = i;
+      setActive(i);
+      root.scrollTo({ top: root.scrollTop + el.getBoundingClientRect().top - root.getBoundingClientRect().top - 28, behavior: 'smooth' });
+    }
   };
   return (
     <div className={cx('tbx-help-article', `is-${topic.hue}`, heads.length > 1 && 'has-toc')}>

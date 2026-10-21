@@ -33,6 +33,196 @@ async function dragStudent(page, from, to) {
   await page.mouse.up();
 }
 
+async function openKeyboardImport(page, email) {
+  await register(page, world, email);
+  const coach = page.getByRole('button', { name: /知道了/ });
+  if (await coach.count()) await coach.first().click();
+  const create = async (collection, data) => {
+    const response = await page.request.post(`${world.origin}/api/modules/classroom/${collection}`, {
+      headers: { ...headers(page), Origin: world.origin, 'X-TeachBuddy-Request': '1', 'Idempotency-Key': crypto.randomUUID() }, data,
+    });
+    expect(response.status()).toBe(201);
+    return response.json();
+  };
+  const cls = await create('classes', { name: '连续校对班' });
+  await create('students', { classId: cls.id, name: '校对甲', studentNumber: '001', birthday: null, interests: '', description: '' });
+  await create('exams', {
+    name: '连续校对考试', subject: '数学', occurredOn: '2026-10-20', totalMax: 100, source: [],
+    questions: [{ label: '1', groupLabel: null, maxScore: 100, tagIds: [], locations: [] }],
+  });
+  await page.goto(world.origin + '/classroom');
+  await page.getByRole('button', { name: '班级操作', exact: true }).click();
+  await page.getByRole('menuitem', { name: '导入成绩', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: '导入成绩', exact: true });
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet([
+    ['学号', '姓名', '总分', '1'], ['001', '校对甲', 80, 80],
+  ]), '成绩');
+  await dialog.locator('input[type=file]').setInputFiles({ name: 'scores.xlsx', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', buffer: XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' }) });
+  await expect(dialog.getByRole('button', { name: '生成校对表', exact: true })).toBeVisible();
+  return { dialog, classId: cls.id };
+}
+
+test('导入列映射修改后保留键盘焦点，可以连续修改并接续Tab', async ({ page }) => {
+  const { dialog } = await openKeyboardImport(page, 'classroom-mapping-focus@example.test');
+  const name = dialog.getByRole('combobox', { name: /^姓名/ });
+  await name.focus();
+  await name.press('ArrowDown');
+  await page.keyboard.press('Enter');
+  await expect(name).toHaveValue('3');
+  await expect(name, '改变列对应关系后应保留当前下拉框焦点').toBeFocused();
+  await name.press('ArrowUp');
+  await page.keyboard.press('Enter');
+  await expect(name).toHaveValue('2');
+  await page.keyboard.press('Tab');
+  await expect(dialog.getByRole('combobox', { name: /^学号/ })).toBeFocused();
+  await dialog.getByRole('button', { name: '生成校对表', exact: true }).click();
+  await expect(dialog.locator('.cr-review')).toBeVisible();
+});
+
+test('导入确认等待时保留弹层和只读校对，完成后显示实际查看入口', async ({ page }, info) => {
+  const { dialog, classId } = await openKeyboardImport(page, 'classroom-confirm-busy@example.test');
+  await dialog.getByRole('button', { name: '生成校对表', exact: true }).click();
+  await expect(dialog.locator('.cr-review')).toBeVisible();
+  await dialog.getByRole('tab', { name: '全部', exact: true }).click();
+  let release, entered, continued;
+  const gate = new Promise(resolve => { release = resolve; });
+  const requested = new Promise(resolve => { entered = resolve; });
+  const resumed = new Promise(resolve => { continued = resolve; });
+  const pattern = '**/api/modules/classroom/imports/*/confirmation';
+  await page.route(pattern, async route => {
+    entered();
+    await gate;
+    try { await route.continue(); } finally { continued(); }
+  }, { times: 1 });
+  try {
+    await dialog.getByRole('button', { name: '确认入库', exact: true }).click();
+    await requested;
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole('button', { name: '关闭', exact: true })).toBeDisabled();
+    await expect(dialog.getByRole('button', { name: '重新对应列', exact: true })).toBeDisabled();
+    await expect(dialog.getByLabel('总分', { exact: true })).toBeDisabled();
+    await page.locator('.cr-scrim').click({ position: { x: 30, y: 30 } });
+    await expect(dialog).toBeVisible();
+    await page.screenshot({ path: info.outputPath('confirmation-busy.png'), animations: 'disabled' });
+  } finally {
+    release();
+    await resumed;
+  }
+  await expect(dialog.getByRole('heading', { name: '成绩已保存', exact: true })).toBeVisible();
+  await expect(dialog).toContainText('原表和校对结果都留着，可以到班级或学生的成绩中查看。');
+  await dialog.getByRole('button', { name: '看看成绩', exact: true }).click();
+  await expect(page.getByRole('heading', { name: '全班的变化', exact: true })).toBeVisible();
+  expect((await read(page, `results?classId=${classId}`)).items).toHaveLength(1);
+});
+
+for (const failure of ['503未提交', '已提交响应丢失']) test(`导入确认${failure}后原地重试原键，不重复校对或生成成绩`, async ({ page }, info) => {
+  const { dialog, classId } = await openKeyboardImport(page, `classroom-confirm-retry-${failure === '503未提交' ? '503' : 'lost'}@example.test`);
+  await dialog.getByRole('button', { name: '生成校对表', exact: true }).click();
+  await expect(dialog.locator('.cr-review')).toBeVisible();
+  const attempts = [];
+  const pattern = '**/api/modules/classroom/imports/*/confirmation';
+  await page.route(pattern, async route => {
+    attempts.push({ key: route.request().headers()['idempotency-key'], body: route.request().postDataJSON() });
+    if (attempts.length === 1 && failure === '503未提交') await route.fulfill({ status: 503, contentType: 'application/problem+json', body: JSON.stringify({ type: 'about:blank', status: 503, title: '确认服务暂不可用' }) });
+    else if (attempts.length === 1) {
+      const response = await route.fetch();
+      expect(response.ok()).toBe(true);
+      await route.abort('failed');
+    }
+    else await route.continue();
+  });
+  await dialog.getByRole('button', { name: '确认入库', exact: true }).click();
+  await expect(dialog.locator('.cr-error')).toBeVisible();
+  expect((await read(page, `results?classId=${classId}`)).items).toHaveLength(failure === '503未提交' ? 0 : 1);
+  await expect(dialog.getByRole('button', { name: '关闭', exact: true })).toBeEnabled();
+  await dialog.getByRole('button', { name: '确认入库', exact: true }).click();
+  await expect(dialog.getByRole('heading', { name: '成绩已保存', exact: true })).toBeVisible();
+  expect(attempts).toHaveLength(2);
+  expect(attempts[1]).toEqual(attempts[0]);
+  await page.screenshot({ path: info.outputPath('confirmation-retried.png'), animations: 'disabled' });
+  await dialog.getByRole('button', { name: '完成', exact: true }).click();
+  await page.reload();
+  await expect(page.getByRole('heading', { name: '连续校对班', exact: true })).toBeVisible();
+  const results = (await read(page, `results?classId=${classId}`)).items;
+  expect(results).toHaveLength(1);
+  expect(results[0].rows[0].totalScore).toBe(80);
+});
+
+async function openTags(page, email) {
+  await register(page, world, email);
+  const coach = page.getByRole('button', { name: /知道了/ });
+  if (await coach.count()) await coach.first().click();
+  await page.goto(world.origin + '/classroom');
+  await page.locator('.tbx-rail').getByRole('button', { name: /^题目标签/ }).click();
+}
+
+test('新建标签的迟到成功保留已经继续输入的下一项', async ({ page }) => {
+  await openTags(page, 'classroom-tag-create-draft@example.test');
+  const input = page.getByRole('textbox', { name: '新标签', exact: true });
+  await input.fill('本次提交标签');
+  let release, entered, completed;
+  const gate = new Promise(resolve => { release = resolve; });
+  const saved = new Promise(resolve => { entered = resolve; });
+  const delivered = new Promise(resolve => { completed = resolve; });
+  await page.route('**/api/modules/classroom/tags', async route => {
+    const response = await route.fetch();
+    entered();
+    await gate;
+    try { await route.fulfill({ response }); } finally { completed(); }
+  }, { times: 1 });
+  await page.locator('.cr-tagnew').getByRole('button', { name: '添加', exact: true }).click();
+  await saved;
+  try { await input.fill('继续输入的下一个标签'); } finally { release(); await delivered; }
+  await expect(input).toHaveValue('继续输入的下一个标签');
+  await page.locator('.cr-tagnew').getByRole('button', { name: '添加', exact: true }).click();
+  await expect(input).toHaveValue('');
+  expect((await read(page, 'tags')).items.map(tag => tag.name).sort()).toEqual(['本次提交标签', '继续输入的下一个标签'].sort());
+});
+
+for (const target of ['另一个标签', '原标签重新打开']) test(`标签改名迟到成功保留${target}的新编辑`, async ({ page }, info) => {
+  await openTags(page, `classroom-tag-rename-${target === '另一个标签' ? 'other' : 'same'}@example.test`);
+  const newTag = page.getByRole('textbox', { name: '新标签', exact: true });
+  for (const name of ['标签甲', '标签乙']) {
+    await newTag.fill(name);
+    await page.locator('.cr-tagnew').getByRole('button', { name: '添加', exact: true }).click();
+    await expect(newTag).toHaveValue('');
+    await expect(page.locator('.cr-tags')).toContainText(name);
+  }
+  const tags = (await read(page, 'tags')).items;
+  const first = tags.find(tag => tag.name === '标签甲');
+  const edit = async name => {
+    await page.locator('.cr-tags > li').filter({ hasText: name }).getByRole('button', { name: '标签操作', exact: true }).click();
+    await page.getByRole('menuitem', { name: '改名', exact: true }).click();
+  };
+  await edit('标签甲');
+  const input = page.getByRole('textbox', { name: '标签名称', exact: true });
+  await input.fill('甲已保存');
+  let release, entered, completed;
+  const gate = new Promise(resolve => { release = resolve; });
+  const saved = new Promise(resolve => { entered = resolve; });
+  const delivered = new Promise(resolve => { completed = resolve; });
+  await page.route(`**/api/modules/classroom/tags/${first.id}`, async route => {
+    const response = await route.fetch();
+    entered();
+    await gate;
+    try { await route.fulfill({ response }); } finally { completed(); }
+  }, { times: 1 });
+  await input.press('Enter');
+  await saved;
+  try {
+    await page.keyboard.press('Escape');
+    await edit(target === '另一个标签' ? '标签乙' : '标签甲');
+    await input.fill('正在继续编辑的新名称');
+  } finally { release(); await delivered; }
+  await expect(input).toHaveValue('正在继续编辑的新名称');
+  await page.screenshot({ path: info.outputPath('continued-tag-edit.png'), animations: 'disabled' });
+  await page.locator('.cr-tag-edit').getByRole('button', { name: '保存', exact: true }).click();
+  await expect(input).toHaveCount(0);
+  await expect(page.locator('.cr-tags')).toContainText('正在继续编辑的新名称');
+});
+
 // A teacher's saved workflow, using the existing real workbook bytes and HTTP backend.
 test('班级真实保存：座位、记录、Excel校对和成绩观察在刷新后保留，并可归档恢复', async ({ page }, info) => {
   const errors = [];

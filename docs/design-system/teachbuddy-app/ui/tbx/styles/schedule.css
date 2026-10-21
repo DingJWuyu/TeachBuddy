@@ -1,6 +1,10 @@
 /* Schedule: the calendar, refined, and a task board it can morph into.
    (scoped under .wb-shell at build time) */
 
+.cal-month-more-popover.is-dragging {
+  visibility: hidden;
+}
+
 .cal-page {
   --cal-line: var(--tb-line-soft);
   --cal-muted: var(--tb-muted);

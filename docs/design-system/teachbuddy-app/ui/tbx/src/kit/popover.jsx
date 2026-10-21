@@ -17,8 +17,8 @@ export function useDismiss(open, refs, onClose) {
   useEffect(() => {
     if (!open) return undefined;
     const inside = (target) => refs.some((r) => r.current?.contains(target));
-    const down = (e) => { if (!inside(e.target)) onClose(); };
-    const key = (e) => { if (e.key === 'Escape') { e.stopPropagation(); onClose(); } };
+    const down = (e) => { if (!inside(e.target)) onClose(e); };
+    const key = (e) => { if (e.key === 'Escape') { e.stopPropagation(); onClose(e); } };
     document.addEventListener('pointerdown', down, true);
     document.addEventListener('keydown', key, true);
     return () => {

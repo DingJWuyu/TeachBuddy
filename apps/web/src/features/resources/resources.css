@@ -232,6 +232,48 @@
   display: flex;
   flex-direction: column;
 }
+.res-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 48px 24px;
+  margin: auto;
+  max-width: 480px;
+  text-align: center;
+  color: var(--res-muted);
+}
+.res-empty-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 66px;
+  height: 66px;
+  border: 1px solid var(--res-line);
+  background: var(--res-soft);
+  border-radius: 18px;
+  margin-bottom: 5px;
+  color: var(--res-muted);
+}
+.res-empty h2 {
+  margin: 0;
+  font-size: 18px;
+  line-height: 28px;
+  font-weight: 500;
+  color: var(--res-ink);
+}
+.res-empty p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 22px;
+}
+.res-preview > .res-empty {
+  flex: 1;
+}
+.res-preview .res-empty button {
+  min-height: 28px;
+  font-size: 12px;
+  padding: 3px 8px;
+}
 .res-preview-toolbar {
   display: flex;
   align-items: center;
@@ -1237,6 +1279,9 @@
 :root[data-workbench-theme="dark"] .tbx-res-empty-art .is-b { background: #0d2a4a; }
 
 /* drag to upload */
+:is(.wb-shell, .tbx-portal-host) .tbx-res-main.is-drop .tbx-res-empty{
+  visibility: hidden;
+}
 :is(.wb-shell, .tbx-portal-host) .tbx-res-main.is-drop::after{
   content: "";
   position: absolute;

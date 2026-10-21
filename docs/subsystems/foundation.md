@@ -93,7 +93,7 @@ Job 内部 Interface：`jobs.enqueue({principal, kind, target}, mutation)` 在�
 
 [apps/web/src/features/workbench/WorkbenchApp.jsx](../../apps/web/src/features/workbench/WorkbenchApp.jsx) 装配外壳、导航、辅助栏、偏好和支持页；`WorkbenchSettings.jsx` 与 `settings-shell.css` 拥有设置，`SupportPages.jsx`、`help/` 与 `support-shell.css` 拥有帮助。工作台客户端 [api.js](../../apps/web/src/features/workbench/api.js) 拥有 `getWorkbenchContext`，再经公共 HTTP 读取可信账户上下文。导航 API 为 [apps/api/src/workbench/navigation.js](../../apps/api/src/workbench/navigation.js)，偏好为 [apps/api/src/workbench/preferences.js](../../apps/api/src/workbench/preferences.js)；二者都属于工作台偏好/导航职责。共享草稿、保存协议和文稿组件使用独立 platform/components 入口，不回填到工作台业务目录。
 
-`chrome/` 拥有侧栏、顶栏、品牌、搜索、通知、引导及相关外壳组件；`useLayoutModel.js` 消费真实导航保存、重试与冲突状态。模块右轨持续挂载，`AuxiliaryPanel.jsx` 的助理栏通过开闭状态覆盖右轨；具体尺寸与过渡只由共享样式和设计输入维护。
+`chrome/` 拥有侧栏、顶栏、品牌、搜索、通知、引导及相关外壳组件；`useLayoutModel.js` 消费真实导航保存、重试与冲突状态。分组选项保存实际触发控件以接续 Escape 后的键盘操作；顶栏响应式选择 `data-topbar-entry`，不依赖翻译后的 aria-label。模块右轨持续挂载，`AuxiliaryPanel.jsx` 的助理栏通过开闭状态覆盖右轨；具体尺寸与过渡只由共享样式和设计输入维护。
 
 `styles/` 持有公共 tokens、字体、共享控件与界面呈现样式，`chrome/chrome.css` 拥有外壳组合，`appearance.css` 保留偏好应用所需适配。WorkbenchApp 将同一账户偏好传给顶栏、侧栏、模块、菜单与弹层。自定义背景 `custom/backgroundImage` 与主题、预设背景、语言和头像通过同一版本化 preferences 保存；图片由服务端校验格式和实际解码。原设备 `custom-appearance` 只供旧选择迁移和明确重选，不覆盖已保存的服务器偏好。学期组织和反馈记录仍为账户隔离的设备现场，用户已暂缓其真实接线。
 
@@ -118,7 +118,8 @@ Job 内部 Interface：`jobs.enqueue({principal, kind, target}, mutation)` 在�
 - [platform/saving](../../apps/web/src/platform/saving) 的 `useSavableDocument.js`、`useIdempotentSubmit.js`、`saveStates.js` 承担公共保存状态与幂等提交机制，不解释题目/作品业务内容。
 - [components/ui](../../apps/web/src/components/ui) 提供确认、浮层、分段、日期时间、筛选与模块右轨；`menu.jsx` 的 Menu/MenuItem 与 `dialog.jsx` 的 Dialog/Overlay 统一业务菜单和对话框的 portal、键盘及焦点。菜单 Tab/Shift+Tab 关闭浮层后从触发器继续原页面的键盘顺序；`motion.js`、`colors.js`、`classNames.js` 提供公共呈现原语。共享图标统一由 `components/icons.jsx` 导出，产品通过正常 imports 消费，不使用原型全局桥接。
 - `popover.jsx` 的 `shellRoot()` 为锚定浮层和确认框选择宿主：存在原生全屏元素时挂入该元素，否则使用工作台外壳。这样课堂展示中的菜单和二次确认仍处于可交互的全屏层内。
-- `confirm.jsx` 的 `ConfirmDialog` / `AppConfirmDialog` 通过 `present` 保留退出动效，portal 内拥有退出层的 inert 和焦点生命周期；调用方持续挂载并传当前开闭状态。关闭立即撤掉键盘处理与归还焦点，快速重开使用新实例；不在 portal 外再包 `ModulePresence`。不需保留退出的调用方仍可按条件挂载。
+- `filter.jsx` 保留原生 Tab 逐项访问多选选项；Escape 关闭前归焦触发器，外点关闭保留新点击位置。工作台和 portal 的减少动效规则由 `styles/base.css` 统一覆盖。
+- `confirm.jsx` 的 `ConfirmDialog` / `AppConfirmDialog` 通过 `present` 保留退出动效，portal 内拥有退出层的 inert 和焦点生命周期；调用方持续挂载并传当前开闭状态。关闭立即撤掉键盘处理与归还焦点，快速重开使用新实例；不在 portal 外再包 `ModulePresence`。不需保留退出的调用方仍可按条件挂载。默认 Enter 激活当前按钮；日程的两个确认消费者显式传 `enterConfirms` 保留该模块的唯一确认规则，仍遵循输入法、禁用及重复按键保护。
 - [components/materials](../../apps/web/src/components/materials) 聚合 `DocumentView`、`DocumentEditor`、`MathFormula`、documents、样式及公开入口；[components/interaction](../../apps/web/src/components/interaction) 聚合 ModuleMotion、useForegroundRefresh、useScrollRestore 等动效与现场 hooks；[icons](../../apps/web/src/components/icons.jsx) 提供共享图标。设置特有 SettingsControls 留在 workbench。
 
 后端通用文稿读取在 [content/document](../../apps/api/src/workbench/content/document.js) 的 documentText/walkBlocks/images；不承担数学 Source 协议。数学协议由 [math/contract](../../apps/api/src/modules/math/contract.js) 拥有；共用 casefold 在 [workbench/text](../../apps/api/src/workbench/text.js)。材料 Problem 沿 [workbench/problems](../../apps/api/src/workbench/problems.js)，HTTP JSON/错误适配沿 [workbench/http](../../apps/api/src/workbench/http.js)，不为每个业务路由重复实现。

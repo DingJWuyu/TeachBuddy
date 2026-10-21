@@ -102,11 +102,20 @@ function useFileUrl(client, id, cache) {
 }
 
 function UploadButton({ onUpload, disabled, big }) {
+  const input = useRef(null);
   return (
-    <label className={cx('tbx-primary tbx-res-upload', big && 'is-big', disabled && 'is-disabled')}>
-      <Icon name="upload" size={big ? 18 : 16} stroke={2.1} />
-      <span>{tx('上传资料')}</span>
+    <>
+      <button
+        type="button"
+        className={cx('tbx-primary tbx-res-upload', big && 'is-big', disabled && 'is-disabled')}
+        disabled={disabled}
+        onClick={() => input.current?.click()}
+      >
+        <Icon name="upload" size={big ? 18 : 16} stroke={2.1} />
+        <span>{tx('上传资料')}</span>
+      </button>
       <input
+        ref={input}
         type="file"
         multiple
         hidden
@@ -114,7 +123,7 @@ function UploadButton({ onUpload, disabled, big }) {
         aria-label={tx('上传资料')}
         onChange={(e) => { onUpload(Array.from(e.target.files)); e.target.value = ''; }}
       />
-    </label>
+    </>
   );
 }
 

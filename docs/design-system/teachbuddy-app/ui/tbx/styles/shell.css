@@ -1068,6 +1068,7 @@ html.tbx-dragging, html.tbx-dragging * { cursor: grabbing !important; user-selec
   .wb-shell.tb-prototype .tb-mobile-scrim.is-visible { opacity: 1; pointer-events: auto; }
 }
 @media (max-width: 760px) {
+  .wb-shell.tb-prototype .tb-coach-scrim { display: none; }
   .wb-shell.tb-prototype .tbx-brand .tbx-wordmark,
   .wb-shell.tb-prototype .tb-global-nav.tbx-segmented {
     display: none;
@@ -1075,10 +1076,10 @@ html.tbx-dragging, html.tbx-dragging * { cursor: grabbing !important; user-selec
   .wb-shell.tb-prototype .tbx-bar {
     padding-right: 10px;
   }
-  .wb-shell.tb-prototype .tbx-actions .tb-entry-wrap:has([aria-label="使用教程"]) {
+  .wb-shell.tb-prototype .tbx-actions [data-topbar-entry="tutorial"] {
     display: none;
   }
-  .wb-shell.tb-prototype .tbx-actions .tb-entry-wrap:has([aria-label="发送反馈"], [aria-label="隐私与数据保护"]) {
+  .wb-shell.tb-prototype .tbx-actions :is([data-topbar-entry="feedback"], [data-topbar-entry="privacy"]) {
     display: none;
   }
 }

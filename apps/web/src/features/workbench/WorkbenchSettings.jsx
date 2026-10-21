@@ -9,6 +9,7 @@ import './settings-shell.css';
 import { LANGUAGES } from './chrome/sidebarHeadData.js';
 import { Presence } from './chrome/Presence.jsx';
 import { Icon } from '../../components/icons.jsx';
+import { ConfirmDialog } from '../../components/ui/confirm.jsx';
 const FLAGS = import.meta.glob('./chrome/flags/*.svg', { eager: true, query: '?url', import: 'default' });
 
 function Segment({ label, appearance = false, value, options, onChange, disabled }) {
@@ -105,8 +106,11 @@ function LanguageMenu({ value, onChange, disabled }) {
     document.addEventListener('pointerdown', outside);
     return () => document.removeEventListener('pointerdown', outside);
   }, [open]);
-  return <div className="settings-language" ref={root} onKeyDown={event => {
+  return <div className="settings-language" ref={root} onBlur={event => {
+    if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false);
+  }} onKeyDown={event => {
     if (disabled) return;
+    if (event.key === 'Tab' && open) { setOpen(false); trigger.current?.focus(); return; }
     if (event.key === 'Escape') { event.stopPropagation(); setOpen(false); trigger.current?.focus(); }
     if (['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) {
       event.preventDefault();
@@ -127,6 +131,8 @@ export function WorkbenchSettings() {
   const { account, deleteAccount, updateNickname, logoutState, pendingDeletions, resumeDeletion } = useAuth();
   const running = useRef(false);
   const avatarInput = useRef(null);
+  const avatarTrigger = useRef(null);
+  const [avatarDeleteOpen, setAvatarDeleteOpen] = useState(false);
   const { theme, background, avatar } = shell.appearance;
   const preferences = shell.preferences;
   const appearanceDisabled = !preferences.baseline || preferences.status === 'identity';
@@ -154,6 +160,9 @@ export function WorkbenchSettings() {
       setAvatarError(t("请选择不超过 5 MB 的 JPG、PNG 或 WebP 图片。")); return;
     }
     const request = ++avatarRequest.current;
+    if (document.activeElement === avatarTrigger.current) {
+      avatarInput.current?.closest('.settings-profile')?.querySelector('.settings-nickname-trigger, #settings-nickname')?.focus();
+    }
     setAvatarError(''); setAvatarLoading(true);
     let bitmap;
     try {
@@ -175,8 +184,13 @@ export function WorkbenchSettings() {
       <header className="settings-profile">
         <div className="settings-avatar">
           {avatar ? <img src={avatar} alt={t("账户头像")} /> : <span>{Array.from(nickname || 'T')[0]}</span>}
-          <div className="settings-avatar-tools"><button type="button" aria-label={t("选择头像")} disabled={avatarLoading || appearanceDisabled} onClick={() => avatarInput.current?.click()}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M8 5 9.5 3h5L16 5h4v15H4V5Z"/><circle cx="12" cy="12" r="4"/></svg></button><button type="button" aria-label={t("删除头像")} disabled={!avatar || avatarLoading || appearanceDisabled} onClick={() => { setAvatarError(''); shell.setAppearance({ avatar: '' }); }}><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M4 6h16M9 6V3h6v3M6 6l1 15h10l1-15M10 10v7m4-7v7"/></svg></button></div>
+          <div className="settings-avatar-tools"><button ref={avatarTrigger} type="button" aria-label={t("选择头像")} disabled={avatarLoading || appearanceDisabled} onClick={() => avatarInput.current?.click()}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M8 5 9.5 3h5L16 5h4v15H4V5Z"/><circle cx="12" cy="12" r="4"/></svg></button><button type="button" aria-label={t("删除头像")} disabled={!avatar || avatarLoading || appearanceDisabled} onClick={() => setAvatarDeleteOpen(true)}><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M4 6h16M9 6V3h6v3M6 6l1 15h10l1-15M10 10v7m4-7v7"/></svg></button></div>
           <input ref={avatarInput} type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={chooseAvatar} />
+          <ConfirmDialog present={avatarDeleteOpen} title={t("删除头像")}
+            onCancel={() => setAvatarDeleteOpen(false)} onConfirm={() => {
+              setAvatarDeleteOpen(false); avatarTrigger.current?.focus();
+              setAvatarError(''); shell.setAppearance({ avatar: '' });
+            }} />
         </div>
         <div className="settings-profile-copy"><EditableNickname nickname={nickname} onSave={updateNickname} />{account?.email && <p>{account.email}</p>}<span className="settings-account-badge">{t("TeachBuddy 账户")}</span>{avatarLoading && <p role="status" className="settings-preview-note">{t("正在读取头像…")}</p>}</div>
       </header>

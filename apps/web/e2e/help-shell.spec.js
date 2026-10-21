@@ -120,3 +120,59 @@ test('滚动后立即切到下一篇并后退，恢复原阅读位置', async ({
   await expect(page).toHaveURL(/\/help\/start\/workspace$/);
   await expect.poll(() => main.evaluate(element => element.scrollTop)).toBe(position);
 });
+
+test('顶栏反馈选择附件后保留文件名，可移除并重新选择', async ({ page }, testInfo) => {
+  await page.getByRole('button', { name: '发送反馈', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: '发送反馈', exact: true });
+  await dialog.getByRole('textbox', { name: '反馈内容' }).fill('附件选择验证');
+  const pick = async () => {
+    const chooser = page.waitForEvent('filechooser');
+    await dialog.locator('.tb-feedback-clip').click();
+    await (await chooser).setFiles([
+      { name: '课堂截图.png', mimeType: 'image/png', buffer: fs.readFileSync('apps/web/e2e/fixtures/materials-resources/samples/page.png') },
+      { name: '课程说明.pdf', mimeType: 'application/pdf', buffer: fs.readFileSync('test/fixtures/materials/c22.pdf') },
+    ]);
+  };
+  await pick();
+  await expect(dialog.locator('.tb-feedback-file')).toHaveText(['课堂截图.png', '课程说明.pdf']);
+  await expect(dialog.getByRole('textbox')).toHaveValue('附件选择验证');
+  await page.screenshot({ path: testInfo.outputPath('feedback-selected.png') });
+  await dialog.getByRole('button', { name: '移除附件' }).first().click();
+  await expect(dialog.locator('.tb-feedback-file')).toHaveText(['课程说明.pdf']);
+  await dialog.getByRole('button', { name: '移除附件' }).click();
+  await expect(dialog.locator('.tb-feedback-file')).toHaveCount(0);
+  await pick();
+  await expect(dialog.locator('.tb-feedback-file')).toHaveText(['课堂截图.png', '课程说明.pdf']);
+  await expect(dialog.getByRole('button', { name: '发送', exact: true })).toBeEnabled();
+});
+
+test('帮助章节目录点击及手动滚到底部，高亮对应章节', async ({ page }, testInfo) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto(world.origin + '/help/start/workspace');
+  const toc = page.locator('.tbx-help-toc button');
+  const main = page.locator('.tbx-help-main');
+  for (let i = 0; i < await toc.count(); i++) {
+    const destination = await main.evaluate((el, index) => {
+      const heading = el.querySelectorAll('.tbx-help-prose h2')[index];
+      const top = el.scrollTop + heading.getBoundingClientRect().top - el.getBoundingClientRect().top - 28;
+      return Math.max(0, Math.min(top, el.scrollHeight - el.clientHeight));
+    }, i);
+    await toc.nth(i).click();
+    await expect.poll(() => main.evaluate(el => el.scrollTop)).toBeCloseTo(destination, 0);
+    await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+    await expect(page.locator('.tbx-help-toc button.is-active')).toHaveText(await toc.nth(i).innerText());
+  }
+  await toc.first().click();
+  await expect(page.locator('.tbx-help-toc button.is-active')).toHaveText(await toc.first().innerText());
+  await main.hover();
+  await page.mouse.wheel(0, 10000);
+  await expect.poll(() => main.evaluate(el => el.scrollHeight - el.clientHeight - el.scrollTop)).toBeLessThanOrEqual(1);
+  await expect(page.locator('.tbx-help-toc button.is-active')).toHaveText(await toc.last().innerText());
+  await page.screenshot({ path: testInfo.outputPath('help-final-section.png') });
+  await toc.last().click();
+  await page.locator('.tbx-help-pager .is-next').click();
+  await expect(page).toHaveURL(/\/help\/start\/sample-data$/);
+  await page.locator('.tbx-help-dir').getByRole('link', { name: '欢迎使用 TeachBuddy', exact: true }).click();
+  await expect(page).toHaveURL(/\/help\/start\/welcome$/);
+  await expect(page.locator('.tbx-help-toc button.is-active')).toHaveText('四个模块');
+});

@@ -322,14 +322,20 @@ test.describe('跨日导航与连续编辑', () => {
       intercept = false; hit(); await gate; const result = await route.fetch(); await route.fulfill({ response: result });
     });
     await page.locator('#calendar-entry-title').fill('第一版'); await started;
-    await page.locator('#calendar-entry-title').fill('最终标题');
-    await page.getByRole('textbox', { name: '备注', exact: true }).fill('等待响应时继续输入');
-    await page.locator('.cal-mini [data-date="2026-09-26"]').click(); await view(page, '月');
-    release();
-    await expect.poll(async () => (await call('GET', `${E}/${task.id}`)).calendar.notes).toBe('等待响应时继续输入');
-    await expect(page.locator('#calendar-entry-title')).toHaveValue('最终标题');
-    await close(page); await page.reload();
-    const saved = await call('GET', E); expect(saved.items).toHaveLength(1); expect(saved.items[0].title).toBe('最终标题');
+    try {
+      await page.locator('#calendar-entry-title').fill('最终标题');
+      await page.getByRole('textbox', { name: '备注', exact: true }).fill('等待响应时继续输入');
+      // The editor replaces the mini calendar; use the available toolbar.
+      await view(page, '日');
+      await page.getByRole('button', { name: '下一段', exact: true }).click();
+      await expect(page.locator('.fc-col-header-cell[data-date="2026-09-26"]')).toBeVisible();
+      await view(page, '月');
+      release();
+      await expect.poll(async () => (await call('GET', `${E}/${task.id}`)).calendar.notes).toBe('等待响应时继续输入');
+      await expect(page.locator('#calendar-entry-title')).toHaveValue('最终标题');
+      await close(page); await page.reload();
+      const saved = await call('GET', E); expect(saved.items).toHaveLength(1); expect(saved.items[0].title).toBe('最终标题');
+    } finally { release(); }
   });
 
   test('多标签、无标签、长标题在两种列表中保持分类、计数和滚动', async ({ page }) => {
@@ -673,6 +679,121 @@ test.describe('保存回执与任务切换', () => {
     await loginSchedule(page, world, 'manual-teaching@example.test');
   });
   test.afterEach(async ({ context }, info) => closeScheduleWorld(context, world, errors, info));
+
+  for (const repeating of [false, true]) test(`看板${repeating ? '重复' : '普通'}任务保存等待时保留连续完成操作`, async ({ page }, info) => {
+    const task = await call('POST', E, { ...input('看板连续完成操作'),
+      items: ['准备讲义', '打印清单'].map(text => ({ id: randomUUID(), text, priority: 'normal' })),
+      repeat: repeating ? { until: '2026-10-09' } : null,
+    });
+    const other = await call('POST', E, { ...input('另一张卡的事项'),
+      items: [{ id: randomUUID(), text: '核对作业', priority: 'normal' }],
+    });
+    await page.reload();
+    await page.getByRole('button', { name: '任务', exact: true }).click();
+    await expect(page.locator('.tbx-board.is-settled')).toBeVisible();
+    const card = page.locator('.tbx-task').filter({ hasText: task.title }).first();
+    let release, committed, intercepted = false;
+    const gate = new Promise(resolve => { release = resolve; });
+    const saved = new Promise(resolve => { committed = resolve; });
+    await page.route(`**${E}/${task.id}**`, async route => {
+      if (!['PUT', 'POST'].includes(route.request().method()) || intercepted) return route.continue();
+      intercepted = true;
+      const response = await route.fetch();
+      committed(); await gate; await route.fulfill({ response });
+    });
+    try {
+      await card.locator('.tbx-task-item').first().click();
+      await saved;
+      await card.locator('.tbx-task-item').first().click();
+      await card.locator('.tbx-task-item').nth(1).click();
+      await page.locator('.tbx-task').filter({ hasText: other.title }).locator('.tbx-task-item').click();
+      await expect(card.locator('.tbx-task-item').first()).toHaveAttribute('aria-pressed', 'false');
+      await expect(card.locator('.tbx-task-item').nth(1)).toHaveAttribute('aria-pressed', 'true');
+      await page.screenshot({ path: info.outputPath('board-latest-input-while-saving.png') });
+      release();
+      await expect.poll(async () => {
+        const list = (await call('GET', E)).items;
+        const single = repeating ? list.find(value => value.title === task.title && !value.repeat) : list.find(value => value.id === task.id);
+        return single?.items.map(item => Boolean(item.completed));
+      }).toEqual([false, true]);
+      await expect.poll(async () => (await call('GET', `${E}/${other.id}`)).items[0].completed).toBe(true);
+      if (repeating) {
+        const list = (await call('GET', E)).items.filter(value => value.title === task.title);
+        expect(list).toHaveLength(2);
+        expect(list.find(value => value.repeat).items.map(item => Boolean(item.completed))).toEqual([false, false]);
+      }
+      await page.reload();
+      const restored = page.locator('.tbx-task').filter({ hasText: task.title }).first();
+      await expect(restored.locator('.tbx-task-item').first()).toHaveAttribute('aria-pressed', 'false');
+      await expect(restored.locator('.tbx-task-item').nth(1)).toHaveAttribute('aria-pressed', 'true');
+    } finally { release(); }
+  });
+
+  test('看板已打开任务在标题保存等待时继续显示并保存事项输入', async ({ page }) => {
+    const task = await call('POST', E, { ...input('编辑中的看板任务'),
+      items: [{ id: randomUUID(), text: '打印讲义', priority: 'normal' }],
+    });
+    await page.reload();
+    await page.getByRole('button', { name: '任务', exact: true }).click();
+    await expect(page.locator('.tbx-board.is-settled')).toBeVisible();
+    const card = page.locator('.tbx-task').filter({ hasText: task.title });
+    await card.locator('.tbx-task-title').click();
+    let release, committed, intercepted = false;
+    const gate = new Promise(resolve => { release = resolve; });
+    const saved = new Promise(resolve => { committed = resolve; });
+    await page.route(`**${E}/${task.id}`, async route => {
+      if (route.request().method() !== 'PUT' || intercepted) return route.continue();
+      intercepted = true;
+      const response = await route.fetch();
+      committed(); await gate; await route.fulfill({ response });
+    });
+    try {
+      await page.getByLabel('标题', { exact: true }).fill('编辑中的看板任务已改名');
+      await saved;
+      await card.locator('.tbx-task-item').click();
+      await expect(card.locator('.tbx-task-item')).toHaveAttribute('aria-pressed', 'true');
+      await expect(page.locator('.tbx-item-check')).toHaveAttribute('aria-pressed', 'true');
+      release();
+      await expect.poll(async () => (await call('GET', `${E}/${task.id}`)).items[0].completed).toBe(true);
+      await page.locator('.tbx-sheet').getByRole('button', { name: '关闭', exact: true }).click();
+      await page.getByRole('button', { name: '日历', exact: true }).click();
+      await page.getByRole('button', { name: '任务', exact: true }).click();
+      await expect(page.locator('.tbx-task').filter({ hasText: '编辑中的看板任务已改名' }).locator('.tbx-task-item')).toHaveAttribute('aria-pressed', 'true');
+    } finally { release(); }
+  });
+
+  test('看板连续点击在刷新后先确认原请求，再保存后写状态', async ({ page }) => {
+    const task = await call('POST', E, { ...input('刷新中的看板重复任务'),
+      items: [{ id: randomUUID(), text: '打印讲义', priority: 'normal' }],
+      repeat: { until: '2026-10-09' },
+    });
+    await page.reload();
+    await page.getByRole('button', { name: '任务', exact: true }).click();
+    await expect(page.locator('.tbx-board.is-settled')).toBeVisible();
+    let release, committed, intercepted = false;
+    const gate = new Promise(resolve => { release = resolve; });
+    const saved = new Promise(resolve => { committed = resolve; });
+    await page.route(`**${E}/${task.id}/occurrences/**/detach`, async route => {
+      if (intercepted) return route.continue();
+      intercepted = true;
+      const response = await route.fetch();
+      committed(); await gate; await route.fulfill({ response });
+    });
+    try {
+      const toggle = page.locator('.tbx-task').filter({ hasText: task.title }).first().locator('.tbx-task-item');
+      await toggle.click(); await saved;
+      await toggle.click();
+      await page.reload();
+      release();
+      await page.locator('.cal-load-error').getByRole('button', { name: '重试', exact: true }).click();
+      await expect.poll(async () => {
+        const single = (await call('GET', E)).items.find(value => value.title === task.title && !value.repeat);
+        return Boolean(single?.items[0].completed);
+      }).toBe(false);
+      await expect(page.locator('.tbx-task').filter({ hasText: task.title }).first().locator('.tbx-task-item')).toHaveAttribute('aria-pressed', 'false');
+      expect((await call('GET', E)).items.filter(value => value.title === task.title)).toHaveLength(2);
+    } finally { release(); }
+  });
 
   test('日程保存慢响应不会串写后来打开的安排', async ({ page }) => {
     const first = await call('POST', E, input('先保存的安排'));

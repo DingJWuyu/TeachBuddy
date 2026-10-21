@@ -131,7 +131,7 @@ export default function MaterialsQuestionsPage({
           ))}
         </select>
       </label>
-      <button type="button" className="q-text-button" onClick={() => { openCategory('types', id => onChange({ typeId: id })); }}><QuestionIcon name="plus" size={14} />{t("新建题型")}</button>
+      <button type="button" className="q-text-button" onClick={() => openCategory('types')}><QuestionIcon name="plus" size={14} />{t("新建题型")}</button>
       <span className="q-classify-label">{t("标签")}</span>
       {taxonomy.tags.map((t) => (
         <label key={t.id}>
@@ -149,7 +149,7 @@ export default function MaterialsQuestionsPage({
           {t.name}
         </label>
       ))}
-      <button type="button" className="q-text-button" onClick={() => { openCategory('tags', id => onChange({ tagIds: [...q.tagIds, id] })); }}><QuestionIcon name="plus" size={14} />{t("新建标签")}</button>
+      <button type="button" className="q-text-button" onClick={() => openCategory('tags')}><QuestionIcon name="plus" size={14} />{t("新建标签")}</button>
     </div>
   );
   const taxonomyTools = (
@@ -633,7 +633,7 @@ export default function MaterialsQuestionsPage({
         onCancel={cancelLifecycle}>
         {message && <p className="q-error" role="alert">{message}</p>}
       </LifecycleConfirmDialog>
-      <ModulePresence present={Boolean(newCategory)}>{newCategory && <QuestionDialog title={newCategory.kind === 'types' ? t("新建题型") : t("新建标签")} onClose={() => closeCategory()}>
+      <ModulePresence present={Boolean(newCategory)}>{newCategory && <QuestionDialog key={newCategory.openingId} title={newCategory.kind === 'types' ? t("新建题型") : t("新建标签")} onClose={() => closeCategory()}>
         <form onSubmit={event => { event.preventDefault(); createCategory(); }}>
           <label>{t("名称")}<input aria-label={t("分类名称")} value={categoryName} maxLength={80} onChange={event => changeCategoryName(event.target.value)} /></label>
           <p className="q-muted">{t("创建后直接选用于当前题目。")}</p>

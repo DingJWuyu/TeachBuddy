@@ -240,6 +240,8 @@
   "资料文件已更新，请在最新搜索结果中重新打开。": "The material file has changed. Open it again from the latest search results.",
   "资料信息": "Material information",
   "返回资源库": "Back to resource library",
+  "未找到资料": "Resource not found",
+  "资料暂时无法读取": "Could not load this resource",
   "读取资料…": "Loading material…",
   "恢复资料": "Restore material",
   "下载原件": "Download original",

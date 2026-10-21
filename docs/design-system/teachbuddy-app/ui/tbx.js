@@ -22,6 +22,8 @@
   var useRef = (...a) => R().useRef(...a);
   var useMemo = (...a) => R().useMemo(...a);
   var useCallback = (...a) => R().useCallback(...a);
+  var useContext = (...a) => R().useContext(...a);
+  var useId = (...a) => R().useId(...a);
   var cx = (...parts) => parts.filter(Boolean).join(" ");
   var NS = ["tbx", "workbench", "agent", "schedule", "reliability", "questions", "resources", "math"];
   var tx = (key2, options) => {
@@ -503,7 +505,7 @@
       };
     }, [surface, setSurface, scene.coachDismissed]);
     const toggle = (value) => setSurface(surface === value ? null : value);
-    const entry = (name, icon, label, content2, badge) => /* @__PURE__ */ h("span", { className: `tb-entry-wrap${name === "tutorial" && !scene.coachDismissed ? " is-coached" : ""}` }, /* @__PURE__ */ h("button", { className: "tb-entry", "aria-label": label, "aria-haspopup": "dialog", "aria-expanded": surface === name, onClick: () => toggle(name) }, /* @__PURE__ */ h(Icon22, { name: icon, size: 20, strokeWidth: 1.8 }), badge > 0 && /* @__PURE__ */ h("span", { className: "tb-badge is-amber" }, badge)), name === "tutorial" && !scene.coachDismissed && /* @__PURE__ */ h(CoachMark, { onDismiss: dismissCoach }), surface !== name && (name !== "tutorial" || scene.coachDismissed) && /* @__PURE__ */ h("span", { className: "tb-tooltip", "aria-hidden": "true" }, label), surface === name && content2);
+    const entry = (name, icon, label, content2, badge) => /* @__PURE__ */ h("span", { "data-topbar-entry": name, className: `tb-entry-wrap${name === "tutorial" && !scene.coachDismissed ? " is-coached" : ""}` }, /* @__PURE__ */ h("button", { className: "tb-entry", "aria-label": label, "aria-haspopup": "dialog", "aria-expanded": surface === name, onClick: () => toggle(name) }, /* @__PURE__ */ h(Icon22, { name: icon, size: 20, strokeWidth: 1.8 }), badge > 0 && /* @__PURE__ */ h("span", { className: "tb-badge is-amber" }, badge)), name === "tutorial" && !scene.coachDismissed && /* @__PURE__ */ h(CoachMark, { onDismiss: dismissCoach }), surface !== name && (name !== "tutorial" || scene.coachDismissed) && /* @__PURE__ */ h("span", { className: "tb-tooltip", "aria-hidden": "true" }, label), surface === name && content2);
     const isMac = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
     return /* @__PURE__ */ h("header", { className: "tb-topbar tbx-topbar", ref }, /* @__PURE__ */ h("div", { className: "tb-brand-slot tbx-brand-slot" }, /* @__PURE__ */ h("button", { className: "tb-mobile-menu", onClick: toggleSidebar, "aria-label": tw("\u6253\u5F00\u5DE5\u4F5C\u53F0\u5BFC\u822A") }, /* @__PURE__ */ h(Icon22, { name: "menu" })), /* @__PURE__ */ h("a", { className: "tb-brand tbx-brand", href: "/", onClick: (e) => followAnchor(e, "/"), "aria-label": "TeachBuddy" }, /* @__PURE__ */ h(Mark, { size: 30 }), /* @__PURE__ */ h("span", { className: "tbx-wordmark" }, "TeachBuddy"))), /* @__PURE__ */ h("div", { className: "tbx-bar" }, /* @__PURE__ */ h(
       "button",
@@ -684,7 +686,23 @@
   function shellRoot() {
     return document.querySelector(".wb-shell") || document.body;
   }
-  function ConfirmDialog({
+  var confirmVisible;
+  function visibleContext() {
+    return confirmVisible || (confirmVisible = tb().React.createContext(true));
+  }
+  function ConfirmDialog({ present, ...props }) {
+    const { createPortal, ModulePresence } = tb();
+    const ConfirmVisible = visibleContext();
+    const opening = useRef({ present: false, key: 0 });
+    if (present === void 0) return createPortal(/* @__PURE__ */ h(ConfirmContent, { ...props }), shellRoot());
+    if (present && !opening.current.present) opening.current.key += 1;
+    opening.current.present = Boolean(present);
+    return createPortal(
+      /* @__PURE__ */ h(ConfirmVisible.Provider, { value: Boolean(present) }, /* @__PURE__ */ h(ModulePresence, { key: opening.current.key, present, mode: "overlay", className: "tbx-confirm-presence" }, present && /* @__PURE__ */ h(ConfirmContent, { ...props }))),
+      shellRoot()
+    );
+  }
+  function ConfirmContent({
     title,
     message,
     confirmLabel,
@@ -697,46 +715,88 @@
     busy,
     disabled,
     secondaryLabel,
-    onSecondary
+    onSecondary,
+    enterConfirms = false
   }) {
     useLocale();
-    const { createPortal } = tb();
+    const active = useContext(visibleContext());
     const ref = useRef(null);
     const [working, setWorking] = useState(false);
+    const titleId = useId();
+    const running = useRef(false);
+    const actions = useRef(null);
+    actions.current = { onConfirm, onCancel, busy, disabled, active, enterConfirms };
     useEffect(() => {
+      if (!active) return void 0;
       const prev = document.activeElement;
       ref.current?.querySelector("[data-autofocus], .tbx-confirm-actions button:last-child")?.focus();
       const key2 = (e) => {
+        const dialogs = [...document.querySelectorAll('[role="dialog"], [role="alertdialog"]')].filter((node) => node.getClientRects().length && !node.closest("[inert]"));
+        if (dialogs.at(-1) !== ref.current || ref.current?.closest("[inert]")) return;
+        if (document.querySelector(".tbx-popover[role=menu]")) return;
         if (e.key === "Escape") {
           e.stopPropagation();
-          onCancel();
+          actions.current.onCancel();
+        }
+        if (e.key === "Enter") {
+          if (e.target.closest?.('textarea, [contenteditable="true"]')) return;
+          if ((e.isComposing || e.keyCode === 229) && e.target.closest?.("input")) return;
+          e.preventDefault();
+          e.stopPropagation();
+          if (e.isComposing || e.keyCode === 229 || e.repeat || e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
+          const focusedButton = e.target.closest?.("button");
+          if (!actions.current.enterConfirms && focusedButton && ref.current?.contains(focusedButton)) {
+            if (!focusedButton.disabled) focusedButton.click();
+          } else {
+            ref.current?.querySelector(".tbx-confirm-ok:not(:disabled)")?.click();
+          }
+        }
+        if (e.key !== "Tab") return;
+        const controls = [...ref.current.querySelectorAll('button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), a[href], [tabindex="0"]')].filter((el) => el.getClientRects().length);
+        if (!controls.length) {
+          e.preventDefault();
+          return;
+        }
+        const first = controls[0];
+        const last = controls[controls.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
         }
       };
       document.addEventListener("keydown", key2, true);
       return () => {
         document.removeEventListener("keydown", key2, true);
-        prev?.focus?.();
+        const current = [...document.querySelectorAll('[role="dialog"], [role="alertdialog"]')].filter((node) => node !== ref.current && node.getClientRects().length && !node.closest("[inert]")).at(-1);
+        if (current && !current.contains(prev)) return;
+        if (prev?.isConnected && !prev.closest("[inert]")) prev.focus();
       };
-    }, []);
+    }, [active]);
     const run = async () => {
+      if (!actions.current.active || running.current || actions.current.busy || actions.current.disabled) return;
+      running.current = true;
       setWorking(true);
       try {
-        await onConfirm();
+        await actions.current.onConfirm();
       } finally {
+        running.current = false;
         setWorking(false);
       }
     };
-    const node = /* @__PURE__ */ h("div", { className: "tbx-confirm-scrim", onPointerDown: (e) => {
-      if (e.target === e.currentTarget) onCancel();
-    } }, /* @__PURE__ */ h("div", { className: cx("tbx-confirm", danger && "is-danger"), role: "alertdialog", "aria-modal": "true", "aria-labelledby": "tbx-confirm-title", ref }, /* @__PURE__ */ h("span", { className: "tbx-confirm-icon", "aria-hidden": "true" }, /* @__PURE__ */ h(Glyph, { name: icon || (danger ? "trash" : "info"), size: 22 })), /* @__PURE__ */ h("h2", { id: "tbx-confirm-title" }, title), message && /* @__PURE__ */ h("p", null, message), children, /* @__PURE__ */ h("div", { className: "tbx-confirm-actions" }, /* @__PURE__ */ h("button", { type: "button", className: "tbx-confirm-cancel", onClick: onCancel }, cancelLabel || tx("\u53D6\u6D88")), secondaryLabel && /* @__PURE__ */ h("button", { type: "button", className: "tbx-confirm-secondary", onClick: onSecondary }, secondaryLabel), /* @__PURE__ */ h("button", { type: "button", className: "tbx-confirm-ok", disabled: busy || working || disabled, onClick: run }, confirmLabel || tx("\u5220\u9664")))));
-    return createPortal ? createPortal(node, shellRoot()) : node;
+    return /* @__PURE__ */ h("div", { className: "tbx-confirm-scrim", onPointerDown: (e) => {
+      if (active && e.target === e.currentTarget) onCancel();
+    } }, /* @__PURE__ */ h("div", { className: cx("tbx-confirm", danger && "is-danger"), role: "alertdialog", "aria-modal": "true", "aria-labelledby": titleId, ref }, /* @__PURE__ */ h("span", { className: "tbx-confirm-icon", "aria-hidden": "true" }, /* @__PURE__ */ h(Glyph, { name: icon || (danger ? "trash" : "info"), size: 22 })), /* @__PURE__ */ h("h2", { id: titleId }, title), message && /* @__PURE__ */ h("p", null, message), children, /* @__PURE__ */ h("div", { className: "tbx-confirm-actions" }, /* @__PURE__ */ h("button", { type: "button", className: "tbx-confirm-cancel", onClick: onCancel }, cancelLabel || tx("\u53D6\u6D88")), secondaryLabel && /* @__PURE__ */ h("button", { type: "button", className: "tbx-confirm-secondary", onClick: onSecondary }, secondaryLabel), /* @__PURE__ */ h("button", { type: "button", className: "tbx-confirm-ok", disabled: busy || working || disabled, onClick: run }, confirmLabel || tx("\u5220\u9664")))));
   }
   var DESTRUCTIVE = /删除|移除|清空|解散|丢弃|放弃|delete|remove|discard/i;
-  function AppConfirmDialog({ title, message, confirmLabel, secondaryLabel, onSecondary, onConfirm, onCancel }) {
+  function AppConfirmDialog({ title, message, confirmLabel, secondaryLabel, onSecondary, onConfirm, onCancel, ...props }) {
     const danger = DESTRUCTIVE.test(`${confirmLabel || ""} ${title || ""}`);
     return /* @__PURE__ */ h(
       ConfirmDialog,
       {
+        ...props,
         title,
         message,
         confirmLabel: confirmLabel || tx("\u786E\u8BA4"),
@@ -785,7 +845,7 @@
     const list = workbenchModulesAll.filter((m) => m.navigation === "sidebar");
     return { list, byId: (id) => list.find((m) => m.id === id) };
   }
-  function GroupMenu({ at, onRename, onDelete, onClose }) {
+  function GroupMenu({ at, trigger, onRename, onDelete, onClose }) {
     const ref = useRef(null);
     useEffect(() => {
       ref.current?.querySelector("button")?.focus();
@@ -793,7 +853,10 @@
         if (!ref.current?.contains(e.target) && !e.target.closest?.(".tbx-group-more")) onClose();
       };
       const key2 = (e) => {
-        if (e.key === "Escape") onClose();
+        if (e.key === "Escape") {
+          trigger?.focus();
+          onClose();
+        }
       };
       document.addEventListener("pointerdown", down, true);
       document.addEventListener("keydown", key2);
@@ -801,7 +864,7 @@
         document.removeEventListener("pointerdown", down, true);
         document.removeEventListener("keydown", key2);
       };
-    }, [onClose]);
+    }, [onClose, trigger]);
     return /* @__PURE__ */ h("div", { className: "tbx-side-menu", role: "menu", ref, style: { left: at.x, top: at.y } }, /* @__PURE__ */ h("button", { type: "button", role: "menuitem", className: "tbx-mi", onClick: onRename }, /* @__PURE__ */ h(Glyph2, { name: "pencil", size: 16 }), tw2("\u91CD\u547D\u540D\u5206\u7EC4")), /* @__PURE__ */ h(ConfirmMenuItem, { className: "tbx-mi", icon: /* @__PURE__ */ h(Glyph2, { name: "close", size: 16 }), label: tw2("\u89E3\u6563\u5206\u7EC4"), confirmLabel: tw2("\u786E\u8BA4\u89E3\u6563"), onConfirm: onDelete }));
   }
   function Sidebar({
@@ -851,7 +914,13 @@
     const stable = useRef({
       move: (e) => handlers.current?.onMove(e),
       up: (e) => handlers.current?.onUp(e),
-      cancel: (e) => handlers.current?.onCancel(e)
+      cancel: (e) => handlers.current?.onCancel(e),
+      key: (e) => {
+        if (e.key === "Escape") {
+          e.preventDefault();
+          handlers.current?.onCancel();
+        }
+      }
     });
     const [trashOpen, setTrashOpen] = useState(false);
     const [adding, setAdding] = useState(false);
@@ -926,6 +995,7 @@
       window.addEventListener("pointermove", stable.current.move, { passive: false });
       window.addEventListener("pointerup", stable.current.up);
       window.addEventListener("pointercancel", stable.current.cancel);
+      window.addEventListener("keydown", stable.current.key);
     }
     function activate(x, y) {
       const d = dragRef.current;
@@ -966,8 +1036,8 @@
     function track(x, y) {
       const d = dragRef.current;
       if (!d?.active) return;
-      const next = hitTest(d, x, y);
-      if (next === void 0) return;
+      const next = hitTest(d, x, y) ?? null;
+      if (!next) armExpand(null);
       if (JSON.stringify(next) !== JSON.stringify(targetRef.current)) {
         targetRef.current = next;
         setTarget(next);
@@ -1076,7 +1146,10 @@
     function onUp(e) {
       const d = dragRef.current;
       if (!d || e.pointerId !== d.pointerId) return;
-      if (d.active) commit(d, targetRef.current);
+      if (d.active) {
+        track(e.clientX, e.clientY);
+        commit(d, targetRef.current);
+      }
       cleanup();
     }
     function onCancel() {
@@ -1094,6 +1167,7 @@
       window.removeEventListener("pointermove", stable.current.move);
       window.removeEventListener("pointerup", stable.current.up);
       window.removeEventListener("pointercancel", stable.current.cancel);
+      window.removeEventListener("keydown", stable.current.key);
       setTimeout(() => {
         suppressClick.current = false;
       }, 0);
@@ -1299,7 +1373,7 @@
               onContextMenu: (e) => {
                 if (g.fixed || !editable) return;
                 e.preventDefault();
-                setMenu({ group: g, at: { x: Math.min(e.clientX, innerWidth - 220), y: Math.min(e.clientY, innerHeight - 110) } });
+                setMenu({ group: g, trigger: e.currentTarget.querySelector(".tbx-group-more") || e.currentTarget, at: { x: Math.min(e.clientX, innerWidth - 220), y: Math.min(e.clientY, innerHeight - 110) } });
               }
             },
             editing ? /* @__PURE__ */ h(
@@ -1334,8 +1408,9 @@
                 "aria-label": tw2("\u5206\u7EC4\u9009\u9879"),
                 onClick: (e) => {
                   e.stopPropagation();
-                  const r = e.currentTarget.getBoundingClientRect();
-                  setMenu((m) => m?.group.id === g.id ? null : { group: g, at: { x: r.right + 6, y: r.top } });
+                  const trigger = e.currentTarget;
+                  const r = trigger.getBoundingClientRect();
+                  setMenu((m) => m?.group.id === g.id ? null : { group: g, trigger, at: { x: r.right + 6, y: r.top } });
                 }
               },
               /* @__PURE__ */ h(Glyph2, { name: "more", size: 16 })
@@ -1425,17 +1500,101 @@
       GroupMenu,
       {
         at: menu.at,
+        trigger: menu.trigger,
         onClose: () => setMenu(null),
         onRename: () => {
           startRename(menu.group);
           setMenu(null);
         },
         onDelete: () => {
+          navRef.current?.querySelector(".tbx-new-group-button")?.focus();
           act(() => model.deleteGroup(menu.group.id));
           setMenu(null);
         }
       }
     ), /* @__PURE__ */ h(ConfirmHost, null), railCollapsed && tip && /* @__PURE__ */ h("span", { className: "tb-rail-tooltip tbx-tip", role: "tooltip", style: { left: tip.left, top: tip.top } }, tip.label));
+  }
+
+  // docs/design-system/teachbuddy-app/ui/tbx/src/kit/popover.jsx
+  var MARGIN = 12;
+  function shellRoot2() {
+    return document.querySelector(".wb-shell") || document.body;
+  }
+  function useDismiss(open, refs, onClose) {
+    useEffect(() => {
+      if (!open) return void 0;
+      const inside = (target) => refs.some((r) => r.current?.contains(target));
+      const down = (e) => {
+        if (!inside(e.target)) onClose(e);
+      };
+      const key2 = (e) => {
+        if (e.key === "Escape") {
+          e.stopPropagation();
+          onClose(e);
+        }
+      };
+      document.addEventListener("pointerdown", down, true);
+      document.addEventListener("keydown", key2, true);
+      return () => {
+        document.removeEventListener("pointerdown", down, true);
+        document.removeEventListener("keydown", key2, true);
+      };
+    }, [open]);
+  }
+  function Popover({ anchor, open, onClose, children, className, align = "start", offset = 6, label, role = "dialog" }) {
+    const { createPortal } = tb();
+    const ref = useRef(null);
+    const [pos, setPos] = useState(null);
+    useDismiss(open, [ref, anchor], onClose);
+    useLayoutEffect(() => {
+      if (!open) {
+        setPos(null);
+        return void 0;
+      }
+      const place = () => {
+        const a = anchor.current?.getBoundingClientRect();
+        const el = ref.current;
+        if (!a || !el) return;
+        const w = el.offsetWidth;
+        const hgt = el.offsetHeight;
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+        let left = align === "end" ? a.right - w : align === "center" ? a.left + a.width / 2 - w / 2 : a.left;
+        left = Math.max(MARGIN, Math.min(left, vw - MARGIN - w));
+        let top = a.bottom + offset;
+        let above = false;
+        if (top + hgt > vh - MARGIN) {
+          if (a.top - offset - hgt >= MARGIN) {
+            top = a.top - offset - hgt;
+            above = true;
+          } else top = Math.max(MARGIN, vh - MARGIN - hgt);
+        }
+        setPos({ left: Math.round(left), top: Math.round(top), above, maxHeight: vh - 2 * MARGIN });
+      };
+      place();
+      const ro = new ResizeObserver(place);
+      if (ref.current) ro.observe(ref.current);
+      window.addEventListener("resize", place);
+      window.addEventListener("scroll", place, true);
+      return () => {
+        ro.disconnect();
+        window.removeEventListener("resize", place);
+        window.removeEventListener("scroll", place, true);
+      };
+    }, [open]);
+    if (!open) return null;
+    const node = /* @__PURE__ */ h(
+      "div",
+      {
+        ref,
+        role,
+        "aria-label": label,
+        className: cx("tbx-popover", pos?.above && "is-above", className),
+        style: { left: pos?.left ?? -9999, top: pos?.top ?? 0, maxHeight: pos?.maxHeight, visibility: pos ? "visible" : "hidden" }
+      },
+      children
+    );
+    return createPortal ? createPortal(node, shellRoot2()) : node;
   }
 
   // docs/design-system/teachbuddy-app/ui/tbx/src/demo/seed.js
@@ -2357,7 +2516,9 @@ ${text}`),
         if (!ref.current?.contains(e.target)) close();
       };
       const key2 = (e) => {
-        if (e.key === "Escape") close();
+        if (e.key !== "Escape") return;
+        ref.current?.querySelector("button")?.focus();
+        close();
       };
       document.addEventListener("pointerdown", down);
       document.addEventListener("keydown", key2);
@@ -2433,16 +2594,26 @@ ${text}`),
       return null;
     }
   }
+  function selectedResourceId() {
+    try {
+      const store = globalThis.__teachbuddyLocalStorage;
+      const key2 = Object.keys(store).find((k) => k.endsWith(":scene:resources") && !k.includes(":branch:") && !k.includes(":head:"));
+      const scene = key2 ? JSON.parse(store.getItem(key2)) : null;
+      return scene?.openId ?? null;
+    } catch {
+      return null;
+    }
+  }
   function useCurrentContext(enabled) {
     const path2 = useRoute();
     const [ctx, setCtx] = useState(null);
     const [picked, setPicked] = useState(null);
     useEffect(() => {
-      if (!enabled || !path2.startsWith("/questions")) {
+      if (!enabled || !/^\/(questions|resources)(?:\/|$)/.test(path2)) {
         setPicked(null);
         return void 0;
       }
-      const read = () => setPicked(selectedQuestionId());
+      const read = () => setPicked(path2.startsWith("/resources") ? selectedResourceId() : selectedQuestionId());
       read();
       const id = setInterval(read, 700);
       return () => clearInterval(id);
@@ -2454,7 +2625,7 @@ ${text}`),
       }
       let live = true;
       const m = /^\/(questions|resources)\/([^/]+)$/.exec(path2);
-      const target = m ? { kind: m[1] === "questions" ? "question" : "resource", id: decodeURIComponent(m[2]), area: m[1] } : picked ? { kind: "question", id: picked, area: "questions" } : null;
+      const target = m && (m[1] !== "resources" || picked === decodeURIComponent(m[2])) ? { kind: m[1] === "questions" ? "question" : "resource", id: decodeURIComponent(m[2]), area: m[1] } : picked && path2.startsWith("/questions") ? { kind: "question", id: picked, area: "questions" } : null;
       (async () => {
         if (target) {
           const where = target.kind === "question" ? "/api/modules/questions/v2/items/" : "/api/modules/resources/items/";
@@ -2726,17 +2897,33 @@ ${text}`),
   function UserMessage({ m }) {
     return /* @__PURE__ */ h("article", { className: "tbx-msg is-user" }, /* @__PURE__ */ h("div", { className: "tbx-bubble" }, /* @__PURE__ */ h("p", null, m.text), m.references.length > 0 && /* @__PURE__ */ h("div", { className: "tbx-chips is-sent" }, m.references.map((r, i) => /* @__PURE__ */ h(RefChip, { key: i, r: { kind: r.input.kind, id: r.input.id, title: r.title } })))));
   }
-  function CopyButton({ text }) {
+  function CopyButton({ text, onError }) {
     const [copied, setCopied] = useState(false);
-    return /* @__PURE__ */ h("button", { className: cx("tbx-meta-btn", copied && "is-done"), "aria-label": tx("\u590D\u5236"), title: copied ? tx("\u5DF2\u590D\u5236") : tx("\u590D\u5236"), onClick: () => {
-      navigator.clipboard?.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    } }, /* @__PURE__ */ h("span", { className: "tbx-morph" }, /* @__PURE__ */ h(Glyph3, { name: "copy", size: 15 }), /* @__PURE__ */ h(Glyph3, { name: "check", size: 15, stroke: 2.2 })));
+    const [copying, setCopying] = useState(false);
+    const reset = useRef(null);
+    useEffect(() => () => clearTimeout(reset.current), []);
+    async function copy() {
+      clearTimeout(reset.current);
+      setCopied(false);
+      setCopying(true);
+      onError(false);
+      try {
+        if (!navigator.clipboard?.writeText) throw new Error("clipboard-unavailable");
+        await navigator.clipboard.writeText(text);
+        setCopied(true);
+        reset.current = setTimeout(() => setCopied(false), 1500);
+      } catch {
+        onError(true);
+      } finally {
+        setCopying(false);
+      }
+    }
+    return /* @__PURE__ */ h("button", { className: cx("tbx-meta-btn", copied && "is-done"), "aria-label": tx("\u590D\u5236"), title: copied ? tx("\u5DF2\u590D\u5236") : tx("\u590D\u5236"), disabled: copying, onClick: copy }, /* @__PURE__ */ h("span", { className: "tbx-morph" }, /* @__PURE__ */ h(Glyph3, { name: "copy", size: 15 }), /* @__PURE__ */ h(Glyph3, { name: "check", size: 15, stroke: 2.2 })));
   }
   function AssistantMessage({ m, agent, last, onRegenerate, model }) {
+    const [copyError, setCopyError] = useState(false);
     const streaming = m.state === "streaming";
-    return /* @__PURE__ */ h("article", { className: cx("tbx-msg is-assistant", streaming && "is-streaming", last && "is-last") }, /* @__PURE__ */ h(Prose, { text: m.text }), streaming && /* @__PURE__ */ h("span", { className: "tbx-typing", "aria-hidden": "true" }), (m.cards ?? []).length > 0 && /* @__PURE__ */ h("div", { className: "tbx-cards" }, m.cards.map((c, i) => /* @__PURE__ */ h(ResultCard, { key: i, card: c, cardKey: `${m.id}:${i}`, agent }))), m.state === "partial" && /* @__PURE__ */ h("p", { className: "tbx-msg-note" }, tx("\u56DE\u7B54\u88AB\u505C\u6B62\u4E86\uFF0C\u53EA\u4FDD\u7559\u4E86\u524D\u9762\u7684\u90E8\u5206\u3002")), !streaming && m.text && /* @__PURE__ */ h("div", { className: "tbx-meta" }, /* @__PURE__ */ h(CopyButton, { text: m.text }), last && onRegenerate && /* @__PURE__ */ h("button", { className: "tbx-meta-btn", "aria-label": tx("\u91CD\u65B0\u56DE\u7B54"), title: tx("\u91CD\u65B0\u56DE\u7B54"), onClick: onRegenerate }, /* @__PURE__ */ h(Glyph3, { name: "retry", size: 15 })), /* @__PURE__ */ h("span", { className: "tbx-meta-text tbx-num" }, clock(m.createdAt), model ? ` \xB7 ${model}` : "")));
+    return /* @__PURE__ */ h("article", { className: cx("tbx-msg is-assistant", streaming && "is-streaming", last && "is-last") }, /* @__PURE__ */ h(Prose, { text: m.text }), streaming && /* @__PURE__ */ h("span", { className: "tbx-typing", "aria-hidden": "true" }), (m.cards ?? []).length > 0 && /* @__PURE__ */ h("div", { className: "tbx-cards" }, m.cards.map((c, i) => /* @__PURE__ */ h(ResultCard, { key: i, card: c, cardKey: `${m.id}:${i}`, agent }))), m.state === "partial" && /* @__PURE__ */ h("p", { className: "tbx-msg-note" }, tx("\u56DE\u7B54\u88AB\u505C\u6B62\u4E86\uFF0C\u53EA\u4FDD\u7559\u4E86\u524D\u9762\u7684\u90E8\u5206\u3002")), !streaming && m.text && /* @__PURE__ */ h("div", { className: "tbx-meta" }, /* @__PURE__ */ h(CopyButton, { text: m.text, onError: setCopyError }), last && onRegenerate && /* @__PURE__ */ h("button", { className: "tbx-meta-btn", "aria-label": tx("\u91CD\u65B0\u56DE\u7B54"), title: tx("\u91CD\u65B0\u56DE\u7B54"), onClick: onRegenerate }, /* @__PURE__ */ h(Glyph3, { name: "retry", size: 15 })), /* @__PURE__ */ h("span", { className: "tbx-meta-text tbx-num" }, clock(m.createdAt), model ? ` \xB7 ${model}` : "")), copyError && /* @__PURE__ */ h("div", { className: "tbx-notice is-error", role: "alert" }, tx("\u590D\u5236\u5931\u8D25\uFF0C\u8BF7\u91CD\u8BD5")));
   }
   function Divider({ children, tone }) {
     return /* @__PURE__ */ h("div", { className: cx("tbx-divider", tone && `is-${tone}`) }, /* @__PURE__ */ h("span", null, children));
@@ -2758,6 +2945,7 @@ ${text}`),
           disabled: !ready,
           className: cx("tbx-model-option", m.id === agent.model && "is-selected"),
           onClick: () => {
+            ref.current?.querySelector(".tbx-model-button")?.focus();
             agent.setModel(m.id);
             setOpen(false);
           }
@@ -2767,11 +2955,10 @@ ${text}`),
       );
     })));
   }
-  function MentionMenu({ query, onPick, onClose }) {
+  function MentionMenu({ query, onPick, onClose, anchor }) {
     const [rows, setRows] = useState(null);
     const [active, setActive] = useState(0);
     const ref = useRef(null);
-    useOutside(true, ref, onClose);
     useEffect(() => {
       let live = true;
       const q = query.trim();
@@ -2817,16 +3004,24 @@ ${text}`),
       return () => document.removeEventListener("keydown", key2, true);
     }, [rows, active]);
     let lastKind = null;
-    return /* @__PURE__ */ h("div", { className: "tbx-mention", ref, role: "listbox", "aria-label": tx("\u5F15\u7528\u5DE5\u4F5C\u53F0\u91CC\u7684\u5185\u5BB9") }, rows === null && /* @__PURE__ */ h("p", { className: "tbx-mention-empty" }, tx("\u6B63\u5728\u627E\u2026")), rows?.length === 0 && /* @__PURE__ */ h("p", { className: "tbx-mention-empty" }, query ? tx("\u6CA1\u6709\u627E\u5230\u201C{{query}}\u201D\u3002", { query }) : tx("\u6CA1\u6709\u627E\u5230\u53EF\u4EE5\u5F15\u7528\u7684\u5185\u5BB9\u3002")), rows?.map((r, i) => {
+    return /* @__PURE__ */ h(Popover, { anchor, open: true, onClose, className: "tbx-agent-popover", role: "listbox", label: tx("\u5F15\u7528\u5DE5\u4F5C\u53F0\u91CC\u7684\u5185\u5BB9"), offset: 10 }, /* @__PURE__ */ h("div", { className: "tbx-mention", ref }, rows === null && /* @__PURE__ */ h("p", { className: "tbx-mention-empty" }, tx("\u6B63\u5728\u627E\u2026")), rows?.length === 0 && /* @__PURE__ */ h("p", { className: "tbx-mention-empty" }, query ? tx("\u6CA1\u6709\u627E\u5230\u201C{{query}}\u201D\u3002", { query }) : tx("\u6CA1\u6709\u627E\u5230\u53EF\u4EE5\u5F15\u7528\u7684\u5185\u5BB9\u3002")), rows?.map((r, i) => {
       const head = r.kind !== lastKind ? KIND[r.kind].label : null;
       lastKind = r.kind;
       return /* @__PURE__ */ h(Fragment, { key: `${r.kind}:${r.id}` }, head && /* @__PURE__ */ h("h4", null, head), /* @__PURE__ */ h("button", { type: "button", role: "option", "aria-selected": i === active, className: cx("tbx-mention-row", i === active && "is-active"), onMouseEnter: () => setActive(i), onClick: () => onPick(r) }, /* @__PURE__ */ h("span", { className: cx("tbx-mention-icon", `is-${KIND[r.kind].hue}`) }, /* @__PURE__ */ h(Glyph3, { name: KIND[r.kind].glyph, size: 14 })), /* @__PURE__ */ h("span", { className: "tbx-mention-title" }, r.title), r.note && /* @__PURE__ */ h("small", null, r.note)));
-    }));
+    })));
   }
   function Composer({ agent, running, ready, variant, autoFocus, focusKey, context }) {
     const { draft } = agent;
     const area = useRef(null);
+    const mentionAnchor = useRef(null);
     const [mention, setMention] = useState(null);
+    const pendingCaret = useRef(null);
+    useLayoutEffect(() => {
+      if (pendingCaret.current === null || !area.current) return;
+      area.current.focus();
+      area.current.setSelectionRange(pendingCaret.current, pendingCaret.current);
+      pendingCaret.current = null;
+    }, [draft?.text]);
     useLayoutEffect(() => {
       const el = area.current;
       if (!el) return;
@@ -2848,15 +3043,20 @@ ${text}`),
     }
     function pick3(r) {
       if (r) addRef(r);
-      const text = draft.text.replace(/@([^\s@]*)$/, "");
+      const text = mention?.start === void 0 ? draft.text : draft.text.slice(0, mention.start) + draft.text.slice(mention.end);
+      pendingCaret.current = mention?.start ?? area.current?.selectionStart ?? draft.text.length;
       if (text !== draft.text) agent.edit({ text });
       setMention(null);
       area.current?.focus();
+      if (text === draft.text && area.current) {
+        area.current.setSelectionRange(pendingCaret.current, pendingCaret.current);
+        pendingCaret.current = null;
+      }
     }
     return /* @__PURE__ */ h("div", { className: cx("tbx-composer-shell", (refs.length || suggest) && "has-drawer") }, /* @__PURE__ */ h("form", { className: cx("tbx-composer", running && "is-running"), onSubmit: (e) => {
       e.preventDefault();
       if (canSend && !running) sendReliably();
-    } }, mention && /* @__PURE__ */ h(MentionMenu, { query: mention.query, onPick: pick3, onClose: () => setMention(null) }), /* @__PURE__ */ h(
+    } }, mention && /* @__PURE__ */ h(MentionMenu, { anchor: mentionAnchor, query: mention.query, onPick: pick3, onClose: () => setMention(null) }), /* @__PURE__ */ h(
       "textarea",
       {
         ref: area,
@@ -2869,7 +3069,7 @@ ${text}`),
           const text = e.target.value;
           agent.edit({ text });
           const m = /@([^\s@]*)$/.exec(text.slice(0, e.target.selectionStart));
-          setMention(m ? { query: m[1] } : null);
+          setMention(m ? { query: m[1], start: m.index, end: e.target.selectionStart } : null);
         },
         onKeyDown: (e) => {
           if (mention && ["ArrowDown", "ArrowUp", "Enter", "Tab"].includes(e.key)) return;
@@ -2883,7 +3083,7 @@ ${text}`),
           }
         }
       }
-    ), /* @__PURE__ */ h("div", { className: "tbx-composer-bar" }, /* @__PURE__ */ h(ModelPicker, { agent }), /* @__PURE__ */ h("button", { type: "button", className: "tbx-tool-btn", "aria-label": tx("\u5F15\u7528\u5DE5\u4F5C\u53F0\u91CC\u7684\u5185\u5BB9"), title: tx("\u5F15\u7528\u9898\u76EE\u3001\u65E5\u7A0B\u6216\u8D44\u6599"), onClick: () => setMention(mention ? null : { query: "" }) }, /* @__PURE__ */ h(Glyph3, { name: "at", size: 17 })), running ? /* @__PURE__ */ h("button", { type: "button", className: "tbx-send is-stop", onClick: () => agent.stop(running), "aria-label": ta("\u505C\u6B62"), title: tx("\u505C\u6B62") }, /* @__PURE__ */ h(Glyph3, { name: "stop", size: 13, stroke: 0 })) : /* @__PURE__ */ h("button", { type: "submit", className: "tbx-send", disabled: !canSend, "aria-label": ta("\u53D1\u9001"), title: tx("\u53D1\u9001") }, /* @__PURE__ */ h(Glyph3, { name: "arrowUp", size: 17, stroke: 2.2 })))), (refs.length > 0 || suggest) && /* @__PURE__ */ h("div", { className: "tbx-drawer" }, refs.map((r, i) => {
+    ), /* @__PURE__ */ h("div", { className: "tbx-composer-bar" }, /* @__PURE__ */ h(ModelPicker, { agent }), /* @__PURE__ */ h("button", { ref: mentionAnchor, type: "button", className: "tbx-tool-btn", "aria-label": tx("\u5F15\u7528\u5DE5\u4F5C\u53F0\u91CC\u7684\u5185\u5BB9"), title: tx("\u5F15\u7528\u9898\u76EE\u3001\u65E5\u7A0B\u6216\u8D44\u6599"), onClick: () => setMention(mention ? null : { query: "" }) }, /* @__PURE__ */ h(Glyph3, { name: "at", size: 17 })), running ? /* @__PURE__ */ h("button", { type: "button", className: "tbx-send is-stop", onClick: () => agent.stop(running), "aria-label": ta("\u505C\u6B62"), title: tx("\u505C\u6B62") }, /* @__PURE__ */ h(Glyph3, { name: "stop", size: 13, stroke: 0 })) : /* @__PURE__ */ h("button", { type: "submit", className: "tbx-send", disabled: !canSend, "aria-label": ta("\u53D1\u9001"), title: tx("\u53D1\u9001") }, /* @__PURE__ */ h(Glyph3, { name: "arrowUp", size: 17, stroke: 2.2 })))), (refs.length > 0 || suggest) && /* @__PURE__ */ h("div", { className: "tbx-drawer" }, refs.map((r, i) => {
       const known = REF_TITLES.get(`${r.kind}:${r.id}`) ?? (context?.id === r.id ? context : null);
       return /* @__PURE__ */ h(RefChip, { key: `${r.kind}:${r.id}`, r: { ...r, title: known?.title ?? KIND[r.kind]?.label ?? tx("\u5F15\u7528"), note: known?.note }, onRemove: () => agent.edit({ references: refs.filter((_, j) => j !== i) }) });
     }), suggest && /* @__PURE__ */ h(Fragment, null, !refs.length && /* @__PURE__ */ h("span", { className: "tbx-drawer-label" }, tx("\u6B63\u5728\u770B")), /* @__PURE__ */ h(RefChip, { r: suggest, suggest: true, onAdd: () => addRef(suggest) }))), !ready && agent.configuration && /* @__PURE__ */ h("div", { className: "tbx-composer-note" }, ta("AI \u6682\u4E0D\u53EF\u7528")), agent.configuration?.activeTurn && agent.configuration.activeTurn.conversationId !== agent.id && /* @__PURE__ */ h("button", { className: "tbx-composer-note is-link", type: "button", onClick: () => agent.select(agent.configuration.activeTurn.conversationId) }, tx("\u53E6\u4E00\u6BB5\u5BF9\u8BDD\u6B63\u5728\u56DE\u7B54\uFF0C\u53BB\u770B\u770B")));
@@ -2892,13 +3092,12 @@ ${text}`),
     const [open, setOpen] = useState(false);
     const ref = useRef(null);
     useOutside(open, ref, () => setOpen(false));
-    return /* @__PURE__ */ h("span", { className: "tbx-inline-pick", ref }, /* @__PURE__ */ h("button", { type: "button", className: "tbx-inline-button", onClick: () => setOpen(!open), "aria-expanded": open }, lesson ? lesson.title : tx("\u54EA\u8282\u8BFE")), open && /* @__PURE__ */ h("div", { className: "tbx-pick-menu", role: "listbox" }, /* @__PURE__ */ h("h4", null, tx("\u63A5\u4E0B\u6765\u7684\u8BFE")), lessons.map((l) => /* @__PURE__ */ h("button", { key: l.id, role: "option", "aria-selected": lesson?.id === l.id, className: cx("tbx-pick-row", lesson?.id === l.id && "is-selected"), onClick: () => {
-      onChange(l);
+    function choose(next) {
+      ref.current?.querySelector(".tbx-inline-button")?.focus();
+      onChange(next);
       setOpen(false);
-    } }, /* @__PURE__ */ h("span", { className: "tbx-pick-when tbx-num" }, whenLabel(l)), /* @__PURE__ */ h("span", { className: "tbx-pick-title" }, l.title, l.todo[0] ? /* @__PURE__ */ h("small", null, l.todo[0]) : null), lesson?.id === l.id && /* @__PURE__ */ h(Glyph3, { name: "check", size: 15 }))), /* @__PURE__ */ h("button", { className: cx("tbx-pick-row is-plain", !lesson && "is-selected"), onClick: () => {
-      onChange(null);
-      setOpen(false);
-    } }, /* @__PURE__ */ h("span", { className: "tbx-pick-title" }, tx("\u4E0D\u9488\u5BF9\u67D0\u8282\u8BFE")), !lesson && /* @__PURE__ */ h(Glyph3, { name: "check", size: 15 }))));
+    }
+    return /* @__PURE__ */ h("span", { className: "tbx-inline-pick", ref }, /* @__PURE__ */ h("button", { type: "button", className: "tbx-inline-button", onClick: () => setOpen(!open), "aria-expanded": open }, lesson ? lesson.title : tx("\u54EA\u8282\u8BFE")), open && /* @__PURE__ */ h("div", { className: "tbx-pick-menu", role: "listbox" }, /* @__PURE__ */ h("h4", null, tx("\u63A5\u4E0B\u6765\u7684\u8BFE")), lessons.map((l) => /* @__PURE__ */ h("button", { key: l.id, role: "option", "aria-selected": lesson?.id === l.id, className: cx("tbx-pick-row", lesson?.id === l.id && "is-selected"), onClick: () => choose(l) }, /* @__PURE__ */ h("span", { className: "tbx-pick-when tbx-num" }, whenLabel(l)), /* @__PURE__ */ h("span", { className: "tbx-pick-title" }, l.title, l.todo[0] ? /* @__PURE__ */ h("small", null, l.todo[0]) : null), lesson?.id === l.id && /* @__PURE__ */ h(Glyph3, { name: "check", size: 15 }))), /* @__PURE__ */ h("button", { className: cx("tbx-pick-row is-plain", !lesson && "is-selected"), onClick: () => choose(null) }, /* @__PURE__ */ h("span", { className: "tbx-pick-title" }, tx("\u4E0D\u9488\u5BF9\u67D0\u8282\u8BFE")), !lesson && /* @__PURE__ */ h(Glyph3, { name: "check", size: 15 }))));
   }
   function lessonSuggestions(lesson) {
     const topic = `${lesson.title} ${lesson.todo.join(" ")}`;
@@ -2946,6 +3145,7 @@ ${text}`),
     useOutside(open, ref, () => setOpen(false));
     const title = agent.snapshot?.messages?.length ? threadTitle(agent.snapshot.conversation.title) : tx("\u65B0\u5BF9\u8BDD");
     return /* @__PURE__ */ h("header", { className: "tbx-agent-head" }, /* @__PURE__ */ h("span", { className: "tbx-switch", ref }, /* @__PURE__ */ h("button", { className: "tbx-switch-button", onClick: () => setOpen(!open), "aria-expanded": open, "aria-haspopup": "listbox" }, /* @__PURE__ */ h("span", null, title), /* @__PURE__ */ h(Glyph3, { name: "chevron", size: 14 })), open && /* @__PURE__ */ h("div", { className: "tbx-switch-menu", role: "listbox" }, /* @__PURE__ */ h("h4", null, tx("\u6700\u8FD1\u7684\u5BF9\u8BDD")), agent.list.length === 0 && /* @__PURE__ */ h("p", { className: "tbx-mention-empty" }, tx("\u8FD8\u6CA1\u6709\u5BF9\u8BDD\u3002")), agent.list.slice(0, 8).map((item) => /* @__PURE__ */ h("button", { key: item.id, role: "option", "aria-selected": item.id === agent.id, className: cx("tbx-switch-row", item.id === agent.id && "is-selected"), onClick: () => {
+      ref.current?.querySelector(".tbx-switch-button")?.focus();
       agent.select(item.id);
       setOpen(false);
     } }, /* @__PURE__ */ h("span", null, /* @__PURE__ */ h("strong", null, threadTitle(item.title)), /* @__PURE__ */ h("small", null, item.preview || tx("\u8FD8\u6CA1\u6709\u56DE\u7B54"))), /* @__PURE__ */ h("span", { className: "tbx-thread-time" }, relativeTime(item.updatedAt)))), agent.list.length > 0 && /* @__PURE__ */ h("button", { className: "tbx-switch-all", onClick: () => {
@@ -2967,6 +3167,7 @@ ${text}`),
     const [dockH, setDockH] = useState(140);
     const [lessons, refreshLessons] = useLessons(agent.businessRevision);
     const [lesson, setLesson] = useState(null);
+    const lessonReference = useRef(null);
     const context = useCurrentContext(variant === "panel");
     const { snapshot, draft } = agent;
     useEffect(() => {
@@ -2995,7 +3196,8 @@ ${text}`),
     }, [growth]);
     useEffect(() => {
       if (!agent.draft || pending2.current === null) return;
-      const { text, refs } = pending2.current;
+      const { text, refs, lessonId } = pending2.current;
+      if (lessonId) lessonReference.current = { conversationId: agent.id, id: lessonId };
       pending2.current = null;
       agent.edit({ text, ...refs ? { references: refs } : {} });
       setFocusComposer((n) => n + 1);
@@ -3022,7 +3224,7 @@ ${text}`),
         agent.edit({ text, references: extra ? [...refs, extra] : refs });
         setFocusComposer((n) => n + 1);
       } else {
-        pending2.current = { text, refs: extra ? [extra] : null };
+        pending2.current = { text, refs: extra ? [extra] : null, lessonId: !ctx ? lessonRef?.id : null };
         void agent.create();
       }
     }
@@ -3033,14 +3235,24 @@ ${text}`),
       setTimeout(sendReliably, 0);
     }
     useEffect(() => {
-      if (!lesson || !agent.draft || !empty) return;
-      if (agent.draft.references.some((r) => r.kind === "entry" && r.id === lesson.id)) return;
-      agent.edit({ references: [...agent.draft.references.filter((r) => r.kind !== "entry"), lessonRef] });
+      if (!agent.draft || !empty) {
+        lessonReference.current = null;
+        return;
+      }
+      const owned = lessonReference.current?.conversationId === agent.id ? lessonReference.current : null;
+      const refs = agent.draft.references;
+      let next = owned && owned.id !== lesson?.id ? refs.filter((r) => !(r.kind === "entry" && r.id === owned.id)) : refs;
+      if (owned?.id !== lesson?.id) lessonReference.current = null;
+      if (lesson && !next.some((r) => r.kind === "entry" && r.id === lesson.id)) {
+        next = [...next, lessonRef];
+        lessonReference.current = { conversationId: agent.id, id: lesson.id };
+      }
+      if (next !== refs) agent.edit({ references: next });
     }, [lesson?.id, Boolean(agent.draft), agent.id]);
     const lastTurn = snapshot?.turns[snapshot.turns.length - 1];
     const dock = /* @__PURE__ */ h("div", { className: "tbx-dock", ref: dockRef }, agent.sendPending && /* @__PURE__ */ h("div", { className: "tbx-notice" }, ta("\u53D1\u9001\u7ED3\u679C\u5F85\u786E\u8BA4"), /* @__PURE__ */ h("button", { className: "tbx-btn is-small", onClick: agent.send, disabled: agent.busy }, ta("\u786E\u8BA4\u53D1\u9001\u7ED3\u679C"))), agent.error && /* @__PURE__ */ h("div", { className: "tbx-notice is-error", role: "alert" }, agent.error, /* @__PURE__ */ h("button", { className: "tbx-btn is-small", onClick: () => draft?.dirty ? agent.save() : agent.retry() }, ta("\u91CD\u8BD5"))), agent.conflict && /* @__PURE__ */ h("div", { className: "tbx-notice is-conflict" }, /* @__PURE__ */ h("strong", null, ta("\u8349\u7A3F\u5DF2\u5728\u5176\u4ED6\u8BBE\u5907\u4FEE\u6539")), /* @__PURE__ */ h("p", null, ta("\u672C\u673A\uFF1A"), draft.text), /* @__PURE__ */ h("p", null, ta("\u5DF2\u4FDD\u5B58\uFF1A"), agent.conflict.text), /* @__PURE__ */ h("div", null, /* @__PURE__ */ h("button", { className: "tbx-btn is-small", onClick: () => agent.chooseDraft(true) }, ta("\u4FDD\u7559\u672C\u673A\u5185\u5BB9")), /* @__PURE__ */ h("button", { className: "tbx-btn is-small", onClick: () => agent.chooseDraft(false) }, ta("\u91C7\u7528\u5DF2\u4FDD\u5B58\u5185\u5BB9")))), draft ? /* @__PURE__ */ h(Composer, { agent, running, ready, variant, autoFocus: variant === "home", focusKey: focusComposer, context }) : /* @__PURE__ */ h("div", { className: "tbx-composer-shell" }, /* @__PURE__ */ h("button", { className: "tbx-composer is-placeholder", onClick: () => {
       setFocusComposer((n) => n + 1);
-      pending2.current = lessonRef ? { text: "", refs: [lessonRef] } : null;
+      pending2.current = lessonRef ? { text: "", refs: [lessonRef], lessonId: lessonRef.id } : null;
       void agent.create();
     }, disabled: agent.busy }, /* @__PURE__ */ h("span", { className: "tbx-input-placeholder" }, tx(variant === "panel" ? "\u95EE\u4E00\u4E2A\u95EE\u9898\uFF0C\u6216\u8F93\u5165 @ \u5F15\u7528\u9898\u76EE\u3001\u65E5\u7A0B" : "\u63CF\u8FF0\u4F60\u60F3\u51C6\u5907\u7684\u8BFE\u3001\u60F3\u8BA8\u8BBA\u7684\u9898\uFF0C\u8F93\u5165 @ \u5F15\u7528\u5DE5\u4F5C\u53F0\u91CC\u7684\u5185\u5BB9")), /* @__PURE__ */ h("span", { className: "tbx-composer-bar" }, /* @__PURE__ */ h("span", null), /* @__PURE__ */ h("span", { className: "tbx-send", "aria-hidden": "true" }, /* @__PURE__ */ h(Glyph3, { name: "arrowUp", size: 17, stroke: 2.2 }))))));
     const heroSuggestions = lesson ? lessonSuggestions(lesson) : SUGGESTIONS;
@@ -3169,88 +3381,6 @@ ${text}`),
     };
   }
 
-  // docs/design-system/teachbuddy-app/ui/tbx/src/kit/popover.jsx
-  var MARGIN = 12;
-  function shellRoot2() {
-    return document.querySelector(".wb-shell") || document.body;
-  }
-  function useDismiss(open, refs, onClose) {
-    useEffect(() => {
-      if (!open) return void 0;
-      const inside = (target) => refs.some((r) => r.current?.contains(target));
-      const down = (e) => {
-        if (!inside(e.target)) onClose();
-      };
-      const key2 = (e) => {
-        if (e.key === "Escape") {
-          e.stopPropagation();
-          onClose();
-        }
-      };
-      document.addEventListener("pointerdown", down, true);
-      document.addEventListener("keydown", key2, true);
-      return () => {
-        document.removeEventListener("pointerdown", down, true);
-        document.removeEventListener("keydown", key2, true);
-      };
-    }, [open]);
-  }
-  function Popover({ anchor, open, onClose, children, className, align = "start", offset = 6, label, role = "dialog" }) {
-    const { createPortal } = tb();
-    const ref = useRef(null);
-    const [pos, setPos] = useState(null);
-    useDismiss(open, [ref, anchor], onClose);
-    useLayoutEffect(() => {
-      if (!open) {
-        setPos(null);
-        return void 0;
-      }
-      const place = () => {
-        const a = anchor.current?.getBoundingClientRect();
-        const el = ref.current;
-        if (!a || !el) return;
-        const w = el.offsetWidth;
-        const hgt = el.offsetHeight;
-        const vw = window.innerWidth;
-        const vh = window.innerHeight;
-        let left = align === "end" ? a.right - w : align === "center" ? a.left + a.width / 2 - w / 2 : a.left;
-        left = Math.max(MARGIN, Math.min(left, vw - MARGIN - w));
-        let top = a.bottom + offset;
-        let above = false;
-        if (top + hgt > vh - MARGIN) {
-          if (a.top - offset - hgt >= MARGIN) {
-            top = a.top - offset - hgt;
-            above = true;
-          } else top = Math.max(MARGIN, vh - MARGIN - hgt);
-        }
-        setPos({ left: Math.round(left), top: Math.round(top), above, maxHeight: vh - 2 * MARGIN });
-      };
-      place();
-      const ro = new ResizeObserver(place);
-      if (ref.current) ro.observe(ref.current);
-      window.addEventListener("resize", place);
-      window.addEventListener("scroll", place, true);
-      return () => {
-        ro.disconnect();
-        window.removeEventListener("resize", place);
-        window.removeEventListener("scroll", place, true);
-      };
-    }, [open]);
-    if (!open) return null;
-    const node = /* @__PURE__ */ h(
-      "div",
-      {
-        ref,
-        role,
-        "aria-label": label,
-        className: cx("tbx-popover", pos?.above && "is-above", className),
-        style: { left: pos?.left ?? -9999, top: pos?.top ?? 0, maxHeight: pos?.maxHeight, visibility: pos ? "visible" : "hidden" }
-      },
-      children
-    );
-    return createPortal ? createPortal(node, shellRoot2()) : node;
-  }
-
   // docs/design-system/teachbuddy-app/ui/tbx/src/kit/filter.jsx
   var Check = () => {
     const { Icon2: Icon22 } = tb();
@@ -3276,7 +3406,10 @@ ${text}`),
       },
       icon,
       /* @__PURE__ */ h("span", { className: "tbx-filter-btn-text" }, /* @__PURE__ */ h("span", { "aria-hidden": active }, label), /* @__PURE__ */ h("span", { "aria-hidden": !active }, value.length || ""))
-    ), /* @__PURE__ */ h(Popover, { anchor: ref, open, onClose: () => setOpen(false), align: "end", role: "menu", label: menuLabel || label, className: menuClassName || "tbx-filter-menu" }, /* @__PURE__ */ h("button", { type: "button", role: "menuitemradio", "aria-checked": !active, onClick: () => onChange([]) }, allLabel, !active && tick), /* @__PURE__ */ h("div", { className: "tbx-popover-sep" }), options.map((o) => /* @__PURE__ */ h("button", { key: o.id, type: "button", role: "menuitemcheckbox", "aria-checked": value.includes(o.id), onClick: () => toggle(o.id) }, o.mark, o.name, value.includes(o.id) && tick))));
+    ), /* @__PURE__ */ h(Popover, { anchor: ref, open, onClose: (event) => {
+      if (event?.type === "keydown") ref.current?.focus();
+      setOpen(false);
+    }, align: "end", role: "menu", label: menuLabel || label, className: menuClassName || "tbx-filter-menu" }, /* @__PURE__ */ h("button", { type: "button", role: "menuitemradio", "aria-checked": !active, onClick: () => onChange([]) }, allLabel, !active && tick), /* @__PURE__ */ h("div", { className: "tbx-popover-sep" }), options.map((o) => /* @__PURE__ */ h("button", { key: o.id, type: "button", role: "menuitemcheckbox", "aria-checked": value.includes(o.id), onClick: () => toggle(o.id) }, o.mark, o.name, value.includes(o.id) && tick))));
   }
 
   // docs/design-system/teachbuddy-app/ui/tbx/src/kit/datetime.jsx
@@ -3786,6 +3919,7 @@ ${text}`),
     } }, tx("\u91C7\u7528"))))), dialog === "unschedule" && /* @__PURE__ */ h(
       ConfirmDialog,
       {
+        enterConfirms: true,
         danger: false,
         icon: "inbox",
         title: tx("\u79FB\u56DE\u5F85\u5B89\u6392\uFF1F"),
@@ -3800,6 +3934,7 @@ ${text}`),
     ), dialog === "delete" && /* @__PURE__ */ h(
       ConfirmDialog,
       {
+        enterConfirms: true,
         title: tx("\u5220\u9664\u91CD\u590D\u7684\u4EFB\u52A1\uFF1F"),
         message: tx("\u53EF\u4EE5\u53EA\u5220\u6389\u8FD9\u4E00\u6B21\uFF0C\u4E5F\u53EF\u4EE5\u628A\u6574\u7EC4\u91CD\u590D\u7684\u4EFB\u52A1\u4E00\u8D77\u5220\u6389\u3002"),
         confirmLabel: tx("\u53EA\u5220\u8FD9\u4E00\u6B21"),
@@ -4861,6 +4996,7 @@ ${text}`),
     const next = all[index + 1];
     const heads = article.blocks.filter((b) => b[0] === "h2").map((b) => b[1]);
     const [active, setActive] = useState(0);
+    const jumped = useRef(null);
     useEffect(() => {
       const root = scroller.current;
       if (!root || heads.length < 2) return void 0;
@@ -4870,15 +5006,38 @@ ${text}`),
         root.querySelectorAll(".tbx-help-prose h2").forEach((el, i) => {
           if (el.getBoundingClientRect().top <= line) current = i;
         });
-        setActive(current);
+        if (root.scrollTop > 0 && root.scrollHeight - root.clientHeight - root.scrollTop <= 1) current = heads.length - 1;
+        setActive(jumped.current ?? current);
       };
+      const resume = () => {
+        jumped.current = null;
+        spy();
+      };
+      const key2 = (event) => {
+        if (["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", " "].includes(event.key)) resume();
+      };
+      spy();
       root.addEventListener("scroll", spy, { passive: true });
-      return () => root.removeEventListener("scroll", spy);
+      root.addEventListener("wheel", resume, { passive: true });
+      root.addEventListener("touchstart", resume, { passive: true });
+      root.addEventListener("pointerdown", resume);
+      root.addEventListener("keydown", key2);
+      return () => {
+        root.removeEventListener("scroll", spy);
+        root.removeEventListener("wheel", resume);
+        root.removeEventListener("touchstart", resume);
+        root.removeEventListener("pointerdown", resume);
+        root.removeEventListener("keydown", key2);
+      };
     }, [article]);
     const jump = (i) => {
       const root = scroller.current;
       const el = root?.querySelector(`#s${i}`);
-      if (el) root.scrollTo({ top: el.offsetTop - 28, behavior: "smooth" });
+      if (el) {
+        jumped.current = i;
+        setActive(i);
+        root.scrollTo({ top: root.scrollTop + el.getBoundingClientRect().top - root.getBoundingClientRect().top - 28, behavior: "smooth" });
+      }
     };
     return /* @__PURE__ */ h("div", { className: cx("tbx-help-article", `is-${topic.hue}`, heads.length > 1 && "has-toc") }, /* @__PURE__ */ h("article", { className: "tbx-help-prose" }, /* @__PURE__ */ h(Link, { to: topicPath(topic), className: cx("tbx-help-eyebrow", `is-${topic.hue}`) }, /* @__PURE__ */ h(Tile, { topic, size: "s" }), topic.title), /* @__PURE__ */ h("h1", null, article.title), /* @__PURE__ */ h("p", { className: "tbx-help-lead" }, article.summary), /* @__PURE__ */ h("p", { className: "tbx-help-meta" }, tx("{{n}} \u5206\u949F\u9605\u8BFB", { n: article.minutes }), /* @__PURE__ */ h("span", { "aria-hidden": "true" }, "\xB7"), tx("2026 \u5E74 10 \u6708\u66F4\u65B0")), /* @__PURE__ */ h(Blocks, { blocks: article.blocks }), /* @__PURE__ */ h(Helpful, { id: article.id }), /* @__PURE__ */ h("nav", { className: "tbx-help-pager", "aria-label": tx("\u4E0A\u4E00\u7BC7\u548C\u4E0B\u4E00\u7BC7") }, prev ? /* @__PURE__ */ h(Link, { to: articlePath(prev.t, prev.a), className: "is-prev" }, /* @__PURE__ */ h("small", null, tx("\u4E0A\u4E00\u7BC7")), /* @__PURE__ */ h("span", null, prev.a.title)) : /* @__PURE__ */ h("span", null), next ? /* @__PURE__ */ h(Link, { to: articlePath(next.t, next.a), className: "is-next" }, /* @__PURE__ */ h("small", null, tx("\u4E0B\u4E00\u7BC7")), /* @__PURE__ */ h("span", null, next.a.title)) : /* @__PURE__ */ h("span", null))), heads.length > 1 && /* @__PURE__ */ h("aside", { className: "tbx-help-toc", "aria-label": tx("\u672C\u9875\u5185\u5BB9") }, /* @__PURE__ */ h("h4", null, tx("\u672C\u9875\u5185\u5BB9")), heads.map((title, i) => /* @__PURE__ */ h("button", { key: title, type: "button", className: cx(active === i && "is-active"), onClick: () => jump(i) }, title))));
   }
@@ -4935,10 +5094,14 @@ ${text}`),
     }, [query, index]);
     useEffect(() => {
       const node = dialog.current;
+      const previous = document.activeElement;
       node.showModal();
       input.current.focus();
       input.current.setSelectionRange(initial.length, initial.length);
-      return () => node.close();
+      return () => {
+        node.close();
+        if (previous?.isConnected) previous.focus();
+      };
     }, []);
     useEffect(() => setActive(0), [query]);
     useEffect(() => {
@@ -5200,9 +5363,21 @@ ${text}`),
     return url;
   }
   function UploadButton({ onUpload, disabled, big }) {
-    return /* @__PURE__ */ h("label", { className: cx("tbx-primary tbx-res-upload", big && "is-big", disabled && "is-disabled") }, /* @__PURE__ */ h(Icon3, { name: "upload", size: big ? 18 : 16, stroke: 2.1 }), /* @__PURE__ */ h("span", null, tx("\u4E0A\u4F20\u8D44\u6599")), /* @__PURE__ */ h(
+    const input = useRef(null);
+    return /* @__PURE__ */ h(Fragment, null, /* @__PURE__ */ h(
+      "button",
+      {
+        type: "button",
+        className: cx("tbx-primary tbx-res-upload", big && "is-big", disabled && "is-disabled"),
+        disabled,
+        onClick: () => input.current?.click()
+      },
+      /* @__PURE__ */ h(Icon3, { name: "upload", size: big ? 18 : 16, stroke: 2.1 }),
+      /* @__PURE__ */ h("span", null, tx("\u4E0A\u4F20\u8D44\u6599"))
+    ), /* @__PURE__ */ h(
       "input",
       {
+        ref: input,
         type: "file",
         multiple: true,
         hidden: true,
@@ -6405,13 +6580,18 @@ $$`)));
       item.onClick();
     } }, item.icon && /* @__PURE__ */ h(Icon6, { name: item.icon, size: 15, stroke: 2 }), /* @__PURE__ */ h("span", null, item.label), item.check && /* @__PURE__ */ h(Icon6, { name: "check", size: 14, stroke: 2.4 })))));
   }
-  function Dialog({ title, subtitle, onClose, children, footer, wide, className }) {
+  function Dialog({ title, subtitle, onClose, children, footer, wide, className, busy = false }) {
     const ref = useRef(null);
+    const closing = useRef({ busy, onClose });
+    closing.current = { busy, onClose };
+    const dismiss = () => {
+      if (!closing.current.busy) closing.current.onClose();
+    };
     useEffect(() => {
       const key2 = (e) => {
         if (e.key === "Escape") {
           e.stopPropagation();
-          onClose();
+          dismiss();
         }
       };
       document.addEventListener("keydown", key2);
@@ -6419,9 +6599,12 @@ $$`)));
       first?.focus({ preventScroll: true });
       return () => document.removeEventListener("keydown", key2);
     }, []);
+    useEffect(() => {
+      if (busy) ref.current?.focus({ preventScroll: true });
+    }, [busy]);
     return /* @__PURE__ */ h("div", { className: "cr-scrim", onPointerDown: (e) => {
-      if (e.target === e.currentTarget) onClose();
-    } }, /* @__PURE__ */ h("section", { ref, className: cx("cr-dialog", wide && "is-wide", className), role: "dialog", "aria-modal": "true", "aria-label": title }, /* @__PURE__ */ h("header", { className: "cr-dialog-head" }, /* @__PURE__ */ h("div", null, /* @__PURE__ */ h("h2", null, title), subtitle && /* @__PURE__ */ h("p", null, subtitle)), /* @__PURE__ */ h("button", { type: "button", className: "cr-icon-btn is-filled", "aria-label": tx("\u5173\u95ED"), onClick: onClose }, /* @__PURE__ */ h(Icon6, { name: "close", size: 13, stroke: 2.4 }))), /* @__PURE__ */ h("div", { className: "cr-dialog-body" }, children), footer && /* @__PURE__ */ h("footer", { className: "cr-dialog-foot" }, footer)));
+      if (e.target === e.currentTarget) dismiss();
+    } }, /* @__PURE__ */ h("section", { ref, className: cx("cr-dialog", wide && "is-wide", className), role: "dialog", tabIndex: -1, "aria-modal": "true", "aria-label": title }, /* @__PURE__ */ h("header", { className: "cr-dialog-head" }, /* @__PURE__ */ h("div", null, /* @__PURE__ */ h("h2", null, title), subtitle && /* @__PURE__ */ h("p", null, subtitle)), /* @__PURE__ */ h("button", { type: "button", className: "cr-icon-btn is-filled", "aria-label": tx("\u5173\u95ED"), disabled: busy, onClick: dismiss }, /* @__PURE__ */ h(Icon6, { name: "close", size: 13, stroke: 2.4 }))), /* @__PURE__ */ h("div", { className: "cr-dialog-body" }, children), footer && /* @__PURE__ */ h("footer", { className: "cr-dialog-foot" }, footer)));
   }
   function Confirm({ title, message, confirmLabel, danger, icon, onConfirm, onClose }) {
     return /* @__PURE__ */ h(
@@ -7168,24 +7351,25 @@ $$`)));
   function TagManager({ ctx }) {
     const [name, setName] = useState("");
     const [editing, setEditing] = useState(null);
-    const [draft, setDraft] = useState("");
     const usage = /* @__PURE__ */ new Map();
     for (const e of ctx.data.exams) for (const q of e.questions) for (const id of q.tagIds) usage.set(id, (usage.get(id) || 0) + 1);
     const create = async (e) => {
       e.preventDefault();
       if (!name.trim()) return;
+      const submitted = name;
       try {
-        await api2.post("/tags", { name });
-        setName("");
+        await api2.post("/tags", { name: submitted });
+        setName((current) => current === submitted ? "" : current);
         await ctx.reload();
       } catch (err) {
         ctx.toast(err.message, "error");
       }
     };
     const rename = async (tag) => {
+      const submitted = editing;
       try {
-        await api2.put(`/tags/${tag.id}`, { baseVersion: tag.version, name: draft });
-        setEditing(null);
+        await api2.put(`/tags/${tag.id}`, { baseVersion: tag.version, name: submitted.draft });
+        setEditing((current) => current === submitted ? null : current);
         await ctx.reload();
       } catch (err) {
         ctx.toast(err.message, "error");
@@ -7201,14 +7385,11 @@ $$`)));
         ctx.toast(tx("\u5DF2\u5408\u5E76"));
       }
     });
-    return /* @__PURE__ */ h("div", { className: "cr-page" }, /* @__PURE__ */ h("header", { className: "cr-head" }, /* @__PURE__ */ h("div", { className: "cr-head-title is-plain" }, /* @__PURE__ */ h("div", null, /* @__PURE__ */ h("h2", null, tx("\u9898\u76EE\u6807\u7B7E")), /* @__PURE__ */ h("span", null, tx("\u7528\u4F60\u81EA\u5DF1\u7684\u8BDD\u7ED9\u9898\u76EE\u5206\u7C7B\uFF0C\u957F\u671F\u590D\u7528\uFF1B\u53EF\u4EE5\u6539\u540D\uFF0C\u4E5F\u53EF\u4EE5\u5408\u5E76\u3002"))))), /* @__PURE__ */ h("div", { className: "cr-page-scroll" }, /* @__PURE__ */ h("form", { className: "cr-tagnew", onSubmit: create }, /* @__PURE__ */ h(Icon6, { name: "tag", size: 15, stroke: 2 }), /* @__PURE__ */ h("input", { value: name, maxLength: 40, placeholder: tx("\u65B0\u6807\u7B7E\uFF0C\u4F8B\u5982\uFF1A\u4E8C\u6B21\u51FD\u6570\u3001\u51E0\u4F55\u8BC1\u660E"), "aria-label": tx("\u65B0\u6807\u7B7E"), onChange: (e) => setName(e.target.value) }), /* @__PURE__ */ h("button", { type: "submit", className: "cr-btn is-primary is-small", disabled: !name.trim() }, tx("\u6DFB\u52A0"))), !ctx.data.tags.length ? /* @__PURE__ */ h(Empty, { compact: true, icon: "tag", title: tx("\u8FD8\u6CA1\u6709\u6807\u7B7E"), text: tx("\u6807\u7B7E\u8D34\u5728\u8BD5\u5377\u7684\u9898\u76EE\u4E0A\uFF0C\u4E00\u6B21\u6807\u6CE8\uFF0C\u5168\u73ED\u5171\u7528\u3002") }) : /* @__PURE__ */ h("ul", { className: "cr-tags" }, ctx.data.tags.map((t2, i) => /* @__PURE__ */ h("li", { key: t2.id, style: { "--i": i } }, /* @__PURE__ */ h("span", { className: "cr-tag-icon" }, /* @__PURE__ */ h(Icon6, { name: "tag", size: 14, stroke: 2 })), editing === t2.id ? /* @__PURE__ */ h("form", { className: "cr-tag-edit", onSubmit: (e) => {
+    return /* @__PURE__ */ h("div", { className: "cr-page" }, /* @__PURE__ */ h("header", { className: "cr-head" }, /* @__PURE__ */ h("div", { className: "cr-head-title is-plain" }, /* @__PURE__ */ h("div", null, /* @__PURE__ */ h("h2", null, tx("\u9898\u76EE\u6807\u7B7E")), /* @__PURE__ */ h("span", null, tx("\u7528\u4F60\u81EA\u5DF1\u7684\u8BDD\u7ED9\u9898\u76EE\u5206\u7C7B\uFF0C\u957F\u671F\u590D\u7528\uFF1B\u53EF\u4EE5\u6539\u540D\uFF0C\u4E5F\u53EF\u4EE5\u5408\u5E76\u3002"))))), /* @__PURE__ */ h("div", { className: "cr-page-scroll" }, /* @__PURE__ */ h("form", { className: "cr-tagnew", onSubmit: create }, /* @__PURE__ */ h(Icon6, { name: "tag", size: 15, stroke: 2 }), /* @__PURE__ */ h("input", { value: name, maxLength: 40, placeholder: tx("\u65B0\u6807\u7B7E\uFF0C\u4F8B\u5982\uFF1A\u4E8C\u6B21\u51FD\u6570\u3001\u51E0\u4F55\u8BC1\u660E"), "aria-label": tx("\u65B0\u6807\u7B7E"), onChange: (e) => setName(e.target.value) }), /* @__PURE__ */ h("button", { type: "submit", className: "cr-btn is-primary is-small", disabled: !name.trim() }, tx("\u6DFB\u52A0"))), !ctx.data.tags.length ? /* @__PURE__ */ h(Empty, { compact: true, icon: "tag", title: tx("\u8FD8\u6CA1\u6709\u6807\u7B7E"), text: tx("\u6807\u7B7E\u8D34\u5728\u8BD5\u5377\u7684\u9898\u76EE\u4E0A\uFF0C\u4E00\u6B21\u6807\u6CE8\uFF0C\u5168\u73ED\u5171\u7528\u3002") }) : /* @__PURE__ */ h("ul", { className: "cr-tags" }, ctx.data.tags.map((t2, i) => /* @__PURE__ */ h("li", { key: t2.id, style: { "--i": i } }, /* @__PURE__ */ h("span", { className: "cr-tag-icon" }, /* @__PURE__ */ h(Icon6, { name: "tag", size: 14, stroke: 2 })), editing?.id === t2.id ? /* @__PURE__ */ h("form", { className: "cr-tag-edit", onSubmit: (e) => {
       e.preventDefault();
       rename(t2);
-    } }, /* @__PURE__ */ h("input", { autoFocus: true, value: draft, maxLength: 40, "aria-label": tx("\u6807\u7B7E\u540D\u79F0"), onChange: (e) => setDraft(e.target.value), onKeyDown: (e) => e.key === "Escape" && setEditing(null) }), /* @__PURE__ */ h("button", { type: "submit", className: "cr-btn is-primary is-small" }, tx("\u4FDD\u5B58"))) : /* @__PURE__ */ h(Fragment, null, /* @__PURE__ */ h("strong", null, t2.name), /* @__PURE__ */ h("small", null, usage.get(t2.id) ? tx("{{n}} \u9053\u9898", { n: usage.get(t2.id) }) : tx("\u8FD8\u6CA1\u7528\u8FC7")), /* @__PURE__ */ h("span", { className: "cr-grow" }), /* @__PURE__ */ h(Menu, { label: tx("\u6807\u7B7E\u64CD\u4F5C"), items: [
-      { label: tx("\u6539\u540D"), icon: "pencil", onClick: () => {
-        setEditing(t2.id);
-        setDraft(t2.name);
-      } },
+    } }, /* @__PURE__ */ h("input", { autoFocus: true, value: editing.draft, maxLength: 40, "aria-label": tx("\u6807\u7B7E\u540D\u79F0"), onChange: (e) => setEditing({ ...editing, draft: e.target.value }), onKeyDown: (e) => e.key === "Escape" && setEditing(null) }), /* @__PURE__ */ h("button", { type: "submit", className: "cr-btn is-primary is-small" }, tx("\u4FDD\u5B58"))) : /* @__PURE__ */ h(Fragment, null, /* @__PURE__ */ h("strong", null, t2.name), /* @__PURE__ */ h("small", null, usage.get(t2.id) ? tx("{{n}} \u9053\u9898", { n: usage.get(t2.id) }) : tx("\u8FD8\u6CA1\u7528\u8FC7")), /* @__PURE__ */ h("span", { className: "cr-grow" }), /* @__PURE__ */ h(Menu, { label: tx("\u6807\u7B7E\u64CD\u4F5C"), items: [
+      { label: tx("\u6539\u540D"), icon: "pencil", onClick: () => setEditing({ id: t2.id, draft: t2.name }) },
       ...ctx.data.tags.length > 1 ? ["-", ...ctx.data.tags.filter((x) => x.id !== t2.id).map((x) => ({ label: tx("\u5408\u5E76\u5230\u201C{{b}}\u201D", { b: x.name }), onClick: () => merge(t2, x) }))] : []
     ] })))))));
   }
@@ -7225,6 +7406,9 @@ $$`)));
     return s;
   };
   var clean = (s) => String(s ?? "").replace(/\s+/g, "").toLowerCase();
+  function ColSelect({ value, onChange, label, optional, columns }) {
+    return /* @__PURE__ */ h(Field, { label, hint: optional ? tx("\u9009\u586B") : null }, /* @__PURE__ */ h("select", { value: value ?? "", onChange: (e) => onChange(e.target.value ? Number(e.target.value) : null) }, /* @__PURE__ */ h("option", { value: "" }, optional ? tx("\u6CA1\u6709\u8FD9\u4E00\u5217") : tx("\u9009\u62E9\u4E00\u5217")), columns.map(([n, text]) => /* @__PURE__ */ h("option", { key: n, value: n }, text))));
+  }
   function guess(sheet, exam) {
     const rows = sheet.rows;
     let header = rows.findIndex((r) => r?.some((c) => /姓名|学号|name/i.test(c?.text ?? "")));
@@ -7284,7 +7468,7 @@ $$`)));
       download(xlsx([head, ...rows2], tx("\u6210\u7EE9")), `${cls.name}-${exam.name}.xlsx`);
     };
     const choose = async (file) => {
-      if (!file) return;
+      if (!file || busy) return;
       setBusy(true);
       setError("");
       try {
@@ -7329,6 +7513,7 @@ $$`)));
       });
     };
     const confirm = async () => {
+      if (busy) return;
       setBusy(true);
       setError("");
       try {
@@ -7350,7 +7535,6 @@ $$`)));
     const width = sheet ? Math.max(0, ...sheet.rows.map((r) => r?.length || 0)) : 0;
     const header = sheet && (sheet.rows[(mapping.headerRow || 1) - 1] || []);
     const columns = Array.from({ length: width }, (_, i) => [i + 1, `${letter(i + 1)}${header?.[i]?.text ? ` \xB7 ${header[i].text}` : ""}`]);
-    const ColSelect = ({ value, onChange, label, optional }) => /* @__PURE__ */ h(Field, { label, hint: optional ? tx("\u9009\u586B") : null }, /* @__PURE__ */ h("select", { value: value ?? "", onChange: (e) => onChange(e.target.value ? Number(e.target.value) : null) }, /* @__PURE__ */ h("option", { value: "" }, optional ? tx("\u6CA1\u6709\u8FD9\u4E00\u5217") : tx("\u9009\u62E9\u4E00\u5217")), columns.map(([n, text]) => /* @__PURE__ */ h("option", { key: n, value: n }, text))));
     const mappedCols = /* @__PURE__ */ new Map();
     if (mapping) {
       if (mapping.nameCol) mappedCols.set(mapping.nameCol, tx("\u59D3\u540D"));
@@ -7388,15 +7572,15 @@ $$`)));
           e.target.value = "";
         } })
       ), roster.length > 0 && /* @__PURE__ */ h("button", { type: "button", className: "cr-link", onClick: template }, /* @__PURE__ */ h(Icon6, { name: "arrowDown", size: 13, stroke: 2.2 }), tx("\u6CA1\u6709\u73B0\u6210\u7684\u8868\uFF1F\u4E0B\u8F7D\u4E00\u4EFD\u5E26{{cls}}\u540D\u5355\u7684\u6A21\u677F", { cls: cls?.name }))));
-      footer = /* @__PURE__ */ h(Fragment, null, /* @__PURE__ */ h("span", { className: "cr-grow" }), /* @__PURE__ */ h("button", { type: "button", className: "cr-btn", onClick: onClose }, tx("\u53D6\u6D88")));
+      footer = /* @__PURE__ */ h(Fragment, null, /* @__PURE__ */ h("span", { className: "cr-grow" }), /* @__PURE__ */ h("button", { type: "button", className: "cr-btn", disabled: busy, onClick: onClose }, tx("\u53D6\u6D88")));
     } else if (step === 1) {
-      body = /* @__PURE__ */ h("div", { className: "cr-import-map" }, /* @__PURE__ */ h("div", { className: "cr-import-file" }, /* @__PURE__ */ h(Icon6, { name: "file", size: 16, stroke: 2 }), /* @__PURE__ */ h("strong", null, draft.fileName), /* @__PURE__ */ h("small", null, tx("{{n}} \u4E2A\u5DE5\u4F5C\u8868", { n: draft.workbook.sheets.length }))), draft.workbook.sheets.length > 1 && /* @__PURE__ */ h(Seg, { label: tx("\u5DE5\u4F5C\u8868"), value: String(mapping.sheet), onChange: (v) => setMapping(guess(draft.workbook.sheets[Number(v)], exam) && { ...guess(draft.workbook.sheets[Number(v)], exam), sheet: Number(v) }), options: draft.workbook.sheets.map((s, i) => [String(i), s.name]) }), /* @__PURE__ */ h("div", { className: "cr-form-row is-3" }, /* @__PURE__ */ h(Field, { label: tx("\u8868\u5934\u5728\u7B2C\u51E0\u884C") }, /* @__PURE__ */ h("input", { inputMode: "numeric", value: mapping.headerRow ?? "", onChange: (e) => setMapping({ ...mapping, headerRow: Number(e.target.value) || null }) })), /* @__PURE__ */ h(Field, { label: tx("\u4ECE\u7B2C\u51E0\u884C\u5F00\u59CB") }, /* @__PURE__ */ h("input", { inputMode: "numeric", value: mapping.firstRow, onChange: (e) => setMapping({ ...mapping, firstRow: Math.max(1, Number(e.target.value) || 1) }) })), /* @__PURE__ */ h(Field, { label: tx("\u5230\u7B2C\u51E0\u884C") }, /* @__PURE__ */ h("input", { inputMode: "numeric", value: mapping.lastRow ?? "", onChange: (e) => setMapping({ ...mapping, lastRow: Number(e.target.value) || null }) }))), /* @__PURE__ */ h("div", { className: "cr-form-row is-4" }, /* @__PURE__ */ h(ColSelect, { label: tx("\u59D3\u540D"), value: mapping.nameCol, onChange: (v) => setMapping({ ...mapping, nameCol: v }) }), /* @__PURE__ */ h(ColSelect, { label: tx("\u5B66\u53F7"), optional: true, value: mapping.numberCol, onChange: (v) => setMapping({ ...mapping, numberCol: v }) }), /* @__PURE__ */ h(ColSelect, { label: tx("\u603B\u5206"), value: mapping.totalCol, onChange: (v) => setMapping({ ...mapping, totalCol: v }) }), /* @__PURE__ */ h(ColSelect, { label: tx("\u7F3A\u8003"), optional: true, value: mapping.absentCol, onChange: (v) => setMapping({ ...mapping, absentCol: v }) })), /* @__PURE__ */ h("details", { className: "cr-import-questions", open: Object.keys(mapping.questionCols).length > 0 && Object.keys(mapping.questionCols).length < exam.questions.length }, /* @__PURE__ */ h("summary", null, tx("\u9010\u9898\u5F97\u5206\uFF1A\u5DF2\u5BF9\u5E94 {{a}} / {{b}} \u9898", { a: Object.keys(mapping.questionCols).length, b: exam.questions.length })), /* @__PURE__ */ h("div", { className: "cr-form-row is-6" }, exam.questions.map((q) => /* @__PURE__ */ h(ColSelect, { key: q.id, optional: true, label: q.group ? `${q.group} ${q.label}` : q.label, value: mapping.questionCols[q.id], onChange: (v) => {
+      body = /* @__PURE__ */ h("div", { className: "cr-import-map" }, /* @__PURE__ */ h("div", { className: "cr-import-file" }, /* @__PURE__ */ h(Icon6, { name: "file", size: 16, stroke: 2 }), /* @__PURE__ */ h("strong", null, draft.fileName), /* @__PURE__ */ h("small", null, tx("{{n}} \u4E2A\u5DE5\u4F5C\u8868", { n: draft.workbook.sheets.length }))), draft.workbook.sheets.length > 1 && /* @__PURE__ */ h(Seg, { label: tx("\u5DE5\u4F5C\u8868"), value: String(mapping.sheet), onChange: (v) => setMapping(guess(draft.workbook.sheets[Number(v)], exam) && { ...guess(draft.workbook.sheets[Number(v)], exam), sheet: Number(v) }), options: draft.workbook.sheets.map((s, i) => [String(i), s.name]) }), /* @__PURE__ */ h("div", { className: "cr-form-row is-3" }, /* @__PURE__ */ h(Field, { label: tx("\u8868\u5934\u5728\u7B2C\u51E0\u884C") }, /* @__PURE__ */ h("input", { inputMode: "numeric", value: mapping.headerRow ?? "", onChange: (e) => setMapping({ ...mapping, headerRow: Number(e.target.value) || null }) })), /* @__PURE__ */ h(Field, { label: tx("\u4ECE\u7B2C\u51E0\u884C\u5F00\u59CB") }, /* @__PURE__ */ h("input", { inputMode: "numeric", value: mapping.firstRow, onChange: (e) => setMapping({ ...mapping, firstRow: Math.max(1, Number(e.target.value) || 1) }) })), /* @__PURE__ */ h(Field, { label: tx("\u5230\u7B2C\u51E0\u884C") }, /* @__PURE__ */ h("input", { inputMode: "numeric", value: mapping.lastRow ?? "", onChange: (e) => setMapping({ ...mapping, lastRow: Number(e.target.value) || null }) }))), /* @__PURE__ */ h("div", { className: "cr-form-row is-4" }, /* @__PURE__ */ h(ColSelect, { columns, label: tx("\u59D3\u540D"), value: mapping.nameCol, onChange: (v) => setMapping({ ...mapping, nameCol: v }) }), /* @__PURE__ */ h(ColSelect, { columns, label: tx("\u5B66\u53F7"), optional: true, value: mapping.numberCol, onChange: (v) => setMapping({ ...mapping, numberCol: v }) }), /* @__PURE__ */ h(ColSelect, { columns, label: tx("\u603B\u5206"), value: mapping.totalCol, onChange: (v) => setMapping({ ...mapping, totalCol: v }) }), /* @__PURE__ */ h(ColSelect, { columns, label: tx("\u7F3A\u8003"), optional: true, value: mapping.absentCol, onChange: (v) => setMapping({ ...mapping, absentCol: v }) })), /* @__PURE__ */ h("details", { className: "cr-import-questions", open: Object.keys(mapping.questionCols).length > 0 && Object.keys(mapping.questionCols).length < exam.questions.length }, /* @__PURE__ */ h("summary", null, tx("\u9010\u9898\u5F97\u5206\uFF1A\u5DF2\u5BF9\u5E94 {{a}} / {{b}} \u9898", { a: Object.keys(mapping.questionCols).length, b: exam.questions.length })), /* @__PURE__ */ h("div", { className: "cr-form-row is-6" }, exam.questions.map((q) => /* @__PURE__ */ h(ColSelect, { key: q.id, columns, optional: true, label: q.group ? `${q.group} ${q.label}` : q.label, value: mapping.questionCols[q.id], onChange: (v) => {
         const qc = { ...mapping.questionCols };
         if (v) qc[q.id] = v;
         else delete qc[q.id];
         setMapping({ ...mapping, questionCols: qc });
       } })))), /* @__PURE__ */ h("div", { className: "cr-sheet-preview" }, /* @__PURE__ */ h("table", null, /* @__PURE__ */ h("thead", null, /* @__PURE__ */ h("tr", null, /* @__PURE__ */ h("th", null), columns.map(([n]) => /* @__PURE__ */ h("th", { key: n, className: cx(mappedCols.has(n) && "is-mapped") }, mappedCols.get(n) || letter(n))))), /* @__PURE__ */ h("tbody", null, sheet.rows.slice(0, 12).map((r, i) => /* @__PURE__ */ h("tr", { key: i, className: cx(i + 1 === mapping.headerRow && "is-header", i + 1 >= mapping.firstRow && (!mapping.lastRow || i + 1 <= mapping.lastRow) && "is-data") }, /* @__PURE__ */ h("th", null, i + 1), columns.map(([n]) => /* @__PURE__ */ h("td", { key: n, className: cx(mappedCols.has(n) && "is-mapped", r?.[n - 1]?.kind === "error" && "is-error") }, r?.[n - 1]?.text ?? ""))))))), /* @__PURE__ */ h("p", { className: "cr-muted" }, tx("\u7A7A\u767D\u662F\u7F3A\u5931\uFF0C0 \u5C31\u662F 0\uFF1B\u516C\u5F0F\u53EA\u7528\u8868\u91CC\u5DF2\u6709\u7684\u7ED3\u679C\u3002")));
-      footer = /* @__PURE__ */ h(Fragment, null, /* @__PURE__ */ h("button", { type: "button", className: "cr-btn", onClick: () => setStep(0) }, tx("\u6362\u4E00\u4E2A\u6587\u4EF6")), /* @__PURE__ */ h("span", { className: "cr-grow" }), /* @__PURE__ */ h("button", { type: "button", className: "cr-btn is-primary", disabled: busy || !mapping.nameCol && !mapping.numberCol, onClick: build }, busy ? /* @__PURE__ */ h(Spinner, { small: true }) : null, tx("\u751F\u6210\u6821\u5BF9\u8868")));
+      footer = /* @__PURE__ */ h(Fragment, null, /* @__PURE__ */ h("button", { type: "button", className: "cr-btn", disabled: busy, onClick: () => setStep(0) }, tx("\u6362\u4E00\u4E2A\u6587\u4EF6")), /* @__PURE__ */ h("span", { className: "cr-grow" }), /* @__PURE__ */ h("button", { type: "button", className: "cr-btn is-primary", disabled: busy || !mapping.nameCol && !mapping.numberCol, onClick: build }, busy ? /* @__PURE__ */ h(Spinner, { small: true }) : null, tx("\u751F\u6210\u6821\u5BF9\u8868")));
     } else if (step === 2) {
       const s = draft.summary || {};
       body = /* @__PURE__ */ h("div", { className: "cr-review" }, /* @__PURE__ */ h("div", { className: "cr-review-summary" }, /* @__PURE__ */ h("span", { className: "cr-pill" }, tx("{{n}} \u884C", { n: s.rows })), /* @__PURE__ */ h("span", { className: cx("cr-pill", s.errors ? "is-error" : "is-ok") }, s.errors ? tx("{{n}} \u5904\u9700\u8981\u5904\u7406", { n: s.errors }) : tx("\u6CA1\u6709\u9700\u8981\u5904\u7406\u7684\u95EE\u9898")), s.warnings > 0 && /* @__PURE__ */ h("span", { className: "cr-pill is-warn" }, tx("{{n}} \u4E2A\u63D0\u9192", { n: s.warnings })), s.ignored > 0 && /* @__PURE__ */ h("span", { className: "cr-pill" }, tx("\u5FFD\u7565 {{n}} \u884C", { n: s.ignored })), /* @__PURE__ */ h("span", { className: "cr-grow" }), /* @__PURE__ */ h(Seg, { label: tx("\u663E\u793A"), value: filter, onChange: setFilter, options: [["issues", tx("\u9700\u8981\u770B\u7684")], ["all", tx("\u5168\u90E8")], ["ignored", tx("\u5DF2\u5FFD\u7565")]] })), /* @__PURE__ */ h("div", { className: "cr-review-table" }, /* @__PURE__ */ h("div", { className: "cr-review-row is-head" }, /* @__PURE__ */ h("span", null, tx("\u884C")), /* @__PURE__ */ h("span", null, tx("\u8868\u4E2D")), /* @__PURE__ */ h("span", null, tx("\u5BF9\u5E94\u5B66\u751F")), /* @__PURE__ */ h("span", null, tx("\u72B6\u6001")), /* @__PURE__ */ h("span", null, tx("\u603B\u5206")), /* @__PURE__ */ h("span", null)), !shownRows.length && /* @__PURE__ */ h("p", { className: "cr-muted cr-pad" }, filter === "issues" ? tx("\u6BCF\u4E00\u884C\u90FD\u5BF9\u4E0A\u4E86\u3002") : tx("\u6CA1\u6709\u8FD9\u6837\u7684\u884C\u3002")), shownRows.map((r) => {
@@ -7411,15 +7595,15 @@ $$`)));
           if (String(r.scores?.[i.field] ?? "") !== v) edit(r, { scores: { [i.field]: v === "" ? null : Number(v) } });
         } }), i.code === "name-number-conflict" && r.studentId && /* @__PURE__ */ h("button", { type: "button", className: "cr-link", onClick: () => edit(r, { studentId: r.studentId }) }, tx("\u5C31\u662F {{name}}", { name: roster.find((st) => st.id === r.studentId)?.name }))))));
       })), unrecorded.length > 0 && /* @__PURE__ */ h("div", { className: "cr-unrecorded" }, /* @__PURE__ */ h("strong", null, tx("\u8868\u91CC\u6CA1\u6709\u7684\u5B66\u751F \xB7 {{n}} \u4EBA", { n: unrecorded.length })), /* @__PURE__ */ h("p", { className: "cr-muted" }, tx("\u4ED6\u4EEC\u4F1A\u8BB0\u4E3A\u201C\u672A\u8BB0\u5F55\u201D\uFF0C\u4E0D\u8BA1\u5206\uFF0C\u4E5F\u4E0D\u7B97\u7F3A\u8003\u3002")), /* @__PURE__ */ h("div", null, unrecorded.map((st) => /* @__PURE__ */ h("span", { key: st.id, className: "cr-chip-student is-static" }, /* @__PURE__ */ h(Avatar, { name: st.name, id: st.id, size: "sm" }), /* @__PURE__ */ h("span", null, st.name))))));
-      footer = /* @__PURE__ */ h(Fragment, null, /* @__PURE__ */ h("button", { type: "button", className: "cr-btn", onClick: () => setStep(1) }, tx("\u91CD\u65B0\u5BF9\u5E94\u5217")), /* @__PURE__ */ h("span", { className: "cr-grow" }), /* @__PURE__ */ h("button", { type: "button", className: "cr-btn is-primary", disabled: busy || (draft.summary?.errors ?? 0) > 0, onClick: confirm }, busy ? /* @__PURE__ */ h(Spinner, { small: true }) : /* @__PURE__ */ h(Icon6, { name: "check", size: 14, stroke: 2.4 }), tx("\u786E\u8BA4\u5165\u5E93")));
+      footer = /* @__PURE__ */ h(Fragment, null, /* @__PURE__ */ h("button", { type: "button", className: "cr-btn", disabled: busy, onClick: () => setStep(1) }, tx("\u91CD\u65B0\u5BF9\u5E94\u5217")), /* @__PURE__ */ h("span", { className: "cr-grow" }), /* @__PURE__ */ h("button", { type: "button", className: "cr-btn is-primary", disabled: busy || (draft.summary?.errors ?? 0) > 0, onClick: confirm }, busy ? /* @__PURE__ */ h(Spinner, { small: true }) : /* @__PURE__ */ h(Icon6, { name: "check", size: 14, stroke: 2.4 }), tx("\u786E\u8BA4\u5165\u5E93")));
     } else {
-      body = /* @__PURE__ */ h("div", { className: "cr-import-done" }, /* @__PURE__ */ h("span", { className: "cr-done-mark" }, /* @__PURE__ */ h(Icon6, { name: "check", size: 30, stroke: 2.6 })), /* @__PURE__ */ h("h3", null, tx("\u6210\u7EE9\u5DF2\u4FDD\u5B58")), /* @__PURE__ */ h("p", null, tx("{{cls}} \xB7 {{exam}}\uFF1A{{a}} \u4EBA\u53C2\u52A0\uFF0C{{b}} \u4EBA\u7F3A\u8003\uFF0C{{c}} \u4EBA\u672A\u8BB0\u5F55\u3002", { cls: cls.name, exam: exam.name, a: done3.present, b: done3.absent, c: done3.unrecorded })), /* @__PURE__ */ h("p", { className: "cr-muted" }, tx("\u539F\u8868\u548C\u6821\u5BF9\u7ED3\u679C\u90FD\u7559\u7740\uFF1B\u4E4B\u540E\u53D1\u73B0\u9519\u4E86\uFF0C\u53EF\u4EE5\u5728\u5B66\u751F\u7684\u6210\u7EE9\u91CC\u4FEE\u6B63\u3002")));
+      body = /* @__PURE__ */ h("div", { className: "cr-import-done" }, /* @__PURE__ */ h("span", { className: "cr-done-mark" }, /* @__PURE__ */ h(Icon6, { name: "check", size: 30, stroke: 2.6 })), /* @__PURE__ */ h("h3", null, tx("\u6210\u7EE9\u5DF2\u4FDD\u5B58")), /* @__PURE__ */ h("p", null, tx("{{cls}} \xB7 {{exam}}\uFF1A{{a}} \u4EBA\u53C2\u52A0\uFF0C{{b}} \u4EBA\u7F3A\u8003\uFF0C{{c}} \u4EBA\u672A\u8BB0\u5F55\u3002", { cls: cls.name, exam: exam.name, a: done3.present, b: done3.absent, c: done3.unrecorded })), /* @__PURE__ */ h("p", { className: "cr-muted" }, tx("\u539F\u8868\u548C\u6821\u5BF9\u7ED3\u679C\u90FD\u7559\u7740\uFF0C\u53EF\u4EE5\u5230\u73ED\u7EA7\u6216\u5B66\u751F\u7684\u6210\u7EE9\u4E2D\u67E5\u770B\u3002")));
       footer = /* @__PURE__ */ h(Fragment, null, /* @__PURE__ */ h("span", { className: "cr-grow" }), /* @__PURE__ */ h("button", { type: "button", className: "cr-btn", onClick: onClose }, tx("\u5B8C\u6210")), /* @__PURE__ */ h("button", { type: "button", className: "cr-btn is-primary", onClick: () => {
         ctx.go({ view: "class", classId, tab: "scores", studentId: null });
         onClose();
       } }, tx("\u770B\u770B\u6210\u7EE9")));
     }
-    return /* @__PURE__ */ h(Dialog, { wide: true, className: "cr-import", title: tx("\u5BFC\u5165\u6210\u7EE9"), subtitle: exam && cls ? `${exam.name} \xB7 ${cls.name}` : null, onClose, footer: /* @__PURE__ */ h(Fragment, null, error && /* @__PURE__ */ h("span", { className: "cr-error is-inline" }, error), footer) }, step < 3 && /* @__PURE__ */ h("ol", { className: "cr-steps" }, STEPS.map((label, i) => /* @__PURE__ */ h("li", { key: label, className: cx(i === step && "is-current", i < step && "is-done") }, /* @__PURE__ */ h("span", null, i < step ? /* @__PURE__ */ h(Icon6, { name: "check", size: 11, stroke: 3 }) : i + 1), tx(label)))), /* @__PURE__ */ h("div", { className: "cr-step", key: step }, body));
+    return /* @__PURE__ */ h(Dialog, { busy, wide: true, className: "cr-import", title: tx("\u5BFC\u5165\u6210\u7EE9"), subtitle: exam && cls ? `${exam.name} \xB7 ${cls.name}` : null, onClose, footer: /* @__PURE__ */ h(Fragment, null, error && /* @__PURE__ */ h("span", { className: "cr-error is-inline" }, error), footer) }, step < 3 && /* @__PURE__ */ h("ol", { className: "cr-steps" }, STEPS.map((label, i) => /* @__PURE__ */ h("li", { key: label, className: cx(i === step && "is-current", i < step && "is-done") }, /* @__PURE__ */ h("span", null, i < step ? /* @__PURE__ */ h(Icon6, { name: "check", size: 11, stroke: 3 }) : i + 1), tx(label)))), /* @__PURE__ */ h("fieldset", { className: "cr-step", key: step, disabled: busy }, body));
   }
 
   // docs/design-system/teachbuddy-app/ui/tbx/src/classroom/Archive.jsx
@@ -7646,9 +7830,18 @@ $$`)));
   function BackgroundChoices({ value, image, disabled, onChange, choices }) {
     useLocale();
     const input = useRef(null);
+    const selection = useRef(0);
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState("");
     const custom = value === "custom" && image;
+    useEffect(() => () => {
+      selection.current += 1;
+    }, []);
+    function select(patch) {
+      selection.current += 1;
+      setBusy(false);
+      onChange(patch);
+    }
     async function choose(event) {
       const file = event.target.files?.[0];
       event.target.value = "";
@@ -7657,17 +7850,19 @@ $$`)));
         setError(tx("\u8BF7\u9009\u62E9\u4E0D\u8D85\u8FC7 20 MB \u7684 JPG\u3001PNG \u6216 WebP \u56FE\u7247\u3002"));
         return;
       }
+      const request = ++selection.current;
       setError("");
       setBusy(true);
       try {
-        onChange({ background: "custom", backgroundImage: await encodeBackground(file) });
+        const backgroundImage = await encodeBackground(file);
+        if (request === selection.current) onChange({ background: "custom", backgroundImage });
       } catch {
-        setError(tx("\u8FD9\u5F20\u56FE\u7247\u8BFB\u4E0D\u51FA\u6765\uFF0C\u6362\u4E00\u5F20\u8BD5\u8BD5\u3002"));
+        if (request === selection.current) setError(tx("\u8FD9\u5F20\u56FE\u7247\u8BFB\u4E0D\u51FA\u6765\uFF0C\u6362\u4E00\u5F20\u8BD5\u8BD5\u3002"));
       } finally {
-        setBusy(false);
+        if (request === selection.current) setBusy(false);
       }
     }
-    return /* @__PURE__ */ h(Fragment, null, /* @__PURE__ */ h("div", { className: "settings-background-options tbx-bg-options", role: "group", "aria-label": tx("\u5185\u5BB9\u80CC\u666F") }, choices.map(([id, label]) => /* @__PURE__ */ h("button", { key: id, type: "button", disabled, "aria-label": label, "aria-pressed": value === id || id === "grid" && value === "custom" && !image, onClick: () => onChange({ background: id }) }, /* @__PURE__ */ h("span", { className: "settings-background-swatch", "data-pattern": id }), /* @__PURE__ */ h("span", null, label))), /* @__PURE__ */ h(
+    return /* @__PURE__ */ h(Fragment, null, /* @__PURE__ */ h("div", { className: "settings-background-options tbx-bg-options", role: "group", "aria-label": tx("\u5185\u5BB9\u80CC\u666F") }, choices.map(([id, label]) => /* @__PURE__ */ h("button", { key: id, type: "button", disabled, "aria-label": label, "aria-pressed": value === id || id === "grid" && value === "custom" && !image, onClick: () => select({ background: id }) }, /* @__PURE__ */ h("span", { className: "settings-background-swatch", "data-pattern": id }), /* @__PURE__ */ h("span", null, label))), /* @__PURE__ */ h(
       "button",
       {
         type: "button",
@@ -7676,7 +7871,7 @@ $$`)));
         "aria-pressed": Boolean(custom),
         "aria-label": image ? tx("\u81EA\u5B9A\u4E49\u80CC\u666F") : tx("\u4E0A\u4F20\u80CC\u666F\u56FE\u7247"),
         title: custom ? tx("\u70B9\u6309\u66F4\u6362\u56FE\u7247") : void 0,
-        onClick: () => image && !custom ? onChange({ background: "custom" }) : input.current?.click()
+        onClick: () => image && !custom ? select({ background: "custom" }) : input.current?.click()
       },
       /* @__PURE__ */ h("span", { className: "settings-background-swatch", "data-pattern": "custom", style: image ? { backgroundImage: `url("${image}")` } : void 0 }, /* @__PURE__ */ h("span", { className: "tbx-bg-upload" }, busy ? /* @__PURE__ */ h("span", { className: "tbx-spinner" }) : /* @__PURE__ */ h(Icon7, { name: "upload", size: image ? 16 : 20, stroke: 1.9 }), !image && !busy && /* @__PURE__ */ h("em", null, tx("\u4E0A\u4F20\u56FE\u7247")), custom && !busy && /* @__PURE__ */ h("em", null, tx("\u66F4\u6362")))),
       /* @__PURE__ */ h("span", null, tx("\u81EA\u5B9A\u4E49"))
@@ -7952,6 +8147,7 @@ $$`)));
     "\u6253\u5F00\u65E5\u7A0B": "Open Schedule",
     "\u628A\u300C{{title}}\u300D\u5E26\u8FDB\u5BF9\u8BDD": "Bring \u201C{{title}}\u201D into the chat",
     "\u590D\u5236": "Copy",
+    "\u590D\u5236\u5931\u8D25\uFF0C\u8BF7\u91CD\u8BD5": "Copy failed. Please try again.",
     "\u56DE\u7B54\u88AB\u505C\u6B62\u4E86\uFF0C\u53EA\u4FDD\u7559\u4E86\u524D\u9762\u7684\u90E8\u5206\u3002": "Stopped. Only the first part was kept.",
     "\u91CD\u65B0\u56DE\u7B54": "Regenerate",
     "\u6682\u4E0D\u53EF\u7528": "Unavailable",
@@ -8375,7 +8571,7 @@ $$`)));
     "\u5386\u6B21\u5F97\u5206\u7387": "Score Rate Over Time",
     "\u539F\u5377": "Exam Paper",
     "\u539F\u5377\u5DF2\u4E0A\u4F20": "Paper uploaded",
-    "\u539F\u8868\u548C\u6821\u5BF9\u7ED3\u679C\u90FD\u7559\u7740\uFF1B\u4E4B\u540E\u53D1\u73B0\u9519\u4E86\uFF0C\u53EF\u4EE5\u5728\u5B66\u751F\u7684\u6210\u7EE9\u91CC\u4FEE\u6B63\u3002": "The original sheet and your review are kept. If you spot a mistake later, fix it in the student\u2019s scores.",
+    "\u539F\u8868\u548C\u6821\u5BF9\u7ED3\u679C\u90FD\u7559\u7740\uFF0C\u53EF\u4EE5\u5230\u73ED\u7EA7\u6216\u5B66\u751F\u7684\u6210\u7EE9\u4E2D\u67E5\u770B\u3002": "The original sheet and your review are kept. View the scores for the class or an individual student.",
     "\u53C2\u52A0": "Took it",
     "\u53D6\u6D88": "Cancel",
     "\u53EA\u6709\u59D3\u540D\u662F\u5FC5\u586B\u7684\u3002\u6027\u683C\u3001\u5174\u8DA3\u60F3\u5230\u518D\u5199\uFF0C\u4E0D\u5FC5\u4E00\u6B21\u586B\u5B8C\u3002": "Only the name is required. Add personality and interests whenever they come to mind.",
@@ -8665,6 +8861,8 @@ $$`)));
       "\u5220\u9664\u672A\u5B8C\u6210\uFF0C\u8BF7\u91CD\u8BD5\u3002": "Couldn\u2019t delete. Please try again."
     },
     questions: {
+      "{{count}} \u4EFD\u6750\u6599_one": "{{count}} material",
+      "{{count}} \u4EFD\u6750\u6599_other": "{{count}} materials",
       "\u5C06\u79FB\u51FA\u5F53\u524D\u5217\u8868\u3002\u4E4B\u540E\u53EF\u4EE5\u5728\u5DE6\u4FA7\u7684\u201C\u5DF2\u5F52\u6863\u201D\u91CC\u6062\u590D\u6216\u5F7B\u5E95\u5220\u9664\u3002": "It will leave this list. You can restore it or delete it for good from Archived on the left."
     },
     math: {
@@ -8686,7 +8884,8 @@ $$`)));
     math: { "\u65B0\u5EFA\u4F5C\u54C1": "New Work" }
   };
   var APP_ZH = {
-    workbench: { "modules.classroom": "\u73ED\u7EA7" }
+    workbench: { "modules.classroom": "\u73ED\u7EA7" },
+    questions: { "{{count}} \u4EFD\u6750\u6599": "{{count}} \u4EFD\u6750\u6599" }
   };
 
   // docs/design-system/teachbuddy-app/ui/tbx/src/locales/install.js

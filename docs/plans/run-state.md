@@ -4,17 +4,18 @@
 
 ## 工作现场与授权
 
-全站体验清查与修复已完成并集成，见 [PR #50](https://github.com/DingJWuyu/TeachBuddy/pull/50)；本轮按原型源码、条件分支与连续用户操作核对八个产品分区及公共交互。此前功能收口与原型对照分别见 PR #48、#49，具名结果统一在[核查入口](#核查入口)。本轮临时计划与清单已归档，原型共有的未决体验留根 buffer；后续工作按用户选择推进。界面参考从[设计输入](../design-system/README.md)进入，工程通则沿[开发约定](../agents/module-development.md)。
+上一轮全站体验清查已集成，见 [PR #50](https://github.com/DingJWuyu/TeachBuddy/pull/50)，具名结果统一在[核查入口](#核查入口)。用户已采纳其中七项原型共有问题的修复建议，并授权先同步修复产品和原型，再重新全面清查全站。两阶段顺序、写入边界、覆盖与证据沿[当前任务记录](experience-completion-audit.md)接续；界面参考从[设计输入](../design-system/README.md)进入，工程通则沿[开发约定](../agents/module-development.md)。
 
 用户体验运行 `TeachBuddy-preview` 的集成源码，维护方式见[已有实例](../SETUP.md#已有本机实例)。GitHub 默认分支与日常 trunk 是 `preview/integration`，`main` 是稳定发布分支。用户已授权仓库配置、CI、任务 PR、独立审查、trunk 集成与同步；执行[GitHub 工作流](../agents/github-workflow.md)。未授权实际版本准备、合 main、产品发布、公开部署、新增费用或社区自动运营。模型与外部账户操作沿各自授权，本轮不扩展。
 
 | 现场 | 当前安排 |
 | --- | --- |
 | `TeachBuddy-preview` / `preview/integration` | 集成及用户体验入口，保护私有配置和数据；当前分支与 HEAD 以 Git 核对 |
+| `TeachBuddy-experience-completion` / `fix/experience-completion-audit` | 本轮七项裁决修复及全站复查的独立现场；由总控维护并在完整交付后清理 |
 | `TeachBuddy` / `main` | 保留稳定分支工作树，不在本轮开发范围 |
 | `TeachBuddy-resources` / `feat/resources-core` | 保留已有资源库现场；本轮不修改或删除，接续前核对其成果和负责 session |
 
-下表能力已集成到 preview，已完成任务的临时现场已清理。根 [buffer](../../buffer.md) 保留用户暂缓的学期与反馈，以及本轮发现、需要判断的原型共有细节；本轮范围内修复已完成，没有遗留实施任务。
+下表能力已集成到 preview，上一轮临时现场已清理。根 [buffer](../../buffer.md) 保留用户暂缓的学期和反馈收件；已采纳的七项修复移入当前任务记录，不继续作为待裁决事项。
 
 总控管理公共文件唯一写者、工作树和集成。未提交成果、固定输入、私有配置和有效证据须保留；测试业务数据可按已授权范围处置。证据不充当运行依赖，换机从入库输入与[SETUP](../SETUP.md)重建。
 

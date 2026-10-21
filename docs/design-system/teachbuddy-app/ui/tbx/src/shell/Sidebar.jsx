@@ -36,19 +36,19 @@ function useModules() {
   return { list, byId: (id) => list.find((m) => m.id === id) };
 }
 
-function GroupMenu({ at, onRename, onDelete, onClose }) {
+function GroupMenu({ at, trigger, onRename, onDelete, onClose }) {
   const ref = useRef(null);
   useEffect(() => {
     ref.current?.querySelector('button')?.focus();
     const down = (e) => { if (!ref.current?.contains(e.target) && !e.target.closest?.('.tbx-group-more')) onClose(); };
-    const key = (e) => { if (e.key === 'Escape') onClose(); };
+    const key = (e) => { if (e.key === 'Escape') { trigger?.focus(); onClose(); } };
     document.addEventListener('pointerdown', down, true);
     document.addEventListener('keydown', key);
     return () => {
       document.removeEventListener('pointerdown', down, true);
       document.removeEventListener('keydown', key);
     };
-  }, [onClose]);
+  }, [onClose, trigger]);
   return (
     <div className="tbx-side-menu" role="menu" ref={ref} style={{ left: at.x, top: at.y }}>
       <button type="button" role="menuitem" className="tbx-mi" onClick={onRename}><Glyph name="pencil" size={16} />{tw('重命名分组')}</button>
@@ -86,6 +86,7 @@ export function Sidebar({
     move: (e) => handlers.current?.onMove(e),
     up: (e) => handlers.current?.onUp(e),
     cancel: (e) => handlers.current?.onCancel(e),
+    key: (e) => { if (e.key === 'Escape') { e.preventDefault(); handlers.current?.onCancel(); } },
   });
 
   const [trashOpen, setTrashOpen] = useState(false);
@@ -165,6 +166,7 @@ export function Sidebar({
     window.addEventListener('pointermove', stable.current.move, { passive: false });
     window.addEventListener('pointerup', stable.current.up);
     window.addEventListener('pointercancel', stable.current.cancel);
+    window.addEventListener('keydown', stable.current.key);
   }
   function activate(x, y) {
     const d = dragRef.current;
@@ -203,8 +205,8 @@ export function Sidebar({
   function track(x, y) {
     const d = dragRef.current;
     if (!d?.active) return;
-    const next = hitTest(d, x, y);
-    if (next === undefined) return;
+    const next = hitTest(d, x, y) ?? null;
+    if (!next) armExpand(null);
     if (JSON.stringify(next) !== JSON.stringify(targetRef.current)) {
       targetRef.current = next;
       setTarget(next);
@@ -311,7 +313,7 @@ export function Sidebar({
   function onUp(e) {
     const d = dragRef.current;
     if (!d || e.pointerId !== d.pointerId) return;
-    if (d.active) commit(d, targetRef.current);
+    if (d.active) { track(e.clientX, e.clientY); commit(d, targetRef.current); }
     cleanup();
   }
   function onCancel() { cleanup(); }
@@ -327,6 +329,7 @@ export function Sidebar({
     window.removeEventListener('pointermove', stable.current.move);
     window.removeEventListener('pointerup', stable.current.up);
     window.removeEventListener('pointercancel', stable.current.cancel);
+    window.removeEventListener('keydown', stable.current.key);
     setTimeout(() => { suppressClick.current = false; }, 0);
   }
   function commit(d, to) {
@@ -528,7 +531,7 @@ export function Sidebar({
                       onContextMenu={(e) => {
                         if (g.fixed || !editable) return;
                         e.preventDefault();
-                        setMenu({ group: g, at: { x: Math.min(e.clientX, innerWidth - 220), y: Math.min(e.clientY, innerHeight - 110) } });
+                        setMenu({ group: g, trigger: e.currentTarget.querySelector('.tbx-group-more') || e.currentTarget, at: { x: Math.min(e.clientX, innerWidth - 220), y: Math.min(e.clientY, innerHeight - 110) } });
                       }}
                     >
                       {editing ? (
@@ -559,8 +562,9 @@ export function Sidebar({
                           aria-label={tw('分组选项')}
                           onClick={(e) => {
                             e.stopPropagation();
-                            const r = e.currentTarget.getBoundingClientRect();
-                            setMenu((m) => (m?.group.id === g.id ? null : { group: g, at: { x: r.right + 6, y: r.top } }));
+                            const trigger = e.currentTarget;
+                            const r = trigger.getBoundingClientRect();
+                            setMenu((m) => (m?.group.id === g.id ? null : { group: g, trigger, at: { x: r.right + 6, y: r.top } }));
                           }}
                         >
                           <Glyph name="more" size={16} />
@@ -674,9 +678,10 @@ export function Sidebar({
       {menu && (
         <GroupMenu
           at={menu.at}
+          trigger={menu.trigger}
           onClose={() => setMenu(null)}
           onRename={() => { startRename(menu.group); setMenu(null); }}
-          onDelete={() => { act(() => model.deleteGroup(menu.group.id)); setMenu(null); }}
+          onDelete={() => { navRef.current?.querySelector('.tbx-new-group-button')?.focus(); act(() => model.deleteGroup(menu.group.id)); setMenu(null); }}
         />
       )}
       <ConfirmHost />

@@ -154,6 +154,7 @@ export const EN = {
   '打开日程': 'Open Schedule',
   '把「{{title}}」带进对话': 'Bring “{{title}}” into the chat',
   '复制': 'Copy',
+  '复制失败，请重试': 'Copy failed. Please try again.',
   '回答被停止了，只保留了前面的部分。': 'Stopped. Only the first part was kept.',
   '重新回答': 'Regenerate',
   '暂不可用': 'Unavailable',
@@ -582,7 +583,7 @@ export const EN = {
   '历次得分率': 'Score Rate Over Time',
   '原卷': 'Exam Paper',
   '原卷已上传': 'Paper uploaded',
-  '原表和校对结果都留着；之后发现错了，可以在学生的成绩里修正。': 'The original sheet and your review are kept. If you spot a mistake later, fix it in the student’s scores.',
+  '原表和校对结果都留着，可以到班级或学生的成绩中查看。': 'The original sheet and your review are kept. View the scores for the class or an individual student.',
   '参加': 'Took it',
   '取消': 'Cancel',
   '只有姓名是必填的。性格、兴趣想到再写，不必一次填完。': 'Only the name is required. Add personality and interests whenever they come to mind.',
@@ -881,6 +882,8 @@ export const APP_EN = {
     '删除未完成，请重试。': 'Couldn’t delete. Please try again.',
   },
   questions: {
+    '{{count}} 份材料_one': '{{count}} material',
+    '{{count}} 份材料_other': '{{count}} materials',
     '将移出当前列表。之后可以在左侧的“已归档”里恢复或彻底删除。': 'It will leave this list. You can restore it or delete it for good from Archived on the left.',
   },
   math: {
@@ -907,4 +910,5 @@ export const APP_OVERRIDES = {
 /* Chinese strings the app looks up by key (new modules). */
 export const APP_ZH = {
   workbench: { 'modules.classroom': '班级' },
+  questions: { '{{count}} 份材料': '{{count}} 份材料' },
 };

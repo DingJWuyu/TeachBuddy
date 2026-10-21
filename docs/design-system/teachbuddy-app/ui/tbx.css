@@ -1,4 +1,4 @@
-/* css/tokens.css */
+/* tokens.css */
 :root {
   --tb-canvas: #f5f5f7;
   --tb-surface: #ffffff;
@@ -169,7 +169,7 @@
   }
 }
 
-/* css/base.css */
+/* base.css */
 :root:has(.wb-shell) {
   -webkit-text-size-adjust: 100%;
   text-rendering: optimizeLegibility;
@@ -270,7 +270,7 @@
   font-size: inherit;
 }
 
-/* css/auth.css */
+/* auth.css */
 .ae-page.ae-entry.tbx-entry {
   --w-page: #ffffff;
   --w-stage: #f5f5f7;
@@ -1564,7 +1564,7 @@
   }
 }
 
-/* css/shell.css */
+/* shell.css */
 :root,
 :root[data-workbench-theme=light],
 :root[data-workbench-theme=dark] {
@@ -2868,6 +2868,9 @@ html.tbx-dragging * {
   }
 }
 @media (max-width: 760px) {
+  .wb-shell.tb-prototype .tb-coach-scrim {
+    display: none;
+  }
   .wb-shell.tb-prototype .tbx-brand .tbx-wordmark,
   .wb-shell.tb-prototype .tb-global-nav.tbx-segmented {
     display: none;
@@ -2875,10 +2878,10 @@ html.tbx-dragging * {
   .wb-shell.tb-prototype .tbx-bar {
     padding-right: 10px;
   }
-  .wb-shell.tb-prototype .tbx-actions .tb-entry-wrap:has([aria-label=\4f7f\7528\6559\7a0b]) {
+  .wb-shell.tb-prototype .tbx-actions [data-topbar-entry=tutorial] {
     display: none;
   }
-  .wb-shell.tb-prototype .tbx-actions .tb-entry-wrap:has([aria-label=\53d1\9001\53cd\9988], [aria-label=\9690\79c1\4e0e\6570\636e\4fdd\62a4]) {
+  .wb-shell.tb-prototype .tbx-actions :is([data-topbar-entry=feedback], [data-topbar-entry=privacy]) {
     display: none;
   }
 }
@@ -3569,7 +3572,7 @@ html.tbx-dragging * {
   opacity: 0;
 }
 
-/* css/primitives.css */
+/* primitives.css */
 :is(.wb-shell, .tbx-portal-host) .wb-button,
 :is(.wb-shell, .tbx-portal-host) .wb-icon-button {
   border: 0;
@@ -3794,9 +3797,10 @@ html.tbx-dragging * {
   accent-color: var(--tb-accent);
 }
 
-/* css/agent.css */
+/* agent.css */
 :is(.wb-shell, .tbx-portal-host) .tbx-home,
-:is(.wb-shell, .tbx-portal-host) .tbx-agent {
+:is(.wb-shell, .tbx-portal-host) .tbx-agent,
+:is(.wb-shell, .tbx-portal-host) .tbx-agent-popover {
   --tbx-indigo: #5856d6;
   --tbx-hue-orange: var(--tb-orange);
   --tbx-hue-indigo: var(--tbx-indigo);
@@ -3807,7 +3811,7 @@ html.tbx-dragging * {
   --tbx-outline: rgb(0 0 0 / 0.08);
   --tbx-composer-shadow: 0 12px 28px -18px rgb(0 0 0 / 0.42), 0 2px 6px -2px rgb(0 0 0 / 0.05);
 }
-:root[data-workbench-theme=dark] :is(.tbx-home, .tbx-agent) {
+:root[data-workbench-theme=dark] :is(.tbx-home, .tbx-agent, .tbx-agent-popover) {
   --tbx-indigo: #7d7aff;
   --tbx-outline: rgb(255 255 255 / 0.09);
   --tbx-composer-shadow: 0 14px 32px -18px rgb(0 0 0 / 0.8);
@@ -5935,8 +5939,22 @@ html.tbx-dragging * {
 :is(.wb-shell, .tbx-portal-host) .tbx-agent[data-variant=panel] .tbx-card-row.is-problem:not(:has(.tbx-card-tier)) .tbx-card-answer {
   padding-left: 0;
 }
+:is(.wb-shell, .tbx-portal-host) .tbx-agent-popover {
+  width: min(360px, calc(100vw - 24px));
+  min-width: 0;
+  padding: 0;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-agent-popover .tbx-mention {
+  position: static;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  max-height: min(340px, calc(100dvh - 24px));
+  box-shadow: none;
+  animation: none;
+}
 
-/* css/questions.css */
+/* questions.css */
 :is(.wb-shell, .tbx-portal-host) .q-workspace {
   --q-gap: 10px;
   --q-line: var(--tb-line);
@@ -7269,7 +7287,7 @@ html.tbx-dragging * {
   }
 }
 
-/* css/resources.css */
+/* resources.css */
 :is(.wb-shell, .tbx-portal-host) .res-workspace {
   font-family: var(--tb-font);
   color: var(--tb-ink);
@@ -7816,6 +7834,9 @@ html.tbx-dragging * {
 }
 :root[data-workbench-theme=dark] .tbx-res-empty-art .is-b {
   background: #0d2a4a;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-res-main.is-drop .tbx-res-empty {
+  visibility: hidden;
 }
 :is(.wb-shell, .tbx-portal-host) .tbx-res-main.is-drop::after {
   content: "";
@@ -8463,8 +8484,18 @@ html.tbx-banding * {
     left: 50%;
   }
 }
+:is(.wb-shell, .tbx-portal-host) .tbx-res-folder-move {
+  max-height: min(350px, 72vh);
+  overflow-y: auto;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-res-folder-move .tbx-res-folder-path {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
 
-/* css/math.css */
+/* math.css */
 :is(.wb-shell, .tbx-portal-host) .math-workshop,
 :is(.wb-shell, .tbx-portal-host) .mw-home-wrapper {
   font-family: var(--tb-font);
@@ -10627,7 +10658,7 @@ html.tbx-banding * {
   height: 18px;
 }
 
-/* css/support.css */
+/* support.css */
 :is(.wb-shell, .tbx-portal-host) .wb-settings.settings-preview {
   padding: 26px 20px 48px;
 }
@@ -11755,7 +11786,7 @@ html.tbx-banding * {
   opacity: 0.7;
 }
 
-/* css/help.css */
+/* help.css */
 :is(.wb-shell, .tbx-portal-host) .is-teal {
   --hue1: #46cbe2;
   --hue2: #2fb0c8;
@@ -13040,7 +13071,10 @@ html.tbx-banding * {
   }
 }
 
-/* css/schedule.css */
+/* schedule.css */
+:is(.wb-shell, .tbx-portal-host) .cal-month-more-popover.is-dragging {
+  visibility: hidden;
+}
 :is(.wb-shell, .tbx-portal-host) .cal-page {
   --cal-line: var(--tb-line-soft);
   --cal-muted: var(--tb-muted);
@@ -14779,8 +14813,21 @@ html.tbx-banding * {
   flex: none;
   height: 100%;
 }
+@media (prefers-reduced-motion: no-preference) {
+  :root:not([data-tbx-focus-switch]) .cal-page[data-focus=calendar] .cal-board,
+  :root:not([data-tbx-focus-switch]) .cal-page[data-focus=calendar] .cal-sidebar {
+    animation: tbx-page-in 520ms var(--tb-ease) backwards;
+  }
+  :root:not([data-tbx-focus-switch]) .cal-page[data-focus=calendar] .cal-sidebar {
+    animation-delay: 70ms;
+  }
+  :root:not([data-tbx-focus-switch]) .cal-page[data-focus=calendar] :is(.fc-event, .cal-upcoming-row) {
+    animation: tbx-page-in 420ms var(--tb-ease) backwards;
+    animation-delay: 85ms;
+  }
+}
 
-/* css/classroom.css */
+/* classroom.css */
 .wb-shell.tb-prototype[data-route=classroom] .wb-workspace {
   padding: var(--app-workspace-padding);
   gap: 16px;
@@ -17283,6 +17330,10 @@ html.tbx-banding * {
   color: #fff;
 }
 :is(.wb-shell, .tbx-portal-host) .cr-step {
+  min-inline-size: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
   animation: cr-in 320ms var(--tb-ease) both;
 }
 :is(.wb-shell, .tbx-portal-host) .cr-import-start {
@@ -17693,7 +17744,7 @@ html.tbx-banding * {
   }
 }
 
-/* css/split.css */
+/* split.css */
 :is(.wb-shell, .tbx-portal-host) .tbx-split {
   display: grid;
   grid-template-columns: minmax(0, 1fr) var(--tbx-aux-w);
@@ -18288,7 +18339,7 @@ html.tbx-banding * {
   animation: none;
 }
 
-/* css/kit.css */
+/* kit.css */
 :is(.wb-shell, .tbx-portal-host) :is(.tbx-menu, .tbx-side-menu, .cr-menu, .tbx-sheet-menu, .tbx-res-menu, .tbx-model-menu, .tbx-pick-menu, .tbx-switch-menu, .tb-dialog-more-menu, .tbx-kit-menu):not(#tbx-kit),
 :is(.wb-shell, .tbx-portal-host) .res-menu [role=menu]:not(#tbx-kit) {
   padding: 6px;
@@ -18973,22 +19024,20 @@ html.tbx-banding * {
   background-position: right 12px center !important;
   background-size: 16px 16px !important;
 }
-
-/* css/index.css */
-
-/* Resource folder move menu (styles/resources.css). */
-:is(.wb-shell, .tbx-portal-host) .tbx-res-folder-move { max-height: min(350px, 72vh); overflow-y: auto; }
-:is(.wb-shell, .tbx-portal-host) .tbx-res-folder-move .tbx-res-folder-path { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
-
-/* Calendar arrival (styles/schedule.css). */
-@media (prefers-reduced-motion: no-preference) {
-  :root:not([data-tbx-focus-switch]) :is(.wb-shell, .tbx-portal-host) .cal-page[data-focus=calendar] .cal-board,
-  :root:not([data-tbx-focus-switch]) :is(.wb-shell, .tbx-portal-host) .cal-page[data-focus=calendar] .cal-sidebar {
-    animation: tbx-page-in 520ms var(--tb-ease) backwards;
+:is(.wb-shell, .tbx-portal-host) .tbx-confirm-presence {
+  display: contents;
+}
+:is(.wb-shell, .tbx-portal-host) .tbx-confirm-presence[inert] > .tbx-confirm-scrim {
+  pointer-events: none;
+  animation: tbx-kit-fade-out 180ms ease both;
+}
+@keyframes tbx-kit-fade-out {
+  from {
+    opacity: 1;
   }
-  :root:not([data-tbx-focus-switch]) :is(.wb-shell, .tbx-portal-host) .cal-page[data-focus=calendar] .cal-sidebar { animation-delay: 70ms; }
-  :root:not([data-tbx-focus-switch]) :is(.wb-shell, .tbx-portal-host) .cal-page[data-focus=calendar] :is(.fc-event, .cal-upcoming-row) {
-    animation: tbx-page-in 420ms var(--tb-ease) backwards;
-    animation-delay: 85ms;
+  to {
+    opacity: 0;
   }
 }
+
+/* index.css */

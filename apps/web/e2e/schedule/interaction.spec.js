@@ -807,6 +807,7 @@ test.describe('月视图布局与全天任务', () => {
   });
 
   for (const kind of ['时间段', '跨日全天', '重复']) test(`月视图弹层中的${kind}任务可拖到其他日期且不误打开或重复创建`, async ({page}) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
     for(let i=0;i<5;i++) await call('POST',E,entry(`折叠占位${i}`));
     const task=await call('POST',E,entry(`需要拖动的${kind}`,kind==='跨日全天' ? {time:{...entry('').time,startTime:'00:00',durationMinutes:2880},calendar:{...entry('').calendar,allDay:true}} : kind==='重复' ? {repeat:{frequency:'weekly',interval:1,weekdays:[5],monthly:'date',count:0,until:'2026-10-30'}} : {}));
     await page.reload();await view(page,'月');
@@ -821,9 +822,13 @@ test.describe('月视图布局与全天任务', () => {
       });
     }
     const from=await row.boundingBox(),to=await page.locator('.fc-daygrid-day[data-date="2026-09-26"]').boundingBox();
+    const target = { x: to.x + to.width / 2, y: to.y + 50 };
+    expect(await page.evaluate(point => Boolean(document.elementFromPoint(point.x, point.y)?.closest('.cal-month-more-popover')), target)).toBe(true);
     await page.mouse.move(from.x+from.width/2,from.y+from.height/2);await page.mouse.down();
-    // Aim at the exposed edge of the date cell, outside the anchored overflow panel.
-    await page.mouse.move(to.x+to.width-6,to.y+50,{steps:20});await page.mouse.up();
+    // Drag to the adjacent date currently covered by the overflow panel.
+    await page.mouse.move(target.x,target.y,{steps:20});
+    await page.screenshot({ path: test.info().outputPath('month-more-adjacent-drag.png') });
+    await page.mouse.up();
     await expect(page.locator('.cal-month-more-popover')).toHaveCount(0);
     await expect(page.locator('.tbx-sheet')).toHaveCount(0);
     if(refreshStarted) {
@@ -843,6 +848,38 @@ test.describe('月视图布局与全天任务', () => {
     expect(list).toHaveLength(kind==='重复'?2:1);
     if(kind==='重复') expect(moved.repeat).toBeNull();
     await expect(page.locator('.cal-loading')).toHaveCount(0);
+  });
+
+  test('月视图更多任务拖动取消或放回原日期，保留父编辑器和原任务', async ({ page }, info) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    for (let index = 0; index < 5; index++) await call('POST', E, entry(`取消拖动占位${index}`));
+    const task = await call('POST', E, entry('更多拖动取消'));
+    await page.reload(); await open(page, task.title); await view(page, '月');
+    await page.locator('[data-date="2026-09-25"] .fc-daygrid-more-link').click();
+    const panel = page.locator('.cal-month-more-popover');
+    const row = panel.locator('.cal-month-more-event').filter({ hasText: task.title });
+    const dragTo = async date => {
+      await row.hover();
+      const from = await row.boundingBox();
+      const to = await page.locator(`.fc-daygrid-day[data-date="${date}"]`).boundingBox();
+      await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
+      await page.mouse.down();
+      await page.mouse.move(to.x + to.width / 2, to.y + 50, { steps: 20 });
+    };
+    await dragTo('2026-09-26');
+    await page.screenshot({ path: info.outputPath('month-more-cancel-mid-drag.png') });
+    await page.keyboard.press('Escape');
+    await expect(panel).toBeVisible();
+    await page.mouse.up();
+    await expect(page.locator('#calendar-entry-title')).toHaveValue(task.title);
+    expect((await call('GET', `${E}/${task.id}`)).version).toBe(task.version);
+    await dragTo('2026-09-25');
+    await page.mouse.up();
+    await expect(panel).toHaveCount(0);
+    await expect(page.locator('#calendar-entry-title')).toHaveValue(task.title);
+    const saved = await call('GET', `${E}/${task.id}`);
+    expect(saved.time).toEqual(task.time);
+    expect(saved.version).toBe(task.version);
   });
 });
 
