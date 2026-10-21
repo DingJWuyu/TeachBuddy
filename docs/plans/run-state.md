@@ -4,7 +4,7 @@
 
 ## 工作现场与授权
 
-当前正在执行[静态检查与复盘落实](static-analysis-retro.md)，在短期分支 `chore/static-analysis-retro` 接入 Knip/Oxlint 并同步已确认的开发、范围与证据规则；范围和完成条件沿该记录。本轮不重启全站体验清查。
+静态检查与本轮复盘改进已完成，具名结果见[核查入口](#核查入口)。Knip/Oxlint、范围与 buffer 规则及 CI 失败产物分拆已接入；本轮没有重启全站体验清查。
 
 七项已裁决体验修复及新一轮全站连续体验清查已完成并集成，见 [PR #51](https://github.com/DingJWuyu/TeachBuddy/pull/51)，具名结果统一在[核查入口](#核查入口)。产品、原型与相关文档已同步，preview 已核对，本轮临时工作树和分支已清理；当前没有正在执行的全站清查任务。界面参考从[设计输入](../design-system/README.md)进入，后续任务沿[开发约定](../agents/module-development.md)接手。
 
@@ -106,6 +106,7 @@
 
 | 范围 | 已集成证据 | 可重建入口及边界 |
 | --- | --- | --- |
+| 静态检查与复盘 | 代码候选 `583bff81`，基线 `5a69610f`；Standards/Spec 发现均已关闭 | 根静态脚本及 Knip/Oxlint 配置；独立检出干净安装、两项静态检查、共享/API 装配与 Web 源码构建通过，CI 配置通过 actionlint。冻结 OCR 输入与原摘要一致，buffer 两项保留；文档同步完整目标、检查覆盖、局部小问题及 CI 证据使用规则。未重跑产品全量回归、未改资产的冷构建或云端 CI；本机回执 `test-results/static-analysis-retro/root-receipt.md` |
 | 七项原型裁决修复与全站连续体验复查 | [PR #51](https://github.com/DingJWuyu/TeachBuddy/pull/51)，`90fec3a7`；[最终 CI](https://github.com/DingJWuyu/TeachBuddy/actions/runs/39594819440) 对应候选 `7a2ee40f`，squash 后文件树一致 | 七项既有裁决全部修复；本轮另确认并修复30项既存产品根因、3项原型独有问题，2项既存测试缺陷单列。产品与原型同步，当前原型构建可从检出重建，重复生成一致；无后端、数据结构或依赖变更。两轴独立审查及增量复核无开放发现。全工作区构建、284项HTTP/SQLite、51项真实输出、423项浏览器回归通过，2项缺私人E原稿跳过；首轮数学动效采样误报已定点修正，原用例、忙帧及4项负对照留证。本地按实际入口和状态分支对照双端，补验连续操作、异步切换、保存重开与跨模块往返。preview已同步，服务、匿名登录实页、变更组件及控制台已核对，未写私人业务数据。任务与覆盖记录、审查及有效证据归档本机 `test-results/experience-completion/`；临时数据、构建和工作树已清理。真实邮件、收费模型、实体设备、系统IME及Office人工体验仍沿具名边界另验 |
 | 前一轮全站连续体验清查 | [PR #50](https://github.com/DingJWuyu/TeachBuddy/pull/50)，`6e5413ed`；[CI](https://github.com/DingJWuyu/TeachBuddy/actions/runs/39563243128) 对应候选 `754ee72a`，squash 后文件树一致 | 当轮去重确认35项既存发现并修复28项，7项原型共有体验随后已在PR #51完成修复；此前暂缓的学期与反馈收件不重复计数。Standards/Spec 在代码候选 `ce0b58a2` 的硬问题均关闭，后续只更新任务记录。全工作区构建、284项HTTP/SQLite、51项真实输出、387项浏览器回归首轮通过，2项因缺私人E原稿跳过；本地按影响补验连续操作、焦点、动效、尺寸与跨模块实际保存。preview已同步，服务、匿名登录实页及变更模块已核对，未写私人业务数据。覆盖清单、回执及有效证据归档本机 `test-results/experience-audit/`，临时工作树与分支已清理。原型与后端未修改，真实邮件、线上模型、Office及目标设备仍沿具名边界另验 |
 | 原型功能收口 | [PR #48](https://github.com/DingJWuyu/TeachBuddy/pull/48)，`7725aa69`；[CI](https://github.com/DingJWuyu/TeachBuddy/actions/runs/39478174882) 对应候选 `adb016da`，squash 后文件树一致 | 全工作区构建、284 项 HTTP/SQLite、51 项真实输出、355 项浏览器回归通过；2 项缺私人原稿跳过。资源、背景、资料包、会话与提案、班级成绩和归档已接通；历史设备选择及已提交请求接续定点通过。Standards/Spec 无未关闭发现。preview 已同步、重启并核对真实登录入口及新模块，未写私人业务数据；证据在本机 `test-results/prototype-capabilities/`，临时现场已清理。学期、反馈暂缓，真实外部环境仍沿下方具名边界 |
