@@ -7,8 +7,8 @@
  * query parameter, request header or body field that selects an account.
  *
  * Usage in a spec (B14/B15):
- *   import { bootstrapPrincipal, FIRST_FLOW_ACCOUNTS } from './fixtures/first-flow/identity.js';
- *   await bootstrapPrincipal(context, FIRST_FLOW_ACCOUNTS[0]);
+ *   import { bootstrapPrincipal } from './fixtures/first-flow/identity.js';
+ *   await bootstrapPrincipal(context);
  * Only valid while `FIRST_FLOW_E2E=1` runs the suite against the HTTPS runner.
  */
 import fs from 'node:fs';

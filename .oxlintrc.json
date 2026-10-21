@@ -10,7 +10,8 @@
     "docs/**",
     "apps/web/public/vendor/**",
     "extensions/math-web-ai/test/fixtures/legacy-0.1/**",
-    "apps/api/test/fixtures/legacy-source/{auth,dataStore}.js"
+    "apps/api/test/fixtures/legacy-source/{auth,dataStore}.js",
+    "apps/api/test/fixtures/ocr-selection/reproduction/**"
   ],
   "env": {
     "node": true
@@ -57,6 +58,15 @@
       "rules": {
         // Portable filenames intentionally remove control characters from untrusted names.
         "no-control-regex": "off"
+      }
+    },
+    {
+      "files": [
+        "apps/api/src/workbench/recognition/runtime.js"
+      ],
+      "rules": {
+        // Failed worker shutdown takes precedence. Keep bytes fixed for the OCR reproduction hashes.
+        "no-unsafe-finally": "off"
       }
     }
   ],

@@ -78,8 +78,6 @@ try {
     fs.writeFileSync(path.join(out, "close.json"), JSON.stringify({ status: "complete", seconds: (performance.now() - started) / 1000 }));
   } catch (error) {
     fs.writeFileSync(path.join(out, "close.json"), JSON.stringify({ status: "failed", seconds: (performance.now() - started) / 1000, code: error.code, message: error.message }));
-    // The reproduction must report unsuccessful worker shutdown as a failure.
-    // oxlint-disable-next-line no-unsafe-finally
     throw error;
   }
 }

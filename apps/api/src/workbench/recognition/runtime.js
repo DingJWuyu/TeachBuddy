@@ -445,8 +445,6 @@ export function createRecognizer({ home, workDirectory } = {}) {
         }
       } catch {
         if (gen && !gen.stopped) await stop(gen, cleanupFailure());
-        // Cleanup failure takes precedence: callers must not assume the worker stopped.
-        // oxlint-disable-next-line no-unsafe-finally
         throw cleanupFailure();
       } finally { currentRun = undefined; done.resolve(); }
     }

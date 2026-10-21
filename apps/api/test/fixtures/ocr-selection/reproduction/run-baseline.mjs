@@ -106,8 +106,6 @@ try {
     } finally {
       fs.closeSync(stdout); fs.closeSync(stderr);
       try { await execute("systemctl", ["--user", "stop", `${unit}.scope`], { timeout: 10000 }); }
-      // A scope that cannot stop invalidates the reproduction, even after another failure.
-      // oxlint-disable-next-line no-unsafe-finally
       catch (error) { if (error.code !== 5) throw error; }
     }
     const finishedEpochMs = Date.now();
