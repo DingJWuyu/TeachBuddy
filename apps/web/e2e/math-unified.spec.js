@@ -708,17 +708,30 @@ test('按需展开：参数、连接与算式连续开合，快速反向和末�
       await page.clock.install();
       await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1000));
     }
+    const closingAt = presence ? await page.evaluate(() => Date.now()) : null;
     const closing = await sample(selector, click, `${name}-reverse-close`, { opening: false, progress: .35 });
     const reopened = await sample(selector, async () => {
       await click();
       if (presence) {
         await expect(page.locator(selector)).not.toHaveAttribute('aria-hidden', 'true');
-        await page.clock.resume();
+        // Deliver the two mounting RAFs, keeping the old removal deadline controlled.
+        await page.clock.runFor(34);
       }
     }, `${name}-reverse-reopen`);
     // Each real click reverses an unfinished transition from its current layout.
     expect(Math.abs(closing[0].height - opening.at(-1).height), `${name} first reversal continuity`).toBeLessThan(1);
     expect(Math.abs(reopened[0].height - closing.at(-1).height), `${name} second reversal continuity`).toBeLessThan(1);
+    if (presence) {
+      // Cross the old close timer's 180 ms deadline before checking the reopened UI.
+      await page.clock.runFor(200);
+      const elapsed = await page.evaluate(start => Date.now() - start, closingAt);
+      expect(elapsed, `${name} old close deadline elapsed`).toBeGreaterThan(180);
+      await expect(page.locator(selector), `${name} remains mounted after old close deadline`).toHaveCount(1);
+      await expect(page.locator(selector)).toBeVisible();
+      await expect(page.getByLabel('图形表达式', { exact: true })).toBeFocused();
+      fs.writeFileSync(info.outputPath(`${name}-reverse-deadline.json`), JSON.stringify({ elapsed, mounted: true, visible: true, inputFocused: true }, null, 2));
+      await page.clock.resume();
+    }
   }
   const conversion = tools.getByRole('button', { name: '改为算式', exact: true }).first();
   await reverse(`[id="${await conversion.getAttribute('aria-controls')}"]`, conversion, '改为算式');
