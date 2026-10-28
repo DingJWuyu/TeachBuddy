@@ -11,7 +11,7 @@
 ## 固定输入与实验方法
 
 - 原始基线：`789a38d83babad04f2e2a51e9f17530abf638801`，已 fetch，和 origin/preview/integration 一致。
-- 原始套件：77 个 API test 文件、56 个浏览器 spec，以及 3 个扩展独立测试脚本。完整清单见本目录下 `test-suite-rebuild/old-tests.tsv`；总控继续核对非标准命名入口，防止漏删或遗漏独有保护。
+- 原始套件：77 个 API test 文件、56 个浏览器 spec、3 个扩展独立测试脚本，以及6个非标准命名历史验证脚本，共142个执行入口。完整清单见本目录下 `test-suite-rebuild/old-tests.tsv`。OCR选型重建脚本与真实模型采集 fixture 属于固定证据/输入准备，保留后核对消费者，不当作回归用例。
 - 已启动原始基线 CI：[40632221950](https://github.com/DingJWuyu/TeachBuddy/actions/runs/40632221950)。结果尚待回收；不以旧版本通过代替本次基线结果。CI 外专项按清单记录未验，不伪称全量执行。
 - 空测试实验移除用例，保留真实固定输入、历史兼容快照和产品源码；运行框架、fixture 与脚本按实际消费者整理。`.feature` 为需求资料，先核对有效语义，不把它们算作执行用例。生成文件和只读设计输入遵守原保护规则。
 - 作者先按当前规格与真实使用路径提出最小保护集合，冻结设计前不读取旧断言。可以读取无断言的输入/服务准备代码；必要时由总控提供公共运行环境。随后独立验收者读取旧套件与历史缺陷，挑战候选。
@@ -33,7 +33,16 @@
 
 ## 当前阶段与接续
 
-状态：准备基线与空测试候选，尚未开始作者派发。
+状态：标准命名及扩展用例已在 `992172141f6664d4d851154cc533428414051c42` 清空，另6个独立入口随后补删。A/B/C保护清单均获总控确认，已进入实现。公共真实HTTPS应用fixture由总控统一提供，作者不各自建立第二套运行器。
+
+| 现场 | session / 状态 |
+| --- | --- |
+| `TeachBuddy-test-rebuild` / `test/suite-rebuild` | 总控候选，公共准备与CI整合；当前候选以Git为准 |
+| `TeachBuddy-test-data` / `test/rebuild-data` | `/root/author_a_data`，A实施 |
+| `TeachBuddy-test-browser` / `test/rebuild-browser` | `/root/author_b_browser`，B实施 |
+| `TeachBuddy-test-outputs` / `test/rebuild-outputs` | `/root/author_c_outputs`，C实施 |
+
+本机正在运行的准备：npm安装日志 `/tmp/teachbuddy-test-rebuild-npm.log`（exec session 94060）；GeoGebra全新构建日志 `test-results/test-suite-rebuild/math-build.log`（73637）；基线CI等待（84842）。恢复时先核对进程/结果，不重复启动。安装与构建不读取preview私有配置或复制旧工作树产物。
 
 1. 回收基线 CI 的结果、耗时、跳过和失败；确认旧套件完整入口清单。
 2. 在总控隔离 worktree 删除所有旧执行用例并提交空测试基线，记录 SHA；从该基线建立 A/B/C 工作树，启动三位作者的保护清单阶段。
