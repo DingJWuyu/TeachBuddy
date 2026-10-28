@@ -269,12 +269,22 @@
 }
 
 .cal-page .fc .fc-timegrid-slot {
-  height: 26px;
+  /* Native hit cells match the five-minute snap; keep 104px per hour. */
+  height: calc(26px / 3);
+  line-height: 0;
   border-bottom: 0;
 }
 
 .cal-page .fc .fc-timegrid-slot-minor {
   border-top: 1px dotted light-dark(#f7f7f8, var(--app-line-soft));
+}
+
+.cal-page .fc .fc-timegrid-slot-minor:not(.cal-quarter-hour) {
+  border-top: 0;
+}
+
+.cal-page .fc .fc-timegrid-slot-label-frame {
+  position: relative;
 }
 
 .cal-page .fc .fc-timegrid-slot-label {
@@ -283,6 +293,11 @@
 }
 
 .cal-page .fc .fc-timegrid-slot-label-cushion {
+  position: absolute;
+  top: 0;
+  right: 0;
+  white-space: nowrap;
+  line-height: 19.5px;
   padding: 0 8px;
   font-size: 12px;
   color: light-dark(#5b5b5d, var(--app-muted));

@@ -43,6 +43,8 @@ Web 的日历与任务看板在 [index.jsx](../../apps/web/src/features/schedule
 
 事项跟手卡通过公共 `shellRoot` 挂载在编辑器之外，固定坐标不受任务面板动效的变换祖先影响。任务打开错误与列表刷新错误分别保留：打开成功、新建草稿、退出编辑或切换深链接清除前一目标的错误；任务重试重新读取该目标，列表重试只刷新列表，未确认写入仍优先以原请求确认。深链接从首轮读取起受编辑意图编号约束，后续新建、打开其他任务或退出后，迟到的成功与错误均不得覆盖当前现场。
 
+时间网格由 [TimeGrid](../../apps/web/src/features/schedule/TimeGrid.jsx) 使用相同的五分钟 `slotDuration` 与 `snapDuration`，让原生拖动命中区与吸附区一致，避免水平换日时改变开始分钟。网格 CSS 将五分钟单元压至原十五分钟单元的三分之一，保持每小时104像素及每十五分钟分隔线；时间标签独立定位，不撑高命中单元。拖动和调整时长均沿实际 FullCalendar 事件进入原保存协议，不在提交时修正分钟。
+
 月视图更多任务使用 FullCalendar 的外部 Draggable；`MonthMore` 在其 `eventData` 开始回调中暂时隐藏浮层，让下方日期参与命中测试，同时保留拖动源节点。拖动结束或取消后恢复浮层，成功落点沿原 `drop` 回调关闭；返回原日期不产生写入。任务编辑器的移回待安排及重复删除确认显式使用共享 `ConfirmDialog.enterConfirms`，保留日程 Enter 执行确认的约定。
 
 Web 的 [useScheduleSettings](../../apps/web/src/features/schedule/useScheduleSettings.js) 和 [useNotifications](../../apps/web/src/features/schedule/useNotifications.js) 拥有账户时区/日程设置及通知状态，不放公共平台层。它们通过 schedule/api 使用同一身份与请求协议。

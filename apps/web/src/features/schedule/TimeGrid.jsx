@@ -253,7 +253,8 @@ export default function TimeGrid({ view, anchor, zone, occurrences, labels, sele
       validRange={{ start: '1900-01-01', end: '2101-01-01' }}
       now={calendarNow} nowIndicator={!month}
       nowIndicatorContent={arg => arg.isAxis ? <><span className="cal-now-time">{new Intl.DateTimeFormat(i18n.resolvedLanguage, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZone: 'UTC' }).format(arg.date)}</span><span className="cal-now-guide"/></> : null}
-      slotDuration="00:15:00" snapDuration="00:05:00" slotLabelInterval="01:00" scrollTime="00:00:00" scrollTimeReset={false}
+      slotDuration="00:05:00" snapDuration="00:05:00"
+      slotLaneClassNames={arg => arg.date.getUTCMinutes() % 15 === 0 ? 'cal-quarter-hour' : ''} slotLabelInterval="01:00" scrollTime="00:00:00" scrollTimeReset={false}
       slotLabelFormat={{ hour: 'numeric', meridiem: 'short', omitZeroMinute: true }}
       slotLabelContent={arg => new Intl.DateTimeFormat(i18n.resolvedLanguage, { hour: 'numeric', timeZone: 'UTC' }).format(arg.date)}
       eventTimeFormat={{ hour: 'numeric', minute: '2-digit', meridiem: false, omitZeroMinute: false }}

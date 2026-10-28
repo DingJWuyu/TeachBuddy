@@ -1,6 +1,6 @@
 # 作者 B - 用户流程重建
 
-状态：D19-D23五项独立挑战返工已完成，17/17作者回归通过；另有四项代表性故障检出证据。等待独立验收；总控已授权继续D11/D15/D17小批补强，尚未开始写入。执行者 `gpt-6.1-sol / medium`。工作树 `TeachBuddy-test-browser`，分支 `test/rebuild-browser`，空套件基线 `992172141f6664d4d851154cc533428414051c42`。独占 `apps/web/e2e/rebuilt/` 与本记录；产品缺陷先交总控协调。没有读取旧测试断言。
+状态：D19-D23五项及D11 S45/D15/D17补强完成作者验证；I09新增回执处理终点后仍在诊断偶发未确认结果。17/17历史回归通过，第三批仅定点运行变化场景；D15另检出并修复真实拖动偏移。执行者 `gpt-6.1-sol / medium`。工作树 `TeachBuddy-test-browser`，分支 `test/rebuild-browser`，空套件基线 `992172141f6664d4d851154cc533428414051c42`。独占 `apps/web/e2e/rebuilt/` 与本记录；产品缺陷先交总控协调。初版未读取旧测试断言；独立挑战阶段按总控授权读取相关历史修复作可证伪挑战。
 
 ## 最小保护清单
 
@@ -124,4 +124,19 @@ D11/D15/D16/D17 的剩余风险在本轮五项完成后给总控逐项取舍，�
 
 上述三项在总控只读 `web-candidate` 构建通过，命令沿统一CI配置 `--workers=1 --output=test-results/test-suite-rebuild/browser/third-first --grep 'D11|D15|D17'`，日志 `logs/third-first.log`：3 PASS，另D15失败见下。
 
-D15真实水平拖动已两次复现次日09:00变08:55，第二次已经稳定hover并从主体中心抓取，没有放宽分钟断言。总控授予本线最小日程调用链及 `docs/subsystems/schedule.md` 唯一修复/同步权。按diagnosing-bugs先列三种可证伪原因：嵌套滚动偏移、FullCalendar命中/吸附差异、应用保存转换；`travel-probe`记录指针、网格/滚动、镜像与真实保存请求，定位仍在进行。本项尚未完成，不算通过或范围外发现。
+D15真实水平拖动已两次复现次日09:00变08:55，第二次已经稳定hover并从主体中心抓取，没有放宽分钟断言。总控授予本线最小日程调用链及 `docs/subsystems/schedule.md` 唯一修复/同步权。按diagnosing-bugs先列三种可证伪原因：嵌套滚动偏移、FullCalendar命中/吸附差异、应用保存转换；`travel-probe`记录指针、网格/滚动、镜像与真实保存请求：指针Y恒489、scrollTop恒728、09点网格位置不变，镜像在提交前已显示08:55，排除滚动变化与应用保存转换。
+
+FullCalendar timegrid `queryHit`以五分钟snap计算日期区间，却返回十五分钟slot矩形；interaction初始命中将抓取点移至主体与该矩形交集中心，造成同格内分钟偏移。单变量将slot改为五分钟即越过严格09:00断言，支持命中假设。局部修复仅改TimeGrid与schedule.css，让公开slotDuration/snapDuration一致；CSS行高置零、标签独立定位，保持104px/h及每十五分钟分隔线。没有fork依赖、使用内部开关或在保存时钳制分钟。权威运行参考同步到 `docs/subsystems/schedule.md`。
+
+真实修复路径继续验证水平换日不改09:00、纵向移动30分钟成为09:30、拖动末端延长15分钟成为75分钟，新设备只复制Cookie并读回09:30至10:45。随后通过CDP实际更改浏览器IANA时区到Asia/Shanghai，消费真实系统检测与设置PUT，日期和当地钟点保持。采用真实bringToFront及页面15秒检测，不以合成focus或替换Intl代签；本例证明系统检测，不单独宣称焦点触发的即时性。测试显式清理继承的timezone override，未改产品时区实现。
+
+截图对照：修前 `browser/travel-probe/.../test-failed-1.png`，修后 `browser/drag-fixed-third/.../schedule-five-minute-hits.png`。实际查看两张，小时高度与十五分钟线密度保持，修后真实卡片显示09:30至10:45；测试也核对104px/h，避免仅让单例通过但网格变三倍高。
+
+I09补强另等待首次route.fetch为200、旧POST响应200并finished、昵称保存编辑器和状态退出，才检查新昵称，避免reload抢先取消旧处理。按历史1b107651等价反转profileRead代次检查，独立构建 `web-profile-fault`，`profile-historical-red`在实际昵称断言失败：Expected 随后保存的新昵称 / Received 先提交的旧昵称；补丁 `faults/refinement/D11-historical-nickname.patch`。AuthProvider已恢复，没有永久产品改动。正常 `drag-fixed-third` 的I09再次通过。
+
+D15新候选独立Vite构建 `web-drag-fixed2`，使用本树产品源码和总控同任务新公共资产 `/home/liam_t/项目/TeachBuddy-test-rebuild/apps/web/public`，日志 `logs/drag-fix-build2.log`。未复制preview产物。`drag-fixed-sixth`完整D15通过；早先coach遮挡、CSS行高膨胀和CDP重复override失败保留为诊断证据，不算产品通过。
+
+
+D15最终同一测试对总控修前候选 `web-candidate` 再次稳定红，`drag-original-red` 真实保存 Expected09:00 / Received08:55；修复候选 `third-final` 的D15通过，包含新设备结束时间10:45读回。该次I09失败另列：旧POST200完成后昵称编辑器留下“昵称保存结果未确认”，trace显示最终GET session未收响应，10秒后ERR_ABORTED。不能把此前I09正常通过当作该失败已关闭；总控授权独立诊断AuthProvider，当前先单独交付日程修复，不改认证产品源码。
+
+定点Oxlint与git diff-check通过（`logs/third-lint.log`）。当前I09增强尚未提交，D15源码、场景与运行参考可独立验收。
