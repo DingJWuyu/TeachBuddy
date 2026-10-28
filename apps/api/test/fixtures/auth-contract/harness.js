@@ -151,7 +151,8 @@ function requestOver(transport, baseUrl, method, requestPath, { headers, body })
         const chunks = [];
         response.on('data', (chunk) => chunks.push(chunk));
         response.on('end', () => {
-          const text = Buffer.concat(chunks).toString('utf8');
+          const bytes = Buffer.concat(chunks);
+          const text = bytes.toString('utf8');
           let json = null;
           if (text.length > 0 && (response.headers['content-type'] ?? '').includes('json')) {
             try {
@@ -164,6 +165,7 @@ function requestOver(transport, baseUrl, method, requestPath, { headers, body })
             status: response.statusCode,
             headers: response.headers,
             setCookies: response.headers['set-cookie'] ?? [],
+            bytes,
             text,
             json,
             encrypted
