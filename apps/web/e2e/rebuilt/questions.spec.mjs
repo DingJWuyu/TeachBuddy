@@ -24,30 +24,44 @@ test('题目改编独立保存，跨模块保留编辑草稿，刷新仍可找�
   await expect(page.getByRole('article', { name: '题干', exact: true })).toHaveText('求函数 y=x² 的最小值。');
 });
 
-test('创建已提交但响应丢失时，刷新后按原请求确认且不重复创建', async ({ page, world }) => {
+test('B-R2 创建未知期间继续输入，原键核实不覆盖新稿且新设备读回唯一题目', async ({ page, world }) => {
   await register(page, world);
   await navigate(page, '/questions');
   await page.getByRole('button', { name: '新建题目', exact: true }).first().click();
   await page.getByRole('textbox', { name: '题目标题', exact: true }).fill('结果待确认的题');
   await page.getByRole('textbox', { name: '题干段落 1', exact: true }).fill('计算 7+8。');
   const writes = [];
+  let committed, releaseResponse;
+  const submitted = new Promise(resolve => { committed = resolve; });
+  const responseGate = new Promise(resolve => { releaseResponse = resolve; });
   await page.route('**/api/**', async route => {
     const request = route.request();
     if (request.method() === 'POST' && new URL(request.url()).pathname === '/api/modules/questions/v2/items') {
       writes.push({ key: request.headers()['idempotency-key'], body: request.postData() });
-      if (writes.length === 1) { await route.fetch(); await route.abort('connectionreset'); return; }
+      if (writes.length === 1) { await route.fetch(); committed(); await responseGate; await route.abort('connectionreset'); return; }
     }
     await route.continue();
   });
   await page.getByRole('button', { name: '保存题目', exact: true }).click();
+  await submitted;
+  await page.getByRole('textbox', { name: '题干段落 1', exact: true }).fill('计算 7+8，并解释你的计算方法。');
+  releaseResponse();
   await expect(page.getByRole('button', { name: '确认上次请求', exact: true })).toBeVisible();
   await page.reload();
+  await expect(page.getByRole('textbox', { name: '题干段落 1', exact: true })).toHaveValue('计算 7+8，并解释你的计算方法。');
   await page.getByRole('button', { name: '确认上次请求', exact: true }).click();
+  await expect(page.getByRole('textbox', { name: '题干段落 1', exact: true })).toHaveValue('计算 7+8，并解释你的计算方法。');
+  await page.getByRole('button', { name: '保存题目', exact: true }).click();
   await expect(page.getByRole('heading', { name: '结果待确认的题', exact: true })).toBeVisible();
   expect(writes.length).toBeGreaterThanOrEqual(2);
   expect(writes[1]).toEqual(writes[0]);
   await page.reload();
   await expect(page.locator('.q-list').getByText('结果待确认的题', { exact: true })).toHaveCount(1);
+  await onNewDevice(page, world, async fresh => {
+    await navigate(fresh, '/questions');
+    await fresh.locator('.q-list').getByText('结果待确认的题', { exact: true }).click();
+    await expect(fresh.getByRole('article', { name: '题干', exact: true })).toHaveText('计算 7+8，并解释你的计算方法。');
+  });
 });
 
 test('不同页面修改形成真实冲突，保留草稿并由老师明确采用服务器版本', async ({ page, context, world }, info) => {
