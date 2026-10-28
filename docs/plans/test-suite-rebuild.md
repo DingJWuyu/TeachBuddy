@@ -33,12 +33,12 @@
 
 ## 当前阶段与接续
 
-状态：A第三批负责真实开发服务入口及Cookie属性，B第三批负责历史身份迟到/激活失败、日程拖动/时区和主应用网页桥。144个原执行入口均已清空并入清单；A第二候选41例、C第二候选22例已经集成。B第二候选17例已集成c100f497，五项补强通过且四项有效故障具名检出。D已完成旧源/历史缺陷盘点，正在做独立三方消融。总控负责原基线CI暴露的标签保存竞态，不掩盖或跳过失败。
+状态：A第三批开发服务入口及Cookie属性已集成2f55a534；B第三批历史身份迟到/激活失败、日程拖动/时区和主应用网页桥仍在进行。144个原执行入口均已清空并入清单；A第二候选41例、C第二候选22例已经集成。B第二候选17例已集成c100f497，五项补强通过且四项有效故障具名检出。D已完成旧源/历史缺陷盘点，正在做独立三方消融。总控负责原基线CI暴露的标签保存竞态，不掩盖或跳过失败。
 
 | 现场 | session / 状态 |
 | --- | --- |
 | `TeachBuddy-test-rebuild` / `test/suite-rebuild` | 总控候选；标签竞态修复已提交，当前候选以Git为准 |
-| `TeachBuddy-test-data` / `test/rebuild-data` | `/root/author_a_data`，第二候选34517eda已集成为5f1565b9，41例；空闲 |
+| `TeachBuddy-test-data` / `test/rebuild-data` | `/root/author_a_data`，业务41例；第三批5ffe6ad7已集成为2f55a534，新增开发服务1例及Cookie属性；空闲 |
 | `TeachBuddy-test-browser` / `test/rebuild-browser` | `/root/author_b_browser`，第二候选31202c38已集成为c100f497；身份/日程/主应用桥补强中 |
 | `TeachBuddy-test-outputs` / `test/rebuild-outputs` | `/root/author_c_outputs`，第二候选73e9526d已集成为6b70a35c，22例；空闲 |
 | `TeachBuddy-test-audit` / `test/rebuild-audit` | `/root/auditor_d_ablation`，已盘点144入口；完成A固定5f1565b9独立实验后接C及最终B |
@@ -48,6 +48,7 @@
 ### 已有证据与发现
 
 - A作者41例通过，十组首轮与五组补充故障均具名检出。独立D固定候选41 PASS，并完成历史请求、未知Document、删号启动接续、身份存储失败、Agent同轮去重的“正常通过/故障失败/移组漏检”证据；共享回执错误被saving和classroom重复检出，两个组尚有各自业务保证，不能只凭这一重叠删除整组。
+- A第三批通过真实startServer(dev:true)运行Vite/StrictMode，注册、资源上传往返、题目保存刷新1 PASS（10.7s）；复用已abort的资源controller故障被上传可用性断言检出，恢复后通过。Cookie属性在已有身份例中补验通过，不新增重复登录矩阵。
 - B真实两页编辑复现题库冲突刷新后失去处理入口，两个稳定红证据对应产品修复dd96795e；首轮13例通过。补强包含数学实际对象新设备读回、保存回执后的新输入、资源两阶段未决接续、PDF真实文字层复制、删号IndexedDB原件清理与迟到写保护。
 - C22例涵盖实际输入/输出/数学/扩展；补强转换隔离、OCR进程停止与迟到绑定、跨页教学表格角色、真实GGB对象/视口/3D。直接调用生成器的Word/PDF断言已删除，现无产品导出消费者，保留其固定试卷输入生成用途。受控OCR和网络隔离桥不冒充真实GPU/DeepSeek验收。
 - 总控已清理35个旧Playwright配置、无消费者UI helper、旧runner图与重复依赖；只有旧测试调用的公式预检/同步Pandoc分支已删除，内部导出收回。当前Knip+lint通过；最终B合入后只补新增范围，完整干净回归交PR CI。
