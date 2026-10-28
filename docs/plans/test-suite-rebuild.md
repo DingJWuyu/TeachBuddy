@@ -33,14 +33,14 @@
 
 ## 当前阶段与接续
 
-状态：A第三批开发服务入口及Cookie属性已集成2f55a534；B第三批身份迟到/激活失败、主应用网页桥已定点通过；水平拖动任务稳定出现09:00变08:55，B正按E2E反馈定位，尚未裁决测试或产品缺陷。C第三批补当前MinerU typed内容及已采用笔记的导出恢复。144个原执行入口均已清空并入清单；A第二候选41例、C第二候选22例已经集成。B第二候选17例已集成c100f497，五项补强通过且四项有效故障具名检出。D已完成旧源/历史缺陷盘点，正在做独立三方消融。总控负责原基线CI暴露的标签保存竞态，不掩盖或跳过失败。
+状态：A第三批开发服务入口及Cookie属性已集成2f55a534；B第三批身份迟到/激活失败、主应用网页桥已定点通过；水平拖动任务稳定出现09:00变08:55，B正按E2E反馈定位，尚未裁决测试或产品缺陷。C第三批typed内容、采用笔记的个人包/部署恢复及80行PNG分页已集成。A最后一批补Agent运行中停止/真实崩溃、月末及全天日程、考试原卷定位成员关系。144个原执行入口均已清空并入清单；A第二候选41例、C第二候选22例已经集成。B第二候选17例已集成c100f497，五项补强通过且四项有效故障具名检出。D已完成旧源/历史缺陷盘点，正在做独立三方消融。总控负责原基线CI暴露的标签保存竞态，不掩盖或跳过失败。
 
 | 现场 | session / 状态 |
 | --- | --- |
 | `TeachBuddy-test-rebuild` / `test/suite-rebuild` | 总控候选；标签竞态修复已提交，当前候选以Git为准 |
-| `TeachBuddy-test-data` / `test/rebuild-data` | `/root/author_a_data`，业务41例；第三批5ffe6ad7已集成为2f55a534，新增开发服务1例及Cookie属性；空闲 |
+| `TeachBuddy-test-data` / `test/rebuild-data` | `/root/author_a_data`，业务41例；第三批5ffe6ad7已集成为2f55a534；最后一批Agent控制/日历分支/考试定位中 |
 | `TeachBuddy-test-browser` / `test/rebuild-browser` | `/root/author_b_browser`，第二候选31202c38已集成为c100f497；身份/日程/主应用桥补强中 |
-| `TeachBuddy-test-outputs` / `test/rebuild-outputs` | `/root/author_c_outputs`，第二候选73e9526d已集成为6b70a35c，22例；第三批typed识别/笔记迁出恢复中 |
+| `TeachBuddy-test-outputs` / `test/rebuild-outputs` | `/root/author_c_outputs`，第二候选73e9526d已集成为6b70a35c，22例；第三批b7e9df9与c796c50已集成；23例，空闲 |
 | `TeachBuddy-test-audit` / `test/rebuild-audit` | `/root/auditor_d_ablation`，已盘点144入口；完成A固定5f1565b9独立实验后接C及最终B |
 
 公共准备：全新npm安装、GeoGebra源码冷构建（9m55s）与完整工作区build已通过，日志在总控 `test-results/test-suite-rebuild/{npm-install,math-build,full-build}.log`。C只读使用总控 `apps/web/dist`，该版本尚未包含B题库修复；数学源码及运行时输入一致。B用本树源码与同任务新公共资产另建 `web-full-fixed`。运行中的只读产物不得覆盖。基线CI已结束，失败日志及小日志包在总控 `test-results/test-suite-rebuild/baseline-ci/`。总控另建 `web-candidate` 包含题库与标签修复，不覆盖上述已被作者引用的产物。
@@ -55,10 +55,13 @@
 - 原CI标签竞态：CI trace确认第二次PUT409；首次最小路径通过，阻塞改名后GET列表读回即稳定复现同样409（4.2s），并非fixture失败。修复在读回完成前禁用保存/忽略Enter，保留重新打开后的草稿；定点1 PASS（5.2s），200、刷新后实际名称和截图均已核对。红/绿及CI trace保存在总控 `test-results/test-suite-rebuild/`；源/用例由总控独占。
 - D对C固定6b70a35c独立22 PASS、0skip（94.7s）；指出当前MinerU document-6 typed equation/table/list消费未被旧Paddle回放证明，以及源删除后的noteFragments附件尚未经过导出恢复。C返工补两个实际独有边界，不恢复尺寸/模板全排列。
 - B第三批I09两页迟到昵称、S45失败继续且注册仅一次、主应用STATUS/CONNECT/两轮SEND/取消迟到DONE已通过。D15水平拖到次日后09:00变08:55两次稳定复现，B独占TimeGrid.jsx/日程index调用链诊断及必要修复、docs/subsystems/schedule.md同步；root不抢写。
+- B日程修复ca9f0c61已集成为1251f0ce：FC初始命中格改为与5分钟snap一致，CSS保持104px/h及每15分钟分隔。水平换日09:00不变、竖拖09:30、75分钟resize、新设备读回和实际CDP系统时区变化定点通过；相同最终用例在旧候选09:00/08:55具名失败。I09已证历史反转红，但额外一次GET中止仍在定位测试路由/产品原因，不算通过。
+- C第三批2例7.16s PASS：官方D2/D8 typed math/table（原raw不改），另可见自编受控typed-list；删源noteFragments个人包/维护backup-restore-activate后重新登录读回。独立23例候选待D复核。分页沿现C3补80行真实PNG，1例4.06s PASS，截掉后续片的故障33/80行FAIL；不恢复尺寸矩阵。
+- D最终源核对提出最后A补强：运行中stop和running崩溃恢复；monthly跳2月/全天DST；考试原卷location成员关系。A已恢复，D先批量收口所有剩余风险，再继续代表性消融，避免逐条迟发。
 - 无消费者旧页面/服务图再清理25文件、2596行，包括1266行身份替身服务器；同时移除专用supertest与多余Knip入口，resolveWorkbenchModules仅取消无消费者的导出，产品装配保持。固定legacy-source档案与输入生成器保留。Knip+lint通过，干净依赖安装由最终CI再验。
 - 原始执行入口补发现143 `first-flow-real-runner.mjs` 和144 `fixtures/auth-contract/https-smoke.mjs`；D映射已同步，最终报告仍待提交。
 
-1. 回收B日程网格/时区诊断及I09反转红证据、C typed识别与采用笔记迁出恢复；其他作者结果已集成。root标签修复95578d7b已定点通过，补充第一笔真实提交断言51354223待最终CI。
+1. 回收A最后业务批次、B I09读请求中止归因；C与B日程已集成。root标签修复95578d7b已定点通过，补充第一笔真实提交断言51354223待最终CI。
 2. 按D具名发现恢复相应作者修复，核对旧运行器/输入/依赖消费者并收口静态与文档。公共fixture `8be6e3a7`、二进制client `e27a49ca` 已被各作者cherry-pick，集成只取作者独有提交。
 3. 固定完整候选交D独立业务故障和逐组移除比较，保留144入口逐项去留映射，关闭必要缺口。
 4. 按已读code-review skill交E/F双轴审查；根基线固定789a38d8，规格为用户确认目标及本记录，不另要求用户重复提供。收齐已知修复后创建单一集成PR，让CI承担干净环境完整回归；审查与CI可并行。
