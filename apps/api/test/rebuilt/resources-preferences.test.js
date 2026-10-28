@@ -1,0 +1,64 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import sharp from 'sharp';
+import { randomUUID } from 'node:crypto';
+import { createWorld, register, ok, problem, write, upload, bytes } from './helpers.js';
+
+const resources = '/api/modules/resources/items';
+export const image = color => sharp({ create: { width: 12, height: 8, channels: 3, background: color } }).png().toBuffer();
+
+test('资源：文件替换与历史恢复保留条目/分类/备注，归档恢复保留原字节，永久删除不回收共用原件', async t => {
+  const world = await createWorld(t), { client } = await register(world), other = await register(world);
+  const originalBytes = await image('#ff0000'), newBytes = await image('#0000ff');
+  const file = ok(await upload(client, originalBytes, '课件图.png'), 201);
+  const replacement = ok(await upload(client, newBytes, '修订图.png'), 201);
+  const folder = { id: randomUUID(), name: '函数', parentId: null }, tag = { id: randomUUID(), name: '教学图', color: '#5b9cf5' };
+  ok(await write(client, 'PUT', '/api/modules/resources/taxonomy', { baseVersion: 1, folders: [folder], tags: [tag] }));
+  const first = ok(await write(client, 'POST', resources, { title: '一次函数图', folderId: folder.id, tagIds: [tag.id], note: '教师备注', fileId: file.id }), 201);
+  const revised = ok(await write(client, 'PUT', `${resources}/${first.id}/file`, { baseVersion: 1, fileId: replacement.id }));
+  assert.equal(revised.id, first.id);
+  assert.equal(revised.note, first.note);
+  assert.equal(revised.folderId, folder.id);
+  assert.deepEqual(revised.tagIds, [tag.id]);
+  const history = ok(await client.request('GET', `${resources}/${first.id}/history`)).items;
+  assert.deepEqual(new Set(history.map(x => x.fileId)), new Set([file.id, replacement.id]), '替换必须保留历史文件');
+  const oldRevision = history.find(x => x.fileId === file.id);
+  const restoredFile = ok(await write(client, 'POST', `${resources}/${first.id}/restore-file`, { baseVersion: revised.version, fileVersion: oldRevision.version }));
+  assert.equal(restoredFile.fileId, file.id);
+  assert.deepEqual((await bytes(client, `/api/workbench/files/${file.id}/content`)).bytes, originalBytes);
+  problem(await other.client.request('GET', `/api/workbench/files/${file.id}`), 404, 'not-found');
+  problem(await write(other.client, 'POST', resources, { title: '窃取', folderId: null, tagIds: [], note: '', fileId: file.id }), 404, 'not-found');
+  const archived = ok(await write(client, 'POST', `${resources}/${first.id}/deletion`, { baseVersion: restoredFile.version, deleted: true }));
+  assert.equal(ok(await client.request('GET', `${resources}?state=deleted`)).items[0].id, first.id);
+  const restored = ok(await write(client, 'POST', `${resources}/${first.id}/deletion`, { baseVersion: archived.version, deleted: false }));
+  assert.equal(restored.id, first.id);
+  const deleted = ok(await write(client, 'POST', `${resources}/${first.id}/deletion`, { baseVersion: restored.version, deleted: true }));
+  ok(await write(client, 'POST', `${resources}/${first.id}/purge`, { baseVersion: deleted.version }));
+  problem(await client.request('GET', `${resources}/${first.id}`), 404, 'not-found');
+  assert.deepEqual((await bytes(client, `/api/workbench/files/${file.id}/content`)).bytes, originalBytes, '条目永久删除不是文件物理回收');
+});
+
+test('偏好与导航：账户版本冲突拒绝覆盖，旧客户端保留新增字段，重开读取相同个人设置', async t => {
+  const world = await createWorld(t), a = await register(world), b = await register(world);
+  const url = '/api/reliability/v1/preferences';
+  const defaults = ok(await a.client.request('GET', url));
+  const values = { ...defaults.values, theme: 'dark', locale: 'en', background: 'parchment' };
+  const saved = ok(await write(a.client, 'PUT', url, { baseVersion: defaults.version, values }));
+  assert.equal(saved.version, 2);
+  problem(await write(a.client, 'PUT', url, { baseVersion: 1, values: defaults.values }), 409, 'version-conflict', { currentVersion: 2 });
+  const legacy = ok(await write(a.client, 'PUT', url, { baseVersion: 2, values: { readingSize: 'large', motion: 'reduce', externalAi: 'doubao' } }));
+  assert.equal(legacy.values.theme, 'dark');
+  assert.equal(legacy.values.locale, 'en');
+  assert.equal(legacy.values.background, 'parchment');
+  assert.deepEqual(ok(await b.client.request('GET', url)), defaults, '另一账户不共享外观');
+  const navigation = ok(await a.client.request('GET', '/api/workbench/navigation'));
+  const layout = structuredClone(navigation.layout);
+  layout.groups[0].moduleIds.reverse();
+  layout.groups[0].moduleIds.length && layout.hiddenModuleIds.push(layout.groups[0].moduleIds.pop());
+  const navSaved = ok(await write(a.client, 'PUT', '/api/workbench/navigation', { baseVersion: 1, layout }));
+  problem(await write(a.client, 'PUT', '/api/workbench/navigation', { baseVersion: 1, layout: navigation.layout }), 409, 'version-conflict');
+  await world.restart();
+  assert.deepEqual(ok(await a.client.request('GET', url)), legacy);
+  assert.deepEqual(ok(await a.client.request('GET', '/api/workbench/navigation')), navSaved);
+  assert.deepEqual(ok(await b.client.request('GET', '/api/workbench/navigation')), navigation);
+});
