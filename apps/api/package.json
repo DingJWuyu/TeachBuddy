@@ -7,7 +7,7 @@
     "dev": "node --watch src/server.js",
     "build": "node src/scripts/verify-storage.js",
     "start": "node src/server.js",
-    "test": "node --test test/*.test.js"
+    "test": "node --test test/rebuilt/*.test.js"
   },
   "dependencies": {
     "@earendil-works/pi-agent-core": "0.85.1",

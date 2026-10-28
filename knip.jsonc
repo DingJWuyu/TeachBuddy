@@ -33,11 +33,10 @@
     },
     "apps/web": {
       "entry": [
-        "e2e/**/*.spec.js",
+        "e2e/**/*.spec.{js,mjs}",
         "e2e/**/*.config.mjs",
         "e2e/**/playwright.config.mjs",
         "e2e/fixtures/**/build.mjs",
-        "e2e/auth-restore-ui.mjs",
         // These index.html entry scripts belong to independently built Vite fixtures.
         "e2e/fixtures/**/main.jsx",
         "e2e/fixtures/auth-contract/substitute-server.mjs",
