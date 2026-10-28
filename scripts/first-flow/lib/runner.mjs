@@ -22,12 +22,12 @@ import { resolveFixtureSets } from '../../../apps/api/test/fixtures/first-flow/c
 import { TEST_ACCOUNT_KEYS } from '../../../apps/api/test/fixtures/first-flow/accounts.js';
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
-export const repoRoot = path.resolve(scriptDir, '..', '..', '..');
+const repoRoot = path.resolve(scriptDir, '..', '..', '..');
 
-export const FIRST_FLOW_ACCOUNTS = TEST_ACCOUNT_KEYS;
-export const DEFAULT_PORT = 47112;
-export const WORKBENCH_FIXTURE_PORT = 48112;
-export const SPARE_PORT = 49112;
+const FIRST_FLOW_ACCOUNTS = TEST_ACCOUNT_KEYS;
+const DEFAULT_PORT = 47112;
+const WORKBENCH_FIXTURE_PORT = 48112;
+const SPARE_PORT = 49112;
 
 export function parseArgs(argv) {
   const options = {
@@ -82,14 +82,6 @@ export function usage() {
     '',
     'Restart with the same database: run the same command without --reset.'
   ].join('\n');
-}
-
-export function gitSha() {
-  try {
-    return execFileSync('git', ['rev-parse', 'HEAD'], { cwd: repoRoot, encoding: 'utf-8' }).trim();
-  } catch {
-    return 'unavailable';
-  }
 }
 
 function resetIsolatedData(dataDir) {

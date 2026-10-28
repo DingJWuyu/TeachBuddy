@@ -61,9 +61,10 @@
   // Config modules require an isolated built Web directory when executed. Analyze them and
   // their specs statically instead; explicit entries also cover the webServer command above.
   "playwright": false,
-  // System OpenSSL generates isolated test certificates; it is not an npm dependency.
+  // System tools are prepared by SETUP and CI, independently of npm dependencies.
   "ignoreBinaries": [
-    "openssl"
+    "openssl",
+    "pdftotext"
   ],
   // .github/workflows/prepare-release.yml requires semver in its inline Node script.
   "ignoreDependencies": [

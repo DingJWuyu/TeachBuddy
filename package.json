@@ -29,7 +29,7 @@
     "release:prepare": "release-it --config .release-it.json",
     "test:ci:outputs": "node --test --test-concurrency=1 apps/api/test/rebuilt-outputs/*.test.js extensions/math-web-ai/test/rebuilt/*.test.mjs",
     "test:ci:browser": "playwright test -c apps/web/e2e/ci.config.mjs",
-    "test:auth:e2e": "playwright test -c apps/web/e2e/ci.config.mjs identity.spec.mjs",
+    "test:auth:e2e": "playwright test -c apps/web/e2e/ci.config.mjs identity-shell.spec.mjs",
     "check:static": "npm-run-all --continue-on-error check:unused lint",
     "check:unused": "knip",
     "lint": "oxlint --deny-warnings apps packages scripts extensions tools/geogebra/loader.js playwright.config.mjs"
@@ -45,7 +45,6 @@
     "sharp": "^0.35.5",
     "@fontsource/noto-sans-sc": "5.2.9",
     "@vitejs/plugin-react": "^5.2.0",
-    "better-sqlite3": "^11.8.1",
     "jszip": "3.10.2",
     "mathjax": "3.2.2",
     "mathlive": "0.110.0",
