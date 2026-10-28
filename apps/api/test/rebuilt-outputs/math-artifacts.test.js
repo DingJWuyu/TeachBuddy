@@ -131,6 +131,18 @@ test('C4 统一作品课堂包禁网 file 冷开，完整构造与参数步骤�
   await slider.waitFor({ state: 'visible', timeout: 45000 });
   await page.waitForFunction(() => document.querySelector('.status')?.textContent === '');
   assert.equal(await slider.inputValue(), '1');
+  assert.equal(await page.evaluate(() => window.ggbApplet.getValue('f(2)')), 4, '初态实际函数须满足 f(2)=4');
+  const savedViewport = async () => {
+    const view = await page.evaluate(() => JSON.parse(window.ggbApplet.getViewProperties(1)));
+    const spanX = view.width * view.invXscale, spanY = view.height * view.invYscale;
+    assert.ok(Math.abs(view.xMin + spanX / 2) < 1e-6, '保存视区中心 x=0 应保持');
+    assert.ok(Math.abs(view.yMin + spanY / 2 - .14) < 1e-6, '保存视区中心 y=0.14 应保持');
+    assert.ok(Math.abs(view.invXscale / view.invYscale - 1) < 1e-6, '数学单位须保持等比例');
+    // Fixed GGB has 416x439 px at scale 50: contain its 8.32x8.78 world rectangle.
+    assert.ok(spanX >= 8.32 - 1e-6 && spanY >= 8.78 - 1e-6);
+    assert.ok(Math.abs(Math.min(spanX / 8.32, spanY / 8.78) - 1) < 1e-6, '视区须按已保存范围适配，不能换回默认缩放');
+  };
+  await savedViewport();
   assert.equal(await page.locator('.formula-row').count(), source.formulas.length, '公式和构造应同存于课堂作品');
   assert.ok(await page.locator('.formula-row svg').count() >= 1, '公式须具有真实矢量字形');
   assert.match(await page.locator('.formula-row').textContent(), /参数 a=1 的初态公式/);
@@ -138,11 +150,17 @@ test('C4 统一作品课堂包禁网 file 冷开，完整构造与参数步骤�
   await slider.focus();
   await slider.press('End');
   assert.equal(Number(await page.locator('.parameter output').textContent()), maximum, '键盘调整须写入真实数学参数');
+  assert.equal(await page.evaluate(() => window.ggbApplet.getValue('f(2)')), 4 * maximum, '滑杆必须改变真实函数对象，不能只改变控件输出');
   await page.getByRole('button', { name: '重置', exact: true }).click();
   await page.waitForFunction(() => document.querySelector('input[aria-label="a"]')?.value === '1' && !document.querySelector('.controls')?.inert);
   await page.getByRole('combobox', { name: '教学步骤' }).selectOption(source.steps[1].id);
   await page.waitForFunction(() => document.querySelector('input[aria-label="a"]')?.value === '3' && !document.querySelector('.controls')?.inert);
   assert.equal(await page.locator('.step-description').textContent(), source.steps[1].description);
+  assert.equal(await page.evaluate(() => window.ggbApplet.getValue('f(2)')), 12, '教学步骤须应用到真实构造');
+  await page.setViewportSize({ width: 960, height: 720 });
+  await page.getByRole('button', { name: '重置', exact: true }).click();
+  await page.waitForFunction(() => !document.querySelector('.controls')?.inert);
+  await savedViewport();
   assert.deepEqual(remote, [], '完整统一作品应携带本地引擎');
   await context.close();
   world.complete();
@@ -226,5 +244,48 @@ test('C4 纯公式统一作品可保存编辑源并导出真实透明公式', { 
   const stats = await sharp(bytes).stats();
   assert.equal(metadata.hasAlpha, true);
   assert.ok(stats.channels[3].min === 0 && stats.channels[3].max === 255, '公式须包含透明留白与真实字形');
+  world.complete();
+});
+
+
+test('C-R4 三维统一作品输出与禁网课堂包都保留真实正方体和完整构造', { timeout: 180000 }, async t => {
+  const world = await application(t);
+  const source = JSON.parse(fs.readFileSync(new URL('../fixtures/math-workshop/combined-source.json', import.meta.url)));
+  source.view = 'space';
+  source.steps[0].view = 'space';
+  const work = await create(world.client, { title: '棱长二的正方体', source, originalFileId: null });
+  assert.equal(work.render.state, 'ready');
+  const picture = await exported(world.client, work, 'png', { selection: 'graph', background: 'white' });
+  const pixels = await sharp(await download(world.client, picture.file.id)).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+  let ink = 0;
+  for (let i = 0; i < pixels.data.length; i += pixels.info.channels)
+    if (pixels.data[i] < 200 || pixels.data[i + 1] < 200 || pixels.data[i + 2] < 200) ink++;
+  assert.ok(ink > 1000, '三维图像应实际绘出空间构造');
+  const artifact = await exported(world.client, work, 'bundle', { selection: 'work' });
+  const zip = await JSZip.loadAsync(await download(world.client, artifact.file.id));
+  assert.deepEqual(JSON.parse(await zip.file('workshop.json').async('string')), source);
+  const directory = path.join(world.directory, 'space-classroom');
+  for (const entry of Object.values(zip.files).filter(entry => !entry.dir)) {
+    const destination = path.resolve(directory, entry.name);
+    assert.ok(destination.startsWith(directory + path.sep));
+    fs.mkdirSync(path.dirname(destination), { recursive: true });
+    fs.writeFileSync(destination, await entry.async('nodebuffer'));
+  }
+  await world.close();
+  const { context, remote } = await offlineBrowser(t);
+  const page = await context.newPage();
+  await page.goto(pathToFileURL(path.join(directory, 'index.html')).href);
+  await page.waitForFunction(() => window.ggbApplet && document.querySelector('.status')?.textContent === '', null, { timeout: 45000 });
+  const actual = await page.evaluate(() => ({
+    type: window.ggbApplet.getObjectType('solid'), volume: window.ggbApplet.getValue('solid'),
+    x: window.ggbApplet.getXcoord('G'), y: window.ggbApplet.getYcoord('G'), z: window.ggbApplet.getZcoord('G'),
+    f: window.ggbApplet.getValue('f(2)'),
+  }));
+  assert.equal(actual.type, 'cube', '本地三维引擎应建立真实正方体');
+  assert.equal(actual.volume, 8, '棱长二的正方体体积须为八');
+  assert.deepEqual([actual.x, actual.y, actual.z], [2, 2, 2], '空间顶点必须保留三维坐标');
+  assert.equal(actual.f, 8, '同一保存构造中的二维函数与参数也须保留');
+  assert.deepEqual(remote, [], '三维课堂包须自带本地引擎');
+  await context.close();
   world.complete();
 });

@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
-import { chromium } from 'playwright';
+import { chromium } from '@playwright/test';
 
 const extension = path.resolve('extensions/math-web-ai');
 const fixture = fs.readFileSync(path.join(extension, 'test/deepseek.fixture.html'), 'utf8');
