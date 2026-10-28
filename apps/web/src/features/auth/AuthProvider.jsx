@@ -387,8 +387,11 @@ export default function AuthProvider({ children, timeoutMs = 10_000, onAccountDe
       if (data.session?.state === 'active') {
         if (now.status !== 'active' || now.session?.id !== data.session.id) {
           setActive(data.session, data.registrationOpen);
-        } else if (!profileSavingRef.current && profileRevision === profileRevisionRef.current && profileRead === profileReadRef.current) {
-          publishProfile(data.session.account, data.session.id);
+        } else {
+          if (!profileSavingRef.current && profileRevision === profileRevisionRef.current && profileRead === profileReadRef.current) {
+            publishProfile(data.session.account, data.session.id);
+          }
+          // A superseded read still confirms this session, without publishing stale profile data.
           return data.session.account;
         }
         return;

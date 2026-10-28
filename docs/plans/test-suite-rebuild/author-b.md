@@ -1,6 +1,6 @@
 # 作者 B - 用户流程重建
 
-状态：D19-D23五项及D11 S45/D15/D17补强完成作者验证；I09新增回执处理终点后仍在诊断偶发未确认结果。17/17历史回归通过，第三批仅定点运行变化场景；D15另检出并修复真实拖动偏移。执行者 `gpt-6.1-sol / medium`。工作树 `TeachBuddy-test-browser`，分支 `test/rebuild-browser`，空套件基线 `992172141f6664d4d851154cc533428414051c42`。独占 `apps/web/e2e/rebuilt/` 与本记录；产品缺陷先交总控协调。初版未读取旧测试断言；独立挑战阶段按总控授权读取相关历史修复作可证伪挑战。
+状态：D19-D23五项及D11/D15/D17补强完成作者验证，等待独立验收。I09处理终点补强另检出同会话复核被淘汰后误报未确认的实际缺陷，已按授权局部修复。17/17历史回归通过，第三批仅定点运行变化场景；D15另检出并修复真实拖动偏移。执行者 `gpt-6.1-sol / medium`。工作树 `TeachBuddy-test-browser`，分支 `test/rebuild-browser`，空套件基线 `992172141f6664d4d851154cc533428414051c42`。独占 `apps/web/e2e/rebuilt/` 与本记录；产品缺陷先交总控协调。初版未读取旧测试断言；独立挑战阶段按总控授权读取相关历史修复作可证伪挑战。
 
 ## 最小保护清单
 
@@ -140,3 +140,23 @@ D15新候选独立Vite构建 `web-drag-fixed2`，使用本树产品源码和总�
 D15最终同一测试对总控修前候选 `web-candidate` 再次稳定红，`drag-original-red` 真实保存 Expected09:00 / Received08:55；修复候选 `third-final` 的D15通过，包含新设备结束时间10:45读回。该次I09失败另列：旧POST200完成后昵称编辑器留下“昵称保存结果未确认”，trace显示最终GET session未收响应，10秒后ERR_ABORTED。不能把此前I09正常通过当作该失败已关闭；总控授权独立诊断AuthProvider，当前先单独交付日程修复，不改认证产品源码。
 
 定点Oxlint与git diff-check通过（`logs/third-lint.log`）。当前I09增强尚未提交，D15源码、场景与运行参考可独立验收。
+
+
+## I09 独立后续缺陷：成功保存后的并发复核误报
+
+总控授权本线独占 `apps/web/src/features/auth/AuthProvider.jsx` 与 `docs/subsystems/identity.md`。按diagnosing-bugs先保留最终回归偶发未确认，区分三种可证伪原因：一次性路由移除造成传输停滞、并发身份读取代次相互淘汰、旧成功回执解析/业务确认失败。去掉profile路由自动移除后两次正常通过仍不能关闭问题；随后用真实GET/POST顺序构造更小反馈环。
+
+`profile-controlled-read-red`及`profile-controlled-read-red2`连续两次稳定红：旧昵称POST已真实200，回执放行后扣住保存最终复核GET；另一页再真实改名，较新GET已发布最终昵称，再放旧GET200，原编辑器仍留下“昵称保存结果未确认，请重试”。所有受控HTTP均200，最后昵称已真实显示，排除该路径的传输停滞与回执解析问题。反馈环13.8/13.7秒。新缺陷与历史1b107651的旧回执覆盖不同：本次资料没有被覆盖，而是成功读取因未获发布资格而被当成失败。
+
+局部修复分开成功确认与资料发布：同一活动会话的成功GET返回已验证account，只有当前profileRead/profileRevision且未在保存时才发布资料。网络失败仍不确认，generation/identityEpoch及账户/会话交接判断保持；旧回执和旧资料没有放宽发布资格。只改Provider一处，不改外部认证契约。
+
+最少场景沿原I09增强，不恢复昵称矩阵：明确首次真200，等待旧回执finished以及进入复核/保存完成的实际终点，先断言旧昵称未出现；再安排上述并发复核，以最终昵称、编辑器成功退出及刷新读回保护。另一个真实身份对照先扣住旧账户复核，真实退出并登录预先创建的另一账户，放旧GET200，再以新账户继续实际改名保存，防止旧身份成功被新身份接受。
+
+- `profile-controlled-fixed`：受控复核修复后连续2 PASS。
+- `profile-final`：最终I09及新账户交接两条2/2 PASS（3.8/6.3秒）。
+- `profile-identity-fixed`：原identity-shell三个受影响场景3/3 PASS，含S45继续不重复注册、退出切换隔离、外观/焦点及退出未知确认；该批两条新增场景早期准备失败不记通过，后由profile-final完成。早期失败分别是过早要求尚被扣住GET提供的中间昵称，以及新账户coach遮挡；没有放宽旧昵称、最终昵称或身份隔离断言。
+- `profile-historical-final-red2`：最终同一I09场景对历史代次检查反转独立构建，旧回执处理终点后实际旧昵称链接仍存在，Expected count0 / Received1。相较早期先断言再reload的路径，这里不会抢先取消旧回执。
+
+构建 `web-profile-fixed` 使用本树候选源码及总控新公共资产，日志 `logs/profile-recheck-build.log`。源码临时故障均在构建后立即恢复，故障补丁和失败数据保留供独立审查。额外单独移除recheck入口generation/epoch检查的 `profile-identity-guard-red` 实际通过，耗时36.5秒；其余身份/写入代次及传输期限仍存在，本次没有取得独立业务故障检出，不算红，也不再扩张故障以凑结果。原未修改的真实新账户对照只用于核对本修复没有破坏身份安全约束。代表性有效红仍是本次并发复核两次红和历史旧昵称业务红。
+
+最终定点Oxlint（`logs/profile-final-lint.log`）及git diff-check通过。没有永久故障开关；AuthProvider现只有成功确认与资料发布的局部修复。
