@@ -138,3 +138,15 @@ HMR、API watch、真实浏览器重开及目标设备没有在本批运行，�
 证据均在本树 `test-results/test-suite-rebuild/`。只移除停止链的一层重核时仍由 SDK/工具端其他层阻止，存续日志另保留为 `d12-stop-recheck` / `d12-stop-redundant-guard-survived`，不计检出或据此增加重复矩阵。初次 stop 建场等待需适配 SDK 工具并行授权，修正后通过，上述检出只计最终实际业务断言。
 
 成功测试的服务、子进程、数据库与文件已关闭/清理；失败现场按任务未完成规则保留，索引 `author-a-last-boundaries-workspace.json`、`author-a-last-boundaries-preserved-directories.json`。本轮作者闭环完成，交总控/D复核；不代签整个重建任务或目标环境验收。
+
+## 首次 CI 原卷预览分组纠正
+
+按 diagnosing-bugs 接手固定候选 `e9d7d59` 的真实 HTTP 失败。API job `122673338414` 中 D13 第24例失败，原始 Job 断言只打印不存在的 `current.problem`，因此日志未显示底层原因。总控取回的隔离 SQLite/文件产物 `ci-first-api-diagnostics/runtime/rebuilt-business-lmbhMU/files/work/3060450eff7518c439700b9b19f2d919ecf19332244e7be186bd4c59d83b5631/conversion-G0Lw1u/failure.txt` 明确记录 `spawn /usr/bin/bwrap ENOENT`。
+
+实际路径是 PNG preview Job → `ensurePreview` → `convertFile` → `/usr/bin/bwrap` 沙箱 → 转换 worker。PNG虽不依赖Office/Pandoc，也依赖真实沙箱；我此前将其按纯HTTP/Sharp归入仅 npm ci 的 API 组，漏追该运行前置。隔离副本中同一固定候选、同一真实用例在本机既有沙箱下通过，和云端缺执行文件的失败证据相符；不是需要放宽成功状态的业务差异。
+
+本树对齐最终支持目录及公共 helper 到 `e9d7d59`，merge为 `b3e1ffd`，Agent生命周期 add/add 冲突完整采用该固定候选版本。唯一修正是将 `rebuilt/exam-paper.test.js` 移至 `rebuilt-outputs/exam-paper.test.js`，引用 `../rebuilt/helpers.js`，让现有输出组的 Bubblewrap/AppArmor 前置承担它；Job异常诊断改为完整 `current`。真实PNG、重启、固定定位、422拒绝及原考试不变断言全部保留，无skip、retries或伪造rendition。全局分组计数/文档/CI由总控维护。
+
+- `node --test apps/api/test/rebuilt-outputs/exam-paper.test.js`：1 PASS、0 FAIL、0 skip；原日志 `test-results/test-suite-rebuild/author-a-ci-exam-output-pass.tap`。定点oxlint与diff检查通过。
+- 重做原卷成员关系故障：临时绕过 source/location成员校验后，同账户源外定位仍返回200而应422，具名断言失败。补丁与红日志 `ci-exam-output-membership.patch`、`ci-exam-output-membership.tap`，没有减弱保护。
+- 只运行这条用例及其成员关系负对照，没有重跑全组。未修改产品、公共fixture、package或CI；失败证据和固定候选副本保留在 `/tmp/teachbuddy-a-ci-preview-kghop0he`，入口 `author-a-ci-preview-workspace.json`。任务全成功后由总控连同既有清理清单精确归档/清理此新增现场。

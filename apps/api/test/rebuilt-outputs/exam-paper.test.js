@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createWorld, register, ok, problem, write, upload, classes } from './helpers.js';
+import { createWorld, register, ok, problem, write, upload, classes } from '../rebuilt/helpers.js';
 import { sourceImage } from '../../../../test/fixtures/questions/recognition/replay.mjs';
 
 async function preview(client, fileId) {
@@ -8,7 +8,7 @@ async function preview(client, fileId) {
   for (let i = 0; i < 200; i++) {
     const current = ok(await client.request('GET', `/api/workbench/jobs/${job.id}`));
     if (current.state === 'succeeded') break;
-    assert.ok(['queued', 'running'].includes(current.state), JSON.stringify(current.problem));
+    assert.ok(['queued', 'running'].includes(current.state), JSON.stringify(current));
     await new Promise(resolve => setTimeout(resolve, 10));
   }
   const result = ok(await client.request('GET', `/api/workbench/files/${fileId}/preview`));
