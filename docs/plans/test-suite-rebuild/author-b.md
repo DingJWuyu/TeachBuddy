@@ -171,3 +171,18 @@ D15最终同一测试对总控修前候选 `web-candidate` 再次稳定红，`dr
 候选使用总控只读完整构建 `test-results/test-suite-rebuild/web-reviewed`。统一CI配置、workers=1、仅匹配首例。`resource-metadata-reviewed`正常1 PASS（8.7秒）；`resource-metadata-503-red`真实元数据PUT拒绝后在明确成功断言失败，Expected200 / Received503。故障只临时注入该测试路由，补丁 `faults/refinement/resource-metadata-503.patch`，运行后恢复。第二类故障截住真实元数据PUT，用真实GET的当前条目和本次提交内容构造200成功回执及递增版本，但不向服务端提交修改。`resource-metadata-200-red`已越过HTTP200和UI已保存断言，在新设备内容断言明确失败：资源名称Expected“函数备课资料” / Received“函数讲义.png”，18.7秒；补丁 `faults/refinement/resource-metadata-200-not-persisted.patch`。这证明新context检查有独立价值，不只是新加状态200断言拦截503。该注入也已恢复。
 
 恢复后的 `resource-metadata-final`首例1 PASS（8.6秒），定点Oxlint（`logs/resource-metadata-lint.log`）和git diff-check通过。此批只改首例及本回执，未跑数学组或全套，也未修改产品、共享fixture或根配置；两类失败现场、trace及补丁均保留在 `test-results/test-suite-rebuild/` 供独立审查。
+
+
+## 最终CI D15 resize 超时诊断
+
+固定候选e9d7d59的Browser22PASS/1FAIL，唯一失败是D15的resize响应等待到总60秒。配置为1440x900、worker2、retries0。总控只授权本线修改schedule-travel和本回执；未先动产品。CI原始证据在总控 `test-results/test-suite-rebuild/ci-first-browser-diagnostics/browser/schedule-travel.../`，本树只提取无凭据的鼠标/业务PUT摘要 `logs/ci-resize-trace-extract.json`，原截图和trace不覆盖。
+
+三个可证伪原因：手柄或放点位于裁剪区之外；hover/晚到布局变化令坐标失准；请求发出但失败被response.ok过滤。CI trace只有最初09:00、横移09:00、竖移09:30三个PUT且全部200，resize之后没有任何PUT，排除第三种。实际resize鼠标(480.05,871.5)放到(480.05,897.47)，截图日历底边约877，不能把“手柄可见”当成整个手势可完成。
+
+本地临时准备把原手柄中心滚到scroller底边5px处，真实原手势的elementFromPoint记录显示startHit确为fc-event-resizer-end，放点y896.48已越过clip.bottom876且targetHit为wb-workspace。探针补丁 `faults/refinement/ci-resize-edge-probe.patch`。早先用locator.hover重定位的探针自动滚离了底边并通过，不能算复现；最早缺少hover的准备探针因隐藏手柄bbox为空失败，也不算业务红。`ci-resize-edge-red`实际复现同一60秒超时，未有第四个PUT，trace/截图和命中几何完整保留；这是测试手势放点越界，不是服务端保存或产品时长换算失败。
+
+最小修正仅调整本例准备：只滚动卡片最近的真实fc-scroller，将卡片置于滚动视区中部；使用page.mouse.move真实悬停而不让locator.hover自动滚动隐藏祖先；在同一次DOM读取中取得真实手柄起点、延长十五分钟终点与裁剪矩形，以elementFromPoint确认起点命中手柄、终点仍在日历中，再按最终坐标完成原生鼠标拖动。resize响应不再预过滤ok，收到后明确检查200，避免真正失败被等待吞掉。原09:30/75分钟、104px/h、旧PNG、新设备09:30至10:45及时区断言全部保留，未加重试、延长超时或改产品。
+
+居中准备的早期两版虽完成业务断言，但实际查看PNG发现通用scrollIntoView及locator.hover会滚动隐藏祖先，造成时间轴/列偏移，因此不作为最终交付。最终只滚真实scroller并以原始鼠标悬停，不改变隐藏祖先。最终版本 `ci-resize-pointer-edge-fixed`受控贴底完整1 PASS（26.2秒）：准备时手柄中心约870.6且终点越过bottom876，修正后实际手柄/放点约600.58/626.55，startHit及targetInCalendar均true，第四PUT200将09:30/60分钟改为75分钟。`ci-resize-pointer-final`移除临时贴底准备后的最终源码完整1 PASS（26.3秒），起点600.5、终点626.47，仍在clip230.5至876内。两次均保留新设备结束10:45、系统时区与旧PNG输出；实际查看两张最终PNG，日历列/时间轴对齐、原104px/h与十五分钟线密度保持、完整卡片09:30至10:45处于视区中央。没有把前两份视觉准备错误的通过证据算作最终通过。
+
+最终正常与贴底均用总控只读web-reviewed、统一CI配置及workers2（定点单例实际1worker）、trace=on；没有重跑全23。几何与真实PUT摘要为 `logs/ci-resize-final-evidence.json`，包含贴底红与最终两绿。原横移旧产品09:00/08:55红证据继续复用，不增加故障矩阵。定点Oxlint（`logs/ci-resize-lint.log`）和git diff-check通过；所有临时贴底准备/console已恢复，最终改动只有schedule-travel与本记录，产品、公共fixture和超时/重试配置均未改。忽略cleanup-inventory同步纳入本次全部日志、trace、截图及本树临时快照，仍不删除任何证据。

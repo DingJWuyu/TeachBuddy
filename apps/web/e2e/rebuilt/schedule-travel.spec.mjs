@@ -45,14 +45,35 @@ test('D15 真实网格拖动保存后新设备读回，系统时区检测保留�
   const shifted = await (await vertical).json();
   expect(shifted.time.startTime).toBe('09:30');
   expect(shifted.time.durationMinutes).toBe(60);
-  await card.hover();
-  const handle = await card.locator('.fc-event-resizer-end').boundingBox();
-  const resized = page.waitForResponse(response => response.ok() && response.request().method() === 'PUT' && response.url().includes('/api/modules/schedule/entries/'));
-  await page.mouse.move(handle.x + handle.width / 2, handle.y + handle.height / 2);
+  // A visible end handle can still leave its drop target outside the clipped calendar.
+  const centered = await card.evaluate(node => {
+    const scroller = node.closest('.fc-scroller'), event = node.getBoundingClientRect(), clip = scroller.getBoundingClientRect();
+    scroller.scrollTop += event.y + event.height / 2 - (clip.y + clip.height / 2);
+    const visible = node.getBoundingClientRect();
+    return { x: visible.x + visible.width / 2, y: visible.y + visible.height / 2 };
+  });
+  await page.mouse.move(centered.x, centered.y);
+  const resizeHandle = card.locator('.fc-event-resizer-end');
+  await expect(resizeHandle).toBeVisible();
+  const geometry = await resizeHandle.evaluate((node, distance) => {
+    const handle = node.getBoundingClientRect(), scroller = node.closest('.fc-scroller'), clip = scroller.getBoundingClientRect();
+    const start = { x: handle.x + handle.width / 2, y: handle.y + handle.height / 2 };
+    const end = { x: start.x, y: start.y + distance };
+    return { start, end, clip: { top: clip.top, bottom: clip.bottom },
+      handleHit: node.contains(document.elementFromPoint(start.x, start.y)),
+      targetInCalendar: end.y > clip.top && end.y < clip.bottom && scroller.contains(document.elementFromPoint(end.x, end.y)) };
+  }, hourHeight / 4);
+  await info.attach('schedule-resize-geometry', { body: JSON.stringify(geometry), contentType: 'application/json' });
+  expect(geometry.handleHit, '鼠标必须真实命中末端手柄').toBe(true);
+  expect(geometry.targetInCalendar, '延长十五分钟的放点必须留在日历裁剪区内').toBe(true);
+  const resized = page.waitForResponse(response => response.request().method() === 'PUT' && response.url().includes('/api/modules/schedule/entries/'));
+  await page.mouse.move(geometry.start.x, geometry.start.y);
   await page.mouse.down();
-  await page.mouse.move(handle.x + handle.width / 2, handle.y + handle.height / 2 + hourHeight / 4, { steps: 14 });
+  await page.mouse.move(geometry.end.x, geometry.end.y, { steps: 14 });
   await page.mouse.up();
-  const finalEntry = await (await resized).json();
+  const resizeResponse = await resized;
+  expect(resizeResponse.status(), '真实调整时长必须保存成功').toBe(200);
+  const finalEntry = await resizeResponse.json();
   expect(finalEntry.time.startTime).toBe('09:30');
   expect(finalEntry.time.durationMinutes).toBe(75);
   await page.screenshot({ path: info.outputPath('schedule-five-minute-hits.png') });
