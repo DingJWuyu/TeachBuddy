@@ -142,3 +142,4 @@ baseline	path
 789a38d83babad04f2e2a51e9f17530abf638801	scripts/math-support/verify-upgrade.mjs
 789a38d83babad04f2e2a51e9f17530abf638801	apps/web/e2e/auth-restore-ui.mjs
 789a38d83babad04f2e2a51e9f17530abf638801	apps/api/test/first-flow-real-runner.mjs
+789a38d83babad04f2e2a51e9f17530abf638801	apps/api/test/fixtures/auth-contract/https-smoke.mjs
