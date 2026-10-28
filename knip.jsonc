@@ -34,8 +34,7 @@
     "apps/web": {
       "entry": [
         "e2e/**/*.spec.{js,mjs}",
-        "e2e/**/*.config.mjs",
-        "e2e/**/playwright.config.mjs"
+        "e2e/**/*.config.mjs"
       ],
       "project": [
         "src/**/*.{js,jsx}",

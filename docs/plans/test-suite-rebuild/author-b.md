@@ -24,7 +24,7 @@
 
 ## 候选与接入
 
-专属 Playwright 入口为 `apps/web/e2e/rebuilt/playwright.config.mjs`，13 个场景分布于七个 spec。根 CI 可选择 `rebuilt/**/*.spec.mjs`，消费本配置的 `use`、`expect` 与 timeout；每个场景自行启动公共 HTTPS 应用，独立端口、数据库、文件目录和 context，可由根配置控制 worker。只需统一设置 `WORKBENCH_WEB_DIST` 指向同候选构建，无服务/账号预热前置。失败保留应用数据，成功清理应用数据；截图、trace、诊断和运行日志沿验收产物保留。`BROWSER_RUN_ID` 只区分证据目录，不改变产品行为。
+首轮13个场景曾使用专属 `rebuilt/playwright.config.mjs`，历史命令保留在下文。集成后只使用 `apps/web/e2e/ci.config.mjs`；本地定点通过 `--workers=1 --output=<证据目录>` 选择并发与产物位置，不再保留重复配置。每个场景自行启动公共 HTTPS 应用，独立端口、数据库、文件目录和 context，可由根配置控制 worker。只需统一设置 `WORKBENCH_WEB_DIST` 指向同候选构建，无服务/账号预热前置。失败保留应用数据，成功清理应用数据；截图、trace、诊断和运行日志沿验收产物保留。`BROWSER_RUN_ID` 只区分证据目录，不改变产品行为。
 
 | 场景文件 | 唯一主要保证 |
 | --- | --- |
