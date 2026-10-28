@@ -58,7 +58,7 @@
 | --- | --- | --- |
 | 业务与数据 | `apps/api/test/rebuilt/` | 真实身份、账户隔离、原子保存/重试、业务规则、删除恢复、资料包和受控 Agent 操作 |
 | 主应用流程 | `apps/web/e2e/rebuilt/`；聚合配置 `apps/web/e2e/ci.config.mjs` | 八分区实际接线、编辑保存重开、身份交接、失败接续与跨模块往返 |
-| 材料与数学成果 | `apps/api/test/rebuilt-outputs/` | 原稿提取、OCR 消费、文件版本与真实预览、可编辑输出、数学源与离线作品 |
+| 材料与数学成果 | `apps/api/test/rebuilt-outputs/` | 原稿提取、OCR 消费、文件版本与真实预览、考试固定原卷定位、可编辑输出、数学源与离线作品 |
 | 数学网页桥 | `extensions/math-web-ai/test/rebuilt/` | 真实扩展与受控提供方页面；商店和真实网页模型另验 |
 
 测试组的独有风险、旧套件去留和故障/消融结果由[任务记录](../plans/test-suite-rebuild.md)关联，不在各功能文档复制测试过程。

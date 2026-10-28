@@ -33,7 +33,7 @@
 
 ## 当前阶段与接续
 
-状态：作者实施和独立消融完成，候选共92项（业务46、浏览器23、输出及扩展23）；144个原执行入口均已删除并记录去留依据。四处产品修复和双轴初审4项修正均已集成候选及定点通过。D取得A12/C6/B6共24项代表性故障与移组对照，不宣称92项逐条mutation或全部旧断言等价覆盖。三次Node/V8原生SIGSEGV尚无稳定复现，原始失败单列保留，不计业务故障检出；最终完整回归、trunk集成和清理仍待完成。
+状态：作者实施和独立消融完成，候选共92项（CI API45、浏览器23、输出及扩展24）；144个原执行入口均已删除并记录去留依据。四处产品修复和双轴初审4项修正均已集成候选及定点通过。D取得A12/C6/B6共24项代表性故障与移组对照，不宣称92项逐条mutation或全部旧断言等价覆盖。三次Node/V8原生SIGSEGV尚无稳定复现，原始失败单列保留，不计业务故障检出；最终完整回归、trunk集成和清理仍待完成。
 
 | 现场 | session / 状态 |
 | --- | --- |
@@ -82,3 +82,9 @@
 - 总控核对144路径集合与去留表完全一致，旧执行路径全部不存在，git diff --check通过。作者各线与集成候选的差异只有已审目录迁移、总控标签用例/A开发入口及统一配置、末尾空行整理，成果无遗漏。A/B/C原始证据已预归档到preview `test-results/test-suite-rebuild/`并逐文件核对SHA，尚未删除原现场。远端trunk仅同步了初始任务记录cd4084c5，产品集成待单一PR。
 
 当前无用户输入阻塞。下一步固定最终报告与候选，创建集成PR并执行干净CI；成功后合入preview/integration、核对体验服务，更新完成状态并按精确清单清理。
+
+### PR CI 首轮
+
+[PR #52](https://github.com/DingJWuyu/TeachBuddy/pull/52) 固定候选e9d7d59，首轮[CI 40645528110](https://github.com/DingJWuyu/TeachBuddy/actions/runs/40645528110)已结束并失败。HTTP/SQLite为45 PASS、1 FAIL、0 skip（42.63s），静态检查已通过。唯一失败为考试原卷PNG预览，实际失败artifact中的`failure.txt`确认`spawn /usr/bin/bwrap ENOENT`：PNG也使用真实转换沙箱，API job没有该工具。修正ee5a16bb已将该用例移至已经准备文档工具/沙箱的输出组，保留原断言并补完整Job失败上下文，定点正常及成员关系故障检出均通过；计数调整为API45、输出及扩展24、浏览器23，总数92不变。构建及输出23 PASS、0skip（148.61s）；浏览器22 PASS、1 FAIL（3.0m），日程resize未等到PUT，B据实际trace/截图诊断中，尚不推新一轮CI。
+
+本次真实云端失败已成功上传并下载`ci-api-diagnostics-1`，包含`runtime/rebuilt-business-lmbhMU/workspace.sqlite`、两份原PNG与转换失败日志。新目录的CI实际上传边界已取得证据，独立D报告中的“云端未验”为其提交当时状态。原生SIGSEGV未在该API运行出现，仍不据此宣称已定位或修复。
