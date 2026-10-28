@@ -91,3 +91,17 @@ test('日程：账户时区迁移保留当地时间与规则并升版，未排�
   assert.equal(ok(await a.client.request('GET', `${schedule}/entries/${untimed.id}`)).version, 1);
   assert.deepEqual(ok(await b.client.request('GET', `${schedule}/entries/${other.id}`)), other);
 });
+
+test('D15 日历扩展：月末重复跳过不存在日期，全天跨DST保持当地午夜且实际23小时', async t => {
+  const world = await createWorld(t), { client } = await register(world);
+  const calendar = { allDay: false, notes: '', tags: [] };
+  const monthly = ok(await write(client, 'POST', `${schedule}/entries`, entry({ time: timed('2026-01-31', '09:00'),
+    repeat: { until: '2026-05-31', frequency: 'monthly', interval: 1, weekdays: [], monthly: 'date', count: 0 }, calendar })), 201);
+  const occurrences = ok(await client.request('GET', `${schedule}/occurrences?from=2026-01-01&to=2026-05-31`)).items;
+  assert.deepEqual(occurrences.filter(value => value.key.entryId === monthly.id).map(value => value.time.date), ['2026-01-31', '2026-03-31', '2026-05-31'], '月末重复不能夹到二月或四月最后一天');
+  const allDay = ok(await write(client, 'POST', `${schedule}/entries`, entry({ time: timed('2026-03-08', '00:00', 'America/New_York', 1440), calendar: { ...calendar, allDay: true } })), 201);
+  const occurrence = ok(await client.request('GET', `${schedule}/entries/${allDay.id}/occurrence`));
+  assert.equal(occurrence.startsAt, '2026-03-08T05:00:00Z');
+  assert.equal(occurrence.endsAt, '2026-03-09T04:00:00Z', '全天结束必须是下一当地午夜');
+  assert.equal(Date.parse(occurrence.endsAt) - Date.parse(occurrence.startsAt), 23 * 60 * 60 * 1000);
+});

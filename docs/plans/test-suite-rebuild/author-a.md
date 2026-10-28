@@ -112,3 +112,29 @@
 代表性红证据临时修改资源页挂载逻辑：把每次 layout effect 新建 AbortController 改为复用 `controller.current`，使 StrictMode 重挂载沿用已经 abort 的请求范围。真实开发服务仍能加载、注册和进入资源页，但上传按钮持续 disabled，具名断言“StrictMode重新挂载后资源上传入口必须可操作”明确失败，非建场或编译故障。原字节在 finally 中恢复，产品源码 diff 为空，随后正向流程通过。补丁 `test-results/test-suite-rebuild/d16-strictmode-controller.patch`，最终红日志 `d16-strictmode-controller-final.log`；失败截图、trace和隔离数据保留在 `browser/author-a-development-mutant-final/`，另保留初次上传完成断言失败的诊断。
 
 HMR、API watch、真实浏览器重开及目标设备没有在本批运行，不由这条开发主路径代签；仍沿实际变更按需验证。本批作者证据交总控/D独立复核，尚不宣告整体测试重建任务完成。
+
+## D03 / D12 / D13 / D15 最后业务边界批次
+
+作者仍为 gpt-6.1-sol / medium。已核对本树 `apps/api/src`、`apps/api/test/support`、`fixtures/c26/provider.js`、`rebuilt/helpers.js` 与总控固定 `1251f0ce` 无差异，使用等价公共源，不合并总控计划。本轮写入只在 rebuilt 与本记录，没有产品或共享准备改动。
+
+| 裁决与契约 | 最小新增保护 |
+| --- | --- |
+| D12：[助理停止、journal与重启契约](../../contracts/agent.md)，旧 `agent.test.js:358-371 / 251-281` 只作冻结后证据 | `agent-lifecycle.test.js` 两例。真实 SDK 同批两次工具调用，在第二次授权处受控等待首笔 confirmed，真实 HTTP stop 后第一笔保留、第二笔 prepared 转 cancelled、只保存一道题且 provider 只请求一次。单用途 `agent-crash-child.mjs` 则真实注册/HTTP/SQLite/SDK，在业务已提交且卡片仍 executing 的结果日志提交前 SIGKILL；父进程核对退出信号和检查点，经真实维护 unlock、重开及登录后检查 interrupted/unconfirmed，以公开 reconcile 找回同一题目且零模型请求、无重复对象。没有恢复三检查点或通用旧 runner |
+| D15：[日程日历扩展](../../contracts/schedule.md#日历扩展)，旧 `teaching-time-calendar` 的必要语义 | 现有 `schedule.test.js` 追加一例：1月31日月重复至5月只返回1/3/5月31日；纽约2026年3月8日全天从05:00Z至次日04:00Z，独立算得实际23小时。按总控集中裁决移除仅增加第三方规则组合的 yearly 闰日例，不恢复 RRule 矩阵 |
+| D13：[考试原卷与固定定位](../../contracts/classroom.md#原卷与固定定位)，旧 `classroom-paper` 的存储成员关系保证 | `exam-paper.test.js` 一例，复用根固定 I-1/I-2 真实 PNG，分别经实际 preview 创建固定 rendition；合法考试 source 与题目 location 保存，另一个同账户 rendition 及源外 location 均422且原考试逐字段不变；重启保留原 File/rendition/页号/选区/稳定ID。没有调用 generateDocx 或恢复 Office 三格式矩阵 |
+| D03：[删号等待生产者结束](../../contracts/data.md#账户永久删除)，旧 `account-deletion.test.js:199 / 272` 的独有保证 | `agent-lifecycle.test.js` 另加一例真实在途 SDK：收到 abort 后受控保持未 settle，通过另一账户真实 HTTP 请求推进事件循环，确认原业务行与文件字节仍在、I08尚未204；释放后才204并清理对话/事件/原件，旧身份后续写入401且另一账户仍可用。仅一个 producer，未恢复 Job/转换/导出矩阵 |
+
+定点命令 `node --test --test-name-pattern='D12|D13|D15|D03' apps/api/test/rebuilt/agent-lifecycle.test.js apps/api/test/rebuilt/exam-paper.test.js apps/api/test/rebuilt/schedule.test.js`：5 PASS、0 FAIL、0 skip，约4.33秒；原日志 `test-results/test-suite-rebuild/author-a-final-boundaries-pass.tap`。四个变动实现/测试文件定点 `oxlint --deny-warnings` 通过。未重跑 A 全组或浏览器组。
+
+代表性手动破坏在独立副本 `/tmp/teachbuddy-a-last-boundaries-jeqpldbp` 执行，均为实际业务断言失败，源文件 finally 恢复并逐字节核对与本树 API 源码一致：
+
+| 原始 patch/TAP 前缀 | 可运行故障及结果 |
+| --- | --- |
+| `d12-stop-intent` | stop 不持久保存用户停止意图，真实停止后的回合变 failed 而应 stopped |
+| `d12-crash-recovery` | 将 executing 恢复为 cancelled，SIGKILL 用例要求 unconfirmed 的具名断言失败 |
+| `d13-paper-membership` | 跳过 location 所属原卷校验，同账户源外定位更新返回200而应422 |
+| `d03-active-erasure-wait` | 移除工作台取消生产者的 Promise.all 等待，SDK 尚未 settle 时业务行已经被擦除，具名数据保留断言立即失败，不以超时作为检出 |
+
+证据均在本树 `test-results/test-suite-rebuild/`。只移除停止链的一层重核时仍由 SDK/工具端其他层阻止，存续日志另保留为 `d12-stop-recheck` / `d12-stop-redundant-guard-survived`，不计检出或据此增加重复矩阵。初次 stop 建场等待需适配 SDK 工具并行授权，修正后通过，上述检出只计最终实际业务断言。
+
+成功测试的服务、子进程、数据库与文件已关闭/清理；失败现场按任务未完成规则保留，索引 `author-a-last-boundaries-workspace.json`、`author-a-last-boundaries-preserved-directories.json`。本轮作者闭环完成，交总控/D复核；不代签整个重建任务或目标环境验收。
