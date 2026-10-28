@@ -78,34 +78,21 @@ node scripts/math-web-ai/package.mjs --store /absolute/output-directory
 
 ## 受控验证
 
-从仓库根目录执行已入库的离线 Chromium 集成回归：
+从仓库根目录准备锁定依赖与 Chromium，再执行真实 MV3 桥回归：
 
 ```bash
 npm ci
 npx playwright install chromium
-node extensions/math-web-ai/test/offline.mjs
+node --test extensions/math-web-ai/test/rebuilt/*.test.mjs
 ```
 
-安装与更新接续需要真实桌面 Chrome/Edge，Playwright 下载的 Chromium 不能替代这两项核验。新环境按 [Chrome 官方安装说明](https://support.google.com/chrome/answer/95346?hl=zh-Hans)和 [Edge 官方下载入口](https://www.microsoft.com/en-us/edge/download)准备适合当前系统的浏览器；Linux 使用相应发行版的软件包安装方式。安装后核对实际可执行文件及 `--version` 输出，在仓库根执行并传入其路径：
+用例加载仓库扩展和固定网页夹具，使用全新隔离 profile；首个提供方 tab 导航前即设置不可达本机代理及 DNS 隔离，受控页面由 Playwright 路由返回，其余请求拒绝。测试不读取个人浏览器、不登录账号，也不调用真实模型。成功清理 profile，失败保留具名现场。
 
-```bash
-node extensions/math-web-ai/test/onboarding.mjs /path/to/google-chrome
-node extensions/math-web-ai/test/onboarding.mjs /path/to/microsoft-edge
-```
+保护连接探测、同会话 tab 复用、连续两轮完整代码回复、取消后迟到结果，以及扩展重载后的原页面接续。精确收集与实际通过范围以测试源码和[重建任务记录](../../docs/plans/test-suite-rebuild.md)为准；工作台界面接线从[数学专项](../../docs/acceptance/README.md#数学专项)进入。
 
-脚本只在自建临时配置中开启开发者模式，以 CDP 本地加载和管理页重载验证原页面接续、输入保持、重复注入、更新中止及重连。当前 Chrome/Edge 启动须取消 Playwright 默认的 `--disable-extensions`，并启用测试所需的扩展调试能力；这些参数由脚本管理，不改变用户浏览器。此项不是商店签名、分发或浏览器自动下载更新的验收，正式流程在条目发布后另验。
+开发扩展重载不证明 Chrome/Edge 商店签名、安装或自动下载更新，受控 DOM 不证明线上 DeepSeek 页面持续兼容。正式商店与真实浏览器专项仍需已发布条目、目标设备和授权。旧0.1兼容快照位于 `test/fixtures/legacy-0.1/`，来源见其 `provenance.json`；是否执行该升级路径须单独列明，不能从当前版本重载通过推断。
 
-页面与桥的快速接缝回归使用 `npx playwright test -c apps/web/e2e/extension-onboarding.config.mjs`，先按运行指南构建 Web，或用 `WORKBENCH_WEB_DIST` 指定独立构建。该套件使用真实 HTTP/SQLite 与受控消息边界，不代替真实扩展验证。
-
-完整工作台与真实扩展回归使用 `apps/web/e2e/math-ai-onboarding.config.mjs`：`MATH_ONBOARDING_WEB_DIST` 指向未配置商店地址的独立生产构建，`MATH_ONBOARDING_STORE_DIST` 指向设置了两个商店变量的另一份构建。测试专用 URL 使用 Chrome 的 `https://chromewebstore.google.com/detail/teachbuddy-local-test/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa` 与 Edge 的 `https://microsoftedge.microsoft.com/addons/detail/teachbuddy-local-test/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb`，只作本地分流断言，不访问也不作为真实发布条目。浏览器路径由 `MATH_AI_CHROME_PATH` / `MATH_AI_EDGE_PATH` 指定，扩展及旧版输入默认读取入库目录；不要求本机旧任务产物。
-
-验证 0.1 到当前版本的更新时，执行 `node extensions/math-web-ai/test/legacy-update.mjs /path/to/google-chrome`。旧扩展固定快照位于 `test/fixtures/legacy-0.1/`，来源见同目录 `provenance.json`；测试不依赖本机 Git 历史。
-
-验证解压开发安装包时，可将包含 `manifest.json` 的目录作为 `test/offline.mjs` 的第一个参数。
-
-Linux 新环境缺浏览器系统依赖时，按仓库运行指南安装，或使用 `npx playwright install --with-deps chromium`。测试使用仓库 Playwright 和系统临时目录中的全新隔离 profile，不读取个人浏览器配置，也不依赖 `test-results` 中的旧证据。成功自动删除 profile，失败保留 profile 并打印现场位置。
-
-脚本实际加载 MV3 扩展，覆盖发现与连接、登录及隐藏输入框、完成登录后状态探测、关闭后重连、刷新后复用、连续两轮、当前回复兄弟 footer、代码块中乘号与语言标题、取消后迟到结果、独立标签页和关闭错误。DeepSeek URL 由入库 HTML 夹具响应，其他请求中止，并禁用测试浏览器 DNS 解析，防止扩展新建标签页在 Playwright 挂载拦截前访问真实站点。此回归不登录账户、不调用真实模型，不证明线上网页、登录状态或生成流程仍兼容。
+Linux 缺浏览器系统依赖时按运行指南准备，或执行 `npx playwright install --with-deps chromium`。测试不以本机旧 `test-results` 为启动前置。
 
 无需账号的桥测试：在本机工作台打开控制台，安装本扩展后监听响应，再只发送 STATUS。
 

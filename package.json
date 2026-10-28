@@ -27,7 +27,7 @@
     "review:agent": "node apps/api/test/fixtures/c26/serve.mjs",
     "test:ci": "node --test --test-concurrency=4 apps/api/test/rebuilt/*.test.js",
     "release:prepare": "release-it --config .release-it.json",
-    "test:ci:outputs": "node --test --test-concurrency=1 apps/api/test/rebuilt-outputs/*.test.js",
+    "test:ci:outputs": "node --test --test-concurrency=1 apps/api/test/rebuilt-outputs/*.test.js extensions/math-web-ai/test/rebuilt/*.test.mjs",
     "test:ci:browser": "playwright test -c apps/web/e2e/ci.config.mjs",
     "test:auth:e2e": "playwright test -c apps/web/e2e/ci.config.mjs identity.spec.mjs",
     "check:static": "npm-run-all --continue-on-error check:unused lint",

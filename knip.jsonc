@@ -8,7 +8,7 @@
         "scripts/*/*.mjs",
         // Browser manifest scripts and packaged GeoGebra loader are loaded outside ESM imports.
         "extensions/math-web-ai/{background,deepseek,workbench}.js",
-        "extensions/math-web-ai/test/*.mjs",
+        "extensions/math-web-ai/test/rebuilt/*.test.mjs",
         "tools/geogebra/loader.js"
       ],
       "project": [
