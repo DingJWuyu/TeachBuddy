@@ -15,4 +15,10 @@
 - **P3 已关闭。** 契约移除过度声明，`docs/acceptance/README.md` 数学专项准确区分二维/三维课堂包、纯公式源码/PNG和按变更专项的纯公式课堂冷开/播放。
 - `support/directories.js` 基于模块位置在仓库 test-results/runtime 创建 mkdtemp 唯一目录；各调用者的服务关闭、成功清理和失败保留逻辑保持。该增量无产品源码改动，未发现隔离退化。
 
-结论只适用于上述固定 SHA。独立消融最终收口、完整 CI、trunk 集成及清理继续由总控完成，不作为本次代码缺陷；真实模型、GPU、商店、Office 和目标设备边界仍不代签。初审 2 项，已关闭 2 项，未关闭 0 项。
+## 最终代码增量复核
+
+复核 `56672e6cbbdc1212333e3a4365e5ee1acb5a85a3...12436bd78cc72e5043b0f3eedc2e38b9bdcc77b6`，无新增或开放 Spec 问题。
+
+`resources-math.spec.mjs:13-28` 分别检查设备草稿、真实 PUT200/已保存状态及新设备名称/笔记。`onNewDevice` 仅复制 Cookie，origins 为空，新 context 不能读取原设备草稿，符合 `docs/contracts/workbench.md:49-60` 的草稿/跨设备保存区分。已读取作者 `resource-metadata-final.log`：1 PASS，单例8.6秒；503故障在200断言失败；伪200且不持久化已越过成功状态，在新设备名称断言得到旧文件名并失败。故障补丁确实只伪造回执而不提交，最终源无注入。classroom fixture 仅删除EOF空行，无行为影响。本次不重跑测试或CI，也不重审已关闭C3。
+
+当前结论固定于 `12436bd78cc72e5043b0f3eedc2e38b9bdcc77b6`。独立消融终稿仍在进行，最终完整CI待PR；trunk集成及清理仍待总控完成。真实模型、GPU、商店、Office和目标设备边界不代签。初审2项，已关闭2项，开放0项。
