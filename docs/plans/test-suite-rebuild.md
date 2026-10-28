@@ -33,7 +33,7 @@
 
 ## 当前阶段与接续
 
-状态：作者实施全部完成，候选共92项（业务46、浏览器23、输出及扩展23）；144个原执行入口均已删除并记录去留依据。四处产品修复和双轴初审4项修正均已集成候选及定点通过。D完成旧源/历史缺陷盘点，正在收口最后增量的独立故障和移组对照。三次Node/V8原生SIGSEGV尚无稳定复现，原始失败单列保留，不计业务故障检出；最终完整回归待干净CI。不把作者完成、分组通过或审查通过当作全部任务完成。
+状态：作者实施和独立消融完成，候选共92项（业务46、浏览器23、输出及扩展23）；144个原执行入口均已删除并记录去留依据。四处产品修复和双轴初审4项修正均已集成候选及定点通过。D取得A12/C6/B6共24项代表性故障与移组对照，不宣称92项逐条mutation或全部旧断言等价覆盖。三次Node/V8原生SIGSEGV尚无稳定复现，原始失败单列保留，不计业务故障检出；最终完整回归、trunk集成和清理仍待完成。
 
 | 现场 | session / 状态 |
 | --- | --- |
@@ -41,7 +41,7 @@
 | `TeachBuddy-test-data` / `test/rebuild-data` | `/root/author_a_data`，业务41例；第三批5ffe6ad7已集成为2f55a534；最后一批e0b5cf68已集成，业务共46例；作者完成，空闲 |
 | `TeachBuddy-test-browser` / `test/rebuild-browser` | `/root/author_b_browser`，最终增量1e1bf69b已集成为7c5e11b9；作者完成，空闲 |
 | `TeachBuddy-test-outputs` / `test/rebuild-outputs` | `/root/author_c_outputs`，第二候选73e9526d已集成为6b70a35c，22例；第三批b7e9df9与c796c50已集成；23例，空闲 |
-| `TeachBuddy-test-audit` / `test/rebuild-audit` | `/root/auditor_d_ablation`，已盘点144入口；A/C分组及B23项独立正常通过，完成最后增量的故障/移组对照后提交终稿 |
+| `TeachBuddy-test-audit` / `test/rebuild-audit` | `/root/auditor_d_ablation`，144入口裁决和24项代表性独立消融完成；终稿b7ec301已接收；A186/B437/C195文件恢复检查一致，清理清单随后归档 |
 
 公共准备：全新npm安装、GeoGebra源码冷构建（9m55s）与完整工作区build已通过，日志在总控 `test-results/test-suite-rebuild/{npm-install,math-build,full-build}.log`。C只读使用总控 `apps/web/dist`，该版本尚未包含B题库修复；数学源码及运行时输入一致。B用本树源码与同任务新公共资产另建 `web-full-fixed`。运行中的只读产物不得覆盖。基线CI已结束，失败日志及小日志包在总控 `test-results/test-suite-rebuild/baseline-ci/`。总控 `web-candidate` 为中间题库/标签修复；最新只读完整 `test-results/test-suite-rebuild/web-reviewed` 从固定36f5bb1f构建，包含全部四项产品修复。旧产物保留用于前后对照。
 
@@ -61,11 +61,9 @@
 - 无消费者旧页面/服务图再清理25文件、2596行，包括1266行身份替身服务器；同时移除专用supertest与多余Knip入口，resolveWorkbenchModules仅取消无消费者的导出，产品装配保持。固定legacy-source档案与输入生成器保留。Knip+lint通过，干净依赖安装由最终CI再验。
 - 原始执行入口补发现143 `first-flow-real-runner.mjs` 和144 `fixtures/auth-contract/https-smoke.mjs`；D映射已同步，最终报告仍待提交。
 
-1. 作者全部已集成，D复核最后增量并完成144入口终稿，固定源交E/F双轴审查；没有已知待实施项。root标签修复95578d7b已定点通过，补充第一笔真实提交断言51354223待最终CI。
-2. 按D具名发现恢复相应作者修复，核对旧运行器/输入/依赖消费者并收口静态与文档。公共fixture `8be6e3a7`、二进制client `e27a49ca` 已被各作者cherry-pick，集成只取作者独有提交。
-3. 固定完整候选交D独立业务故障和逐组移除比较，保留144入口逐项去留映射，关闭必要缺口。
-4. 按已读code-review skill交E/F双轴审查；根基线固定789a38d8，规格为用户确认目标及本记录，不另要求用户重复提供。收齐已知修复后创建单一集成PR，让CI承担干净环境完整回归；审查与CI可并行。
-5. 核对已审候选与最新trunk，squash集成、同步体验现场并清理。未满足时保留完整目标、现场和下一动作。
+1. D终稿b7ec301及恢复检查已接收，144入口裁决和24项代表性对照已核对；未定位原生异常单列保留。
+2. 使用已完成的双轴审查，固定单一集成PR候选，由干净CI执行当前全部回归；若有失败，沿真实失败定位并按影响复核。
+3. 核对已验候选与最新trunk，按SHA squash集成、同步体验现场；保全有效证据后清理任务工作树、分支和精确归属的临时文件。
 
 统一浏览器配置已合并，重复的rebuilt/playwright.config.mjs已移除；当前收集23项浏览器场景，--list仅证明收集范围。固定36f5bb1f完整Web构建及Knip/lint通过，最终全量仍交PR CI。
 
@@ -79,4 +77,8 @@
 - 三个失败进程的core分别落在V8属性拦截器、原型注册/属性转换与优化代码/基线编译路径；没有证据定位产品业务或原生依赖。依赖文件共享改写假设未获时间与inode证据支持。50次独立import、20次串行实际识别入口及3并发×30批（90进程）均未再现；停止扩大本机循环，未改变Node版本、重试或skip。剩余独立业务实验继续，干净Runner验证最终候选，原生异常仍按未定位记录。
 - CI仅修改输出步骤名称以对应当前扩展验证；actionlint v1.7.12检查该工作流退出0。工具仅临时安装在忽略产物目录，未加入产品依赖。
 
-当前无用户输入阻塞。尚无新套件完整通过、独立消融通过或trunk集成完成的结论。
+- 最后独立对照已完成：全天DST与typed表格内容的移组分别41/22 PASS；B飞行新稿、上传原键、数学实际坐标及设备原件清除均具名FAIL，移除对应文件后分别20/21/22/22 PASS。未新增实施缺口；具体版本、命令、重叠与边界由D终稿唯一记录。
+- Standards复核至f3f9961，Spec复核至12436bd，无开放问题；之后只有报告事实变化。D实际故障留存SQLite integrity=ok、两份PNG摘要匹配固定I-1/I-2，且相对路径属于现有CI上传选择范围；E已核对，云端实际上传未冒称已验。
+- 总控核对144路径集合与去留表完全一致，旧执行路径全部不存在，git diff --check通过。作者各线与集成候选的差异只有已审目录迁移、总控标签用例/A开发入口及统一配置、末尾空行整理，成果无遗漏。A/B/C原始证据已预归档到preview `test-results/test-suite-rebuild/`并逐文件核对SHA，尚未删除原现场。远端trunk仅同步了初始任务记录cd4084c5，产品集成待单一PR。
+
+当前无用户输入阻塞。下一步固定最终报告与候选，创建集成PR并执行干净CI；成功后合入preview/integration、核对体验服务，更新完成状态并按精确清单清理。

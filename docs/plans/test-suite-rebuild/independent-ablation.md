@@ -1,16 +1,20 @@
 # 独立旧套件审计与消融
 
-## 当前结论与固定输入
+当前独立结论：144个旧执行入口已逐行裁决，保留的代表保证、替代位置、退役排列、按变更专项和外部边界均可追溯。A十二项、C六项、B六项代表性业务故障均已取得有效检出及移除后逃逸或跨组检出证据，独立业务对照和144行裁决完成。本报告不宣称92个当前场景逐条mutation。
 
-独立验收者 D，`gpt-6.1-sol / xhigh`，工作树 `TeachBuddy-test-audit`，分支 `test/rebuild-audit`。未参与 A/B/C 实现。第一阶段原清单的 142 个入口已逐项候选映射；后续补扫确认另有 2 个独立断言脚本，当前完整映射为 144 项。原 142 项证据保持原阶段事实；最终候选的通过、故障检出与移除组实验尚未执行，不能据此批准整体删除或集成。
+固定执行源为总控 `83fac6c0bfc6d423c2cc0202c7a569f3bd235d86`。后续根f3f9961与它执行语义一致，仅文档及fixture EOF换行；只读Web构建为36f5bb1的完整 `web-reviewed`，包含题库、标签、日程和Auth四项修复。原始比较基线始终为 `789a38d83babad04f2e2a51e9f17530abf638801`，原142清单保持阶段事实，补扫两入口后最终144。
 
-- 原始基线固定为 `789a38d83babad04f2e2a51e9f17530abf638801`。
-- A初版静态观察固定 `2c45800455ee5a792b83dfd8a9e16d230c52e414`；A-R1至R5已在候选 `5f1565b9cdb28931bbe7af186b00621800eb85ab`独立通过正常运行与代表性消融，见后文。风险表标明“初版”的观察属于返工动机，不是当前未修复结论。
-- C 已交付后，另外读取固定 `6240946c5436119bdc175aa1fc38af06adf54b7d` 的 6 个 C 源码文件。B 后续已交付并读取固定 `6673f8d59ac34a3fb1646a81680504b0213d651c` 的 9 个文件。两份作者候选分开记录，尚非返工后的统一最终候选。
-- 作者 A 的 31 PASS 和 C 的 16 PASS、B 的 13 PASS及作者红灯补丁均是作者证据。本审计没有复用它们声明独立通过。
-- 权限仅含本文件、[逐入口去留表](old-test-decisions.tsv)与 `test-results/test-suite-rebuild/` 原始证据。未提交测试、产品、根配置或其他文档变更；故障只注入独立证据副本并恢复。未运行真实模型、GPU、私有配置或用户数据。
+| 正常与影响复核 | 固定版本及独立结果 | 原始证据 |
+| --- | --- | --- |
+| A底座 | 5f1565b9的41/41；最终5条新增所在三文件9/9、Cookie4/4；83目录helper后同三文件9/9。API产品源码在这些版本无差异 | `d-a-normal.tap`、`d-a-final-increment-normal.json`、`d-a-cookie-normal.json`、`d-a-runtime-directory-normal.json` |
+| C成果 | 6b70a35c完整22/22及隔离副本22/22；36三增量3/3；83答案修订1/1、官方typed正常1/1。API/shared/扩展产品源未变化 | `d-c-normal.tap`、`d-c-copy-all-normal.json`、`d-c-increment-normal.json`、`d-c-answer-refinement-normal.json`、`d-c6-final-typed-math-normal.tap` |
+| B主应用及公共入口 | 36完整23/23，169.48秒；83资源首例增强1/1，9.81秒。其余浏览器场景字节/产品语义未变 | `d-b-normal.json`、`d-b-resource-refinement-normal.json` |
 
-[144 行去留表](old-test-decisions.tsv)按原清单顺序给出固定源码位置、实际保证、去留候选、替代组、理由和待核对风险。`A1-A10` 沿作者 A 的需求分组；`B/…`、`C/…` 是目标保护职责，未必对应最终文件名。`重建独有`要求保留用户保证，不要求原文件、旧 helper 或原断言写法原样恢复。
+原三次本机Node SIGSEGV仍单独开放为运行时条件未闭环：三份自有core有V8栈，50次静态import、20次串行GDB真实场景、固定3并发90进程均未再现，不能用这些绿灯关闭原异常。原受污染的移除比较不计业务检出；新83串行比较另有独立有效结果。干净云端CI及整体集成由总控接续，本报告不冒称已完成。
+
+[144行去留表](old-test-decisions.tsv)的原固定源、实际旧保证和独有理由保留；`audit_decision/current_protection/residual_or_external`给出最终选取。A/B/C/X路径别名在表后说明。阶段历史如下仅解释发现和返工动机，最终状态以本报告当前裁决及实验结果为准。作者红灯均不直接签作D独立结果。
+
+权限仅本报告、去留表和本树`test-results/test-suite-rebuild/`。故障只注入独立副本，每次finally恢复；未自行提交永久产品/测试/根配置改动，仅合入指定root候选，未调用收费模型、真实GPU、preview私有配置或用户数据。任务整体未完成，原始补丁、命令、日志、失败SQLite/原件及core均保留。
 
 ## 读取和证据
 
@@ -40,9 +44,9 @@
 
 `d7fb9ec9`及 Lessons 中动效采样修正属于测试时序证据，不能冒充产品故障检出。旧 CI 的分组遗漏、缺私人 E 原稿和受控时钟造成的采样问题亦不构成删除有效保证的理由。
 
-## 必须保留的保证与当前风险
+## 第一阶段发现与返工动机（历史）
 
-以下是去留表中风险 ID 的唯一解释。开放表示尚需作者交付或固定候选实证，不表示已经证明产品存在缺陷。修复或补充测试后须复核实际断言和故障检出，不能因增加新文件直接关闭。
+以下记录初版候选在当时的发现，保留需求依据与返工过程；其中“开放/待交付”只描述当时状态，不是最终当前遗漏。当前D01-D23裁决见后文集中收口表。
 
 | ID | 现行依据与独有保证 | 当前候选观察及下一动作 |
 | --- | --- | --- |
@@ -125,14 +129,14 @@ A-E4确认公共回执持久失败有跨组重叠。保留saving综合例的当�
 
 运行工具使用SETUP既有的本机持久LibreOffice/Xpdf与Poppler/Bubblewrap，完整路径和命令记 `d-c-independent-workspace.json`。数学只读复用总控明确允许的同数学候选 `TeachBuddy-test-rebuild/apps/web/dist`，不覆盖它。GPU/systemd只在C-R2公开边界受控，实际本地进程仍运行；受控Paddle/自编表格结果不冒充真实GPU质量。
 
-读取后另外确认两项仍需返工，已交总控并获C第三批接续：
+在6b阶段另确认两项具体缺口，后来均由C第三批补齐并独立复核，保留当时发现：
 
 - C2原回放清单实际为 `paddleocr-vl-1.6/document-1`，自编表格也走旧 `parsing_res_list`；本地worker的typed输入仅纯text。当前生产 `mineru-pro-2605/document-6`的typed行内数学与table eq尚无真实官方录制消费者保护。须用一个官方D2/D8等固定raw代表承接，避免保留错误版本回放却宣称当前识别已经保护。
 - C-R3已验证材料彻底删除后摘录与图片直接可读；个人包与备份还原尚无真实 `noteFragments`源删除链。沿原采用场景延伸一次导出/恢复核验，不另造收录矩阵。此项对应D05。
 
 另核实旧数学迁移的实际输入：`math-static-migration`保存的是题目、fixture私有Document和原文件，启动数学后只检查公共历史及math_001一次；`math-integration-migrations`的数学旧库保存公式修订、旧回执和文件。当前math_001没有schema变换，A-R4承接真实早R31核心/题库升级和原路径回执，A固定退役前部署承接数学对象/文件恢复，C承接旧源真实数学消费。两个旧组合的全列/ledger重复矩阵退役；将来改变数学schema或兼容路由时，以保留冻结源专项再验早库。残余是没有每次长期比较两个历史组合的全部私有列与精确迁移行，不能说新库自动等价于早库。
 
-当前已经完成的独立故障与移除比较如下，其余实验继续执行。每项完整C22的正常基线相同，故障只改副本源码且finally恢复。
+固定6b的五项已完成独立故障与移除比较如下，C-E6增量结果另述。五项完整C22正常基线相同，故障只改副本源码且finally恢复。
 
 | 实验 | 实际故障及完整C结果 | 移除相关组后的结果与裁决 | 证据前缀 |
 | --- | --- | --- | --- |
@@ -142,9 +146,14 @@ A-E4确认公共回执持久失败有跨组重叠。保留saving综合例的当�
 | C-E4 实际数学对象 | 课堂滑杆只改output而不写入GGB，控件值仍正确但实际f(2)=4而应16；22例仅二维课堂包具名ERR_ASSERTION失败 | 移除math-artifacts后15/15 PASS。控件变化与成功导出不能代签真实数学状态，保留实际对象/视区/三维代表 | `d-c4-classroom-actual-value` |
 | C-E5 扩展命令完整性 | 真MV3内容脚本读取代码时删掉乘号，命令变为f(x)=ax²；普通两轮及0.1升级后命令均具名FAIL，完整22中20PASS/2FAIL | 移除bridge.test.mjs后19/19 PASS。两处红属于同一代码完整性保证的重叠，不计两种独有价值；升级例仍保护版本/失效连接/不重发，与普通链相异 | `d-c5-bridge-multiplication` |
 
-该固定候选的五项代表性实验已完成，所有故障均进入具名业务ERR_ASSERTION，未把编译/准备/skip/超时计为检出。结束对副本API、共享模块、C测试及扩展共192个固定文件逐字节复核，无差异，见d-c-restored-and-preserved.json。C后续typed/摘录带走恢复/80行PNG三文件增量继续定点复核，不重跑未变22项。
+该固定6b候选的五项代表性实验已完成，所有故障均进入具名业务ERR_ASSERTION，未把编译/准备/skip/超时计为检出。结束对副本API、共享模块、C测试及扩展共192个固定文件逐字节复核，无差异，见d-c-restored-and-preserved.json。C后续typed/摘录带走恢复/80行PNG三文件增量已定点复核，未重跑未变22项的完整正常基线。
 
-C增量随后在固定统一候选 `36f5bb1fe1598c2686acd092911eff34e0ed04a9`独立执行三文件，3 PASS、0 FAIL/取消/skip，13.42秒，日志 `d-c-increment-normal.log/.json`。该SHA相对6b70a35c的API产品/共享/扩展源码及C公共helper无差异，C测试仅上述三文件变化；复用未变22项和五个故障证据。官方typed/受控list、个人包取回与真正维护恢复、80行实际PNG全行数均已逐行核对，源快照 `c-final-increment-source.json`。新增内容的代表性故障消融尚待完成。
+C增量随后在固定统一候选 `36f5bb1fe1598c2686acd092911eff34e0ed04a9`独立执行三文件，3 PASS、0 FAIL/取消/skip，13.42秒，日志 `d-c-increment-normal.log/.json`。该SHA相对6b70a35c的API产品/共享/扩展源码及C公共helper无差异，C测试仅上述三文件变化；复用未变22项和五个故障证据。官方typed/受控list、个人包取回与真正维护恢复、80行实际PNG全行数均已逐行核对，源快照 `c-final-increment-source.json`。新增typed代表故障消融已完成，见C-E6；其余新增判据独立正常通过。
+
+C-E6最终typed补强：83下先正常1/1，再把typed table的eq改为普通text，官方通项/求和数学节点具名FAIL；移除mineru-typed-consumption后其他22/22 PASS（106.82秒）。正式命令/补丁/恢复见 `d-c6-final-typed-math`；早13版受native干扰的完整/移除日志仍保留为非业务异常，未当成多组检出或抹掉。官方document-6新消费需要独立代表，旧Paddle正常链不能代签。
+
+Standards目录影响已实际验证：`d-a10-runtime-artifact-affected.tap`在原卷成员关系具名断言FAIL后，实验仓库相对 `test-results/runtime/rebuilt-business-AGET70/`保留 `workspace.sqlite`（integrity_check=ok）和两份原PNG。`files/blobs/6f56274f-c872-47d2-b874-1a953e80d646.blob`为320535字节I-1，`8dddde6b-8127-40ad-be38-a59ea50ba1fa.blob`为161865字节I-2，实际SHA同时匹配数据库metadata和固定原输入。完整绝对路径、命令与摘要见 `d-a10-runtime-artifact.json`。该相对路径落现 `ci.yml`的 `test-results/`上传项，且不在 `!test-results/ci/**`排除项；这是本地失败保留/路径选择实证，云端实际上传仍由总控CI验证。
+
 
 ## 最后A增量独立复核
 
@@ -152,15 +161,15 @@ C增量随后在固定统一候选 `36f5bb1fe1598c2686acd092911eff34e0ed04a9`独
 
 | 实验 | 具名业务故障与完整A46 | 移除相关文件后的结果 | 证据 |
 | --- | --- | --- | --- |
-| A-E8 停止意图 | 不持久记录用户stop，最终failed而应stopped，仅新增停止链FAIL | 移除agent-lifecycle后43PASS；83目录helper正式复核与失败路径核验接续 | `d-a8-agent-stop` |
+| A-E8 停止意图 | 不持久记录用户stop，最终failed而应stopped，仅新增停止链FAIL | 移除agent-lifecycle后43PASS；83完整同步后相关3例1业务FAIL/2PASS，互补43PASS，正式证据d-a8-final-agent-stop | `d-a8-agent-stop` |
 | A-E9 真崩溃恢复 | executing写恢复成cancelled，真实提交后SIGKILL重开应unconfirmed，仅崩溃例FAIL | 移除agent-lifecycle后43PASS；原unknown-journal例已预先unconfirmed，不能代签这一冷启动分支 | `d-a9-agent-crash` |
 | A-E10 考试成员关系 | 绕过location所属原卷校验，同账户源外定位更新200而应422，仅考试原卷例FAIL | 移除exam-paper后45PASS。C文件/裁图校验不能证明考试source成员关系 | `d-a10-exam-membership` |
 | A-E11 活跃删号等待 | 先物理擦除再await生产者settle，原业务行在SDK尚未结束时已消失，仅活跃删号例FAIL | 移除agent-lifecycle后43PASS。空闲成功删除/启动接续/页面设备清理都没有检出此活跃擦除顺序 | `d-a11-active-deletion-wait` |
-| A-E12 全天DST | 全天结束错误按固定1440分钟，纽约DST日结束05:00Z而应04:00Z，仅新增日历例FAIL | 原首次移除schedule运行有无关SIGSEGV，不算重叠或通过；新固定候选比较接续 | `d-a12-all-day-dst` |
+| A-E12 全天DST | 全天结束错误按固定1440分钟，纽约DST日结束05:00Z而应04:00Z，仅新增日历例FAIL | 原首次移除有无关SIGSEGV，不算重叠或通过；83正式相关5例仅目标FAIL/4PASS、互补41PASS，d-a12-final-all-day-dst | `d-a12-all-day-dst` |
 
 A-E8最初副本仅同步末批四文件，漏同步之前Cookie断言；在该批A-E8中间比较期间发现并补齐，此后A-E9至12的测试字节完整。该准备事实记 `d-a-final-test-sync-note.json`，旧日志保留；Cookie变化与Agent停止分支无关，但正式A-E8最终比较仍以完整同步后的固定字节复核为准，不混称首次全测试字节已一致。
 
-## 浏览器B独立实验进行中
+## 浏览器B独立代表性对照
 
 固定36f5bb1及只读web-reviewed正常完整23/23，169.48秒，`d-b-normal.log/.json`。36到13e16e的API/shared/Web产品和浏览器用例无变化，允许复用；83的资源首例增强后独立1/1（9.81秒），C答案增强独立1/1（8.05秒）。B隔离副本由固定归档建立并npm ci --offline物理安装，profile两例先正常2/2；后同步最终测试/helpers，保留每个构建的公开静态资产与源补丁，构建后先finally还原源码再跑浏览器，避免开发服务读入临时故障。
 
@@ -168,52 +177,57 @@ A-E8最初副本仅同步末批四文件，漏同步之前Cookie断言；在该�
 | --- | --- | --- | --- |
 | B-E1 历史迟到昵称 | 重新引入1b107651修复前的旧回执无条件publish，保留当前最终复核以不破坏场景gate。完整23中仅历史I09例FAIL，旧response.finished后旧账户昵称链接Actual1而应0；其余22PASS | 移除identity-race两例后21PASS。成功注册/设置刷新/服务器原键不证明同账户跨页旧回执不能发布，保留明确处理终点的历史保护 | `d-b1-history-profile` |
 | B-E2 成功读取确认 | 反转7c5e11b9，把已被新读取淘汰的HTTP200也误当未确认，相关2例中I09的昵称编辑器仍1个而应0，另一身份对照PASS | 移除identity-race后其余21/21 PASS（162.43秒）。这与旧回执覆盖是两种根因，同一最小场景以明确终点分别检出，不计成两个必须维护的文件 | `d-b2-profile-confirmation` |
+| B-E3 飞行中新稿 | 原键核实仍保持编辑态，却把较新的本机内容替换为旧saved；相关3例仅新稿例FAIL，题干Actual“计算7+8。”而应补写“并解释你的计算方法”，其他2PASS | 移除questions后其余20PASS。原键在服务端重放成功不能代签浏览器保留继续输入，保留这一数据丢失边界 | `d-b3-later-draft` |
+| B-E4 原件原请求 | 正确重选原件时重新生成key，相关2例仅原请求key断言FAIL，PDF例PASS；失败SQLite中同名/同SHA原件有两个不同File ID，后一条duplicateOf指向前一条 | 移除resource-recovery后21PASS。不能只保留普通JSON未知重放而删掉原件阶段；同文件PDF例未检出该故障，仍保留浏览器文字层的独有保证 | `d-b4-upload-original-key` |
+| B-E5 图形真实持久 | HTTP承认新图但SQLite当前作品保留前一图，实际新设备坐标Actual1而应2.4，具名“新设备必须读到实际手动修改后保存的坐标”FAIL | 移除math-persistence后22PASS。只看旧设备草稿/刷新会漏持久失败，新设备实际引擎数值保留；revision新值不等于当前作品已正确保存 | `d-b5-graph-persistence` |
+| B-E6 删号设备字节 | 服务器204后设备清理空完成，真实IndexedDB仍有待删账户PNG及固定I-2 SHA，具名deepEqual FAIL，另一账户原件保留 | 移除account-cleanup后22PASS。服务器清表不能代签浏览器原始Blob清除，保留跨刷新原请求确认和设备字节结果 | `d-b6-device-erasure` |
 
-后续故障按受影响文件和同一故障下的所有互补文件分别执行，相加覆盖当前浏览器23项；每例本身拥有独立数据，等价于全组分区运行。明确标记受影响/移除命令和数量，不用test-name skip充作检出。已有完整正常前置，不再重复PDF和日程作者已经有效挑战的故障矩阵。
+B-E2至6按受影响文件和同一故障下的所有互补文件分别执行，相加覆盖当前浏览器23项；每例本身拥有独立数据，等价于全组分区运行。明确标记受影响/移除命令和数量，不用test-name skip充作检出。已有完整正常前置，不再重复PDF和日程作者已经有效挑战的故障矩阵。
 
-## D01-D23集中收口候选
+## D01-D23裁决与验收边界
 
-此轮集中核对固定总控 `1251f0ce324b3f897ea4333861b628607d7cd93b` 的实际当前测试和公共调用，并分别读取C第三批b820b605和80行PNG作者固定c796c50源码；后者当时尚未集成，不混成1251f0ce的既有字节。下表是最终验证前的批量裁决，避免把初版动机持续写成现有遗漏。源码承接不等于D已经独立运行，A末批、B时序和C增量仍须固定SHA后实证。
+下表沿第一次1251f0ce集中源核对及最终83固定候选更新，逐项区分当前代表保护与非长期/外部残余。正常与故障证据按本报告唯一版本汇总读取，不能把历史动机或作者新增文件直接当作关闭。所有约定对照已完成，当前状态更新到独立实证或明确残余。
 
 | ID | 当前承接与最小裁决 | 退役、按变更验和残余 |
 | --- | --- | --- |
-| D01 | identity/identity-recovery真实认证失败、验证码绑定/预算/注册开关、pending接续与新增Cookie；B S45实际继续且注册一次。保护已归位，新增Cookie/S45待独立正常 | 逐问题码乘每个表单、所有Cookie状态排列合并。完整浏览器退出后的寿命仍EXT-BROWSER |
-| D02 | document-protection的普通HTTP/分类删除/Agent未来版本保护；A-E2独立检出已成立 | 不保留每个schema字段或每种未知版本排列；未来输入必须保留原字节的边界继续保留 |
-| D03 | data-lifecycle成功删除/另一账户/原请求，deletion-startup失败锁及无Cookie启动，B设备原字节/迟到读取。另须一条真实活跃生产者删号等待边界，已交总控并纳A末批，见下文集中补项 | 重复全表计数/所有producer矩阵合并；不能把普通停止测试当作删号等待清除顺序的实证 |
-| D04 | A早R31题库原路径、退役前固定部署恢复；C旧数学source消费，A-E1已独立 | math_001未做schema变换，两个旧组合的全列/ledger矩阵退役；数学schema/兼容路由变更时冻结早库专项。保留输入及最小提取工具 |
-| D05 | C同链删源noteFragments直接读、真实个人包清单/附件关系、停服维护backup/restore/activate后原ID读回；增量待独立 | 个人包只带走，不能虚构ZIP账户导入；A普通包/维护损坏拒绝提供等价底座，旧摘录备份矩阵不逐项恢复 |
-| D06 | C真实runtime/owned进程停止确认、取消/超时迟到raw/图片绑定原任务和显式retry；C-E2独立检出 | 停止协议可自动验证；真实systemd/cgroup/GPU释放与识别质量仍EXT-OCR。双路旧引擎比较退役 |
-| D07 | A授权文件/历史/备份摘要，C真格式预览/恶意Office/真实namespace隔离，B multipart未知恢复；C-E1独立检出 | files.store在共享mutations内先fsync/摘要/rename再写元数据并读回，DB失败遗留不可读孤立blob是保留策略，不要求“绝无孤立字节”。store持久顺序/维护策略变更时定点故障验证；不恢复格式乘所有I/O故障矩阵 |
-| D08 | C原生W/P/Office、旧OCR消费者、官方document-6 typed及受控list、表列/唯一续题/歧义、80行真实PNG；C-E3独立检出，新增typed/长块待复核 | 真实模型质量和完整私人E仍外验；相邻高度、所有长表/巨公式及每种表头形状合并成代表。受控list不冒称官方raw |
-| D09 | C旧源实际曲线/动态、二维真实f(2)/保存视区/步骤、三维cube体积/坐标、历史源修正、恶意HTML隔离及禁网冷开；C-E4实际值检出已成立，移除亦PASS | 各图形模板/内部SVG路径字串矩阵退役；目标平板/浏览器/打印EXT-DEVICE。数学算法或旧源解释器变更时选对应冻结专项 |
-| D10 | A原键/事务/重启/恢复点冻结；B创建飞行中新输入、两阶段原件/条目未知跨刷新恢复，新设备读服务端；数据风险已有具体承接 | 不重复每个模块的普通PUT/相同回执故障。导航、日程、题库各个独立列表回调的全部迟到排列不保留长期；改相应意图/代次/保存协调器时以历史90fec3a7/6e5413ed专项挑战，残余为未逐回调覆盖的显示乱序 |
-| D11 | B S45/I09历史两页迟到昵称、账户退出未知锁与焦点真实接续；I09必须等旧回执处理完成并反转1b107651检出后才关闭 | 同形输入/所有视口主题排列退役；auth/api.js计时器覆盖await response.json且finally才清理，完整body挂起/畸形响应改为网络客户端变更时定点专项，仍有低频慢body不常驻回归的残余；真实IME外验 |
-| D12 | A已有同轮去重、拒绝终止、journal失败后原操作核实、提案显式保存；末批补两工具stop及一次真实committed SIGKILL恢复 | 29例工具/usage/同SDK结果排列合并；prepared/committed/result三检查点取真实提交后未记录结果代表。主应用助理停止按钮接线在Agent UI变更时定点验，服务器停止契约保留 |
-| D13 | A真实XLS/坏公式缓存、成绩确认事务/版本/零分统计；B真实成绩校对；末批补PNG原卷source/location成员关系+重启 | 三格式生成/原卷矩阵由C格式转换代签，考试成员关系不可代签。fixture-only generateDocx不恢复。具体公式缓存边界A-E7检出已成立 |
-| D14 | A当前/历史文件关系，C真实OCR正文资源复用，B真多页PDF.js文字层选择/复制及二阶段上传队列 | 元数据筛选与当前正文只选代表；每种格式乘查找/复制/页跳排列合并。正文索引失效重建/诊断格式在搜索或任务实现变更时验；不将失败当零命中视为正常 |
-| D15 | A时区/半开/DST/例外身份/原子移动/旧提醒；末批补月末及全天DST。B真实拖动/resize/新设备保存和系统时区焦点检测，1251f0ce真实产品修复待独立 | RRule所有频率/参数矩阵收敛一个非周规则装配代表。日程自有index.jsx applyResult以latest.content保留飞行输入、以payload更新baseline，区别于题库协调器；B当前正常autosave/新设备路径承接主接线，延迟保存/首次detach期间新输入改为该协调器变更时专项，残余不由题库红灯代签。afterChange内部hook次数退役，提醒事务调整时验证失败结算；真实触屏EXT-DEVICE |
-| D16 | A真实startServer(dev:true)/Vite/StrictMode主路径，B生产主应用导航/跨模块/刷新与基础平板入口 | 25个旧伪应用/固定端口runner/私有开关退役。完整侧栏布局排列、每帧动效采样、导航定制手势改对应UI变更时验；EXT-DEVICE保留实际设备专项 |
-| D17 | C真MV3两轮/精确代码/取消/重载/0.1升级，B真实工坊受控桥两轮上下文/取消迟到 | 两条链分属扩展与主应用，不能互相代签；线上DOM/真实登录/商店自动更新EXT-BRIDGE+MODEL。旧全部selector组合不常驻 |
-| D18 | fixture-only DOCX生成回归已退役，现用户题面PNG/预览/授权下载分别保留 | 原件生成工具仅按可重建输入消费者保留；不宣称产品可编辑Word导出，不恢复备课 |
-| D19 | B真实加入公式/点、真实鼠标拖动、自动保存后新设备读实际坐标和公式 | 新设备避免设备草稿掩盖持久失败；不恢复每种图形/按钮矩阵。待独立正常/故障/移除 |
-| D20 | B实际提交后回执迟到期间继续输入、原键核实不覆新稿、新设备唯一对象 | 当前新稿与原提交分离保留；各控制项的相同原键矩阵合并。待独立故障/移除 |
-| D21 | B多文件已确认项不重复，原件和条目各丢回执，刷新错文件拒绝、同原件同键、最终原字节 | 原件上传与JSON条目两阶段保留；不重复每种文件格式。待独立故障/移除 |
-| D22 | B真实P.pdf翻第二页、文字层鼠标选择/Control+C/整页复制 | 后端pdftotext不能代签浏览器消费；格式乘所有PDF操作矩阵合并。待独立故障/移除 |
-| D23 | B两账户真实pending Blob SHA、危险邮箱确认、未知删除未清除/204后仅删本账户、另一页迟到读不能重建 | API普通删号不能代签IndexedDB；设备管理旧UI不恢复。待独立故障/移除 |
+| D01 | A身份/Cookie与B S45正常已独立通过；A-E5存储不可读业务FAIL及移除PASS，B-E1/E2分别检出历史旧回执与成功复核误判。代表保护关闭 | 逐问题码乘每个表单、所有Cookie状态排列合并。完整浏览器退出后的寿命仍EXT-BROWSER |
+| D02 | A-R2普通写/分类删除/Agent未来Document三入口保留，A-E2实际200/422及confirmed/rejected具名差异、移除39PASS。当前存量防损坏代表关闭 | 不保留每个schema字段或每种未知版本排列；未来输入必须保留原字节的边界继续保留 |
+| D03 | 空闲删除/原请求、失败锁/无Cookie启动、活跃producer等待分别保留；A-E3与A-E11具名FAIL/移除PASS。B-E6设备真实字节清理具名FAIL、移除22PASS；服务端等待与设备清理分别关闭 | 重复全表计数/所有producer矩阵合并；不能把普通停止测试当作删号等待清除顺序的实证 |
+| D04 | A早R31原路径/固定部署恢复与C旧数学源实际消费，A-E1具名FAIL/移除PASS。旧库核心/公开路径代表关闭，其余固定历史组合按右列专项 | math_001未做schema变换，两个旧组合的全列/ledger矩阵退役；数学schema/兼容路由变更时冻结早库专项。保留输入及最小提取工具 |
+| D05 | C删源摘录直接读、真实个人包文稿/PNG/关系与维护备份恢复已独立正常；83 typed互补22亦包含此链PASS，A包/坏附件拒绝底座保留。关闭代表保证 | 个人包只带走，不能虚构ZIP账户导入；A普通包/维护损坏拒绝提供等价底座，旧摘录备份矩阵不逐项恢复 |
+| D06 | 真实runtime/owned进程停止确认及取消超时迟到raw/图/显式retry保留；C-E2错误cancelled具名FAIL、移除19PASS，83互补执行仍PASS。受控协议代表关闭 | 停止协议可自动验证；真实systemd/cgroup/GPU释放与识别质量仍EXT-OCR。双路旧引擎比较退役 |
+| D07 | A授权原件/历史/摘要、C真格式与恶意Office/真实namespace、B二阶段上传。C-E1实际owned loopback hits=1被检出；B-E4原键变化导致真实重复File。当前文件/隔离代表关闭 | files.store在共享mutations内先fsync/摘要/rename再写元数据并读回，DB失败遗留不可读孤立blob是保留策略，不要求“绝无孤立字节”。store持久顺序/维护策略变更时定点故障验证；不恢复格式乘所有I/O故障矩阵 |
+| D08 | 原生W/P/Office、固定OCR、官方document-6 typed及明确受控list、教学表/歧义和80行PNG保留。C-E3续题、C-E6 typed eq具名FAIL/移除PASS；83答案差分和完整80行独立正常。关闭代表保证 | 真实模型质量和完整私人E仍外验；相邻高度、所有长表/巨公式及每种表头形状合并成代表。受控list不冒称官方raw |
+| D09 | 实际SVG曲线、二维f(2)/保存视区/步骤、三维cube体积/坐标、历史源修正/恶意HTML/禁网冷开。C-E4对象数值FAIL、移除15PASS；非所有播放/模板都常驻。按右列边界关闭 | 各图形模板/内部SVG路径字串矩阵退役；目标平板/浏览器/打印EXT-DEVICE。数学算法或旧源解释器变更时选对应冻结专项 |
+| D10 | A原键/事务/重启/恢复点冻结，B原键核实中新稿与二阶段原件跨刷新。A-E4事务共享故障有明确重叠，B-E3新稿/B-E4原件分别唯一检出。数据风险代表关闭 | 不重复每个模块的普通PUT/相同回执故障。导航、日程、题库各个独立列表回调的全部迟到排列不保留长期；改相应意图/代次/保存协调器时以历史90fec3a7/6e5413ed专项挑战，残余为未逐回调覆盖的显示乱序 |
+| D11 | B S45、I09两页历史回执/并发最终复核/真实账户切换、退出未知锁和焦点独立正常。B-E1/E2各具名FAIL，移除同组其他21PASS。当前身份交接代表关闭 | 同形输入/所有视口主题排列退役；auth/api.js计时器覆盖await response.json且finally才清理，完整body挂起/畸形响应改为网络客户端变更时定点专项，仍有低频慢body不常驻回归的残余；真实IME外验 |
+| D12 | A同轮去重/拒绝/journal未知/提案与新增两工具stop/真committed SIGKILL。A-E6去重、A-E8正式stop、A-E9恢复分别具名FAIL/移除PASS，B提案跨首页侧栏正常。关闭代表保证 | 29例工具/usage/同SDK结果排列合并；prepared/committed/result三检查点取真实提交后未记录结果代表。主应用助理停止按钮接线在Agent UI变更时定点验，服务器停止契约保留 |
+| D13 | 真实XLS/XLSX/坏公式缓存、成绩确认事务/口径与PNG考试source/location成员关系。A-E7缓存、A-E10源外定位具名FAIL/移除PASS；新失败目录另有SQLite/两原PNG实证。关闭代表保证 | 三格式生成/原卷矩阵由C格式转换代签，考试成员关系不可代签。fixture-only generateDocx不恢复。具体公式缓存边界A-E7检出已成立 |
+| D14 | A当前/历史文件关系、C真实OCR正文复用、B二阶段队列及PDF.js第二页真实文字层选择/复制。83资源首例以HTTP200和无草稿新设备核对真实保存。代表链关闭 | 元数据筛选与当前正文只选代表；每种格式乘查找/复制/页跳排列合并。正文索引失效重建/诊断格式在搜索或任务实现变更时验；不将失败当零命中视为正常 |
+| D15 | A半开/DST/原实例/原子移动/旧提醒及月末/全天；B真实横纵拖动/拉伸/新设备/焦点系统时区正常。A-E12正式全天FAIL、移除41PASS。独立autosave的延迟排列明确转右列专项 | RRule所有频率/参数矩阵收敛一个非周规则装配代表。日程自有index.jsx applyResult以latest.content保留飞行输入、以payload更新baseline，区别于题库协调器；B当前正常autosave/新设备路径承接主接线，延迟保存/首次detach期间新输入改为该协调器变更时专项，残余不由题库红灯代签。afterChange内部hook次数退役，提醒事务调整时验证失败结算；真实触屏EXT-DEVICE |
+| D16 | 真实startServer(dev:true)/Vite/StrictMode资源往返/题目刷新与生产主应用导航/平板入口独立正常；25个旧伪应用和固定端口runner退役。当前主入口代表关闭 | 25个旧伪应用/固定端口runner/私有开关退役。完整侧栏布局排列、每帧动效采样、导航定制手势改对应UI变更时验；EXT-DEVICE保留实际设备专项 |
+| D17 | C真MV3两轮/精确代码/取消/重载/0.1升级+B真实工坊受控桥上下文/取消迟到均独立正常。C-E5乘号在普通/升级两处重叠检出，移除19PASS。两执行边界分别保留 | 两条链分属扩展与主应用，不能互相代签；线上DOM/真实登录/商店自动更新EXT-BRIDGE+MODEL。旧全部selector组合不常驻 |
+| D18 | 已退役直接generateDocx后store的fixture-only昂贵回归；当前PNG/预览/授权下载仍保留，83答案差分/80行正常。关闭退役裁决，不声称可编辑Word产品导出 | 原件生成工具仅按可重建输入消费者保留；不宣称产品可编辑Word导出，不恢复备课 |
+| D19 | B真实加入公式/点、真实鼠标拖动、自动保存/刷新及无设备草稿新context读坐标。B-E5已取得新设备实际1而应2.4业务FAIL，互补22PASS，source已恢复。编辑持久保证关闭 | 新设备避免设备草稿掩盖持久失败；不恢复每种图形/按钮矩阵。待独立正常/故障/移除 |
+| D20 | B真实提交成功/迟到期间新输入、原键核实、继续保存与新设备唯一对象。B-E3编辑态保留但正文丢失被实际值断言检出，移除questions后20PASS。关闭 | 当前新稿与原提交分离保留；各控制项的相同原键矩阵合并。待独立故障/移除 |
+| D21 | 多文件第一项确认、第二原件和条目各丢回执、错字节拒绝、正确原件原键接续。B-E4实际两个File ID同SHA证明换键重复存储，移除文件后21PASS。关闭 | 原件上传与JSON条目两阶段保留；不重复每种文件格式。待独立故障/移除 |
+| D22 | 真实P.pdf浏览器翻第二页、鼠标选择Q3/Control+C/整页复制独立正常；后端pdftotext无权代签。已有正常与作者有效红，不重复独立故障矩阵，按明确浏览器代表关闭 | 后端pdftotext不能代签浏览器消费；格式乘所有PDF操作矩阵合并。待独立故障/移除 |
+| D23 | 两账户真实pending Blob SHA、危险确认、未知删除至204、本账户清理/另一账户保留与迟到读取阻断独立正常。B-E6错误清理后仍有目标PNG及真实SHA而具名FAIL，移除后22PASS。设备字节独立保证关闭 | API普通删号不能代签IndexedDB；设备管理旧UI不恢复。待独立故障/移除 |
 
-本轮集中补项只剩D03一个最后确认的必要执行边界，现已由总控分派A末批：旧 `account-deletion.test.js:199/272`验证删除先取消并等待活跃作业/真实Agent SDK退出，再物理擦除，且另一账户继续。当前 `workbench/index.js:255`的Promise.all同时等待jobs、Agent、个人包、转换；新成功/启动/设备删除场景全无运行中producer。移除该等待只会影响活跃删除，不能由空闲删号或显式turn stop代签。建议借末批受控Agent选一个在途执行，真实I08在abort尚未确认前保持未完成，完成后再核业务/日志字节无复活及另一账户可用，不恢复四种producer排列。
+D03最后补项已由A的真实在途Agent链交付并独立验证：abort尚未settle时不能擦除业务/原件或回204；A-E11把等待放到擦除之后即具名FAIL，移除该文件其他43PASS。由一个producer代表等待职责，没有恢复Job/转换/个人包四种排列。当前没有剩余作者返工事项。
 
-除上述D03、已安排A末批、B I09处理终点、C已交增量的独立复核外，本轮不再提出逐控件/模板/参数矩阵恢复。按变更验项明确是保留非长期专项与残余，不能写成新套件始终能自动检出对应全部故障。
+按变更验明确保留非长期专项和残余，不写成新套件会自动检出对应所有旧断言；本轮不再追加逐控件、模板或参数矩阵。
 
 去留表另加三列集中裁决：`audit_decision`、`current_protection`、`residual_or_external`。路径别名A指 `apps/api/test/rebuilt/`，B指 `apps/web/e2e/rebuilt/`，C指 `apps/api/test/rebuilt-outputs/`，X指 `extensions/math-web-ai/test/rebuilt/`。每一旧入口仍保留原固定源、实际保证与独立理由，新三列把保留代表、删除的排列、按变更专项和外部残余逐入口说清。普通正常结果只证明列明代表，不能读成旧文件全部断言已被新套件自动检出。
 
-## Node启动异常独立诊断进行中
+
+## Node启动异常与有限诊断边界
 
 固定13e16e业务故障批次发生三个无关异常，完整保留，不算业务检出或跨组重叠：A-E12移除schedule后D12子进程在检查点前SIGSEGV，期望SIGKILL，现场目录为空；C-E6完整故障中教学表维护restore子进程Command failed，非业务断言；C-E6移除typed后recognition-consumers整文件在1.17秒启动期SIGSEGV、没有该文件业务子测试。对应原始TAP分别是 `d-a12-all-day-dst-without-schedule.tap`、`d-c6-typed-table-math-full.tap`和`d-c6-typed-table-math-without-typed-consumption.tap`。A全天的目标FAIL和C typed eq的目标FAIL仍有效，移除结果暂不签PASS。
 
 依据diagnosing-bugs并按总控要求，先固定三项可证伪假设，记录 `d-native-hypotheses.json`：H1为运行时/原生依赖import或初始化，预测无fixture产品import亦可复现；H2为并发资源条件，预测安静串行与有限并发有明显差异；H3为具体fixture提前执行，预测产品import稳定而support/真实fixture入口失败。先收集每个新建自有进程PID、stderr、signal、阶段，不读取非本实验core。不以skip、retries或删掉失败日志掩盖。
 
-所有旧批次finally已恢复后，审计树合入83fac6c0为ee139b0；三份独立副本同步该固定根候选的当前相关源码/测试/helpers，元数据 `d-final-copy-sync.json`。该批产品源码没有变化。新临时目录helper和C答案/B资源两项断言修正将在下一次故障直接作影响核验，不能把旧/tmp失败目录伪称已经进入新CI artifact。
+所有旧批次finally已恢复后，审计树合入83fac6c0为ee139b0；三份独立副本同步该固定根候选的当前相关源码/测试/helpers，元数据 `d-final-copy-sync.json`。该批产品源码没有变化。新目录helper及C答案/B资源断言均已作独立影响核验；旧/tmp失败目录继续原样保留，不伪称它们已迁入新CI artifact。
 
 原core进一步仅以COREDUMP_CWD精确匹配D自有两个隔离副本，再按PID导出：269431为C restore、270467为A child、273650为C consumer。`d-native-owned-core-results.json`及对应gdb日志给出V8栈：Runtime_LoadPropertyWithInterceptor、LazyRegisterPrototypeUser/TransitionAndWriteDataProperty、MacroAssembler::TryLoadOptimizedOsrCode/BaselineCompiler/生成基线代码。没有栈直接指向better-sqlite3/sharp，不足以证明原生依赖无责或某一V8版本修复可解；原core独立保留，不读其他进程core。
 
@@ -221,14 +235,10 @@ A-E8最初副本仅同步末批四文件，漏同步之前Cookie断言；在该�
 
 依赖改写假设另查 `d-native-module-inodes.json`：A依赖链接审计root，B/C各自物理安装；三份better-sqlite3及sharp glibc文件inode不同、nlink均1。审计npm ci05:36UTC、B05:37、C05:14，异常05:48附近没有D npm ci/原生重建/同步.node操作。未支持“共享原生模块在加载时被改写”的时序解释。H1/H2/H3都尚无确定因果，保留原栈和目标环境残余，不给业务代码推测性修复或加skip/retries。
 
-## 后续接续
+## 交付与总控接续
 
-A阶段已结束。等待总控给出包含B/C返工与根配置整理的统一固定SHA，A变化仅按新增影响复核。后续：
+D的代表性对照、144入口裁决及新增影响复核完成。A12/C6/B6是24个具名故障对照，含共享保证重叠和同场景不同根因，不是92个当前测试逐条mutation，也不是所有旧断言等价全覆盖。未触发尝试、准备中间状态、native异常均单列保留，不计有效检出。
 
-1. 读取该 SHA 的最终文件与收集脚本，回填去留表的确切新保护位置；完成新增/受影响B/C正常候选的独立定点验证，复用上述未变化A证据。
-2. 在独立实验副本选择能进入真实业务断言的历史缺陷或手动故障，覆盖 A/B/C 的主要独有保证。优先考虑原路径重放/未来内容不损坏、删号启动接续、历史迟到回执覆盖、OCR失败证据、转换沙箱或数学实际图形/离线等已定位风险；不是按数量凑例。
-3. 每个实验分别记录：正常候选 PASS；注入后指定业务断言 FAIL；移除相关组后同故障逃逸，或注明被其他组具体断言检出。明确命令、候选/补丁摘要、组边界、退出码和失败位置。编译失败、fixture故障、skip和未定位超时不算检出。
-4. 实验临时源码每次在 finally 恢复并校验；失败现场、补丁及日志保留至整个任务完成。若原组移除后仍由他组检出，先判断是否同一保证冗余或不同入口，不能只按测试数裁剪。
-5. 发现问题交原作者返工，再固定新 SHA 定点复核；最后回填全部开放风险与 144 行最终决策。无三方证据时继续记未验，不把作者红灯复制成独立完成。
+最终恢复检查、运行服务和精确归属路径见忽略证据 `cleanup-inventory.json` 与 `d-final-restoration.json`。原日志/补丁/截图/trace/失败SQLite/原件、新helper runtime及三份自有core导出保留。依赖、只读构建副本和实验源码可按固定SHA/锁文件/补丁重建；整体任务未完成，D没有提前删除它们或作广泛前缀清理。
 
-第一阶段142项仅为当时清单的静态候选；本阶段新增144完整清单与固定A实证，尚不宣称最终旧保证全部承接、整体消融通过、CI完成或已集成。
+总控按终稿作固定增量审查与干净CI。原三次Node SIGSEGV在本机有限诊断未再现，精确入口/core和退出率保留，云端正常稳定性及实际artifact上传尚待验证；新串行运行通过不抹掉原异常。D未发现其他待修产品/测试问题，不宣称CI、整体集成或正式发布已完成。
