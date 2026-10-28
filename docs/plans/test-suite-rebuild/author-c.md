@@ -4,7 +4,7 @@
 
 作者 `/root/author_c_outputs`，gpt-6.1-sol / high；工作树 `/home/liam_t/项目/TeachBuddy-test-outputs`，分支 `test/rebuild-outputs`。最初空测试基线 `992172141f6664d4d851154cc533428414051c42`，首轮作者提交 `1fa60e2f5db91a1e24809974712a06d28db279d2`。本轮按总控要求合并 `6673f8d59ac34a3fb1646a81680504b0213d651c`，合并提交 `17e3487`；共享主计划冲突采用总控原文，本记录独立维护。
 
-当前候选为 23 项测试。独立 D 对固定 `6b70a35c` 的 22 项已独立验证通过（94.7 秒）。第三批补当前 MinerU typed 消费及删源摘录的资料包/部署恢复，两项定点通过，无跳过；新增部分待独立复核和集成 CI。未合并整个 a05cb28 主计划，已核对所需公共 fixture、识别/题库/可靠性实现及固定输入与该版本无差异。产品实现、冻结输入、兼容快照、样本生成工具与生成资产均无永久改动。根配置、CI、共享准备仍由总控唯一维护，未创建 PR 或推送。
+当前候选为 23 项测试。独立 D 对固定 `6b70a35c` 的 22 项已独立验证通过（94.7 秒）。第三批补当前 MinerU typed 消费及删源摘录的资料包/部署恢复，两项定点通过，无跳过；这批提交为 `b7e9df9d208a81b3644c59c13157cd6cc1f62fba`；随后按 D08 在同一 C3 用例补 80 行真实分页保护，候选数量仍为 23。新增部分待独立复核和集成 CI。未合并整个 a05cb28 主计划，已核对所需公共 fixture、识别/题库/可靠性实现及固定输入与该版本无差异。产品实现、冻结输入、兼容快照、样本生成工具与生成资产均无永久改动。根配置、CI、共享准备仍由总控唯一维护，未创建 PR 或推送。
 
 证据目录为本工作树 `test-results/test-suite-rebuild/`。新增测试复用总控 `apps/api/test/support/application.js` 的真实认证、HTTPS、SQLite、独立文件目录和端口；邮件与识别/模型边界为受控替身。
 
@@ -20,7 +20,7 @@
 | --- | --- | --- |
 | C1，3 项 | W/P 原生提取的题干、已有答案、Q6 无答案、公式、图和原稿位置；PPT/PPTX/DOC 真正预览页、正文与原件字节 | materials 文件/定位/自动收题；samples W/P/Office；HTTP files/imports，经 native-word/native-pdf 与受限转换器 |
 | C2，3 项 | 官方 D2/D8 typed 数学/表格及单独受控 typed 列表；固定 I-1 人工校对/采用与机器 raw 分离、资源检索复用；I-2 分段式与 PS-4 已有答案按题号匹配，未匹配内容保留 | recognition 机器页结果/模块接缝；公开识别、题库收录与资源检索 |
-| C3，1 项 | 题面与答案真实透明 PNG、选定图输出；长期笔记改变不能影响公开输出字节 | materials 引用和输出；question-asset HTTP 任务及授权文件下载 |
+| C3，1 项 | 题面与答案真实透明 PNG、选定图输出；80 行长段落跨片完整保留；长期笔记改变不能影响公开输出字节 | materials 引用和输出；question-asset HTTP 任务及授权文件下载 |
 | C4，7 项 | 旧源、实际 SVG 数学曲线；动态停服禁网；统一课堂完整构造、实际函数对象/保存视区；真实 3D 体积坐标/图像；外部 HTML 隔离；无定义源修正与历史；纯公式作品 | math 源/导出隔离契约；公开 works/exports，workshop-render 与课堂包本地 GGB |
 | C5，3 项 | 真 MV3 两轮、精确代码乘号、取消迟到丢弃；管理页重载接回旧页面且不重发；固定 0.1 升级按当前版本回复重连 | features/math 网页 AI；extension 页面协议。固定网页替身，Chromium 实际加载扩展 |
 | C-R1，2 项 | 恶意 Office/压缩限额及实际宿主文件、网络隔离 | materials 文件执行边界；真实上传/预览，由 converter 的 bwrap 启动 conversion-worker |
@@ -50,6 +50,12 @@ A 拥有通用身份、保存/备份恢复、文件历史关系与 XLS；B 拥�
 - `c-r67-final.log`：2/2，7.16 秒；`c-r67-lint.log` 和 diff check 通过。
 - `c-r6-red-table-eq.log`：临时将 typed table 的 eq 数学节点降成普通 text，失败于“table eq 必须保留可编辑通项公式”。`c-r7-red-portable-notes.log`：临时让个人包遗漏 noteFragments，失败于“个人包必须保留独立摘录的实际文稿和固定来源”。均为具名业务失败，finally 恢复产品源码，产品 diff 为零。
 - 官方 middle 回放只证明转换/消费，不证明 GPU 原始识别质量、实际 worker 元数据 hook 或裁图映射。受控列表和自编教学表同样不代签真实模型准确率。
+
+## D08 最小分页保护
+
+在现有 C3 同一应用现场追加一题，正文为一个含 80 个显式换行的真实长段落。使用正常建题和 question-png HTTP 任务，不增加长表、超长公式或尺寸矩阵。实际下载每张 PNG，从 alpha 像素统计跨片文字行带，要求合计恰为 80 且实际生成至少三片，检查内容丢尾而非只看文件存在或宽高。
+
+`c-d08-pagination.log` 该用例 1/1（4.06 秒进程耗时）；`c-d08-red-truncated-tail.log` 中临时使三片以上输出只返回首片，短题/独立答案检查仍通过，新增分页业务断言得到 actual=33、expected=80。故障 finally 恢复，产品 diff 为零。`c-d08-lint.log` 和 diff check 通过；只定点 C3，没有重跑全 23 项。
 
 ## 验证入口与证据
 

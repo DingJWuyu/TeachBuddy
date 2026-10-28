@@ -5,7 +5,7 @@ import { createHash } from 'node:crypto';
 import { application, upload, download, json, finished, document, readFixture } from './helpers.js';
 
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
-test('C3 题面 PNG 为真实透明分片，长期笔记修改不进入输出', { timeout: 180000 }, async t => {
+test('C3 真实 PNG 保留透明题面、独立答案与80行完整分页，长期笔记不进入输出', { timeout: 180000 }, async t => {
   const world = await application(t);
   const { client } = world;
   const image = await upload(client, '直角三角形.png', readFixture('questions/figure.png'));
@@ -48,5 +48,29 @@ test('C3 题面 PNG 为真实透明分片，长期笔记修改不进入输出', 
   const figureDone = await finished(client, figureJob.id);
   assert.equal(figureDone.state, 'succeeded');
   assert.equal(figureDone.outputFileIds.length, 1, '配图模式应只生成选定配图');
+  const lines = Array.from({ length: 80 }, (_, index) => `第${String(index + 1).padStart(3, '0')}行：完整保留教学内容与末尾。`);
+  const longQuestion = await json(client, 'POST', '/api/modules/questions/v2/items', {
+    title: '八十行长段落', body: document(lines.join('\n')), solution: document(''), answerStatus: 'absent',
+    note: '', starred: false, typeId: null, tagIds: [], source: { kind: 'manual' },
+  }, 201);
+  const longJob = await json(client, 'POST', `/api/modules/questions/v2/items/${longQuestion.id}/assets`, {
+    baseVersion: longQuestion.version, mode: 'question-png', includeAnswers: false, figureFileId: null,
+  }, 202);
+  const longDone = await finished(client, longJob.id);
+  assert.equal(longDone.state, 'succeeded');
+  let inkBands = 0;
+  for (const id of longDone.outputFileIds) {
+    const { data, info } = await sharp(await download(client, id)).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+    assert.ok(info.height <= 2400);
+    let previous = false;
+    for (let y = 0; y < info.height; y++) {
+      let ink = false;
+      for (let x = 48; x < info.width - 48 && !ink; x++) ink = data[(y * info.width + x) * 4 + 3] > 20;
+      if (ink && !previous) inkBands++;
+      previous = ink;
+    }
+  }
+  assert.equal(inkBands, lines.length, '全部分片必须保留80条完整文字行，包括末尾，不能丢尾、重复或切断行');
+  assert.ok(longDone.outputFileIds.length >= 3, '80行应跨多个实际 PNG 分片');
   world.complete();
 });
