@@ -400,6 +400,7 @@ export function ExamDetail({ ctx, exam }) {
 export function TagManager({ ctx }) {
   const [name, setName] = useState('');
   const [editing, setEditing] = useState(null);
+  const [renaming, setRenaming] = useState(false);
   const usage = new Map();
   for (const e of ctx.data.exams) for (const q of e.questions) for (const id of q.tagIds) usage.set(id, (usage.get(id) || 0) + 1);
   const create = async (e) => {
@@ -409,8 +410,15 @@ export function TagManager({ ctx }) {
     try { await ctx.api.post('/tags', { name: submitted }); setName(current => current === submitted ? '' : current); await ctx.reload(); } catch (err) { ctx.toast(err.message, 'error'); }
   };
   const rename = async (tag) => {
+    if (renaming) return;
     const submitted = editing;
-    try { await ctx.api.put(`/tags/${tag.id}`, { baseVersion: tag.version, name: submitted.draft }); setEditing(current => current === submitted ? null : current); await ctx.reload(); } catch (err) { ctx.toast(err.message, 'error'); }
+    setRenaming(true);
+    try {
+      await ctx.api.put(`/tags/${tag.id}`, { baseVersion: tag.version, name: submitted.draft });
+      setEditing(current => current === submitted ? null : current);
+      await ctx.reload();
+    } catch (err) { ctx.toast(err.message, 'error'); }
+    finally { setRenaming(false); }
   };
   const merge = (tag, target) => ctx.open('confirm', {
     title: tx('把“{{a}}”合并到“{{b}}”？', { a: tag.name, b: target.name }),
@@ -442,7 +450,7 @@ export function TagManager({ ctx }) {
                 {editing?.id === t.id ? (
                   <form className="cr-tag-edit" onSubmit={(e) => { e.preventDefault(); rename(t); }}>
                     <input autoFocus value={editing.draft} maxLength={40} aria-label={tx('标签名称')} onChange={(e) => setEditing({ ...editing, draft: e.target.value })} onKeyDown={(e) => e.key === 'Escape' && setEditing(null)} />
-                    <button type="submit" className="cr-btn is-primary is-small">{tx('保存')}</button>
+                    <button type="submit" className="cr-btn is-primary is-small" disabled={renaming}>{tx('保存')}</button>
                   </form>
                 ) : (
                   <>
