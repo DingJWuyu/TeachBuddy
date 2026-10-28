@@ -138,7 +138,7 @@ function validateOneOf(node, value, pointer, keyName) {
   return { ok: false, error: errors[0] };
 }
 
-export function validateSchema(node, value, pointer = '', keyName = undefined) {
+function validateSchema(node, value, pointer = '', keyName = undefined) {
   switch (node.kind) {
     case 'object': {
       if (!isPlainObject(value)) return fail(pointer, 'invalid-type');

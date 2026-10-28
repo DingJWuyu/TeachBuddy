@@ -21,7 +21,7 @@ import {
   projectModuleCatalog
 } from '@teachbuddy/shared';
 
-export function factoryNameFor(moduleId) {
+function factoryNameFor(moduleId) {
   const pascal = moduleId
     .split('-')
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))

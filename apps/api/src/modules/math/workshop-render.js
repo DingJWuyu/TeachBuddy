@@ -24,7 +24,7 @@ export async function readSavedWorkshopPlaneViewport(base64) {
 
 // A fresh browser has no account, cookies or external resource access. Only the
 // pinned local runtime is served; imported construction JavaScript is disabled.
-export async function renderWorkshopGraph(source, options = {}) {
+async function renderWorkshopGraph(source, options = {}) {
   const width = options.width ?? 1600;
   const height = Math.round(width * 0.625);
   const runtimeDirectory = options.runtimeDirectory ?? geogebraDirectory;
@@ -152,7 +152,7 @@ export async function renderWorkshopGraph(source, options = {}) {
   } finally { clearTimeout(deadline); await browser?.close(); }
 }
 
-export async function workshopFormulaAssets(source) {
+async function workshopFormulaAssets(source) {
   return renderWorkshopFormulaAssets(source);
 }
 
