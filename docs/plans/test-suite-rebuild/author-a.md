@@ -98,3 +98,17 @@
 | `ar5-invalid-cache` | 将无效公式缓存直接当0分，公式缓存用例读到0而应null |
 
 上述失败均为具名 `ERR_ASSERTION`，不是编译、准备或超时失败。`author-a-revisions-workspace.json` 与 `author-a-revisions-preserved-directories.json` 记录继续保留的副本及失败数据。当前关闭结论是作者补测已完成，A-R1 至 A-R5 交 D 复核；不代签独立验收或整项任务完成。
+
+## D16 真实开发入口与 Cookie 属性补充
+
+作者继续使用 gpt-6.1-sol / medium。本批先对齐总控固定 `6b70a35c`，本树 merge 为 `65023af0`。新增独占 `apps/web/e2e/rebuilt/development.spec.mjs`，仅复用新版浏览器交互 helper、认证基础证书/邮件/时钟和根目录真实图片输入，没有引入退役伪页面或旧 auth-integration/math-real 建场。
+
+用例直接 `startServer({dev:true})` 创建独立 HTTPS/Vite 主应用，真实页面注册后确认浏览器实际请求 `/@vite/client` 和 `/src/main.jsx` 均200，另读实际转换入口含 StrictMode。沿资源上传、打开原件入口、题库/资源往返，再新建题目、保存和刷新读回的单条主路径验证；检查无浏览器运行异常及页面水平溢出，实际截图未见明显布局问题。成功后关闭页面、真实 server/Vite，并移除自身 application 数据目录；未写公共 build。
+
+- `BROWSER_RUN_ID=author-a-development-final npx playwright test -c apps/web/e2e/rebuilt/playwright.config.mjs development.spec.mjs`：1 PASS，约10.7秒。原日志 `test-results/test-suite-rebuild/author-a-development-pass.log`；HTTP资源证据和截图在同树 `test-results/test-suite-rebuild/browser/author-a-development-final/` 的具名用例目录。
+- 现有身份首例追加真实 remembered 激活响应 Cookie 属性断言：`__Host-teachbuddy_session`、HttpOnly、Secure、SameSite=Lax、Path=/、无Domain及初次七天Max-Age。只运行该原有用例，通过；原日志 `test-results/test-suite-rebuild/author-a-cookie-pass.tap`。没有新增身份矩阵。
+- 两个变动文件的定点 `oxlint --deny-warnings` 通过。本轮未运行其他浏览器/API组；CI现有 `*.spec.mjs` 自动收集新文件，无根配置接线改动。
+
+代表性红证据临时修改资源页挂载逻辑：把每次 layout effect 新建 AbortController 改为复用 `controller.current`，使 StrictMode 重挂载沿用已经 abort 的请求范围。真实开发服务仍能加载、注册和进入资源页，但上传按钮持续 disabled，具名断言“StrictMode重新挂载后资源上传入口必须可操作”明确失败，非建场或编译故障。原字节在 finally 中恢复，产品源码 diff 为空，随后正向流程通过。补丁 `test-results/test-suite-rebuild/d16-strictmode-controller.patch`，最终红日志 `d16-strictmode-controller-final.log`；失败截图、trace和隔离数据保留在 `browser/author-a-development-mutant-final/`，另保留初次上传完成断言失败的诊断。
+
+HMR、API watch、真实浏览器重开及目标设备没有在本批运行，不由这条开发主路径代签；仍沿实际变更按需验证。本批作者证据交总控/D独立复核，尚不宣告整体测试重建任务完成。

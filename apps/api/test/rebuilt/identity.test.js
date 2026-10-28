@@ -6,7 +6,15 @@ test('身份：pending、新页面和单独页面头均不授权，restore 显�
   const world = await createWorld(t);
   const a = await register(world, 'pending@example.test', { pending: true });
   problem(await a.client.request('GET', questions), 401, 'unauthenticated');
-  const activated = ok(await a.client.request('POST', '/api/auth/session', { body: { action: 'activate', sessionId: a.sessionId, rememberMe: true } }));
+  const activation = await a.client.request('POST', '/api/auth/session', { body: { action: 'activate', sessionId: a.sessionId, rememberMe: true } });
+  const activated = ok(activation);
+  const cookie = activation.setCookies.find(value => value.startsWith('__Host-teachbuddy_session='));
+  assert.ok(cookie, '真实记住我激活必须签发__Host会话Cookie');
+  for (const attribute of ['Path=/', 'HttpOnly', 'Secure', 'SameSite=Lax']) {
+    assert.ok(cookie.split(';').map(value => value.trim()).includes(attribute), `会话Cookie必须包含${attribute}`);
+  }
+  assert.doesNotMatch(cookie, /(?:^|;)\s*Domain=/i, '__Host会话Cookie不能指定Domain');
+  assert.match(cookie, /; Max-Age=604800(?:;|$)/, '初次记住我激活保留七天绝对期限');
   assert.ok(activated);
   const created = ok(await write(a.client, 'POST', questions, question()), 201);
   const page = anotherPage(world, a.client);
