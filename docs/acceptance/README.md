@@ -1,190 +1,122 @@
 # 验证入口
 
-执行者只读当前任务相关判据和测试入口。本页维护验证选择、环境和运行入口；保护行为、测试选择或准备条件改变时同步，不积累执行日志。功能页只链接相关验收；[完整矩阵](mvp-matrix.md)用于全范围交付；[质量样本](samples.md)用于材料、数学和目标 Office 核对。
+执行者从当前规格和用户要求确定要保护的结果，再按本页选择环境与测试入口。完整行为判据见[验收矩阵](mvp-matrix.md)，材料和数学固定输入见[质量样本](samples.md)。本页说明当前运行方法；测试套件重建的候选、去留依据和实际结果见[任务记录](../plans/test-suite-rebuild.md)，尚未完成的实验不视为通过。
 
 ## 选择验证
 
-1. **先定判据。** 从当前规格和用户要求列出本次受影响的使用结果，再查已有测试覆盖。修 bug 先复现，沿根因核对共用组件、同类入口和相邻状态，按共享成因确定需要补验的范围。
-2. **复用并补缺。** 按下表选择已有入口，核对配置实际匹配的用例和前置条件。旧预期与现行规格冲突时，修正预期并保留有效保护，不能为了测试通过改回被否定的体验。新增自动化只覆盖现有测试未保护、可稳定复现且值得持续防回归的行为。
-3. **满足后停止。** 受影响路径、必要回归及按[开发约定](../agents/module-development.md#编排)触发的独立验收通过后进入交付；只有新改动、失败或未解疑点才扩大或重复验证。环境缺失与用户已暂缓项如实保留未验边界，按当前授权判断是否阻塞；用例数量不作为完成目标。
+1. **固定使用结果。** 先从现行规格、真实入口和本次变化确定风险。修 bug 先按用户的输入、身份和操作复现，记录失败后再定位；旧测试不能推翻当前已确认的产品行为。
+2. **选择最直接的反馈。** 业务规则使用真实 HTTP/SQLite，页面接线使用主应用浏览器，格式和离线能力使用实际文件。共享保证优先在一个层次验证；跨层重复须有不同的可见失败理由。
+3. **确认测试有效。** 新增保护应在旧缺陷或可运行的业务故障下产生具名断言失败。编译失败、fixture 故障、skip 或未定位的超时不算检出。覆盖率、用例数和历史存在时间不决定测试价值。
+4. **满足后交付。** 本地定点运行变化后的用例，独立审查按开发约定执行，完整回归交 CI；只有新变化、失败或未解疑点才补验。缺输入和目标环境明确记未验，不用放宽断言、重试或跳过换取通过。
 
-按任务性质选择流程，用户专门指定的边界优先。静态原型检查其实际页面与交互，只读核查核对所声明事实，纯文档核对事实和阅读路径；只运行支持本次结论所需的反馈，不因使用开发工作流而套用整套产品回归。
+具体命令以根 `package.json`、`apps/api/package.json` 和 `.github/workflows/ci.yml` 为准。静态检查、构建与业务测试分别提供证据，不把它们合成测试通过数量。`.feature` 保存带编号的需求案例，不由 Cucumber 执行，也不计入自动测试。
 
-| 变化 | 必要反馈 |
-| --- | --- |
-| OCR 模型、识别管线或性能 | [选型规则](ocr-selection.md)：先固定判据和输入，再进行真实推理、消融和消费者验证 |
-| 文档、导航、资料位置 | 文件/锚点、权威来源、消费者和固定输入完整性；涉及脚本路径时运行对应脚本或测试 |
-| 业务 API 或存储 | 真实 HTTP/数据库集成，按影响范围检查迁移与重启 |
-| UI/UX | 实际浏览器流程、隔离生产构建、图像及动效过程；UI 不写单元测试 |
-| 预览、输出、离线 | 真文件生成、下载、打开，必要时断网冷启动 |
-| 跨模块组合 | 受影响的真实跨模块路径及必要回归 |
-| 开发服务、组件挂载与清理 | [开发服务回归](#开发服务回归)，保留 React StrictMode，验证重复初始化后仍可读取、上传和保存 |
+引入 lint、hooks 或其他工具前，先证明已有反馈的具体缺口及新工具能检出什么，评估误报、重复保护与维护负担；现有工具足够时沿用，不为检查器另建测试套件。静态告警核对真实消费者、动态加载和规则语义，不能据告警改写已认可业务。
 
-测试文件/config 从[模块与底座入口](#模块与底座入口)进入；命令以根和各 workspace 的 `package.json` 为准。根 `npm run test:e2e` 与 `test:ci:browser` 使用同一组确定性产品回归，局部认证使用 `npm run test:auth:e2e`；准确范围由 `apps/web/e2e/ci.config.mjs` 的 project 与 `testMatch` 决定，不代表全部专项。模块验证使用相应配置，运行前核对其 `testMatch` 和候选。数学旧源兼容、持久化冲突与未决确认，以及跨模块手工支持和 Agent 主应用的受控场景也纳入该组，保护真实入口及原文件恢复；其配置仍可独立定点执行。真实资源 OCR 运行链及题库外部 E 原稿仍使用显式专项入口，不纳入日常 CI。`.feature` 是带稳定编号的行为场景，目前不由 Cucumber 执行；实际反馈来自 HTTP/Playwright。各场景使用自己的 Background。旧场景中的“软删除”对应可恢复的归档/删除；永久删除另按模块规格验收，不用归档场景证明不可恢复操作。
-
-引入 lint、hooks 或新验证工具前，先指出已有检查漏掉的具体问题，确认该工具确实能检出，并评估误报、重复覆盖及持续维护负担。现有构建、集成测试或人工浏览足以提供反馈时沿用；不因缺少某类工具而补齐工具清单。
-
-静态检查使用现成工具，命令与配置以入库源码为准。结果须结合真实入口、动态加载、实际消费者及规则语义判断；确认问题后按[范围与发现](../agents/module-development.md#范围与发现)处理，不以未经确认的告警驱动业务改写，也不为检查器另建测试套件。
-
-本地自测、CI 回归与总控补验的职责，以及已纳入 CI 的浏览器和 Office/PDF 范围，统一见[CI 与本地验证](../agents/github-workflow.md#ci-与本地验证)。选择入口后先核对该分工，复用已有证据；总控不重复运行 CI 已承担的验证。真实模型、目标设备与人工观感仍按影响范围验收。
+本地、CI 与目标环境职责沿[CI 分工](../agents/github-workflow.md#ci-与本地验证)。普通回归使用隔离身份、数据、测试邮件与受控模型；真实模型、GPU OCR、真实邮件及目标设备单列，不由替身结果代签。
 
 ## 全站原型对照
 
-用户要求完整复刻或全面清查时，先固定原型与产品版本，在[当前任务记录](../agents/module-development.md#当前任务记录)建立行为清单，再按模块分工。清单从源码中的入口、控件、条件分支和状态转换展开，包含公共组件的实际消费者；用户式操作发现的新分支继续补入。
+完整复刻或全面体验清查时，固定原型与产品版本，在当前任务记录中列出入口、条件分支与状态转换，包括公共组件实际消费者。相同数据、视口和操作下核对外观、焦点、动效、中间状态与连续操作；测试覆盖声明以实际运行证据为准。
 
-- 对照使用相同数据形态、视口和操作顺序，观察布局、焦点、动效与中间状态。按依赖组合等待、失败、取消、重复操作和导航，不穷举无关条件。
-- 每项注明触发、源码位置、实际操作及证据，区分通过、批准差异、失败和未验。截图或静态阅读只能证明其观察范围；原型内存数据不能证明产品的真实保存与恢复。
-- 总控核对清单与源码的遗漏、共享交互及跨模块组合，再按既有编排集中独立审查。修复沿根因检查同类入口；复验覆盖变化及受影响路径，完整回归仍按 CI 分工执行。
-- 完成以清单内可执行条件已核对、范围内缺陷已关闭及剩余边界明确为准。问题按独立根因去重，基线缺陷、开发中引入的问题与测试缺陷分开统计；原型共有的未决体验集中交 buffer 裁决。
+每项区分通过、批准差异、失败与未验。截图仅证明观察范围，原型内存数据不证明保存。按独立根因区分产品缺陷、原型问题和测试缺陷；已授权问题沿真实路径修复，需用户决定的较大取舍按 buffer 规则记录。体验清查不要求把每个按钮或动效逐帧固化为长期回归。
 
 ## 浏览器准备
 
-新环境在仓库根目录完成 `npm ci` 后，执行 `npx playwright install chromium`，安装锁定 Playwright 版本对应的浏览器。支持的 Linux 发行版若缺系统库，使用 `npx playwright install --with-deps chromium` 同时安装依赖，该步骤可能需要系统管理员权限；具体支持范围见 [Playwright 官方安装说明](https://playwright.dev/docs/browsers#install-system-dependencies)。更新 Playwright 后重新执行安装。
+新检出执行 `npm ci`，再执行 `npx playwright install chromium` 安装锁定版本。支持的 Linux 环境缺系统库时使用 `npx playwright install --with-deps chromium`，具体范围见[官方安装说明](https://playwright.dev/docs/browsers#install-system-dependencies)。普通回归不依赖个人 Chrome 路径；扩展专项需要有扩展能力的浏览器时由对应入口明确准备。
 
-浏览器回归使用上述 Chromium，不依赖某台主机的 Google Chrome 安装路径。专项需要其他浏览器时，在对应配置与验证说明中明确安装步骤；新环境验证使用独立浏览器缓存，不能用本机现有缓存代替准备。
+浏览器测试消费同一候选的完整构建：按[运行准备](../SETUP.md#新的隔离环境)构建数学运行时和 Web，以 `WORKBENCH_WEB_DIST` 指向隔离产物。启动时不能用另一工作树旧资产补齐缺失内容。
 
 ## 开发服务回归
 
-运行 `npm run predev` 后执行 `npx playwright test -c apps/web/e2e/development.config.mjs`。它启动真实同源 HTTPS 与 Vite，使用隔离数据库、文件目录和邮件替身，覆盖资源上传、PDF 中文文字层、模块往返与刷新，以及题库读取、手动保存和重开。该入口不读取已有实例配置，也不占用 50880。
-
-改变监听或启动方式时另验前端源码修改即时生效、API 修改自动重启及登录保持；验证后还原探针修改。固定 Web 构建继续按模块入口回归，不能用生产构建通过代替开发模式验证。
+开发模式与固定生产构建分别判断。变更 Vite、监听、挂载或 StrictMode 相关代码时，启动隔离的实际开发入口，操作资源上传、模块往返、题目保存和刷新读回。另核对前端热更新、API 自动重启与登录保持，结束后撤销探针修改。固定构建通过不证明开发模式已验；没有运行当前开发专项时明确记录未验。
 
 ## 隔离与产物
 
-- 按[运行指南](../SETUP.md#新的隔离环境)选择独立端口、库、文件目录与构建产物。同一固定候选可共享只读构建，运行期间不得覆盖；并行修改使用独立输出目录。Pandoc/Office 路径必须指向可用工具；测试不能读取或改写用户实例。
-- 测试输出写 `test-results/`，证据默认在 `test-results/evidence/`；支持环境变量的入口可指定独占目录。两者均为可清理的运行产物，不存放唯一用户成果或固定输入。
-- Playwright 截图通过 `testInfo.outputPath()` 写入用例独立目录；临时实例用系统临时目录和 `mkdtemp` 创建，或先创建明确的输出父目录。测试自行准备本次输入，不能依赖另一用例或旧运行留下目录。
-- 运行前核对 fixture/config 的输入与准备条件；绝对路径、外部工具和真实模型验证另核对当前环境。行为预期按[选择验证](#选择验证)处理。
-- 记录 real-auth / test-principal、real-mail / fake-mail、真实服务 / 替身及实际候选。self、independent、user 分别表示作者自验、独立验收、真人反馈；退出码和局部 PASS 不代表整个产品。
-- 失败保留本次现场；成功后清理临时数据。固定样本和用户已有成果保留在测试自动清理范围之外。
+- 实例使用独立端口、SQLite、文件目录和 browser context。Cookie 按主机而非端口隔离，实际要求见[浏览器身份](../SETUP.md#浏览器身份与体验交接)。测试不读取 preview 私有配置，也不修改用户数据。
+- 公共真实 HTTPS 应用准备在 `apps/api/test/support/application.js`，返回当前 `createApp` 装配；模型与邮件只在边界注入替身。Node用例通过 `apps/api/test/support/directories.js` 在仓库 `test-results/runtime/` 创建具名隔离目录；浏览器使用各例 `testInfo.outputPath()`。用例拥有目录，负责关闭服务、连接、浏览器、异步任务与子进程。需要重启时明确复用同一数据目录和端口。
+- 同候选可共享只读构建；运行期间不得覆盖。并行修改使用独立输出目录，转换工具按 SETUP 显式准备。
+- 输出归 `test-results/`，截图使用 `testInfo.outputPath()`，每例自行准备输入。成功清理临时数据，失败保留现场；固定样本、私有备份与用户成果不在自动清理范围。
+- 回执区分 real-auth/test-principal、真实服务/替身、self/independent/user、通过/失败/跳过/未验。采样统计仅描述该次环境和候选。
 
 ## 输入与按需参考
 
-| 需要验证什么 | 入口与使用方法 |
+| 输入或外部结果 | 入口与边界 |
 | --- | --- |
-| 公共文稿实际转换 | `apps/api/test/materials-pandoc.test.js` 使用公共转换器生成固定文稿的 DOCX/PDF，检查可编辑公式、正文与真实文件；不经过业务课稿编排入口；隔离公共材料服务由 `apps/api/test/fixtures/materials/server.mjs` 提供。 |
-| Word/WPS 人工编辑与打印 | [Office fixtures](../../apps/web/e2e/fixtures/office) 的六份 DOCX、源文本/公式/图片；按[人工操作](samples.md#人工-office-样本)核对。输入样本不是产品转换成功证明。 |
-| 设置/帮助外观 | 按[设计输入](../design-system/README.md)核对当前运行页面及用户指定参考；截图留本次验证产物 |
-| 题干/答案原稿独立定位 | 按[独立题库页面](#独立题库页面)构建、启动 fixture，再执行定位 spec。此 test-principal 页面与真实认证主应用分开准备。 |
-| Agent 真实模型保留库 | `apps/api/test/fixtures/c26/live.mjs` 生成模型报告和隔离数据；`apps/web/e2e/c26/agent.spec.js` 读取。二者共用 `AGENT_EVIDENCE_DIR`，默认 `test-results/evidence/C26/v1`。执行前核对报告与数据目录来自同一候选；新环境缺少报告或对应数据库时显式跳过并标记未验证；准备步骤见[真实模型保留库](#真实模型保留库)。 |
-| API 字段与兼容 | 从[文字契约](../README.md#契约说明)进入；机器契约在 `apps/api/src/contracts/`，交换样本在 `apps/api/test/fixtures/contracts/`。测试以固定样本和预期行为验证实现，不能只用实现自身生成预期结果。 |
-| 固定旧版升级 | `npm run test:api` 包含 A11/T53、R31 题库旧库升级及退役迁移；数学和材料旧版分别执行 `node scripts/math-support/verify-upgrade.mjs`、`node scripts/materials/verify-migration.mjs`。入口从 `apps/api/test/fixtures/legacy-source/` 的不可变源码包创建旧库，来源、路径和摘要见同目录 `provenance.json`；不需要旧 checkout、Git 归档引用或环境变量。归档内部保留当时的路径。 |
-| 数学旧库升级 | `apps/api/test/math-integration-migrations.test.js` 从固定旧版题库/数学源码包重建库、附件与请求回执，再验证保留模块的数据、文件、回执和重启，并确认退役模块表及迁移记录已清理。原版源码包保持字节固定；退役模块不成为当前功能兼容承诺。缺失或不支持的升级须如实报告，不把旧候选通过结果移用于新版本。 |
-| 外部 E 选页与跨页 | 按[质量样本](samples.md#固定输入与回放)下载并校验公开原件，设置 `M33_PRIVATE_PDF` 后运行 `npm run test:api`；`materials-questions.test.js` 与 `materials-questions-fragments.test.js` 分别核对选页及原件保留、受控提取结果的跨页关联。缺原件时两项明确跳过；这些检查不证明新的 GPU OCR 推理准确率。 |
-| 当前能力核查 | [项目状态的核查入口](../plans/run-state.md#核查入口)指向当前源码、固定样本和可重现测试；既往本机结果只证明当时的候选。新候选按影响范围补验，缺少输入或目标设备时记未验证。 |
+| 原生 Word/PDF、OCR 录制与数学输入 | [样本索引](samples.md#固定输入与回放)；真实字节和摘要来自固定输入，回放仅证明消费与保存 |
+| Word/WPS 人工编辑、重开与打印 | [人工 Office 样本](samples.md#人工-office-样本)；仓库中的原稿不是产品输出成功证明 |
+| OCR 质量与配置变化 | [选型验收](ocr-selection.md)；真实推理、原始记录、消费者回放分别留证 |
+| API 机器语法与交换样本 | `apps/api/src/contracts/`、`apps/api/test/fixtures/contracts/`；语义从[文字契约](../README.md#契约说明)进入 |
+| 旧库和旧作品兼容 | 保留具名版本的冻结源码/数据输入；当前应用装配沿当前目录，不能拿目录示例假冒旧版升级 |
+| 视觉参考 | [设计输入](../design-system/README.md)；实际产品和连续操作为验收对象 |
 
 ## 模块与底座入口
 
-下表只选择已有入口，不声明当前候选已经运行。具体 `testMatch`、CI 收集和前置条件以配置及 package scripts 为准；未纳入 CI 的专项按受影响范围定点运行，不能因入口旧或未进 CI 删除独有保护。
+新套件按保护层分组，具体文件与收集范围以脚本/config 为准，不把目录存在或 `--list` 当作运行结果。
 
-| 范围 | 代码入口与判据 | 额外边界 |
+| 层 | 入口 | 主要责任 |
 | --- | --- | --- |
-| 身份/交接/删除 | `auth-integration.config.mjs`、`auth-completeness.config.mjs`、`fixtures/auth-contract/playwright.config.mjs`；`auth-integration.test.js`、`account-deletion.test.js`；[认证案例](auth-cases.md) | 替身、real-auth/fake-mail、真实邮件与浏览器重开分开记录；fixture 单独构建不证明当前主应用已接入 |
-| 工作台/设置/帮助/导航 | `navigation-sync.config.mjs`、`settings-shell.config.mjs`、`settings-implementation.config.mjs`、`help-shell.config.mjs`；`navigation.test.js`、`reliability.test.js` | 核对当前已移除的设置入口，主题/语言/昵称/头像/退出/删号用真实页面 |
-| 共享保存/资料包/恢复 | `savable-document-recovery.config.mjs`、`manual-support/playwright.config.mjs`、`manual-data/manual-data.config.mjs`；`reliability.test.js`；[保存案例](workbench-cases.md)、[数据验收](data.md) | 历史专用 fixture 与当前主入口分开；恢复 UI 未接入时如实记录，不恢复已删除设置 |
-| 题库/收录 | `questions-ux.config.mjs`、`questions-recognition.config.mjs`、`questions-tables.spec.js`；`first-flow-questions.test.js`、`materials-questions*.test.js`、`materials-question-notes*.test.js` | 固定录制证明消费；实际 OCR、外部原件和新提取质量另验；详见[题库专项](#题库专项) |
-| 资源/预览/识别 | `resources-ui.config.mjs`、`manual-resources.config.mjs`；`materials-resources.test.js`；[材料案例](materials-cases.md) | 真实 Office/PDF 工具与真实 GPU 分开，预览需实际解码每页；[资源专项](#资源专项) |
-| 数学/网页桥/离线 | `math-workspace.config.mjs`、`math-unified.config.mjs`、`math-unified-repair.config.mjs`、`math-geogebra.config.mjs`；`math-workshop*.test.js`、`math-dynamic.test.js`、`math-isolation.test.js`；[数学案例](math-cases.md) | 浏览器替身不代签真实网页模型，离线必须下载冷启动；[数学专项](#数学专项) |
-| 日程 | `schedule/playwright.config.mjs` 按 capabilities/interaction/keyboard/consistency/time-zone spec 选择；`teaching-time-*.test.js`；[日程案例](schedule-cases.md) | 日常 CI 仅选择 capabilities；具体范围以配置为准，不以 CI 通过替代全部专项；[日程专项](#日程专项) |
-| 班级 | `classroom.config.mjs` / `classroom.spec.js` 及[班级验收](classroom.md)内真实 HTTP/Excel/原卷与生命周期入口 | 浏览器检查完整教师页面与刷新读回，独立核对实际 AI 工具，不能用后端通过代签 |
-| AI 助理 | `agent.test.js`、`agent-rendering.config.mjs`、[agent.feature](agent.feature)；live 另用 `fixtures/c26/live.mjs` 与 `c26/agent.spec.js` | rendering 与 c26 的非 live 场景使用受控 SDK/真实 HTTP/UI，已纳入 CI；live 需要同候选保留库与明确真实调用授权，引用、工具结果与提案的当前能力见[助理规格](../features/agent.md) |
+| 业务与数据 | `apps/api/test/rebuilt/` | 真实身份、账户隔离、原子保存/重试、业务规则、删除恢复、资料包和受控 Agent 操作 |
+| 主应用流程 | `apps/web/e2e/rebuilt/`；聚合配置 `apps/web/e2e/ci.config.mjs` | 八分区实际接线、编辑保存重开、身份交接、失败接续与跨模块往返 |
+| 材料与数学成果 | `apps/api/test/rebuilt-outputs/` | 原稿提取、OCR 消费、文件版本与真实预览、考试固定原卷定位、可编辑输出、数学源与离线作品 |
+| 数学网页桥 | `extensions/math-web-ai/test/rebuilt/` | 真实扩展与受控提供方页面；商店和真实网页模型另验 |
 
-API 文件名相对 `apps/api/test/`，浏览器入口相对 `apps/web/e2e/`。表中的通配名用于检索，不能当作配置已经全量收集；命令仍从 package scripts 与对应 Playwright 配置取。
+测试组的独有风险、旧套件去留和故障/消融结果由[任务记录](../plans/test-suite-rebuild.md)关联，不在各功能文档复制测试过程。
 
 ## 题库专项
 
-- 普通题目保存先读[共享契约](../contracts/workbench.md)的身份、内容、引用及写入节；丰富题目、分类和校对再读[材料契约](../contracts/materials.md#内容)。字段只读对应 OpenAPI 操作，不需要通读其他模块或完整项目计划。
-- 当前交互浏览器验证 `apps/web/e2e/questions-ux.config.mjs`，用 `WORKBENCH_WEB_DIST` 指定隔离生产构建，覆盖录题、草稿、改编、分类、文字校对、结构编辑、搜索范围、拆分答案归属、未知保存恢复、归档与彻底删除、来源缺失/读取失败、详情返回及深浅色布局。文件上传另验 DOCX 段内换行、PDF 明示续题与缺页/倒序、双栏题干/选项/答案及入库来源页码、未分配片段处理后的保存重开；原稿字节、原生 Word/DOC/PDF 校对、人工补图、迟到搜索及分隔宽度恢复见 `manual-questions.config.mjs`。HTTP `apps/api/test/first-flow-questions.test.js`、`materials-questions*.test.js`；笔记兼容、出处与附件恢复另见 `materials-question-notes*.test.js`；保存基例 [WB-003/004/011-018](materials.feature)与[基础交换](workbench-cases.md)，材料基例 [WB-M001-012/025-028](materials.feature)。
+从[题库规格](../features/questions.md)、[材料契约](../contracts/materials.md)和[共享保存](../contracts/workbench.md)确定判据。持续保护手工录题、原生材料/OCR 校对、直接修改、复制改编、原稿与来源快照、笔记、答案搜索、保存刷新和按需归档/删除。
 
-保存行为变更至少走自建、直接修改、复制改编、刷新重开；再覆盖本次影响的断线未确认、版本冲突、保存中继续输入、分类变更、身份切换和保存后取用。确认原 ID/来源快照/独立笔记正确，不能仅凭 toast 判断。当前能力边界见[项目状态](../plans/run-state.md)，回归从[核查入口](../plans/run-state.md#核查入口)进入。
+保存故障按实际影响核对：提交结果未知、冲突、保存中继续输入、分类变化、身份切换与来源读取失败。断言读回原 ID、内容、来源与独立笔记，不能仅看 toast。材料结果核对原题/原答案/公式/配图/页码/未分配片段与人工采用状态；不得自动补齐原稿缺失对象。
 
-识别消费者使用 `apps/web/e2e/questions-recognition.config.mjs`，该入口和 CI recognition project 均包含 `questions-recognition.spec.js` 与 `questions-tables.spec.js`；后者的私有 E 完整原件场景有独立输入条件，不能把缺原件跳过视为已验。API 结构边界另见 `materials-questions*.test.js`。固定输入及真实产物位置见[样本索引](samples.md#固定输入与回放)。回归核对原题、原有答案、公式、题图、来源页码、未分配范围、跨页阻断与人工状态；重试、取消和迟到结果不得覆盖已校对内容。表格列角色、同格多题配图、隐式续题等详细用例由相应测试维护。
+固定 OCR 录制来自[样本索引](samples.md)，普通回归不启动 GPU。私人 E 完整原稿按明确获取和摘要校验步骤准备，缺原稿保留该专项未验，不以受控转录代替。
 
-从界面上传、校对入库并刷新读回，实际阅读公式与配图并查看深浅主题和窄屏截图。固定产物回放只证明消费与保存；修改识别配置后须按[共用路线与验证](../contracts/recognition.md#路线与验证)重新验证真实原稿，不能复用旧缓存冒充新结果。外部 PDF 回放只需按样本索引下载原件并设置 `M33_PRIVATE_PDF`；固定 E7/E8/E9 机器结果随仓库根 `test/fixtures/questions/recognition-document-4/` 入库，测试核对完整原件与实际渲染页摘要。`QUESTIONS_OCR_EVIDENCE_DIR`、`QUESTIONS_OCR_EXPANDED_DIR` 仅用于替换同布局的回放目录；默认自编材料消费回归不需要这些变量。缺外部原件只跳过对应专项，不用受控转录代替真实输入通过。
+### 主应用页面
 
-开发模式的列表读取、手动保存和刷新还须通过[开发服务回归](#开发服务回归)。组件重新初始化后恢复读取，过期请求的成功或失败都不能覆盖当前列表状态。
-
-### 独立题库页面
-
-原稿定位的 fixture 配置没有自动启动服务，先在仓库根目录构建并在独立终端启动：
-
-```bash
-node apps/web/e2e/fixtures/materials-questions/build.mjs
-questionsFixtureData="$(mktemp -d)"
-node apps/api/test/fixtures/questions/server.mjs "$questionsFixtureData" 48339
-```
-
-保留该进程，在另一终端运行 `npx playwright test -c apps/web/e2e/fixtures/materials-questions/playwright.config.mjs materials-questions-fragments.spec.js`。CLI 使用刚生成的 `test-results/r33/web`；通过 `/fixture/session` 安装测试身份，不使用真实注册或邮件。更换端口时同步设置 `QUESTIONS_FIXTURE_ORIGIN`，输出可用 `QUESTIONS_FIXTURE_RESULTS` 指定。停止服务后按结果清理本次隔离数据；失败现场保留，不使用用户实例或旧运行残留数据。
+题库界面使用真实认证主应用验证。旧独立题库、数学、身份替身页面及其专属服务已移除，固定材料、Office 样本生成器与冻结旧库源码保留在各自输入目录。
 
 ### 材料跨模块与进程重启
 
-`apps/web/e2e/fixtures/materials-integration/playwright.config.mjs` 选择 `materials-integration*.spec.js`，验证题库校对在外壳保存重开、资源/题库往返及实际子进程重启后的未知上传接续。使用隔离 `WORKBENCH_WEB_DIST`；进程重启场景独占本机 48437 端口。截图与具名报告使用 `MATERIALS_INTEGRATION_EVIDENCE_DIR`，默认 `test-results/materials-integration/evidence`，trace 位于同级 `browser/`；临时数据库由各例自行创建，成功清理、失败保留。
+跨模块往返由主应用流程组保护，进程/数据库重开由业务与数据组按实际保证验证。未知上传必须保留原键和原件要求，不能把同进程重新读取当作完整重启。临时实例与证据使用独立目录，不占用用户服务端口。
 
 ## 资源专项
 
-文件身份、上传未知结果、补充预览、授权下载见[材料契约的文件与定位](../contracts/materials.md#文件与定位)；分类、文件更新及删除见相应契约节。原件和历史文件持续保留；上传后安全保存原件与预览成功是不同结果。
+依据[资源规格](../features/resources.md)和[材料契约](../contracts/materials.md)核对上传、整理、分类/标签、替换/历史恢复、归档及删除。安全保存原件与生成预览是两个独立结果。
 
-实现与公共文件/任务路径见[资源技术入口](../subsystems/resources.md#运行路径与持久化)。真实认证浏览器流程入口 `apps/web/e2e/resources-ui.config.mjs`，用 `WORKBENCH_WEB_DIST` 指向[隔离构建](../SETUP.md#新的隔离环境)，截图和 trace 可用 `RESOURCE_UI_RESULTS` 指定目录。Office 格式专项入口 `apps/web/e2e/manual-resources.config.mjs`，HTTP `apps/api/test/materials-resources.test.js`，验收 [WB-M013-017](materials.feature)。
+预览必须实际解码内容页，下载核对原字节；封面可见不能证明每页可用。正文查找核对真实命中、文件版本和来源，失败与无结果保持可区分。涉及复制/缩放/高亮/焦点的变化按实际页面补验，不以 HTTP 通过代签界面。
 
-按本次改动选择下列回归，执行范围与剩余验证见[项目状态](../plans/run-state.md)：
-
-- 收录与整理：真实上传、保存刷新、重复选择与队列接续；批量取消/过期版本整批拒绝；归档后返回、彻底删除确认/取消及刷新；请求未知结果按原键确认，账户隔离不变。
-- 预览与版本：真实 DOC/DOCX/PPT/PPTX/PDF/图片逐页解码、缩放和下载，Office 路径失效不影响独立格式。检查替换/历史恢复、分类备注和文件身份。图片 DOM 可见与页图实际载入分别检查，封面不替代内容。
-- 正文与页内查找：真实拖选、系统剪贴板、中英文及跨文字项命中、字面符号、当前页计数与键盘导航。检查当前文件替换/历史恢复、归档与筛选、快速翻页/账户变化的迟到结果；无文字和失败可区分且可重试。缩放 75%-200%、深浅主题和 390px 下实际检查高亮、选择复制与焦点。
-- OCR：沿同一真实认证、HTTP、Job、SQLite 和 Files 入口验证指定页、复制、搜索定位、停止/重试、响应丢失、断网接续、文件更新及来源一致。固定产物[回放](../../apps/web/e2e/fixtures/resources-recognition/README.md)只证明消费机制；获准的真实模型验证设置 `RESOURCE_OCR_REAL_HOME` 为[工具目录](../SETUP.md#本地页识别工具)，检查实际文字/公式/题图并保存页结果和截图，普通回归不启用模型。
-
-浏览器回归使用隔离构建；`RESOURCE_UI_DEV=1` 另验 Vite/StrictMode 的[开发服务路径](#开发服务回归)。上传、往返、刷新、中文文字层以及当前请求范围需有效，卸载或身份变化后旧响应不能覆盖现场。桌面辅助栏、窄屏、主题、提示消退和关闭焦点须实际查看。
+OCR 沿真实认证、HTTP、任务、SQLite 和文件入口验证，采用固定回放时明确不能证明模型识别质量。实际模型与工具准备沿[本地识别](../SETUP.md#本地页识别工具)。
 
 ## 日程专项
 
-[日程场景](schedule.feature)中的日程、重复、提醒及通知返回是本分区判据，交换预期见[契约案例](schedule-cases.md)。两视口分别记录空态、长文本/重叠段、编辑、保存失败、冲突、删除、通知定位与返回，检查外壳不滚动、无页面级水平溢出、焦点和实际指针/触控。时间选择使用真实指针轨迹，不借合成事件证明；HTML 拖放排序与指针选段按设计规则分别记录。真实平板触控与完整日程链另验，当前候选从[核查入口](../plans/run-state.md#核查入口)选择回归。
+[日程场景](schedule.feature)与[契约案例](schedule-cases.md)定义行为。业务组保护重复/单次、事项移动、日期时区与提醒事务；主应用组保护实际安排、编辑、保存与返回。
 
-日程专项统一使用 `apps/web/e2e/schedule/playwright.config.mjs`，按实际行为选择 spec：
-
-| 要核对什么 | spec |
-| --- | --- |
-| 常规已纳入 CI 的日历能力 | `capabilities.spec.js` |
-| 真实指针、拖选/拖动和跨午夜/跨年交互 | `interaction.spec.js` |
-| Enter/Escape、字段/菜单、焦点、标签与输入法组合属性 | `keyboard.spec.js` |
-| 保存中继续输入、取消、冲突、迟到响应和未确认结果 | `consistency.spec.js` |
-| 系统时区同步、切换竞态、DST 与时间反馈 | `time-zone.spec.js` |
-
-例如仅验键盘时运行 `npx playwright test -c apps/web/e2e/schedule/playwright.config.mjs keyboard.spec.js`。`WORKBENCH_WEB_DIST` 指向隔离生产构建；各用例使用真实认证、API 和 SQLite 建独立场景，邮件为测试替身。输入法事件属性自动检查不代替真实系统输入法，指针/模拟触控不代替目标平板。
-
-当前常规 CI 只选择 capabilities；专项配置可选择整个日程目录。实际集合以 config/testMatch 和所选 spec 为准，收集到用例不表示已运行或全部日程保证完成。开发者按影响定点运行，CI 外的键盘、保存竞态、时区或真实手势被改动时仍须补验，不默认全目录重跑。
+根据变化补验键盘、冲突、迟到响应、拖选/拖动及真实时区切换。时间敏感测试使用可控业务时钟，浏览器 CSS 动效有独立时间线。模拟触控和 IME 事件不代替目标平板及真实系统输入法。
 
 ## 数学专项
 
-当前完整应用的旧源兼容、公式与几何成果、参数动态、HTML 隔离及身份/未知结果回归沿 `apps/web/e2e/math-workspace.config.mjs` / `math-workspace.spec.js` 选择，统一制作与网页桥另沿各自配置。固定 HTML/JSON 及 API 仍消费的 `fixtures/math-static/` 源码和 build 保留为输入，不能因旧页面专项退役而删除它们。
+依据[数学规格](../features/math.md)、[数学契约](../contracts/math.md)与[数学样本](samples.md)。主应用组验证制作界面与输入保护，成果组验证真实公式/几何、可编辑源、图片、固定版本的离线课堂作品与代表旧源兼容。
 
-统一制作浏览器回归使用 `apps/web/e2e/math-unified.config.mjs`，连续输入、弹窗与播放使用 `math-unified-repair.config.mjs`；保存保护和取消分别使用 `math-geogebra.config.mjs` 中的具名场景；旧源保存/会话保护复用现有 `math-workspace.config.mjs`，按真实旧源导入建场。API 核验入口为 `apps/api/test/math-workshop.test.js`、`math-workshop-view.test.js` 和既有 `math-*.test.js`，固定输入在 `apps/api/test/fixtures/math-workshop/`。网页桥回归按[扩展说明](../../extensions/math-web-ai/README.md)执行。
+离线成果先实际下载，再关闭服务、禁网，在新的浏览器现场冷启动并操作参数/步骤。外部 HTML 的 sandbox 与网络隔离须独立核对。MathJax、GeoGebra 与浏览器依赖从入库清单构建，不依赖本机旧测试产物。当前常驻课堂包回归使用二维和三维作品，核对实际对象、保存视区、参数及步骤操作；纯公式用例核对源码与PNG。纯公式课堂冷开及播放动画在相应导出或课堂运行代码变化时专项验证，不能把静态输出通过称为已验证播放。
 
-验收须操作真实界面、刷新读回并打开实际文件，区分作者自验、独立核验和用户目标环境。运行与必要回归只依赖仓库内源码、固定输入及按运行指南准备的工具；preview 的 `test-results/math-handoff/math-unified/` 只提供既有执行证据，不是安装或接手前置。整体完成条件与剩余验证在[项目状态](../plans/run-state.md)维护。
+网页桥使用实际扩展脚本与受控网页验证连接、取消、更新与迟到结果；真实 DeepSeek 登录、商店安装/自动更新和目标浏览器仍沿[扩展说明](../../extensions/math-web-ai/README.md)另验。
 
 ## 账户与工作台专项
 
-交互动效、焦点、参考尺寸见[设计输入](../design-system/README.md)。修改设置时用 `apps/web/e2e/settings-shell.config.mjs` 的隔离真实认证/可靠性服务；帮助用 `help-shell.config.mjs`。资料包及备份恢复用 `manual-data/manual-data.config.mjs`，跨模块草稿、冲突和未确认请求用 `manual-support/playwright.config.mjs`；这些入口均相对于 `apps/web/e2e/`。
+依据[认证契约](../contracts/auth.md)、[工作台规格](../features/workbench.md)和[数据契约](../contracts/data.md)。协议、资料隔离、偏好保存、删号和维护恢复由业务组保护；真实登录/退出/切换、偏好呈现与编辑接续由主应用组保护。
 
-完成相关 UI 修改应实际检查桌面及 390px 窄屏、各页面主题/背景组合、头像上传/删除同步侧栏及重新登录读回、键盘菜单、弹层退出中间态、快速反向和焦点恢复；同时确认偏好保存失败可重试、真实导出和退出可用。语言和删号使用 `apps/web/e2e/settings-implementation.config.mjs` 与 `apps/api/test/account-deletion.test.js` 验证真实认证、跨账户和未知结果。后端用 `apps/api/test/reliability.test.js` 核对账户隔离、版本冲突、旧字段兼容及头像输入校验。帮助另检查搜索空结果、无效文章、刷新返回和目录现场。当前验证入口见[核查入口](../plans/run-state.md#核查入口)。
+浏览器 Cookie 的全进程关闭与恢复、真实邮件、掉电和目标设备不是普通替身或刷新可以证明的结果。已移除的设备管理 UI 与尚未接入的恢复操作不得在测试中伪造为已开放能力。
 
 ## AI 助理呈现专项
 
-C26/C27 用真实题目检查 1440×900、820×1180 和 390×844：首页、AI 辅助栏覆盖与关闭、长对话与公式、历史弹层、草稿失败、冲突、停止/重连、操作结果打开后返回。截图与实际指针/键盘操作一起留证；测主要区域滚动独立、外壳无横向溢出、按钮可点击、焦点返回和新消息提示。界面及交互对照[设计输入](../design-system/README.md)与完整应用原型，模拟回复不能代签真实 SSE、业务写入或本候选验收。
+当前开放能力以[助理规格](../features/agent.md)和[点击执行契约](../contracts/agent.md#教学提案与点击执行)为准。普通回归通过受控模型边界，执行真实 HTTP/SSE、journal 与业务操作，分别验证对话呈现、引用、操作结果和老师确认后保存。
+
+已完成、拒绝、失败与未知结果必须可区分，未点击的建议不能改变业务数据。恢复后的旧操作保持冻结，不用测试恢复退役模块或自动重放。
 
 ### 真实模型保留库
 
-本专项消费同一候选实际模型执行后的报告和隔离数据库，不纳入默认 CI。获得本次真实调用授权后，在仓库根准备已构建的 `WORKBENCH_WEB_DIST`、全新的 `AGENT_EVIDENCE_DIR`、私有 `COMMANDCODE_API_KEY`，并设置 `COMMANDCODE_BASE_URL=https://api.commandcode.ai/provider/v1`。模型白名单以 `apps/api/test/fixtures/c26/live.mjs` 为准，分别执行：
-
-```bash
-node apps/api/test/fixtures/c26/live.mjs deepseek/deepseek-v4.1-flash
-node apps/api/test/fixtures/c26/live.mjs z-ai/glm-5.3-flash
-npx playwright test -c apps/web/e2e/c26/agent.config.mjs -g live
-```
-
-三次执行保持同一 `AGENT_EVIDENCE_DIR`；已有报告不覆盖。保留报告指向的数据库与文件，核对 `kind=live`、`status=completed` 后浏览器才可验证重启和成果打开。缺报告/数据库会明确跳过，不能当作模型通过；非 live 的草稿、重连、未知结果及业务编辑冲突场景使用受控 SDK，可单独执行，也由 CI 的 agentIntegration project 持续保护。实际开发范围与模型调用授权沿运行台账，本节只提供验证入口。
+真实模型调用需具名授权、固定候选与独立数据；报告和 SQLite 必须来自同一现场。旧采集 fixture 只在仍满足当前模型接口且明确选择此专项时使用，缺报告、数据或授权均记录未验。受控回归不证明语言质量、收费服务或网页 DOM 持续兼容。
 
 ## 共用测试输入与建场
 
-跨 API/浏览器消费的题库原稿、配图和录制识别结果归仓库根 `test/fixtures/questions/`；Web 独立页面的 build/config 留在 `apps/web/e2e/fixtures/materials-questions/`，API 建场归 `apps/api/test/fixtures/questions/server.mjs`。不要按路径名相近复制另一套材料，其中八份材料输入、recognition 录制、recognition-document-4 与 legacy 旧页均保留固定输入身份，固定内容、摘要与来源说明随实际输入维护。公共预览输入归根 `test/fixtures/materials/`，数学 HTML 修订输入归根 `test/fixtures/math/`；不能按生成来源或年代删除。
-
-共用真实认证数学建场为 `apps/api/test/fixtures/math-real.mjs`；数学页面服务为 `apps/api/test/fixtures/math/server.mjs`，资源页面服务为 `apps/api/test/fixtures/resources/server.mjs`，公共材料服务为 `apps/api/test/fixtures/materials/server.mjs`，跨材料集成为 `apps/api/test/fixtures/materials/integration.mjs`。旧 core/dataStore、core/auth 只作为 `apps/api/test/fixtures/legacy-source/` 的兼容测试输入，不能据旧 helper 存在恢复产品 dataStore 接口；当前应用由公开 close 释放运行资源。固定归档内部路径和 provenance 摘要保持原版，不跟随当前源码改写。
+产品运行和必要回归只依赖入库源码、固定输入与 SETUP 明确准备的外部工具。历史证据留具名版本，不成为新检出运行前置。复用 helper 前核对实际消费者与生命周期，不因旧目录名称删除仍有效的冻结输入，也不为保留无消费者的框架伪造测试。

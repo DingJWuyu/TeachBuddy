@@ -54,7 +54,7 @@ T52 拥有账户的 schedule-settings，timeZone 为 IANA 名称，首次读取�
 
 重复规则可在 `until` 外指定 `frequency`（daily/weekly/monthly/yearly）、`interval`（1 至 999）、`weekdays`（0 表示周日，周规则至少一天）、`monthly`（date/weekday）和 `count`（0 表示不按次数截止，最多 10000）。规则按安排当地日期展开；不存在的月日期或闰日跳过，月星期按首日的第几个星期定位。日历更新允许已有任务切换重复类型和调整系列起日；基础请求保留上述不可变系列限制。已有单次例外按原始日期保留，只有仍符合系列规则的实例进入范围查询。
 
-标签接口为 `/api/modules/schedule/labels` 的 GET/POST 与 `/:id` 的 PUT。创建提交 `{name, color}`，名称去空白后 1 至 60 字符，颜色为 `#RRGGBB`；更新额外携带 `expectedVersion` 和 `deleted`。读取仅含本账户活动标签，写入沿用公共身份、版本、幂等与事务规则；删除标签不删除任务。此扩展的运行校验归 `apps/api/src/modules/schedule/schema.js`，真实 HTTP 兼容与重启验证见 `apps/api/test/teaching-time-calendar.test.js`。
+标签接口为 `/api/modules/schedule/labels` 的 GET/POST 与 `/:id` 的 PUT。创建提交 `{name, color}`，名称去空白后 1 至 60 字符，颜色为 `#RRGGBB`；更新额外携带 `expectedVersion` 和 `deleted`。读取仅含本账户活动标签，写入沿用公共身份、版本、幂等与事务规则；删除标签不删除任务。此扩展的运行校验归 `apps/api/src/modules/schedule/schema.js`，真实 HTTP 与重启验证从[业务与数据组](../acceptance/README.md#模块与底座入口)选择。
 
 ## 提醒、修改与重启
 

@@ -237,10 +237,13 @@ export function useQuestionSession({ accountKey, transport, requestedId, onRetur
             const latestJob = await get("/api/workbench/jobs/" + v.jobId);
             const latest = await get("/imports/" + scene.id);
             if (!live) return;
-            setValue(readLocal(accountKey, localKey) ?? latest);
+            const restored = readLocal(accountKey, localKey);
+            setValue(restored ?? latest);
+            if (restored && !pending.current && restored.version !== latest.version) setConflict(latest);
             setSelected(scene.draftId ?? latest.drafts[0]?.id);
             setJob(latestJob);
           } else {
+            if (local && scene.editing && !pending.current && local.version !== v.version) setConflict(v);
             get("/items/" + v.id + "/copies").then(
               (x) => live && setCopies(x.items),
             );

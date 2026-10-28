@@ -135,3 +135,11 @@ baseline	path
 789a38d83babad04f2e2a51e9f17530abf638801	extensions/math-web-ai/test/legacy-update.mjs
 789a38d83babad04f2e2a51e9f17530abf638801	extensions/math-web-ai/test/offline.mjs
 789a38d83babad04f2e2a51e9f17530abf638801	extensions/math-web-ai/test/onboarding.mjs
+789a38d83babad04f2e2a51e9f17530abf638801	scripts/first-flow/check.mjs
+789a38d83babad04f2e2a51e9f17530abf638801	scripts/materials/verify-browser.mjs
+789a38d83babad04f2e2a51e9f17530abf638801	scripts/materials/verify-preview.mjs
+789a38d83babad04f2e2a51e9f17530abf638801	scripts/materials/verify-migration.mjs
+789a38d83babad04f2e2a51e9f17530abf638801	scripts/math-support/verify-upgrade.mjs
+789a38d83babad04f2e2a51e9f17530abf638801	apps/web/e2e/auth-restore-ui.mjs
+789a38d83babad04f2e2a51e9f17530abf638801	apps/api/test/first-flow-real-runner.mjs
+789a38d83babad04f2e2a51e9f17530abf638801	apps/api/test/fixtures/auth-contract/https-smoke.mjs

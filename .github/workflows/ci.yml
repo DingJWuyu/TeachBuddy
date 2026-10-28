@@ -127,7 +127,7 @@ jobs:
       - name: Build all workspaces
         id: build
         run: npm run build
-      - name: Verify real files, offline math and browser cookies
+      - name: Verify real files, offline math and extension bridge
         shell: bash
         run: |
           mkdir -p test-results/ci

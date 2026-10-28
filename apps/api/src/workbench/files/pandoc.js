@@ -1,11 +1,11 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import { spawn, spawnSync } from "node:child_process";
+import { spawn } from "node:child_process";
 import { BorderStyle, BuilderElement, Document, Paragraph, Packer, StringValueElement, TableProperties } from "docx";
 import sharp from "sharp";
 import { materialsError } from "../problems.js";
 
-export const pandocDocument = (blocks) => ({
+const pandocDocument = (blocks) => ({
   "pandoc-api-version": [1, 23, 1, 2], meta: {}, blocks,
 });
 const attr = (pairs = []) => ["", [], pairs];
@@ -33,15 +33,6 @@ function failure(stderr, status) {
   error.pandocFailure = true;
   error.formulaWarning = status === 3 && /Could not convert TeX math/.test(stderr);
   return error;
-}
-export function runPandocSync(document) {
-  const result = spawnSync("/usr/bin/bwrap", command(), {
-    input: JSON.stringify(document), timeout: 15000, maxBuffer: 32 * 1024 * 1024,
-    env: {},
-  });
-  if (result.error || result.status !== 0)
-    throw failure(String(result.stderr), result.status);
-  return result.stdout;
 }
 function runPandoc(document, directory, signal) {
   return new Promise((resolve, reject) => {

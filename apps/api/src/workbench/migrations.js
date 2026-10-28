@@ -14,7 +14,7 @@
  */
 import { moduleCatalogIdPattern } from '@teachbuddy/shared';
 
-export function prefixForModule(moduleId) {
+function prefixForModule(moduleId) {
   return `${moduleId.replaceAll('-', '_')}_`;
 }
 

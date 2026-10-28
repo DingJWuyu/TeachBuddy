@@ -3,8 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import assert from 'node:assert/strict';
-import { createIntegration } from './harness.js';
-import { manualQuestionSample } from '../../first-flow-harness.js';
+import { createIntegration } from '../../support/application.js';
 const model = process.argv[2];
 if (!['deepseek/deepseek-v4.1-flash','z-ai/glm-5.3-flash'].includes(model)) throw Error('Specify an authorized exact model');
 const settings = process.env;
@@ -25,7 +24,7 @@ try {
  assert.equal(registration.status,201);accountKey=registration.json.account.accountKey;
  await request('POST','/api/auth/session',{action:'activate',sessionId:registration.json.id,rememberMe:true});
  const doc=text=>({version:1,blocks:[{type:'paragraph',runs:[{type:'text',text}]}]});
- const question=(await request('POST','/api/modules/questions/items',manualQuestionSample({title:`九月数列练习-${tag}`,body:doc('已知等差数列首项为3，公差为2，求前10项和。'),solution:doc('前10项和为120。')}))).json;
+ const question=(await request('POST','/api/modules/questions/items',{note:'',starred:false,source:{kind:'manual'},title:`九月数列练习-${tag}`,body:doc('已知等差数列首项为3，公差为2，求前10项和。'),solution:doc('前10项和为120。')})).json;
  const conversation=(await request('POST','/api/agent/conversations',{})).json;conversationId=conversation.conversation.id;
  const endpoint='/api/agent/conversations/'+conversationId;
  const text=`找到标题“九月数列练习-${tag}”的题目，保留原题，复制改编为首项5、公差3、求前8项和的新题，并给出正确答案。副本标题用“数列进阶-${tag}”。保留其他内容不变。请实际执行保存。`;
