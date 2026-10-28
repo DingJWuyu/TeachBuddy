@@ -160,3 +160,14 @@ D15最终同一测试对总控修前候选 `web-candidate` 再次稳定红，`dr
 构建 `web-profile-fixed` 使用本树候选源码及总控新公共资产，日志 `logs/profile-recheck-build.log`。源码临时故障均在构建后立即恢复，故障补丁和失败数据保留供独立审查。额外单独移除recheck入口generation/epoch检查的 `profile-identity-guard-red` 实际通过，耗时36.5秒；其余身份/写入代次及传输期限仍存在，本次没有取得独立业务故障检出，不算红，也不再扩张故障以凑结果。原未修改的真实新账户对照只用于核对本修复没有破坏身份安全约束。代表性有效红仍是本次并发复核两次红和历史旧昵称业务红。
 
 最终定点Oxlint（`logs/profile-final-lint.log`）及git diff-check通过。没有永久故障开关；AuthProvider现只有成功确认与资料发布的局部修复。
+
+
+## Standards fresh 回查：资源元数据保存假绿
+
+审查者E以隔离浏览器将元数据PUT返回503，原首例仍通过；服务端名称仍是“函数讲义.png”、笔记为空。同设备刷新从scene.drafts恢复编辑值，只能证明设备草稿保持，不能证明保存成功。总控限定仅返工 `resources-math.spec.mjs` 首例与本回执，不改产品、共享fixture或配置。
+
+现首例将两种用户保证分开验证但保留同一完整路径：输入名称/笔记后先刷新，检查未保存值和“有未保存的修改”；点击保存后明确核对元数据PUT200及“资料信息已保存”；用已有onNewDevice只复制认证Cookie，新context从资源列表真实打开唯一条目，检查保存后的名称、笔记和下载原件入口。最后保留原同设备保存后刷新与截图。新设备不带scene.drafts，服务端未保存不能再被本机草稿掩盖。
+
+候选使用总控只读完整构建 `test-results/test-suite-rebuild/web-reviewed`。统一CI配置、workers=1、仅匹配首例。`resource-metadata-reviewed`正常1 PASS（8.7秒）；`resource-metadata-503-red`真实元数据PUT拒绝后在明确成功断言失败，Expected200 / Received503。故障只临时注入该测试路由，补丁 `faults/refinement/resource-metadata-503.patch`，运行后恢复。第二类故障截住真实元数据PUT，用真实GET的当前条目和本次提交内容构造200成功回执及递增版本，但不向服务端提交修改。`resource-metadata-200-red`已越过HTTP200和UI已保存断言，在新设备内容断言明确失败：资源名称Expected“函数备课资料” / Received“函数讲义.png”，18.7秒；补丁 `faults/refinement/resource-metadata-200-not-persisted.patch`。这证明新context检查有独立价值，不只是新加状态200断言拦截503。该注入也已恢复。
+
+恢复后的 `resource-metadata-final`首例1 PASS（8.6秒），定点Oxlint（`logs/resource-metadata-lint.log`）和git diff-check通过。此批只改首例及本回执，未跑数学组或全套，也未修改产品、共享fixture或根配置；两类失败现场、trace及补丁均保留在 `test-results/test-suite-rebuild/` 供独立审查。
