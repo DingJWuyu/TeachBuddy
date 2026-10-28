@@ -27,4 +27,4 @@
 
 先按[隔离环境](../SETUP.md#新的隔离环境)安装锁定依赖。业务规则和真实工作簿消费在 `apps/api/test/rebuilt/`，材料与真实文稿格式在 `apps/api/test/rebuilt-outputs/`；固定工作簿生成器位于 `apps/api/test/fixtures/classroom/`，测试不读取 docs 作为输入。需要原卷预览或文稿输出时按[文件转换工具](../SETUP.md#文件转换工具)准备真实工具。
 
-教师页面接线从 `apps/web/e2e/rebuilt/` 进入，以 `WORKBENCH_WEB_DIST` 指定隔离构建。按变化核对名单、座位、记录、Excel 校对确认、统计和逐级恢复；特别区分缺分与零分、确认前失败与入库后丢响应，核对原请求重试后的实际记录。候选测试是否包含并运行了这些保护，以[测试任务记录](../plans/test-suite-rebuild.md)及实际配置为准，不用目录名或 CI 通过代签完整覆盖。测试产物与清理沿[验证指南](README.md#隔离与产物)。
+教师页面接线从 `apps/web/e2e/rebuilt/` 进入，以 `WORKBENCH_WEB_DIST` 指定隔离构建。按变化核对名单、座位、记录、Excel 校对确认、统计和逐级恢复；特别区分缺分与零分、确认前失败与入库后丢响应，核对原请求重试后的实际记录。当前保护范围以测试源码及实际配置为准，具名运行结果见[运行台账](../plans/run-state.md#核查入口)，不用目录名或 CI 通过代签完整覆盖。测试产物与清理沿[验证指南](README.md#隔离与产物)。
