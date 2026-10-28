@@ -2,7 +2,7 @@
 
 ## 固定现场与阶段
 
-作者：gpt-6.1-sol / medium。工作树 `TeachBuddy-test-data`，分支 `test/rebuild-data`，空测试基线 `992172141f6664d4d851154cc533428414051c42`。总控已确认设计。当前候选已完成作者自验，等待独立消融与审查；尚未判断旧套件逐组去留、完成 CI 或集成。
+作者：gpt-6.1-sol / medium。工作树 `TeachBuddy-test-data`，分支 `test/rebuild-data`，空测试基线 `992172141f6664d4d851154cc533428414051c42`。总控已确认设计。首轮已提交 `f8752c16`；独立发现 A-R1 至 A-R5 已补充作者测试与故障检出，等待 D 复核。尚未判断旧套件全部去留、完成最终 CI 或集成。
 
 写入仅限 `apps/api/test/rebuilt/**` 与本记录。使用现有无断言的真实认证 HTTPS harness，真实应用装配、SQLite、受管文件；邮件投递和模型 provider 使用受控替身。独立临时目录、随机端口，不读取 preview 配置和用户数据，不调用付费模型。产品缺陷先复现并报总控。
 
@@ -34,7 +34,7 @@
 
 公共准备已由总控提供 `apps/api/test/support/application.js`，共享提交原 SHA 为 `8be6e3a779b17c5d1ea6a84bb33ff6fc7506e103`、`e27a49ca584b311c7d55c323cb0958e939bab740`；本树 cherry-pick 为 `442e6dff`、`5fb453df`。A 没有修改公共 fixture。真实 client/clock/mailer 来自原无场景准备，受控 provider 来自 `fixtures/c26/provider.js`。设计完成前完整读取认证 harness 时看到了底部通用协议断言 helper，已向总控透明报告；未读取旧 `.test.js` 或恢复旧场景。
 
-## 候选与作者自验
+## 首轮候选与作者自验
 
 测试位于 `apps/api/test/rebuilt/`：`identity.test.js`、`saving-questions.test.js`、`resources-preferences.test.js`、`schedule.test.js`、`classroom.test.js`、`data-lifecycle.test.js`、`agent.test.js`。`helpers.js` 仅组织本线 HTTP、真实身份和生命周期，`classroom-fixture.js` 让成绩确认与跨模块资料包复用同一合法工作簿准备。
 
@@ -72,3 +72,29 @@
 真实邮件、真实模型/OCR、Office 人工编辑、浏览器重开及目标设备仍按分工未验。当前数据恢复 v2 查看/放弃动作的未接入边界保持原契约说明，本线只验证实际接入的恢复冻结守卫，不伪造尚未开放能力。
 
 任务尚未整体完成，依照授权保留临时实验副本、失败测试数据与原始证据。总控在独立验收、集成成功后统一清理；现场索引为 `test-results/test-suite-rebuild/author-a-ablation-workspace.json`。下一步交付作者提交和证据路径给总控，再按独立发现继续。
+
+## 独立发现返工 A-R1 至 A-R5
+
+依总控派发对齐 `6240946c5436119bdc175aa1fc38af06adf54b7d`，merge 为 `4a685f3d`。唯一冲突为总控任务记录，已按总控明确指示完整采用其版本；本次实现只新增 rebuilt 用例及更新本记录。设计冻结后的本轮获准阅读相关旧测试和历史证据，没有恢复旧全矩阵。
+
+| 发现 | 有效依据与旧保护来源 | 新的最小关闭证据 |
+| --- | --- | --- |
+| A-R1 身份独有失败边界 | [认证契约](../../contracts/auth.md)的注册开关、用途/邮箱绑定、pending 保存失败及存储不可读；旧 `auth-contract-accounts` C03、`auth-contract-sessions` PN01、`auth-contract-faults` ST02 | `identity-recovery.test.js` 四例：关闭时禁止发码及已有挑战注册，重新开放原码可用且既有账户仍可登录；六次用途/邮箱误用仍保留5次预算；激活存储失败后原 pending 分别继续 page 或重试 remembered，激活后变选择冲突；真实账户表不可读时认证和业务返回503，修复后原会话及资料可读 |
+| A-R2 未知文稿防损坏 | [材料内容契约](../../contracts/materials.md#内容)及共享失败读取规则；旧 `materials-protection` 与 preview/Agent 的未来版本保护 | `document-protection.test.js` 两例：真实库分别存入未来题面、答案、来源快照和笔记摘录，普通更新/归档/改编拒绝且逐字节不变；分类删除整笔回滚；真实受控 Agent 更新返回公开 unsupported-content-version，工具/回合拒绝且原行不变 |
+| A-R3 删号失败与启动接续 | [认证 I08](../../contracts/auth.md#账户删除交换-i08)的失败锁定与 `resumePendingDeletions`；历史 `de8bd99b` 及旧 `account-deletion.test.js:333` | `deletion-startup.test.js` 一例：用真实文件路径故障令清理503，旧会话与新登录均拒绝且保留文件清单；直接走 `startServer`，故障仍在则意图保持且其他账户可用；修复文件后再次真实启动，无浏览器Cookie参与便清完账户/业务/原件，仅原Cookie原请求能204核实 |
+| A-R4 更早 R31 兼容 | [共享保存](../../contracts/workbench.md)原路径成功重放及 [输入可重建性](../../code-standards.md#输入与可重建性)；旧 `materials-questions-migration`、`math-integration-migrations` 中的 R31 题库保证 | `legacy-questions.test.js` 一例：从固定 `r31-questions.tar.gz` 经摘要验证执行原源码创建 v1 题库，升级后题面/来源/笔记/ID不变，写入当前新版后原路径原键仍重放原201，并在再次重启后不生成重复对象或覆盖新稿。旧版没有当前认证模块，此兼容用例复用其可信测试身份 HTTP fixture，普通新功能仍走真实认证 |
+| A-R5 工作簿消费 | [班级契约](../../contracts/classroom.md#excel-输入与确认)真实 XLS、按字节识别、公式只读有限缓存；D补充 C-R5，旧 `classroom-workbook` | `workbook-business.test.js` 两例：实际 CFB/BIFF8 `.xls` 经上传/映射/确认保留001学号与0分，HTML伪装xls拒绝且不产生导入；真实XLSX公式缓存0不执行SUM，缺失和错误缓存保留坐标问题、阻断确认且不留结果，人工校正后才可确认 |
+
+本批命令为 `node --test apps/api/test/rebuilt/identity-recovery.test.js apps/api/test/rebuilt/document-protection.test.js apps/api/test/rebuilt/deletion-startup.test.js apps/api/test/rebuilt/legacy-questions.test.js apps/api/test/rebuilt/workbook-business.test.js`，结果 10 PASS、0 FAIL、0 skip，约2.65秒；原日志 `test-results/test-suite-rebuild/author-a-revisions-pass.tap`。新增五文件定点 `oxlint --deny-warnings` 通过。没有修改公共准备，所以按派发要求不重复首轮31例。
+
+五项代表性手动破坏均在独立副本 `/tmp/teachbuddy-a-revisions-jxn6clh_` 执行，结束后 finally 恢复，副本与当前 `apps/api/src` 全部字节核对一致，本树产品源码没有本轮 diff。原始补丁和 TAP 在本树 `test-results/test-suite-rebuild/`：
+
+| 证据前缀 | 实际破坏与具名行为失败 |
+| --- | --- |
+| `ar1-registration-open` | 绕过注册关闭的业务裁决，注册开关用例发码返回200而应403。只移除内部重复 guard 的初次试验存续，外层仍正确拒绝，另保留 `ar1-redundant-guard-survived`，不把它记为破坏保证或检出成功 |
+| `ar2-future-documents` | 绕过存储文稿可写保护，未来题面被替换为当前文稿，普通写返回200而应422 |
+| `ar3-startup-resumption` | 删除真实启动的 pending deletion 接续调用，文件修复后仍保留1条未完成意图而应0 |
+| `ar4-legacy-receipt-path` | 改变当前旧入口的回执规范路径，固定旧请求升级后返回409 key-reused而应原201回执 |
+| `ar5-invalid-cache` | 将无效公式缓存直接当0分，公式缓存用例读到0而应null |
+
+上述失败均为具名 `ERR_ASSERTION`，不是编译、准备或超时失败。`author-a-revisions-workspace.json` 与 `author-a-revisions-preserved-directories.json` 记录继续保留的副本及失败数据。当前关闭结论是作者补测已完成，A-R1 至 A-R5 交 D 复核；不代签独立验收或整项任务完成。
