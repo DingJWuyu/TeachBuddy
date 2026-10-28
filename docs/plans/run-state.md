@@ -4,7 +4,7 @@
 
 ## 工作现场与授权
 
-当前执行[测试套件消融与重建](test-suite-rebuild.md)：用户已授权清空旧测试、按当前需求重建并独立验证价值，由总控组织三条作者工作线及后续独立验收/审查。实验使用隔离工作树，完整目标、候选、派发与接续以该记录为准；尚未完成，不把旧套件通过作为新套件验收。
+[测试套件消融与重建](test-suite-rebuild.md)已完成并由 [PR #52](https://github.com/DingJWuyu/TeachBuddy/pull/52) 集成：144 个旧执行入口逐行裁决并移除，新套件 92 项在干净 CI 全部通过，独立完成 24 项代表性故障与移组对照，Standards/Spec 无开放发现。四处实际产品缺陷已修复，preview 已同步核对，任务工作树、分支和确认归属的临时文件已清理；当前没有正在执行的测试重建任务。
 
 此前的静态检查与复盘改进已完成，具名结果见[核查入口](#核查入口)。Knip/Oxlint、范围与 buffer 规则及 CI 失败产物分拆已接入；本轮没有重启全站体验清查。
 
@@ -18,7 +18,7 @@
 | `TeachBuddy` / `main` | 保留稳定分支工作树，不在本轮开发范围 |
 | `TeachBuddy-resources` / `feat/resources-core` | 保留已有资源库现场；本轮不修改或删除，接续前核对其成果和负责 session |
 
-下表能力已集成到 preview。根 [buffer](../../buffer.md) 仅保留用户暂缓的学期数据定义和反馈实际收件方式；此前已采纳的七项修复均完成。本次测试重建发现的缺陷、候选修复与待验事项沿[当前任务](test-suite-rebuild.md)，未集成候选不视为preview已修复。
+下表能力已集成到 preview。根 [buffer](../../buffer.md) 仅保留用户暂缓的学期数据定义和反馈实际收件方式；此前已采纳的七项修复均完成。测试重建修复的题库冲突刷新、标签重复改名、日程横拖时间漂移与昵称成功误报已集成，版本与证据沿[完成记录](test-suite-rebuild.md)。
 
 总控管理公共文件唯一写者、工作树和集成。未提交成果、固定输入、私有配置和有效证据须保留；测试业务数据可按已授权范围处置。证据不充当运行依赖，换机从入库输入与[SETUP](../SETUP.md)重建。
 
@@ -75,6 +75,7 @@
 | 辅助提取与局部校对 | 当前 MinerU 单路方案在冻结八页开发及四页留出中满足具名门槛；保留消费者的实际校对与使用按候选补验，成绩和修订量见[选型验收](../acceptance/ocr-selection.md)。原生 T/W/P 和题目提取继续由固定输入回归保护；原稿缺图不伪造补齐。识别完成不等于题目边界与活动归属全部自动完成 | 按[固定样本提取判据](../acceptance/mvp-matrix.md#extraction)核对实际材料。根式范围、选项标号、标题可能错漏，部分数学文本需补定界符；受损文字可能错读且不提示，不能承诺自动发现每处错误 |
 | 常用文件预览与输出 | 最新工程集成 CI 已验证真实文稿/数学输出、离线打开及资源库常用格式逐页预览；可编辑公式、表格、插图的具体保护沿[核查入口](#核查入口)中的现行用例 | 真实 Word/WPS 编辑、保存、重开与打印仍按下节暂缓 |
 | 数学、教学、身份与数据手工全链 | 既有固定版本的导航、资料包和备份往返有验证证据；班级退役及新后端的接口、原卷与恢复路径已验，完整手工教学工作日仍仅有固定旧版本证据 | 产品模型与 Agent 组合另验，完整手工工作日及目标环境按实际后续任务安排 |
+| Node/V8 原生崩溃观察 | 测试消融期间本机出现三次 SIGSEGV，三份自有 core 与日志已保全；有界复现未再现，最终 CI 92 项全过，两轮云端均无同类异常。根因仍未定位 | 再现时沿实际入口、运行时和 core 接续；不计业务故障检出，不声称已修复，见[完成记录](test-suite-rebuild.md#边界与后续) |
 | `fetch failed` 观察 | 本轮未复现，仍无原观察的明确触发条件和因果关闭证据 | 再现时记录入口、请求与环境；不据此认定当前已确认缺陷，也不声称已修复 |
 | 数学保存超时观察 | CI 出现过一次保存请求 35 秒未收到响应；同输入渲染、重复本地原路径及最终 CI 均通过，原因未确定，未放宽超时或保存断言 | 再现时沿请求与服务端处理时序定位；证据在班级集成回执，不声称已修复 |
 
@@ -108,6 +109,7 @@
 
 | 范围 | 已集成证据 | 可重建入口及边界 |
 | --- | --- | --- |
+| 测试套件消融与重建 | [PR #52](https://github.com/DingJWuyu/TeachBuddy/pull/52)，`fdf72f1b`；[最终 CI](https://github.com/DingJWuyu/TeachBuddy/actions/runs/40649041101) 对应 `31b95156`，squash 后文件树一致 | 144 旧入口均移除并有去留表；API 45、输出及扩展 24、主应用浏览器 23 项全过，0 skip，静态/构建通过。独立 24 项代表性故障和移组对照，不宣称逐条 mutation 或全部旧断言等价覆盖；四处产品修复、双轴审查、preview 核对和清理完成。当前入口见[验证指南](../acceptance/README.md)，方法与边界见[完成记录](test-suite-rebuild.md)，本机原始证据归档 `test-results/test-suite-rebuild/` |
 | 静态检查与复盘 | 代码候选 `583bff81`，基线 `5a69610f`；Standards/Spec 发现均已关闭 | 根静态脚本及 Knip/Oxlint 配置；独立检出干净安装、两项静态检查、共享/API 装配与 Web 源码构建通过，CI 配置通过 actionlint。冻结 OCR 输入与原摘要一致，buffer 两项保留；文档同步完整目标、检查覆盖、局部小问题及 CI 证据使用规则。未重跑产品全量回归、未改资产的冷构建或云端 CI；本机回执 `test-results/static-analysis-retro/root-receipt.md` |
 | 七项原型裁决修复与全站连续体验复查 | [PR #51](https://github.com/DingJWuyu/TeachBuddy/pull/51)，`90fec3a7`；[最终 CI](https://github.com/DingJWuyu/TeachBuddy/actions/runs/39594819440) 对应候选 `7a2ee40f`，squash 后文件树一致 | 七项既有裁决全部修复；本轮另确认并修复30项既存产品根因、3项原型独有问题，2项既存测试缺陷单列。产品与原型同步，当前原型构建可从检出重建，重复生成一致；无后端、数据结构或依赖变更。两轴独立审查及增量复核无开放发现。全工作区构建、284项HTTP/SQLite、51项真实输出、423项浏览器回归通过，2项缺私人E原稿跳过；首轮数学动效采样误报已定点修正，原用例、忙帧及4项负对照留证。本地按实际入口和状态分支对照双端，补验连续操作、异步切换、保存重开与跨模块往返。preview已同步，服务、匿名登录实页、变更组件及控制台已核对，未写私人业务数据。任务与覆盖记录、审查及有效证据归档本机 `test-results/experience-completion/`；临时数据、构建和工作树已清理。真实邮件、收费模型、实体设备、系统IME及Office人工体验仍沿具名边界另验 |
 | 前一轮全站连续体验清查 | [PR #50](https://github.com/DingJWuyu/TeachBuddy/pull/50)，`6e5413ed`；[CI](https://github.com/DingJWuyu/TeachBuddy/actions/runs/39563243128) 对应候选 `754ee72a`，squash 后文件树一致 | 当轮去重确认35项既存发现并修复28项，7项原型共有体验随后已在PR #51完成修复；此前暂缓的学期与反馈收件不重复计数。Standards/Spec 在代码候选 `ce0b58a2` 的硬问题均关闭，后续只更新任务记录。全工作区构建、284项HTTP/SQLite、51项真实输出、387项浏览器回归首轮通过，2项因缺私人E原稿跳过；本地按影响补验连续操作、焦点、动效、尺寸与跨模块实际保存。preview已同步，服务、匿名登录实页及变更模块已核对，未写私人业务数据。覆盖清单、回执及有效证据归档本机 `test-results/experience-audit/`，临时工作树与分支已清理。原型与后端未修改，真实邮件、线上模型、Office及目标设备仍沿具名边界另验 |
@@ -126,6 +128,6 @@
 | 发布基础设施 | [PR #27](https://github.com/DingJWuyu/TeachBuddy/pull/27)、[PR #28](https://github.com/DingJWuyu/TeachBuddy/pull/28)、[PR #32](https://github.com/DingJWuyu/TeachBuddy/pull/32)；[打包演练](https://github.com/DingJWuyu/TeachBuddy/actions/runs/38127024596) | 曾在独立目录下载校验、安装生产依赖、HTTPS 启动并验证备份准备；未正式打 Tag、Release 或部署 |
 | 全部验证入口 | [验证指南](../acceptance/README.md)、根 `package.json`、`.github/workflows/ci.yml` | CI 仅覆盖其中明确选择的集合；文件实际打开、真实模型与目标环境按影响补验 |
 
-上述测试文件名相对 `apps/api/test/` 或 `apps/web/e2e/`。模块技术页链接准确源码与验证入口；完整产品交付再展开[验收矩阵](../acceptance/mvp-matrix.md)。
+表中历史用例名指向各行具名提交，相对 `apps/api/test/` 或 `apps/web/e2e/`，不保证仍存在于当前检出；当前可运行入口以[验证指南](../acceptance/README.md#模块与底座入口)及实际脚本为准。模块技术页链接准确源码与验证入口；完整产品交付再展开[验收矩阵](../acceptance/mvp-matrix.md)。
 
 已有本机回执保存在 preview 的 `test-results/`：`design-system-ui-integration/root-receipt.json`、`teachbuddy-identity-integration/root-receipt.json`、`workflow-health-integration/root-receipt.json`、`agent-workflow-integration/root-receipt.json`、`classroom-backend-integration/root-receipt.json`、`questions-integration/receipt.json`、`identity-integration/receipt.json`、`auth-ui-integration/receipt.json`、`settings-nickname/receipt.json`、`math-integration/receipt.json`。退役回执为 `remove-lessons-integration/root-receipt.json` 与 `remove-classes-integration/root-receipt.json`；工程更新、两次退役和班级后端升级前备份位置分别在同目录 `preview-backup.json`。旧数学/日程交接在 `math-handoff/`。这些现存证据和私有备份独立保全，不作为安装、运行或必要回归的前置。
