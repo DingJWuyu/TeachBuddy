@@ -22,4 +22,3 @@ export async function assessment(client, c, students) {
   const mapped = ok(await write(client, 'PUT', `${classes}/imports/${draft.id}`, { baseVersion: 1, mapping, rows: null }));
   return { exam, tag, q, file, mapped, mapping };
 }
-

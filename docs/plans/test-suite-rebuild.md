@@ -12,7 +12,7 @@
 
 - 原始基线：`789a38d83babad04f2e2a51e9f17530abf638801`，已 fetch，和 origin/preview/integration 一致。
 - 原始套件：77 个 API test 文件、56 个浏览器 spec、3 个扩展独立测试脚本，以及8个非标准命名历史验证脚本，共144个执行入口。完整清单见本目录下 `test-suite-rebuild/old-tests.tsv`。OCR选型重建脚本与真实模型采集 fixture 属于固定证据/输入准备，保留后核对消费者，不当作回归用例。
-- 原始基线 CI：[40632221950](https://github.com/DingJWuyu/TeachBuddy/actions/runs/40632221950) 已失败：HTTP/SQLite 284 PASS、0skip，105.8s；浏览器422 PASS、2skip、1FAIL，23.9m。唯一失败为标签改名迟到成功后重新打开保存，已在本地受控读回迟延下稳定复现409，正在修复。输出组日志已回收。CI外专项按清单记录未验，不伪称全量执行。
+- 原始基线 CI：[40632221950](https://github.com/DingJWuyu/TeachBuddy/actions/runs/40632221950) 已失败：HTTP/SQLite 284 PASS、0skip，105.8s；输出51 PASS；浏览器422 PASS、2skip、1FAIL，23.9m。合计757 PASS、1 FAIL、2 skip。唯一失败为标签改名迟到成功后重新打开保存，已在本地受控读回迟延下稳定复现409并修复，详见下方证据。CI外专项按清单记录未验，不伪称全量执行。
 - 空测试实验移除用例，保留真实固定输入、历史兼容快照和产品源码；运行框架、fixture 与脚本按实际消费者整理。`.feature` 为需求资料，先核对有效语义，不把它们算作执行用例。生成文件和只读设计输入遵守原保护规则。
 - 作者先按当前规格与真实使用路径提出最小保护集合，冻结设计前不读取旧断言。可以读取无断言的输入/服务准备代码；必要时由总控提供公共运行环境。随后独立验收者读取旧套件与历史缺陷，挑战候选。
 - 每组记录当前需求、用户可见故障、首选测试层、真实依赖/替身、预期失败。对代表性独立保证手动注入可运行的业务故障，比较完整候选与逐组移除候选；编译失败、fixture 故障、超时未定位、skip 不算检出。历史缺陷与故障均需具体证据，不制造通用 mutation 框架。
@@ -33,7 +33,7 @@
 
 ## 当前阶段与接续
 
-状态：A第三批开发服务入口及Cookie属性已集成2f55a534；B全部作者工作已完成，日程网格与昵称复核两个实际产品缺陷均已修复并定点通过。C第三批typed内容、采用笔记的个人包/部署恢复及80行PNG分页已集成。A最后一批e0b5cf68已集成，新增五条Agent运行中停止/真实崩溃、活跃删号等待、月末及全天日程、考试原卷定位保护。作者实施均已完成。双轴初审4项已修复并复核关闭，D继续独立收口；部分移组实验遇Node启动SIGSEGV，单列诊断，不算业务检出。144个原执行入口均已清空并入清单；A第二候选41例、C第二候选22例已经集成。B第二候选17例已集成c100f497，五项补强通过且四项有效故障具名检出。D已完成旧源/历史缺陷盘点，正在做独立三方消融。总控负责原基线CI暴露的标签保存竞态，不掩盖或跳过失败。
+状态：作者实施全部完成，候选共92项（业务46、浏览器23、输出及扩展23）；144个原执行入口均已删除并记录去留依据。四处产品修复和双轴初审4项修正均已集成候选及定点通过。D完成旧源/历史缺陷盘点，正在收口最后增量的独立故障和移组对照。三次Node/V8原生SIGSEGV尚无稳定复现，原始失败单列保留，不计业务故障检出；最终完整回归待干净CI。不把作者完成、分组通过或审查通过当作全部任务完成。
 
 | 现场 | session / 状态 |
 | --- | --- |
@@ -41,7 +41,7 @@
 | `TeachBuddy-test-data` / `test/rebuild-data` | `/root/author_a_data`，业务41例；第三批5ffe6ad7已集成为2f55a534；最后一批e0b5cf68已集成，业务共46例；作者完成，空闲 |
 | `TeachBuddy-test-browser` / `test/rebuild-browser` | `/root/author_b_browser`，最终增量1e1bf69b已集成为7c5e11b9；作者完成，空闲 |
 | `TeachBuddy-test-outputs` / `test/rebuild-outputs` | `/root/author_c_outputs`，第二候选73e9526d已集成为6b70a35c，22例；第三批b7e9df9与c796c50已集成；23例，空闲 |
-| `TeachBuddy-test-audit` / `test/rebuild-audit` | `/root/auditor_d_ablation`，已盘点144入口；完成A固定5f1565b9独立实验后接C及最终B |
+| `TeachBuddy-test-audit` / `test/rebuild-audit` | `/root/auditor_d_ablation`，已盘点144入口；A/C分组及B23项独立正常通过，完成最后增量的故障/移组对照后提交终稿 |
 
 公共准备：全新npm安装、GeoGebra源码冷构建（9m55s）与完整工作区build已通过，日志在总控 `test-results/test-suite-rebuild/{npm-install,math-build,full-build}.log`。C只读使用总控 `apps/web/dist`，该版本尚未包含B题库修复；数学源码及运行时输入一致。B用本树源码与同任务新公共资产另建 `web-full-fixed`。运行中的只读产物不得覆盖。基线CI已结束，失败日志及小日志包在总控 `test-results/test-suite-rebuild/baseline-ci/`。总控 `web-candidate` 为中间题库/标签修复；最新只读完整 `test-results/test-suite-rebuild/web-reviewed` 从固定36f5bb1f构建，包含全部四项产品修复。旧产物保留用于前后对照。
 
@@ -76,5 +76,7 @@
 - [Standards回执](test-suite-rebuild/review-standards.md)复核至83fac6c0，两项关闭；[Spec回执](test-suite-rebuild/review-spec.md)复核至56672e6，两项关闭。最终报告/后续增量在集成前再按范围复核，不声称PR/CI已完成。
 - D独立正常：原C22及新增三文件通过，统一浏览器23 PASS（169.48s），A最后三文件9 PASS（5新增+4既有日程）。B历史昵称有独立旧回执1FAIL及移除组21PASS。其他代表性故障和144入口终稿仍在完成。
 - D的A全天移除组及C typed移除组出现无关Node启动SIGSEGV；一个D12 child尚无committed-checkpoint、目录空；另recognition-consumers尚未声明子测试即退出。另C维护restore子进程错误待共同定位。失败原始TAP/现场保留在D，全部注入已finally恢复，先做最小启动诊断，不把无关退出计检出或用重跑抹掉。
+- 三个失败进程的core分别落在V8属性拦截器、原型注册/属性转换与优化代码/基线编译路径；没有证据定位产品业务或原生依赖。依赖文件共享改写假设未获时间与inode证据支持。50次独立import、20次串行实际识别入口及3并发×30批（90进程）均未再现；停止扩大本机循环，未改变Node版本、重试或skip。剩余独立业务实验继续，干净Runner验证最终候选，原生异常仍按未定位记录。
+- CI仅修改输出步骤名称以对应当前扩展验证；actionlint v1.7.12检查该工作流退出0。工具仅临时安装在忽略产物目录，未加入产品依赖。
 
 当前无用户输入阻塞。尚无新套件完整通过、独立消融通过或trunk集成完成的结论。
