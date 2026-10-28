@@ -144,6 +144,33 @@ A-E4确认公共回执持久失败有跨组重叠。保留saving综合例的当�
 
 该固定候选的五项代表性实验已完成，所有故障均进入具名业务ERR_ASSERTION，未把编译/准备/skip/超时计为检出。结束对副本API、共享模块、C测试及扩展共192个固定文件逐字节复核，无差异，见d-c-restored-and-preserved.json。C后续typed/摘录带走恢复/80行PNG三文件增量继续定点复核，不重跑未变22项。
 
+C增量随后在固定统一候选 `36f5bb1fe1598c2686acd092911eff34e0ed04a9`独立执行三文件，3 PASS、0 FAIL/取消/skip，13.42秒，日志 `d-c-increment-normal.log/.json`。该SHA相对6b70a35c的API产品/共享/扩展源码及C公共helper无差异，C测试仅上述三文件变化；复用未变22项和五个故障证据。官方typed/受控list、个人包取回与真正维护恢复、80行实际PNG全行数均已逐行核对，源快照 `c-final-increment-source.json`。新增内容的代表性故障消融尚待完成。
+
+## 最后A增量独立复核
+
+最终业务候选13e16e在审计树三文件9/9正常通过（5新增加4个原日程例，8.62秒）；副本9/9（9.17秒）；Cookie四例在最终字节独立4/4（2.72秒）。A产品源码与5f1565b9无差异，故前七项故障证据复用。随后83fac6c0仅改变临时目录归属、C答案判据与B资源判据，三副本已同步；A新增三文件又9/9（9.33秒），新路径不改成功清理责任。
+
+| 实验 | 具名业务故障与完整A46 | 移除相关文件后的结果 | 证据 |
+| --- | --- | --- | --- |
+| A-E8 停止意图 | 不持久记录用户stop，最终failed而应stopped，仅新增停止链FAIL | 移除agent-lifecycle后43PASS；83目录helper正式复核与失败路径核验接续 | `d-a8-agent-stop` |
+| A-E9 真崩溃恢复 | executing写恢复成cancelled，真实提交后SIGKILL重开应unconfirmed，仅崩溃例FAIL | 移除agent-lifecycle后43PASS；原unknown-journal例已预先unconfirmed，不能代签这一冷启动分支 | `d-a9-agent-crash` |
+| A-E10 考试成员关系 | 绕过location所属原卷校验，同账户源外定位更新200而应422，仅考试原卷例FAIL | 移除exam-paper后45PASS。C文件/裁图校验不能证明考试source成员关系 | `d-a10-exam-membership` |
+| A-E11 活跃删号等待 | 先物理擦除再await生产者settle，原业务行在SDK尚未结束时已消失，仅活跃删号例FAIL | 移除agent-lifecycle后43PASS。空闲成功删除/启动接续/页面设备清理都没有检出此活跃擦除顺序 | `d-a11-active-deletion-wait` |
+| A-E12 全天DST | 全天结束错误按固定1440分钟，纽约DST日结束05:00Z而应04:00Z，仅新增日历例FAIL | 原首次移除schedule运行有无关SIGSEGV，不算重叠或通过；新固定候选比较接续 | `d-a12-all-day-dst` |
+
+A-E8最初副本仅同步末批四文件，漏同步之前Cookie断言；在该批A-E8中间比较期间发现并补齐，此后A-E9至12的测试字节完整。该准备事实记 `d-a-final-test-sync-note.json`，旧日志保留；Cookie变化与Agent停止分支无关，但正式A-E8最终比较仍以完整同步后的固定字节复核为准，不混称首次全测试字节已一致。
+
+## 浏览器B独立实验进行中
+
+固定36f5bb1及只读web-reviewed正常完整23/23，169.48秒，`d-b-normal.log/.json`。36到13e16e的API/shared/Web产品和浏览器用例无变化，允许复用；83的资源首例增强后独立1/1（9.81秒），C答案增强独立1/1（8.05秒）。B隔离副本由固定归档建立并npm ci --offline物理安装，profile两例先正常2/2；后同步最终测试/helpers，保留每个构建的公开静态资产与源补丁，构建后先finally还原源码再跑浏览器，避免开发服务读入临时故障。
+
+| 实验 | 实际故障及检出 | 移除组结果与判断 | 证据 |
+| --- | --- | --- | --- |
+| B-E1 历史迟到昵称 | 重新引入1b107651修复前的旧回执无条件publish，保留当前最终复核以不破坏场景gate。完整23中仅历史I09例FAIL，旧response.finished后旧账户昵称链接Actual1而应0；其余22PASS | 移除identity-race两例后21PASS。成功注册/设置刷新/服务器原键不证明同账户跨页旧回执不能发布，保留明确处理终点的历史保护 | `d-b1-history-profile` |
+| B-E2 成功读取确认 | 反转7c5e11b9，把已被新读取淘汰的HTTP200也误当未确认，相关2例中I09的昵称编辑器仍1个而应0，另一身份对照PASS | 移除identity-race后其余21/21 PASS（162.43秒）。这与旧回执覆盖是两种根因，同一最小场景以明确终点分别检出，不计成两个必须维护的文件 | `d-b2-profile-confirmation` |
+
+后续故障按受影响文件和同一故障下的所有互补文件分别执行，相加覆盖当前浏览器23项；每例本身拥有独立数据，等价于全组分区运行。明确标记受影响/移除命令和数量，不用test-name skip充作检出。已有完整正常前置，不再重复PDF和日程作者已经有效挑战的故障矩阵。
+
 ## D01-D23集中收口候选
 
 此轮集中核对固定总控 `1251f0ce324b3f897ea4333861b628607d7cd93b` 的实际当前测试和公共调用，并分别读取C第三批b820b605和80行PNG作者固定c796c50源码；后者当时尚未集成，不混成1251f0ce的既有字节。下表是最终验证前的批量裁决，避免把初版动机持续写成现有遗漏。源码承接不等于D已经独立运行，A末批、B时序和C增量仍须固定SHA后实证。
@@ -152,7 +179,7 @@ A-E4确认公共回执持久失败有跨组重叠。保留saving综合例的当�
 | --- | --- | --- |
 | D01 | identity/identity-recovery真实认证失败、验证码绑定/预算/注册开关、pending接续与新增Cookie；B S45实际继续且注册一次。保护已归位，新增Cookie/S45待独立正常 | 逐问题码乘每个表单、所有Cookie状态排列合并。完整浏览器退出后的寿命仍EXT-BROWSER |
 | D02 | document-protection的普通HTTP/分类删除/Agent未来版本保护；A-E2独立检出已成立 | 不保留每个schema字段或每种未知版本排列；未来输入必须保留原字节的边界继续保留 |
-| D03 | data-lifecycle成功删除/另一账户/原请求，deletion-startup失败锁及无Cookie启动，B设备原字节/迟到读取。另须一条真实活跃生产者删号等待边界，见下文集中补项 | 重复全表计数/所有producer矩阵合并；不能把普通停止测试当作删号等待清除顺序的实证 |
+| D03 | data-lifecycle成功删除/另一账户/原请求，deletion-startup失败锁及无Cookie启动，B设备原字节/迟到读取。另须一条真实活跃生产者删号等待边界，已交总控并纳A末批，见下文集中补项 | 重复全表计数/所有producer矩阵合并；不能把普通停止测试当作删号等待清除顺序的实证 |
 | D04 | A早R31题库原路径、退役前固定部署恢复；C旧数学source消费，A-E1已独立 | math_001未做schema变换，两个旧组合的全列/ledger矩阵退役；数学schema/兼容路由变更时冻结早库专项。保留输入及最小提取工具 |
 | D05 | C同链删源noteFragments直接读、真实个人包清单/附件关系、停服维护backup/restore/activate后原ID读回；增量待独立 | 个人包只带走，不能虚构ZIP账户导入；A普通包/维护损坏拒绝提供等价底座，旧摘录备份矩阵不逐项恢复 |
 | D06 | C真实runtime/owned进程停止确认、取消/超时迟到raw/图片绑定原任务和显式retry；C-E2独立检出 | 停止协议可自动验证；真实systemd/cgroup/GPU释放与识别质量仍EXT-OCR。双路旧引擎比较退役 |
@@ -164,7 +191,7 @@ A-E4确认公共回执持久失败有跨组重叠。保留saving综合例的当�
 | D12 | A已有同轮去重、拒绝终止、journal失败后原操作核实、提案显式保存；末批补两工具stop及一次真实committed SIGKILL恢复 | 29例工具/usage/同SDK结果排列合并；prepared/committed/result三检查点取真实提交后未记录结果代表。主应用助理停止按钮接线在Agent UI变更时定点验，服务器停止契约保留 |
 | D13 | A真实XLS/坏公式缓存、成绩确认事务/版本/零分统计；B真实成绩校对；末批补PNG原卷source/location成员关系+重启 | 三格式生成/原卷矩阵由C格式转换代签，考试成员关系不可代签。fixture-only generateDocx不恢复。具体公式缓存边界A-E7检出已成立 |
 | D14 | A当前/历史文件关系，C真实OCR正文资源复用，B真多页PDF.js文字层选择/复制及二阶段上传队列 | 元数据筛选与当前正文只选代表；每种格式乘查找/复制/页跳排列合并。正文索引失效重建/诊断格式在搜索或任务实现变更时验；不将失败当零命中视为正常 |
-| D15 | A时区/半开/DST/例外身份/原子移动/旧提醒；末批补月末及全天DST。B真实拖动/resize/新设备保存和系统时区焦点检测，1251f0ce真实产品修复待独立 | RRule所有频率/参数矩阵收敛一个非周规则装配代表；afterChange等内部hook次数不保留，提醒事务调整时验证失败结算。真实触屏手势EXT-DEVICE |
+| D15 | A时区/半开/DST/例外身份/原子移动/旧提醒；末批补月末及全天DST。B真实拖动/resize/新设备保存和系统时区焦点检测，1251f0ce真实产品修复待独立 | RRule所有频率/参数矩阵收敛一个非周规则装配代表。日程自有index.jsx applyResult以latest.content保留飞行输入、以payload更新baseline，区别于题库协调器；B当前正常autosave/新设备路径承接主接线，延迟保存/首次detach期间新输入改为该协调器变更时专项，残余不由题库红灯代签。afterChange内部hook次数退役，提醒事务调整时验证失败结算；真实触屏EXT-DEVICE |
 | D16 | A真实startServer(dev:true)/Vite/StrictMode主路径，B生产主应用导航/跨模块/刷新与基础平板入口 | 25个旧伪应用/固定端口runner/私有开关退役。完整侧栏布局排列、每帧动效采样、导航定制手势改对应UI变更时验；EXT-DEVICE保留实际设备专项 |
 | D17 | C真MV3两轮/精确代码/取消/重载/0.1升级，B真实工坊受控桥两轮上下文/取消迟到 | 两条链分属扩展与主应用，不能互相代签；线上DOM/真实登录/商店自动更新EXT-BRIDGE+MODEL。旧全部selector组合不常驻 |
 | D18 | fixture-only DOCX生成回归已退役，现用户题面PNG/预览/授权下载分别保留 | 原件生成工具仅按可重建输入消费者保留；不宣称产品可编辑Word导出，不恢复备课 |
@@ -174,9 +201,25 @@ A-E4确认公共回执持久失败有跨组重叠。保留saving综合例的当�
 | D22 | B真实P.pdf翻第二页、文字层鼠标选择/Control+C/整页复制 | 后端pdftotext不能代签浏览器消费；格式乘所有PDF操作矩阵合并。待独立故障/移除 |
 | D23 | B两账户真实pending Blob SHA、危险邮箱确认、未知删除未清除/204后仅删本账户、另一页迟到读不能重建 | API普通删号不能代签IndexedDB；设备管理旧UI不恢复。待独立故障/移除 |
 
-本轮集中补项只剩D03一个尚未分派的必要执行边界：旧 `account-deletion.test.js:199/272`验证删除先取消并等待活跃作业/真实Agent SDK退出，再物理擦除，且另一账户继续。当前 `workbench/index.js:255`的Promise.all同时等待jobs、Agent、个人包、转换；新成功/启动/设备删除场景全无运行中producer。移除该等待只会影响活跃删除，不能由空闲删号或显式turn stop代签。建议借末批受控Agent选一个在途执行，真实I08在abort尚未确认前保持未完成，完成后再核业务/日志字节无复活及另一账户可用，不恢复四种producer排列。
+本轮集中补项只剩D03一个最后确认的必要执行边界，现已由总控分派A末批：旧 `account-deletion.test.js:199/272`验证删除先取消并等待活跃作业/真实Agent SDK退出，再物理擦除，且另一账户继续。当前 `workbench/index.js:255`的Promise.all同时等待jobs、Agent、个人包、转换；新成功/启动/设备删除场景全无运行中producer。移除该等待只会影响活跃删除，不能由空闲删号或显式turn stop代签。建议借末批受控Agent选一个在途执行，真实I08在abort尚未确认前保持未完成，完成后再核业务/日志字节无复活及另一账户可用，不恢复四种producer排列。
 
 除上述D03、已安排A末批、B I09处理终点、C已交增量的独立复核外，本轮不再提出逐控件/模板/参数矩阵恢复。按变更验项明确是保留非长期专项与残余，不能写成新套件始终能自动检出对应全部故障。
+
+去留表另加三列集中裁决：`audit_decision`、`current_protection`、`residual_or_external`。路径别名A指 `apps/api/test/rebuilt/`，B指 `apps/web/e2e/rebuilt/`，C指 `apps/api/test/rebuilt-outputs/`，X指 `extensions/math-web-ai/test/rebuilt/`。每一旧入口仍保留原固定源、实际保证与独立理由，新三列把保留代表、删除的排列、按变更专项和外部残余逐入口说清。普通正常结果只证明列明代表，不能读成旧文件全部断言已被新套件自动检出。
+
+## Node启动异常独立诊断进行中
+
+固定13e16e业务故障批次发生三个无关异常，完整保留，不算业务检出或跨组重叠：A-E12移除schedule后D12子进程在检查点前SIGSEGV，期望SIGKILL，现场目录为空；C-E6完整故障中教学表维护restore子进程Command failed，非业务断言；C-E6移除typed后recognition-consumers整文件在1.17秒启动期SIGSEGV、没有该文件业务子测试。对应原始TAP分别是 `d-a12-all-day-dst-without-schedule.tap`、`d-c6-typed-table-math-full.tap`和`d-c6-typed-table-math-without-typed-consumption.tap`。A全天的目标FAIL和C typed eq的目标FAIL仍有效，移除结果暂不签PASS。
+
+依据diagnosing-bugs并按总控要求，先固定三项可证伪假设，记录 `d-native-hypotheses.json`：H1为运行时/原生依赖import或初始化，预测无fixture产品import亦可复现；H2为并发资源条件，预测安静串行与有限并发有明显差异；H3为具体fixture提前执行，预测产品import稳定而support/真实fixture入口失败。先收集每个新建自有进程PID、stderr、signal、阶段，不读取非本实验core。不以skip、retries或删掉失败日志掩盖。
+
+所有旧批次finally已恢复后，审计树合入83fac6c0为ee139b0；三份独立副本同步该固定根候选的当前相关源码/测试/helpers，元数据 `d-final-copy-sync.json`。该批产品源码没有变化。新临时目录helper和C答案/B资源两项断言修正将在下一次故障直接作影响核验，不能把旧/tmp失败目录伪称已经进入新CI artifact。
+
+原core进一步仅以COREDUMP_CWD精确匹配D自有两个隔离副本，再按PID导出：269431为C restore、270467为A child、273650为C consumer。`d-native-owned-core-results.json`及对应gdb日志给出V8栈：Runtime_LoadPropertyWithInterceptor、LazyRegisterPrototypeUser/TransitionAndWriteDataProperty、MacroAssembler::TryLoadOptimizedOsrCode/BaselineCompiler/生成基线代码。没有栈直接指向better-sqlite3/sharp，不足以证明原生依赖无责或某一V8版本修复可解；原core独立保留，不读其他进程core。
+
+最小对照固定结束：50个串行新Node仅产品import全到after-import；GDB串行实际recognition-consumers20次各2PASS；同一真实fixture直接入口固定3并发×30批90新进程全2PASS。三项结果和每个PID/stderr/退出率分别见 `d-native-product-import-results.json`、`d-native-fixture-gdb-results.json`、`d-native-parallel-fixture-results.json`。有限重复均未复现，不能据此关闭原三次SIGSEGV；不再增加盲重复或下载Node，后续交干净Runner条件核验。
+
+依赖改写假设另查 `d-native-module-inodes.json`：A依赖链接审计root，B/C各自物理安装；三份better-sqlite3及sharp glibc文件inode不同、nlink均1。审计npm ci05:36UTC、B05:37、C05:14，异常05:48附近没有D npm ci/原生重建/同步.node操作。未支持“共享原生模块在加载时被改写”的时序解释。H1/H2/H3都尚无确定因果，保留原栈和目标环境残余，不给业务代码推测性修复或加skip/retries。
 
 ## 后续接续
 
