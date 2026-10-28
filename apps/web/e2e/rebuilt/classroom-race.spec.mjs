@@ -22,6 +22,7 @@ test('标签改名回执迟到时，重新打开的草稿仍可继续保存', as
   const complete = new Promise(resolve => { delivered = resolve; });
   await page.route('**/api/modules/classroom/tags/*', async route => {
     const response = await route.fetch();
+    expect(response.status(), '第一笔改名必须已经真实提交').toBe(200);
     saved();
     await gate;
     try { await route.fulfill({ response }); } finally { delivered(); }
