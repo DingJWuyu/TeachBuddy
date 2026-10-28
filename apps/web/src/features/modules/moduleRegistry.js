@@ -26,7 +26,7 @@ const localRegistry = {
 
 const PORT_PROVIDERS = Object.fromEntries(Object.entries(modulePorts).map(([name, descriptor]) => [name, descriptor.provider]));
 
-export function resolveWorkbenchModules(descriptors = moduleCatalog) {
+function resolveWorkbenchModules(descriptors = moduleCatalog) {
   assertModuleCatalog(descriptors);
   descriptors = descriptors.filter(descriptor => descriptor.webEnabled);
   const ids = new Set();

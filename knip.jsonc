@@ -35,12 +35,7 @@
       "entry": [
         "e2e/**/*.spec.{js,mjs}",
         "e2e/**/*.config.mjs",
-        "e2e/**/playwright.config.mjs",
-        "e2e/fixtures/**/build.mjs",
-        // These index.html entry scripts belong to independently built Vite fixtures.
-        "e2e/fixtures/**/main.jsx",
-        "e2e/fixtures/auth-contract/substitute-server.mjs",
-        "e2e/fixtures/math-integration/manual.mjs"
+        "e2e/**/playwright.config.mjs"
       ],
       "project": [
         "src/**/*.{js,jsx}",
