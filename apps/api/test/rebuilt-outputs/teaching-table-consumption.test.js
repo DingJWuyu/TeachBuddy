@@ -2,6 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
+import { execFileSync } from 'node:child_process';
+import JSZip from 'jszip';
+import { createIntegration } from '../support/application.js';
 import { createHash } from 'node:crypto';
 import { chromium } from 'playwright';
 import { application, upload, download, preview, json, finished, importFiles, importsPath, filesPath, readFixture, textOf, paragraph } from './helpers.js';
@@ -35,7 +39,7 @@ async function rasterTeachingPdf(directory) {
   } finally { await browser.close(); }
 }
 
-test('C-R3 自编真实三页教学表按列消费、仅唯一跨页续题；采用的带图笔记不随原材料删除', { timeout: 180000 }, async t => {
+test('C-R3 教学表续题与歧义保留，删源后的带图摘录可导出并经停服恢复读回', { timeout: 180000 }, async t => {
   const inputPages = new Map();
   const calls = [];
   const recognizer = { revision: 'authored-teaching-table-1', available: true, async run({ bytes, width, height }) {
@@ -87,5 +91,62 @@ test('C-R3 自编真实三页教学表按列消费、仅唯一跨页续题；采
   assert.deepEqual(question.noteFragments, expected, '材料彻底删除后题目的采用稿及固定来源仍可读');
   assert.deepEqual(await download(world.client, imageId), imageBytes, '采用稿引用的真实附件不能随材料删除');
   assert.deepEqual(calls, [0, 1, 2], '导入须消费已保存页结果，不额外运行识别');
+  // D05 personal ZIP is content takeout. Original IDs and relationships are
+  // recovered only through the stopped deployment backup/restore/activate path.
+  const exported = await json(world.client, 'POST', '/api/reliability/v1/exports', {}, 202);
+  const exportUrl = `/api/reliability/v1/exports/${exported.id}`;
+  let archive;
+  const deadline = Date.now() + 150000;
+  do {
+    archive = await json(world.client, 'GET', exportUrl);
+    if (!['queued', 'running'].includes(archive.state)) break;
+    await new Promise(resolve => setTimeout(resolve, 20));
+  } while (Date.now() < deadline);
+  assert.equal(archive.state, 'ready', `删源后的独立摘录必须可导出：${JSON.stringify(archive.problem)}`);
+  const response = await world.client.request('GET', `${exportUrl}/content`);
+  assert.equal(response.status, 200);
+  const zip = await JSZip.loadAsync(response.bytes);
+  const manifest = JSON.parse(await zip.file('manifest.json').async('string'));
+  const entry = manifest.objects.find(object => object.key.kind === 'question' && object.key.id === question.id);
+  assert.ok(entry, '个人包须含删源后仍独立保存的题目');
+  const packedQuestion = JSON.parse(await zip.file(entry.dataPath).async('string')).value;
+  assert.deepEqual(packedQuestion.noteFragments, expected, '个人包必须保留独立摘录的实际文稿和固定来源');
+  assert.ok(!manifest.objects.some(object => object.key.kind === 'import' && object.key.id === material.id), '个人包不应复活已彻底删除的材料');
+  const attachment = manifest.files.find(file => file.path.startsWith(`files/${imageId}/`));
+  assert.ok(attachment, '独立摘录引用的图片必须实际进入资料包');
+  assert.ok(manifest.relations.some(relation => relation.from.kind === 'question' && relation.from.id === question.id && relation.to.kind === 'file' && relation.to.id === imageId && relation.location.includes('noteFragments')), '资料包须保留摘录文稿到实际图片的关系');
+  const packedImage = await zip.file(attachment.path).async('nodebuffer');
+  assert.equal(attachment.bytes, imageBytes.length);
+  assert.equal(attachment.sha256, sha(imageBytes));
+  assert.equal(sha(packedImage), sha(imageBytes), '带走的图片字节必须与教师采用稿原图一致');
+  const readable = await zip.file(entry.readablePath).async('string');
+  assert.ok(readable.includes('教师已核对并采用。'), '可读层应呈现教师采用稿');
+  assert.ok(readable.includes('m=2'), '可读层应保留摘录中的公式源');
+
+  const maintenance = fs.mkdtempSync(path.join(os.tmpdir(), 'teachbuddy-notes-recovery-'));
+  let restored, complete = false;
+  t.after(async () => {
+    await restored?.close();
+    if (complete) fs.rmSync(maintenance, { recursive: true, force: true });
+    else t.diagnostic(`保留摘录恢复现场 ${maintenance}`);
+  });
+  const cli = (...args) => JSON.parse(execFileSync(process.execPath, ['apps/api/src/scripts/reliability.js', ...args, '--stopped'], { encoding: 'utf8' }));
+  await world.close();
+  const backupDirectory = path.join(maintenance, 'backup');
+  assert.equal(cli('backup', '--database', path.join(world.directory, 'workspace.sqlite'), '--files', path.join(world.directory, 'files'), '--target', backupDirectory).state, 'backed-up');
+  const target = path.join(maintenance, 'restored');
+  assert.equal(cli('restore', '--source', backupDirectory, '--target', target).state, 'prepared');
+  assert.equal(cli('activate', '--target', target).state, 'activated');
+  restored = await createIntegration({ directory: target, clock: world.clock });
+  const client = restored.client();
+  await json(client, 'POST', '/api/auth/session', { action: 'bootstrap' });
+  const session = await json(client, 'POST', '/api/auth/login', { email: world.session.account.email, password: 'outputs-password', rememberMe: true });
+  await json(client, 'POST', '/api/auth/session', { action: 'activate', sessionId: session.id, rememberMe: true });
+  const recovered = await json(client, 'GET', `/api/modules/questions/v2/items/${question.id}`);
+  assert.equal(recovered.id, question.id, '部署恢复须保留题目原 ID');
+  assert.deepEqual(recovered.noteFragments, expected, '部署恢复须保留已删来源的独立摘录与真实文稿');
+  assert.equal(sha(await download(client, imageId)), sha(imageBytes), '恢复后的采用稿附件须保留原字节并可经身份读取');
+  assert.equal((await client.request('GET', `${importsPath}/${material.id}`)).status, 404, '部署恢复不能复活备份时已经删除的源材料');
   world.complete();
+  complete = true;
 });

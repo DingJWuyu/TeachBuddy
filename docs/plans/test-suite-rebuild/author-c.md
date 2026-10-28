@@ -4,7 +4,7 @@
 
 作者 `/root/author_c_outputs`，gpt-6.1-sol / high；工作树 `/home/liam_t/项目/TeachBuddy-test-outputs`，分支 `test/rebuild-outputs`。最初空测试基线 `992172141f6664d4d851154cc533428414051c42`，首轮作者提交 `1fa60e2f5db91a1e24809974712a06d28db279d2`。本轮按总控要求合并 `6673f8d59ac34a3fb1646a81680504b0213d651c`，合并提交 `17e3487`；共享主计划冲突采用总控原文，本记录独立维护。
 
-当前候选为 22 项测试。独立 D 提出的 C3 删减和 C-R1 至 C-R4 已处理，受影响的 10 项定点验证通过，无跳过；其余未改保证复用首轮作者证据，整体待独立复核与集成 CI。产品实现、冻结输入、兼容快照、样本生成工具与生成资产均无永久改动。根配置、CI、共享准备仍由总控唯一维护，未创建 PR 或推送。
+当前候选为 23 项测试。独立 D 对固定 `6b70a35c` 的 22 项已独立验证通过（94.7 秒）。第三批补当前 MinerU typed 消费及删源摘录的资料包/部署恢复，两项定点通过，无跳过；新增部分待独立复核和集成 CI。未合并整个 a05cb28 主计划，已核对所需公共 fixture、识别/题库/可靠性实现及固定输入与该版本无差异。产品实现、冻结输入、兼容快照、样本生成工具与生成资产均无永久改动。根配置、CI、共享准备仍由总控唯一维护，未创建 PR 或推送。
 
 证据目录为本工作树 `test-results/test-suite-rebuild/`。新增测试复用总控 `apps/api/test/support/application.js` 的真实认证、HTTPS、SQLite、独立文件目录和端口；邮件与识别/模型边界为受控替身。
 
@@ -19,13 +19,13 @@
 | 组 | 当前独有保护 | 现行依据与实际入口 |
 | --- | --- | --- |
 | C1，3 项 | W/P 原生提取的题干、已有答案、Q6 无答案、公式、图和原稿位置；PPT/PPTX/DOC 真正预览页、正文与原件字节 | materials 文件/定位/自动收题；samples W/P/Office；HTTP files/imports，经 native-word/native-pdf 与受限转换器 |
-| C2，2 项 | 固定 I-1 人工校对/采用与机器 raw 分离、资源检索复用；I-2 分段式与 PS-4 已有答案按题号匹配，未匹配内容保留 | recognition 机器页结果/模块接缝；公开识别、题库收录与资源检索 |
+| C2，3 项 | 官方 D2/D8 typed 数学/表格及单独受控 typed 列表；固定 I-1 人工校对/采用与机器 raw 分离、资源检索复用；I-2 分段式与 PS-4 已有答案按题号匹配，未匹配内容保留 | recognition 机器页结果/模块接缝；公开识别、题库收录与资源检索 |
 | C3，1 项 | 题面与答案真实透明 PNG、选定图输出；长期笔记改变不能影响公开输出字节 | materials 引用和输出；question-asset HTTP 任务及授权文件下载 |
 | C4，7 项 | 旧源、实际 SVG 数学曲线；动态停服禁网；统一课堂完整构造、实际函数对象/保存视区；真实 3D 体积坐标/图像；外部 HTML 隔离；无定义源修正与历史；纯公式作品 | math 源/导出隔离契约；公开 works/exports，workshop-render 与课堂包本地 GGB |
 | C5，3 项 | 真 MV3 两轮、精确代码乘号、取消迟到丢弃；管理页重载接回旧页面且不重发；固定 0.1 升级按当前版本回复重连 | features/math 网页 AI；extension 页面协议。固定网页替身，Chromium 实际加载扩展 |
 | C-R1，2 项 | 恶意 Office/压缩限额及实际宿主文件、网络隔离 | materials 文件执行边界；真实上传/预览，由 converter 的 bwrap 启动 conversion-worker |
 | C-R2，3 项 | 未确认停止禁止新 run；取消、超时完整迟到 raw/附件绑定原任务，明确重试不覆盖 | recognition 入口与状态；真实 HTTP recognition/Job/files，加真实 createRecognizer 运行/停止协议 |
-| C-R3，1 项 | 教学表列角色、唯一跨页续题、无表头/合并歧义不造题；教师采用的带图笔记在材料彻底删除后仍可读 | materials 自动收题/noteFragments；recognized-tables、公开校对保存/入库/归档/彻底删除 |
+| C-R3，1 项 | 教学表列角色、唯一跨页续题、无表头/合并歧义不造题；教师采用的带图笔记在材料彻底删除后仍可读，个人包可带走，维护备份恢复可读回 | materials 自动收题/noteFragments；recognized-tables、公开校对保存/入库/归档/彻底删除 |
 
 A 拥有通用身份、保存/备份恢复、文件历史关系与 XLS；B 拥有主应用编辑、保存状态及 OCR 校对界面接线。C 不重复这两线的普通保存边界。
 
@@ -41,6 +41,15 @@ A 拥有通用身份、保存/备份恢复、文件历史关系与 XLS；B 拥�
 以上故障均在本线独占树串行注入，测试结束后 `finally` 恢复原字节；没有与同树其他测试并跑。失败均运行到具名业务断言，非编译错误、建场失败、跳过或未定位超时。产品 diff 为零。
 
 现存 C3 另有 `c3-red-notes-digest.log`：临时让公开素材包含长期笔记，两次仅笔记不同的 PNG 摘要发生变化，失败于“长期笔记不能影响公开题面与答案图片”。删除 Word 工具例后，真实产品 PNG 保证仍有独立检出证据。
+
+## 第三批 typed 消费与资料带走/恢复
+
+- `mineru-typed-consumption.test.js` 一条代表链消费官方 D2/D8 的 `middle_json.json`，核验冻结 SHA、真正的输入页像素、完整原 raw、D2 行内分段/对数公式节点、D8 六行三列表格的通项/求和数学 run 与独立公式、未分配结构片段及五张原始证据图。生产修订为 `mineru-pro-2605/document-6`。D2/D8 实际没有 typed list；另用一页可见自编 PNG 和明确受控的 typed list 补项目次序、子公式与片段消费，不修改或冒充官方录制。
+- 在原 C-R3 同一收录与源删除现场末尾创建真实个人包，解包核对题目摘录文稿、固定来源、PNG 字节/摘要/关系和可读层。随后真正停服，通过维护 CLI backup/restore/activate 建独立恢复目录，重新真实登录，核对原题 ID、独立摘录及原 PNG，源材料仍返回 404。
+- [D05 数据契约](../../contracts/data.md#个人资料包)只支持个人 ZIP 内容取回，不提供 ZIP 覆盖账户。此处原 ID 与关系恢复由[部署备份恢复](../../contracts/data.md#部署备份与还原)承担，没有新增或假设个人包导入能力。
+- `c-r67-final.log`：2/2，7.16 秒；`c-r67-lint.log` 和 diff check 通过。
+- `c-r6-red-table-eq.log`：临时将 typed table 的 eq 数学节点降成普通 text，失败于“table eq 必须保留可编辑通项公式”。`c-r7-red-portable-notes.log`：临时让个人包遗漏 noteFragments，失败于“个人包必须保留独立摘录的实际文稿和固定来源”。均为具名业务失败，finally 恢复产品源码，产品 diff 为零。
+- 官方 middle 回放只证明转换/消费，不证明 GPU 原始识别质量、实际 worker 元数据 hook 或裁图映射。受控列表和自编教学表同样不代签真实模型准确率。
 
 ## 验证入口与证据
 
