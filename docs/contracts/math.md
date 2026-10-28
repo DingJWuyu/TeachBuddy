@@ -38,7 +38,7 @@ rendererVersion 是服务端实际的渲染器发行标识，覆盖表达式求�
 
 ### 既有制作源
 
-GeoGebra 使用 `kind=geogebra`，保存 `appName` 与完整 `.ggb` 的 base64；不展开成自建几何模型。服务端检查 ZIP 完整性、大小与 `geogebra.xml`，保存为 `source-only`，不执行其中内容、不生成海报或课堂文件。浏览器初始化禁用文件内嵌 JavaScript。API 的 `source` 导出为包含该源的 JSON，编辑器的 `.ggb` 下载为原生文件，两者不混称。字段和限制由上述 schema 与 `math-geogebra.test.js` 维护。
+GeoGebra 使用 `kind=geogebra`，保存 `appName` 与完整 `.ggb` 的 base64；不展开成自建几何模型。服务端检查 ZIP 完整性、大小与 `geogebra.xml`，保存为 `source-only`，不执行其中内容、不生成海报或课堂文件。浏览器初始化禁用文件内嵌 JavaScript。API 的 `source` 导出为包含该源的 JSON，编辑器的 `.ggb` 下载为原生文件，两者不混称。字段和限制由上述 schema 维护；实际读写与输出按[数学专项](../acceptance/README.md#数学专项)验证。
 
 唯一字段见 schema，下面是字段间的约束与数学定义。
 
@@ -69,7 +69,7 @@ exportWork 固定明确 version，可导出本账户历史或归档作品版本�
 
 source/html 的 background 固定 transparent、width 固定1600，避免无意义选项出现不同指纹；SVG的width影响视窗尺寸、不损失矢量。render=invalid 的版本只允许 source；HTML本就source-only，可导出html。原生html的 offline=self-contained 表示依赖均内联的构造属性，不表示全部数学结果/所有浏览器已验；外部HTML永远unverified，静态/source为not-applicable。包装器不得注入 Cookie、页面头、账户键、API地址、服务器fileId或本地路径；外部原源自己含有的URL或文字只作为用户原件保留，不替用户认证也不据此抓取；用于重建的 Source 仅包含作品数据（外部HTML直接内嵌字节，不嵌 fileId）。
 
-workshop 的 `selection=work|graph|formula` 只用于内容选择，`formulaId` 仅 formula 必填；`source` 和 `bundle` 只用 work，`ggb` 只用 graph，三者 background 固定 transparent、width 固定1600。课堂 ZIP 从该 revision 已保存的 `presentationFileId` 下载，包含 index.html、完整作品 JSON、固定本地运行代码和许可文件，解压整个文件夹后直接打开 index.html；无需账户、制作服务或本地 HTTP 服务。`offline=self-contained` 表示依赖随包提供；仓库回归实际用新建 Chromium 配置、禁网及 file:// 检查纯公式、二维/三维、参数、步骤、播放与重置，未声明 Windows 或其他浏览器已验。课堂修改仅影响本次展示，重开回保存初态。相关回归入口为 `apps/api/test/math-workshop.test.js`。GGB 运行代码按需使用 eval 类能力，课堂 CSP 允许固定本地脚本及其执行要求；作品文件内脚本保持禁用，此包装器不用于外部 HTML。
+workshop 的 `selection=work|graph|formula` 只用于内容选择，`formulaId` 仅 formula 必填；`source` 和 `bundle` 只用 work，`ggb` 只用 graph，三者 background 固定 transparent、width 固定1600。课堂 ZIP 从该 revision 已保存的 `presentationFileId` 下载，包含 index.html、完整作品 JSON、固定本地运行代码和许可文件，解压整个文件夹后直接打开 index.html；无需账户、制作服务或本地 HTTP 服务。`offline=self-contained` 表示依赖随包提供；仓库回归实际用新建 Chromium 配置、禁网及 file:// 检查纯公式、二维/三维、参数、步骤、播放与重置，未声明 Windows 或其他浏览器已验。课堂修改仅影响本次展示，重开回保存初态。相关回归从[数学专项](../acceptance/README.md#数学专项)进入。GGB 运行代码按需使用 eval 类能力，课堂 CSP 允许固定本地脚本及其执行要求；作品文件内脚本保持禁用，此包装器不用于外部 HTML。
 
 外部原件及编辑文件是不可变源码资产，原文件下载必须 attachment + nosniff，通用材料预览仍仅转义文本。主动运行由 math 专用预览负责，禁止把 HTML/SVG 源塞进主应用 DOM。内嵌框只用 `sandbox="allow-scripts"`，不加 allow-same-origin/forms/popups/downloads/top-navigation；不传身份、工作台对象或公共写端口，不接收作品发来的业务 postMessage。源码编辑在父层纯文本控件。展示全屏由可信外层控制，不授予作品导航权限。
 
