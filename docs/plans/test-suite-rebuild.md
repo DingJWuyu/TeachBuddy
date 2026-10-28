@@ -33,21 +33,30 @@
 
 ## 当前阶段与接续
 
-状态：标准命名及扩展用例已在 `992172141f6664d4d851154cc533428414051c42` 清空，另6个独立入口随后补删。A/B/C保护清单均获总控确认，已进入实现。公共真实HTTPS应用fixture由总控统一提供，作者不各自建立第二套运行器。
+状态：标准命名及扩展用例已在 `992172141f6664d4d851154cc533428414051c42` 清空，另6个独立入口在 `8be6e3a7` 补删。A/B/C保护清单均获总控确认。A首个作者候选已集成实验分支，B/C正在完成作者验证；D利用A释放的执行位先核对旧套件，最终消融仍等待完整候选固定。公共真实HTTPS应用fixture由总控统一提供。
 
 | 现场 | session / 状态 |
 | --- | --- |
 | `TeachBuddy-test-rebuild` / `test/suite-rebuild` | 总控候选，公共准备与CI整合；当前候选以Git为准 |
-| `TeachBuddy-test-data` / `test/rebuild-data` | `/root/author_a_data`，A实施 |
+| `TeachBuddy-test-data` / `test/rebuild-data` | `/root/author_a_data`，首候选 `f8752c16` 已提交，集成候选 `2c458004`；待独立发现返工 |
 | `TeachBuddy-test-browser` / `test/rebuild-browser` | `/root/author_b_browser`，B实施 |
 | `TeachBuddy-test-outputs` / `test/rebuild-outputs` | `/root/author_c_outputs`，C实施 |
+| `TeachBuddy-test-audit` / `test/rebuild-audit` | `/root/auditor_d_ablation`，以 `2c458004` 接手，先盘点旧142入口，完整候选待总控通知 |
 
-本机正在运行的准备：npm安装日志 `/tmp/teachbuddy-test-rebuild-npm.log`（exec session 94060）；GeoGebra全新构建日志 `test-results/test-suite-rebuild/math-build.log`（73637）；基线CI等待（84842）。恢复时先核对进程/结果，不重复启动。安装与构建不读取preview私有配置或复制旧工作树产物。
+公共准备：全新npm安装、GeoGebra源码冷构建（9m55s）与完整工作区build已通过，日志在总控 `test-results/test-suite-rebuild/{npm-install,math-build,full-build}.log`。C只读使用总控 `apps/web/dist`，该版本尚未包含B题库修复；数学源码及运行时输入一致。B用本树源码与同任务新公共资产另建 `web-full-fixed`。运行中的只读产物不得覆盖。基线CI仍由exec session 84842等待；2026-10-27 21:41左右核对HTTP/SQLite job已成功，browser/output尚在执行。恢复时先核对实际结果，不重复启动。
 
-1. 回收基线 CI 的结果、耗时、跳过和失败；确认旧套件完整入口清单。
-2. 在总控隔离 worktree 删除所有旧执行用例并提交空测试基线，记录 SHA；从该基线建立 A/B/C 工作树，启动三位作者的保护清单阶段。
-3. 总控确认跨线归属和公共准备后，作者实施并定点实跑，根 CI 接入候选入口。
-4. 汇总候选后交 D 独立挑战，修复并复验，再交 E/F 双轴审查。最终 CI 负责干净环境完整回归，必要的 CI 外专项定点运行。
-5. 一个完整目的汇总为一个集成 PR；核对已审候选与最新 trunk，squash 集成、同步体验现场并清理。未满足时保留完整目标、现场和下一动作。
+### 已有证据与发现
 
-当前无用户输入阻塞。尚无新套件通过、消融通过或集成完成的结论。
+- A作者自验31 PASS、0FAIL、0skip，约6.5s，定点lint通过；十组独立副本业务故障均具名断言失败。回执见[author-a](test-suite-rebuild/author-a.md)，原始TAP/patch在A工作树 `test-results/test-suite-rebuild/`。这不是独立消融结论。
+- B通过真实两页编辑复现题库冲突刷新后失去处理入口，两个稳定红证据在B工作树。修复 `c0391858` 已集成为 `dd96795e`：从保留草稿版本与服务器版本重建冲突，原请求未决时仍先核实。局部反馈环通过，完整B候选与独立验证待回收。
+- C原生Word/PDF、OCR消费、真实可编辑输出与代表性数学/网页桥正在完成自验，五组故障已具名检出。缺资产、SVG数量、旧DOC预览状态、扩展旧版本消息筛选等建场问题与产品缺陷分开，不计故障检出。
+- D初步提出A需核对的有效保护：认证挑战绑定/存储失败/关闭注册，未知Document版本写保护，删号清理失败锁定与启动接续，R31旧请求兼容。这些尚未关闭，待C交付释放执行位后恢复A，维持最多三位执行者。
+- 总控已清理旧suite配置和无消费者UI helpers；静态检查发现仅被旧测试调用的公式预检及同步Pandoc分支，没有产品消费者，已删除；其他只用于旧测试的导出改为内部函数。对应 `d8473977`，需纳入最终审查/CI。当前静态尚有待整合新B/C后核对的依赖和旧runner导出，不宣称全绿。
+
+1. 回收基线CI及B/C作者候选；原始142入口清单已入库。
+2. 按D具名发现恢复相应作者修复，核对旧运行器/输入/依赖消费者并收口静态与文档。公共fixture `8be6e3a7`、二进制client `e27a49ca` 已被各作者cherry-pick，集成只取作者独有提交。
+3. 固定完整候选交D独立业务故障和逐组移除比较，保留142入口逐项去留映射，关闭必要缺口。
+4. 按已读code-review skill交E/F双轴审查；根基线固定789a38d8，规格为用户确认目标及本记录，不另要求用户重复提供。收齐已知修复后创建单一集成PR，让CI承担干净环境完整回归；审查与CI可并行。
+5. 核对已审候选与最新trunk，squash集成、同步体验现场并清理。未满足时保留完整目标、现场和下一动作。
+
+当前无用户输入阻塞。尚无新套件完整通过、独立消融通过或trunk集成完成的结论。
