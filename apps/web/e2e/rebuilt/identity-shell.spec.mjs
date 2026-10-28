@@ -1,13 +1,18 @@
 import { test, expect, register, navigate, createQuestion, logout } from './fixture.mjs';
 
-test('真实退出后切换账户隔离保存内容，同账户再次登录可读回', async ({ page, world }) => {
+test('D11 S45激活保存失败后继续不重复注册，退出切换账户仍隔离', async ({ page, world }) => {
   let activationStarted, releaseActivation;
   const started = new Promise(resolve => { activationStarted = resolve; });
   const released = new Promise(resolve => { releaseActivation = resolve; });
+  let firstActivation = true, registrations = 0;
+  page.on('request', request => { if (new URL(request.url()).pathname === '/api/auth/register') registrations++; });
   const gate = async route => {
-    if (route.request().method() === 'POST' && route.request().postDataJSON()?.action === 'activate') {
+    if (firstActivation && route.request().method() === 'POST' && route.request().postDataJSON()?.action === 'activate') {
+      firstActivation = false;
       activationStarted();
       await released;
+      await route.fulfill({ status: 503, contentType: 'application/problem+json', body: JSON.stringify({ type: '/problems/auth/session-persistence-unavailable', status: 503 }) });
+      return;
     }
     await route.continue();
   };
@@ -18,9 +23,13 @@ test('真实退出后切换账户隔离保存内容，同账户再次登录可�
       await started;
       try { await expect(page.locator('.wb-shell'), '身份激活确认前不能挂载业务').toHaveCount(0); }
       finally { releaseActivation(); }
+      await expect(page.getByRole('heading', { name: '保存登录状态', exact: true })).toBeVisible();
+      await expect(page.locator('.wb-shell')).toHaveCount(0);
+      await page.getByRole('button', { name: '继续进入工作台', exact: true }).click();
     })(),
   ]);
   await page.unroute('**/api/auth/session', gate);
+  expect(registrations).toBe(1);
   await createQuestion(page, '甲账户独有题', '甲账户的题干。');
   await logout(page);
   await expect(page.getByRole('heading', { name: '欢迎回来', exact: true })).toBeVisible();
