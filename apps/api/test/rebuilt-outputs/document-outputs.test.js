@@ -15,12 +15,21 @@ test('C3 真实 PNG 保留透明题面、独立答案与80行完整分页，长�
     title: '题面输出', body, solution: document('BC=5'), answerStatus: 'present', note: '不得输出的长期笔记', starred: false,
     typeId: null, tagIds: [], source: { kind: 'manual' },
   }, 201);
+  const digests = ids => Promise.all(ids.map(async id => sha(await download(client, id))));
+  const bodyJob = await json(client, 'POST', `/api/modules/questions/v2/items/${question.id}/assets`, {
+    baseVersion: question.version, mode: 'question-png', includeAnswers: false, figureFileId: null,
+  }, 202);
+  const bodyDone = await finished(client, bodyJob.id);
+  assert.equal(bodyDone.state, 'succeeded');
+  const bodyHashes = await digests(bodyDone.outputFileIds);
   const job = await json(client, 'POST', `/api/modules/questions/v2/items/${question.id}/assets`, {
     baseVersion: question.version, mode: 'question-png', includeAnswers: true, figureFileId: null,
   }, 202);
   const done = await finished(client, job.id);
   assert.equal(done.state, 'succeeded', JSON.stringify(done));
-  assert.ok(done.outputFileIds.length >= 2, '题面和答案必须分别输出');
+  const originalHashes = await digests(done.outputFileIds);
+  assert.deepEqual(originalHashes.slice(0, bodyHashes.length), bodyHashes, '带答案导出的题面前缀须逐片等于纯题面输出');
+  assert.ok(originalHashes.length > bodyHashes.length, '题面之后必须另有实际答案分片');
   for (const id of done.outputFileIds) {
     const bytes = await download(client, id);
     const metadata = await sharp(bytes).metadata();
@@ -30,12 +39,12 @@ test('C3 真实 PNG 保留透明题面、独立答案与80行完整分页，长�
     assert.equal(metadata.hasAlpha, true, '题面图片须保留透明背景');
     assert.ok(stats.channels[3].min === 0 && stats.channels[3].max === 255, '输出应同时包含透明留白与真实可见像素');
   }
-  await json(client, 'PUT', `/api/modules/questions/v2/items/${question.id}`, {
+  const noted = await json(client, 'PUT', `/api/modules/questions/v2/items/${question.id}`, {
     baseVersion: question.version, title: question.title, body: question.body, solution: question.solution,
     answerStatus: question.answerStatus, note: '另一条绝不能进入输出的私密笔记', starred: false, typeId: null, tagIds: [],
   });
   const again = await json(client, 'POST', `/api/modules/questions/v2/items/${question.id}/assets`, {
-    baseVersion: question.version + 1, mode: 'question-png', includeAnswers: true, figureFileId: null,
+    baseVersion: noted.version, mode: 'question-png', includeAnswers: true, figureFileId: null,
   }, 202);
   const againDone = await finished(client, again.id);
   assert.equal(againDone.state, 'succeeded');
@@ -43,11 +52,26 @@ test('C3 真实 PNG 保留透明题面、独立答案与80行完整分页，长�
   for (const [index, id] of done.outputFileIds.entries())
     assert.equal(sha(await download(client, againDone.outputFileIds[index])), sha(await download(client, id)), '长期笔记不能影响公开题面与答案图片');
   const figureJob = await json(client, 'POST', `/api/modules/questions/v2/items/${question.id}/assets`, {
-    baseVersion: question.version + 1, mode: 'figure-png', includeAnswers: false, figureFileId: image.id,
+    baseVersion: noted.version, mode: 'figure-png', includeAnswers: false, figureFileId: image.id,
   }, 202);
   const figureDone = await finished(client, figureJob.id);
   assert.equal(figureDone.state, 'succeeded');
   assert.equal(figureDone.outputFileIds.length, 1, '配图模式应只生成选定配图');
+  const solved = await json(client, 'PUT', `/api/modules/questions/v2/items/${question.id}`, {
+    baseVersion: noted.version, title: noted.title, body: noted.body,
+    solution: document('更新解析：由勾股定理，BC=5，且 tan B=3/4。'),
+    answerStatus: noted.answerStatus, note: noted.note, starred: noted.starred, typeId: noted.typeId, tagIds: noted.tagIds,
+  });
+  const solvedJob = await json(client, 'POST', `/api/modules/questions/v2/items/${question.id}/assets`, {
+    baseVersion: solved.version, mode: 'question-png', includeAnswers: true, figureFileId: null,
+  }, 202);
+  const solvedDone = await finished(client, solvedJob.id);
+  assert.equal(solvedDone.state, 'succeeded');
+  const solvedHashes = await digests(solvedDone.outputFileIds);
+  assert.deepEqual(solvedHashes.slice(0, bodyHashes.length), bodyHashes, '只修改答案不能改变题面分片');
+  assert.ok(solvedHashes.length > bodyHashes.length, '修改答案后仍须输出答案分片');
+  assert.notDeepEqual(solvedHashes.slice(bodyHashes.length), originalHashes.slice(bodyHashes.length), '只修改 solution 必须改变实际答案分片，不能用重复题面冒充答案');
+
   const lines = Array.from({ length: 80 }, (_, index) => `第${String(index + 1).padStart(3, '0')}行：完整保留教学内容与末尾。`);
   const longQuestion = await json(client, 'POST', '/api/modules/questions/v2/items', {
     title: '八十行长段落', body: document(lines.join('\n')), solution: document(''), answerStatus: 'absent',
