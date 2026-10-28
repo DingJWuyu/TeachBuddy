@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import os from 'node:os';
+import { createTestDirectory } from '../support/directories.js';
 import { execFileSync } from 'node:child_process';
 import JSZip from 'jszip';
 import { createIntegration } from '../support/application.js';
@@ -123,7 +123,7 @@ test('C-R3 教学表续题与歧义保留，删源后的带图摘录可导出并
   assert.ok(readable.includes('教师已核对并采用。'), '可读层应呈现教师采用稿');
   assert.ok(readable.includes('m=2'), '可读层应保留摘录中的公式源');
 
-  const maintenance = fs.mkdtempSync(path.join(os.tmpdir(), 'teachbuddy-notes-recovery-'));
+  const maintenance = createTestDirectory('teachbuddy-notes-recovery-');
   let restored, complete = false;
   t.after(async () => {
     await restored?.close();

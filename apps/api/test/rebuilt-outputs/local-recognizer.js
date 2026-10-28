@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import os from 'node:os';
+import { createTestDirectory } from '../support/directories.js';
 import path from 'node:path';
 import childProcess from 'node:child_process';
 import { once } from 'node:events';
@@ -9,7 +9,7 @@ import { syncBuiltinESMExports } from 'node:module';
 // Exercise the actual resident runtime with real local processes. Only GPU
 // capacity and systemd/cgroup observations are controlled; no model is loaded.
 export async function localRecognizer(t) {
-  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'teachbuddy-ocr-process-'));
+  const directory = createTestDirectory('teachbuddy-ocr-process-');
   const home = path.join(directory, 'engine');
   for (const name of ['python', 'venv/bin', 'models', 'llama', 'cudart', 'fonts']) fs.mkdirSync(path.join(home, name), { recursive: true });
   fs.writeFileSync(path.join(home, 'python/python'), 'local protocol fixture');

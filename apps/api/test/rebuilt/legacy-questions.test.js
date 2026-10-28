@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import os from 'node:os';
+import { createTestDirectory } from '../support/directories.js';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { randomUUID } from 'node:crypto';
@@ -10,7 +10,7 @@ import { startQuestionsFixture } from '../fixtures/questions/server.mjs';
 import { doc, editable } from './helpers.js';
 
 test('A-R4 固定R31题库：v1文稿和原路径成功回执跨升级/两次重启保留，旧重放不覆盖新稿', async t => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'rebuilt-r31-questions-'));
+  const root = createTestDirectory('rebuilt-r31-questions-');
   let runtime;
   t.after(async () => { await runtime?.close(); if (t.passed) fs.rmSync(root, { recursive: true, force: true }); else console.error(`R31升级现场保留: ${root}`); });
   const source = extractLegacySource('r31-questions', path.join(root, 'source'));

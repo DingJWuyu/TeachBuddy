@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import os from 'node:os';
+import { createTestDirectory } from '../support/directories.js';
 import path from 'node:path';
 import https from 'node:https';
 import { createHash, randomBytes } from 'node:crypto';
@@ -127,7 +127,7 @@ test('维护恢复：停服锁、完整数据库与文件、独立准备/启用�
   const world = await createWorld(t), a = await register(world), b = await register(world);
   const seeded = await seed(a.client);
   const originalContext = ok(await a.client.request('GET', '/api/reliability/v1/context'));
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'rebuilt-restore-'));
+  const root = createTestDirectory('rebuilt-restore-');
   let restored;
   t.after(async () => { await restored?.close(); if (t.passed) fs.rmSync(root, { recursive: true, force: true }); else console.error(`恢复证据保留: ${root}`); });
   const input = { database: path.join(world.directory, 'workspace.sqlite'), files: path.join(world.directory, 'files'), target: path.join(root, 'backup'), stopped: true };
@@ -163,7 +163,7 @@ test('维护恢复：附件损坏与未知迁移停止准备且不破坏原库',
   const world = await createWorld(t), a = await register(world);
   await seed(a.client);
   await world.app.close();
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'rebuilt-corrupt-'));
+  const root = createTestDirectory('rebuilt-corrupt-');
   t.after(() => { if (t.passed) fs.rmSync(root, { recursive: true, force: true }); else console.error(`损坏恢复证据保留: ${root}`); });
   const source = path.join(root, 'backup'), database = path.join(world.directory, 'workspace.sqlite');
   await backup({ database, files: path.join(world.directory, 'files'), target: source, stopped: true });
@@ -202,7 +202,7 @@ test('删除账户：邮箱确认、原请求未知结果核实、同容器其�
 });
 
 test('历史部署恢复：固定退役前备份升级保留存续资料、原件与对话，退役模块不复活', async t => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'rebuilt-legacy-'));
+  const root = createTestDirectory('rebuilt-legacy-');
   let app;
   t.after(async () => { await app?.close(); if (t.passed) fs.rmSync(root, { recursive: true, force: true }); else console.error(`旧库证据保留: ${root}`); });
   const fixture = new URL('../fixtures/retirement/pre-retirement-backup.zip', import.meta.url);
@@ -259,7 +259,7 @@ test('恢复隔离：未知 Agent 写入在时间点恢复后冻结，数字版�
   world.app.workbench.db.exec('DROP TRIGGER rebuilt_unknown_operation');
   const saved = ok(await a.client.request('GET', questions)).items[0];
   await world.app.close();
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'rebuilt-frozen-'));
+  const root = createTestDirectory('rebuilt-frozen-');
   let restored;
   t.after(async () => { await restored?.close(); if (t.passed) fs.rmSync(root, { recursive: true, force: true }); else console.error(`冻结恢复证据保留: ${root}`); });
   const source = path.join(root, 'backup'), target = path.join(root, 'target');

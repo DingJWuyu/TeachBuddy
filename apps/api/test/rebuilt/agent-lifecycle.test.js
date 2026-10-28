@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import os from 'node:os';
+import { createTestDirectory } from '../support/directories.js';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
@@ -66,7 +66,7 @@ test('D12 Agent停止：首个写入confirmed保留，同批第二个prepared取
 });
 
 test('D12 Agent崩溃：真实SIGKILL发生于业务提交后日志前，重开转unconfirmed并原键找回同一对象', async t => {
-  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'rebuilt-agent-sigkill-'));
+  const directory = createTestDirectory('rebuilt-agent-sigkill-');
   let app;
   t.after(async () => { await app?.close(); if (t.passed) fs.rmSync(directory, { recursive: true, force: true }); else console.error(`SIGKILL现场保留: ${directory}`); });
   const child = spawn(process.execPath, [fileURLToPath(new URL('./agent-crash-child.mjs', import.meta.url)), directory], { stdio: ['ignore', 'pipe', 'pipe'] });

@@ -34,7 +34,7 @@
 ## 隔离与产物
 
 - 实例使用独立端口、SQLite、文件目录和 browser context。Cookie 按主机而非端口隔离，实际要求见[浏览器身份](../SETUP.md#浏览器身份与体验交接)。测试不读取 preview 私有配置，也不修改用户数据。
-- 公共真实 HTTPS 应用准备在 `apps/api/test/support/application.js`，返回当前 `createApp` 装配；模型与邮件只在边界注入替身。用例拥有目录，负责关闭服务、连接、浏览器、异步任务与子进程。需要重启时明确复用同一数据目录和端口。
+- 公共真实 HTTPS 应用准备在 `apps/api/test/support/application.js`，返回当前 `createApp` 装配；模型与邮件只在边界注入替身。Node用例通过 `apps/api/test/support/directories.js` 在仓库 `test-results/runtime/` 创建具名隔离目录；浏览器使用各例 `testInfo.outputPath()`。用例拥有目录，负责关闭服务、连接、浏览器、异步任务与子进程。需要重启时明确复用同一数据目录和端口。
 - 同候选可共享只读构建；运行期间不得覆盖。并行修改使用独立输出目录，转换工具按 SETUP 显式准备。
 - 输出归 `test-results/`，截图使用 `testInfo.outputPath()`，每例自行准备输入。成功清理临时数据，失败保留现场；固定样本、私有备份与用户成果不在自动清理范围。
 - 回执区分 real-auth/test-principal、真实服务/替身、self/independent/user、通过/失败/跳过/未验。采样统计仅描述该次环境和候选。
@@ -97,7 +97,7 @@ OCR 沿真实认证、HTTP、任务、SQLite 和文件入口验证，采用固�
 
 依据[数学规格](../features/math.md)、[数学契约](../contracts/math.md)与[数学样本](samples.md)。主应用组验证制作界面与输入保护，成果组验证真实公式/几何、可编辑源、图片、固定版本的离线课堂作品与代表旧源兼容。
 
-离线成果先实际下载，再关闭服务、禁网，在新的浏览器现场冷启动并操作参数/步骤。外部 HTML 的 sandbox 与网络隔离须独立核对。MathJax、GeoGebra 与浏览器依赖从入库清单构建，不依赖本机旧测试产物。
+离线成果先实际下载，再关闭服务、禁网，在新的浏览器现场冷启动并操作参数/步骤。外部 HTML 的 sandbox 与网络隔离须独立核对。MathJax、GeoGebra 与浏览器依赖从入库清单构建，不依赖本机旧测试产物。当前常驻课堂包回归使用二维和三维作品，核对实际对象、保存视区、参数及步骤操作；纯公式用例核对源码与PNG。纯公式课堂冷开及播放动画在相应导出或课堂运行代码变化时专项验证，不能把静态输出通过称为已验证播放。
 
 网页桥使用实际扩展脚本与受控网页验证连接、取消、更新与迟到结果；真实 DeepSeek 登录、商店安装/自动更新和目标浏览器仍沿[扩展说明](../../extensions/math-web-ai/README.md)另验。
 

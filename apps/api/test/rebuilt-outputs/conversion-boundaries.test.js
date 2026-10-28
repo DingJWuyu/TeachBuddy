@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import os from 'node:os';
+import { createTestDirectory } from '../support/directories.js';
 import path from 'node:path';
 import { createServer } from 'node:http';
 import { Readable } from 'node:stream';
@@ -35,7 +35,7 @@ test('C-R1 Office 主动关系、宏及实际超限压缩包无法转换，原�
 });
 
 test('C-R1 实际转换沙箱既读不到自建宿主哨兵，也连接不到自建宿主端口', { timeout: 180000 }, async t => {
-  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'teachbuddy-sandbox-'));
+  const directory = createTestDirectory('teachbuddy-sandbox-');
   let passed = false;
   t.after(() => { if (passed) fs.rmSync(directory, { recursive: true, force: true }); else t.diagnostic(`保留沙箱现场 ${directory}`); });
   const officeRoot = path.join(directory, 'office');

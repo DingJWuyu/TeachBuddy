@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import os from 'node:os';
-import path from 'node:path';
+import { createTestDirectory } from '../support/directories.js';
 import https from 'node:https';
 import { randomUUID } from 'node:crypto';
 import { createIntegration } from '../support/application.js';
@@ -30,7 +29,7 @@ export function problem(response, status, type, extra = {}) {
 }
 export const write = (client, method, url, body, key = randomUUID(), options = {}) => client.request(method, url, { body, ...options, headers: { 'Idempotency-Key': key, ...options.headers } });
 export async function createWorld(t, options = {}) {
-  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'rebuilt-business-'));
+  const directory = createTestDirectory('rebuilt-business-');
   const clock = createClock();
   let app = await createIntegration({ directory, clock, workbenchClock: () => new Date(clock.now()), ...options });
   const world = { get app() { return app; }, directory, clock,

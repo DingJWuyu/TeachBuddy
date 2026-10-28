@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import os from 'node:os';
+import { createTestDirectory } from '../../../../apps/api/test/support/directories.js';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { chromium } from '@playwright/test';
@@ -22,7 +22,7 @@ async function response(page, requestId, types, extensionVersion) {
 }
 
 async function browser(t, legacy = false) {
-  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'teachbuddy-bridge-'));
+  const directory = createTestDirectory('teachbuddy-bridge-');
   const extensionDirectory = legacy ? path.join(directory, 'extension') : extension;
   if (legacy) {
     fs.mkdirSync(extensionDirectory);

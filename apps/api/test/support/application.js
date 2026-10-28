@@ -1,5 +1,5 @@
 import fs from 'node:fs';
-import os from 'node:os';
+import { createTestDirectory } from './directories.js';
 import path from 'node:path';
 import https from 'node:https';
 import { createApp } from '../../src/app.js';
@@ -8,7 +8,7 @@ import { createClock, createMailer, createClient, generateSelfSignedCertificate 
 // One real application per isolated directory. Callers own the directory so a
 // failed test can retain it, or reopen it on the same port to verify persistence.
 export async function createIntegration(options = {}) {
-  const directory = options.directory ?? fs.mkdtempSync(path.join(os.tmpdir(), 'teachbuddy-test-'));
+  const directory = options.directory ?? createTestDirectory('teachbuddy-test-');
   fs.mkdirSync(directory, { recursive: true });
   const server = https.createServer(generateSelfSignedCertificate(directory));
   const sockets = new Set();
