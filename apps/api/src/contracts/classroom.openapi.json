@@ -5931,7 +5931,27 @@
             "additionalProperties": true
           },
           "exam": {
-            "$ref": "#/components/schemas/ExamInfo"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ExamInfo"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "questions": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/Question"
+                    },
+                    "maxItems": 300
+                  }
+                },
+                "required": [
+                  "questions"
+                ]
+              }
+            ],
+            "description": "同一统计快照中的考试元数据及完整计分题；没有录入成绩时仍提供。"
           },
           "classes": {
             "type": "array",
@@ -5996,13 +6016,40 @@
           },
           "dataVersions": {
             "$ref": "#/components/schemas/DataVersions"
+          },
+          "tags": {
+            "type": "array",
+            "description": "该快照所使用的标签名称和版本，供考试题目呈现。",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "version": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "version"
+              ],
+              "additionalProperties": false
+            }
           }
         },
         "required": [
           "scope",
           "exam",
           "classes",
-          "dataVersions"
+          "dataVersions",
+          "tags"
         ],
         "additionalProperties": true
       },

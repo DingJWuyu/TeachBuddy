@@ -22,7 +22,7 @@ async function prepare(page, world) {
     const reviewed = ok(await write(client, 'PUT', `${classes}/imports/${draft.id}`, { baseVersion: mapped.version, mapping: data.mapping, rows }));
     return ok(await write(client, 'POST', `${classes}/imports/${draft.id}/confirmation`, { baseVersion: reviewed.version })).result;
   }
-  return { c, students, result, reimport };
+  return { c, students, result, reimport, client, exam: data.exam };
 }
 
 test('班级统计响应期间重新导入，分布钻取与排名保持同一版本，刷新读新版', async ({ page, world }, info) => {
@@ -77,4 +77,63 @@ test('学生统计响应期间重新导入，本人分数与各题班级参照�
   await page.getByRole('tab', { name: '成绩', exact: true }).click();
   await expect(page.locator('.cr-exam-row-score b')).toHaveText('10');
   await expect(page.locator('.cr-rate-mark')).toHaveAttribute('style', /0\.35/);
+});
+
+
+test('同场比较期间考试更新，标题、满分与题目使用同一统计快照', async ({ page, world }, info) => {
+  const { c, client, exam } = await prepare(page, world);
+  let observed, updated;
+  await page.route(`**${classes}/exams/${exam.id}/comparison*`, async route => {
+    updated = ok(await write(client, 'PUT', `${classes}/exams/${exam.id}`, {
+      baseVersion: exam.version, name: '新版考试名称', subject: exam.subject, occurredOn: exam.occurredOn,
+      totalMax: 200, source: exam.source,
+      questions: exam.questions.map(q => ({ ...q, label: '新版题目', maxScore: 200 })),
+    }));
+    const response = await route.fetch();
+    observed = await response.json();
+    await route.fulfill({ response });
+  }, { times: 1 });
+  await page.locator('.tbx-rail').getByRole('button', { name: /^考试/ }).click();
+  await page.locator('.cr-exam-card').filter({ hasText: exam.name }).click();
+  const row = page.locator('.cr-compare li').filter({ hasText: c.name });
+  await expect(row.locator('.cr-compare-num').first().locator('b')).toHaveText('66.67');
+  await expect(row.locator('.cr-compare-num').first().locator('small'), '得分率必须使用观察中的200分满分').toHaveText('平均 · 33%');
+  await expect(page.locator('.cr-exam-hero')).toContainText('新版考试名称');
+  await expect(page.locator('.cr-exam-hero')).toContainText('满分 200');
+  await expect(page.locator('.cr-qcompare')).toContainText('新版题目');
+  await expect(page.locator('.cr-qcompare')).toContainText('200 分');
+  await expect(page.locator('.cr-qcompare-cell small')).toHaveText('29%');
+  await expect(page.locator('.cr-qlist')).toContainText('新版题目');
+  expect(observed.dataVersions.exam).toEqual([{ id: exam.id, version: updated.version }]);
+  await page.locator('.cr-qcompare').scrollIntoViewIfNeeded();
+  await page.screenshot({ path: info.outputPath('comparison-one-exam-version.png'), animations: 'disabled' });
+  await info.attach('comparison-observation', { body: JSON.stringify(observed), contentType: 'application/json' });
+  await page.getByRole('button', { name: '编辑', exact: true }).click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog.getByLabel('考试名称', { exact: true })).toHaveValue('新版考试名称');
+  await dialog.getByLabel('考试名称', { exact: true }).fill('继续编辑新版考试');
+  let releaseComparison, enteredComparison;
+  const comparisonGate = new Promise(resolve => { releaseComparison = resolve; });
+  const comparisonStarted = new Promise(resolve => { enteredComparison = resolve; });
+  await page.route(`**${classes}/exams/${exam.id}/comparison*`, async route => {
+    const response = await route.fetch();
+    enteredComparison();
+    await comparisonGate;
+    await route.fulfill({ response });
+  }, { times: 1 });
+  const saving = page.waitForResponse(r => r.request().method() === 'PUT' && r.url().endsWith(`/exams/${exam.id}`));
+  await dialog.getByRole('button', { name: '保存', exact: true }).click();
+  const response = await saving;
+  expect(response.status(), '比较页编辑沿当前显示的版本继续保存').toBe(200);
+  expect(response.request().postDataJSON().baseVersion).toBe(updated.version);
+  await expect(dialog).toHaveCount(0);
+  await comparisonStarted;
+  try {
+    await expect(page.locator('.cr-exam-hero')).toContainText('继续编辑新版考试');
+    await expect(page.locator('.cr-compare'), '新版本比较读取期间不显示前一份统计').toHaveCount(0);
+  } finally { releaseComparison(); }
+  await expect(row.locator('.cr-compare-num').first().locator('small')).toHaveText('平均 · 33%');
+  await page.reload();
+  await expect(page.locator('.cr-exam-hero')).toContainText('继续编辑新版考试');
+  await expect(row.locator('.cr-compare-num').first().locator('small')).toHaveText('平均 · 33%');
 });

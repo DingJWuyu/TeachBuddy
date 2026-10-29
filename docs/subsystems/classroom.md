@@ -42,7 +42,7 @@ const result = await classroom.operations.confirmImport({
 
 - 认证 HTTP 到 router/operations，再到 [roster](../../apps/api/src/modules/classroom/roster.js)、[tags](../../apps/api/src/modules/classroom/tags.js)、imports/assessment，由 repository 写模块表；成绩保留考试时名单快照。
 - 受管 Excel File 经 imports/[workbook](../../apps/api/src/modules/classroom/workbook.js) 在事务外解析，校对草稿与固定原表事实保存在 import，确认生成 results。原卷/定位通过公共 files 读取，固定 rendition 使用文件服务，不另建预览系统。
-- [statistics](../../apps/api/src/modules/classroom/statistics.js) 通过 repository 的同步读取快照，从保存的活动考试/成绩一次产出统计、班级排名及历史学生摘要、学生各题班级参照和无成绩考试，并返回参与事实版本。Web adapter 仅重命名、排序和呈现，不再补读 Result 或另一份班级统计；个人与同场比较查询不携带全班学生摘要，不存派生结论；导出与恢复维护沿 lifecycle，存储校验复用 [stored-data](../../apps/api/src/modules/classroom/stored-data.js) 的对象及关系检查。
+- [statistics](../../apps/api/src/modules/classroom/statistics.js) 通过 repository 的同步读取快照，从保存的活动考试/成绩一次产出统计、班级排名及历史学生摘要、学生各题班级参照和无成绩考试，并返回参与事实版本。Web adapter 仅重命名、排序和呈现，不再补读 Result 或另一份班级统计；个人与同场比较查询不携带全班学生摘要，不存派生结论；[ExamDetail](../../apps/web/src/features/classroom/Exams.jsx) 用比较响应中的考试与题目/标签展示整页，并以该版本继续编辑，列表考试身份或版本变化后旧比较立即退出显示，读回后再呈现；导出与恢复维护沿 lifecycle，存储校验复用 [stored-data](../../apps/api/src/modules/classroom/stored-data.js) 的对象及关系检查。
 
 [模块迁移](../../apps/api/src/modules/classroom/migrations/index.js) 归班级，账户删除由外层生命周期事务调用模块清理。新班级不复用退役 classes 模块 ID 或数据。
 

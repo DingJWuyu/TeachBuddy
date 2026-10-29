@@ -63,6 +63,8 @@ test('成绩：真实工作簿确认原子且幂等，零分/缺总分/缺考/�
   assert.deepEqual(personal.dataVersions.students, [{ id: students[0].id, version: students[0].version }]);
   const compared = ok(await client.request('GET', `${classes}/exams/${exam.id}/comparison?classIds=${c.id}`));
   assert.equal('students' in compared.classes[0].point, false, '同场比较不附带全班名单');
+  assert.deepEqual(compared.exam.questions, exam.questions);
+  assert.deepEqual(compared.tags, [{ id: tag.id, name: tag.name, version: tag.version }]);
   assert.deepEqual(compared.dataVersions.classes, stats.dataVersions.classes);
 
   const ranks = [];
@@ -80,6 +82,11 @@ test('成绩：真实工作簿确认原子且幂等，零分/缺总分/缺考/�
   assert.deepEqual(empty.points, []);
   assert.deepEqual(empty.unrecordedExams.map(e => e.id), [exam.id]);
   assert.deepEqual(empty.dataVersions.exam, [{ id: exam.id, version: exam.version }]);
+  const unrecordedComparison = ok(await client.request('GET', `${classes}/exams/${exam.id}/comparison?classIds=${newClass.id}`));
+  assert.equal(unrecordedComparison.classes[0].point, null);
+  assert.deepEqual(unrecordedComparison.exam.questions, exam.questions, '没有成绩也从比较快照返回题目');
+  assert.deepEqual(unrecordedComparison.tags, compared.tags);
+  assert.deepEqual(unrecordedComparison.dataVersions.tags, [{ id: tag.id, version: tag.version }]);
   const nextDraft = ok(await write(client, 'POST', `${classes}/imports`, { examId: exam.id, classId: c.id, sourceFileId: file.id }), 201);
   const nextMapped = ok(await write(client, 'PUT', `${classes}/imports/${nextDraft.id}`, { baseVersion: nextDraft.version, mapping, rows: null }));
   const nextRows = nextMapped.rows.map((row, index) => ({ sourceRow: row.sourceRow, studentId: index ? row.studentId : null,

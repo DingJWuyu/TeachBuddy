@@ -164,7 +164,7 @@ export function createClassroomApi({ accountKey, transport, getSignal, onIdentit
     if (path.endsWith('/statistics')) return statistics(path, params);
     if (path.endsWith('/comparison')) {
       const value = await rawGet(path, { classIds: classes.map(c => c.id) });
-      return { ...value, classes: await Promise.all(value.classes.map(async c => c.point ? { ...await classPoint(c.point), classId: c.class.id, name: c.class.name } : { ...c, classId: c.class.id, name: c.class.name })) };
+      return { ...value, exam: await examView(value.exam), classes: await Promise.all(value.classes.map(async c => c.point ? { ...await classPoint(c.point), classId: c.class.id, name: c.class.name } : { ...c, classId: c.class.id, name: c.class.name })) };
     }
     if (params.state === 'deleted') { params = { ...params, deleted: 'deleted' }; delete params.state; }
     if (path === '/students' && !params.classId && !params.deleted) {

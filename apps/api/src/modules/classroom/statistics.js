@@ -204,9 +204,13 @@ export function createClassroomStatistics({ repository }) {
           return { class: classInfo(klass), state: result ? 'recorded' : 'no-result',
             point: result ? classPoint(exam, result, tags, tagIds) : null };
         });
-        const dataVersions = { ...versions(classes.map(value => value.point).filter(Boolean), tags, tagIds),
+        const usedTagIds = [...new Set([...(tagIds ?? []), ...exam.questions.flatMap(question => question.tagIds)])];
+        const dataVersions = { ...versions(classes.map(value => value.point).filter(Boolean), tags, usedTagIds),
           exam: [versionOf(exam)], classes: classes.map(value => versionOf(value.class)), students: [] };
-        return { scope: { type: 'comparison', examId, classIds }, exam: examInfo(exam), classes, dataVersions };
+        return { scope: { type: 'comparison', examId, classIds },
+          exam: { ...examInfo(exam), questions: exam.questions },
+          tags: dataVersions.tags.map(({ id, version }) => ({ id, version, name: tags.get(id).name })),
+          classes, dataVersions };
       });
     }
   };

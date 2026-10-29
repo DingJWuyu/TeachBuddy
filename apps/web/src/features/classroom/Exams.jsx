@@ -224,15 +224,20 @@ export function ExamForm({ ctx, initial, onClose }) {
 }
 
 /* ---------- one exam ---------- */
-export function ExamDetail({ ctx, exam }) {
-  const [comparison, setComparison] = useState(null);
+export function ExamDetail({ ctx, exam: listedExam }) {
+  const [loadedComparison, setComparison] = useState(null);
+  const comparison = loadedComparison?.examId === listedExam.id && loadedComparison.examVersion === listedExam.version
+    ? loadedComparison.value : null;
+  const exam = comparison?.exam ?? listedExam;
   const [busy, setBusy] = useState(false);
   useEffect(() => {
     let live = true;
-    ctx.api.get(`/exams/${exam.id}/comparison`).then((c) => live && setComparison(c)).catch(error => live && setComparison({ error }));
+    const receive = value => { if (live) setComparison({ examId: listedExam.id, examVersion: listedExam.version, value }); };
+    ctx.api.get(`/exams/${listedExam.id}/comparison`).then(receive).catch(error => receive({ error }));
     return () => { live = false; };
-  }, [exam.id, exam.version]);
-  const tagName = useMemo(() => new Map(ctx.data.tags.map((t) => [t.id, t.name])), [ctx.data.tags]);
+  }, [listedExam.id, listedExam.version]);
+  const displayedTags = comparison?.tags ?? ctx.data.tags;
+  const tagName = useMemo(() => new Map(displayedTags.map((t) => [t.id, t.name])), [displayedTags]);
   const groups = [];
   for (const q of exam.questions) {
     if (!groups.length || groups.at(-1).group !== q.group) groups.push({ group: q.group, items: [] });
@@ -298,8 +303,8 @@ export function ExamDetail({ ctx, exam }) {
                     <strong>{c.name}</strong>
                     {c.state === 'ok' ? (
                       <>
-                        <span className="cr-rate-track is-big"><span className="cr-rate-fill" style={{ '--w': (c.mean == null ? null : c.mean / exam.fullScore) }} /></span>
-                        <span className="cr-compare-num"><b>{fmt(c.mean)}</b><small>{tx('平均 · {{r}}', { r: pct((c.mean == null ? null : c.mean / exam.fullScore)) })}</small></span>
+                        <span className="cr-rate-track is-big"><span className="cr-rate-fill" style={{ '--w': c.rate }} /></span>
+                        <span className="cr-compare-num"><b>{fmt(c.mean)}</b><small>{tx('平均 · {{r}}', { r: pct(c.rate) })}</small></span>
                         <span className="cr-compare-num"><b>{fmt(c.median)}</b><small>{tx('中位数')}</small></span>
                         <span className="cr-compare-num"><b>{c.present}</b><small>{c.absent ? tx('缺考 {{n}}', { n: c.absent }) : tx('参加')}</small></span>
                       </>
