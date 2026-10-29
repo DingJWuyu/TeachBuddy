@@ -9,5 +9,8 @@ export function usePreferences(accountKey, generation) {
     inputFromObject: value => value.values,
     buildUpdate: (values, baseline) => ({ baseVersion: baseline.version, values })
   });
-  return preferences;
+  return { ...preferences, retrySave: async () => {
+    if (preferences.loadState === 'error' && !await preferences.refreshServer()) return null;
+    return preferences.pending ? preferences.retryConfirm() : preferences.save();
+  } };
 }
