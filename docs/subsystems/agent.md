@@ -58,3 +58,11 @@ GOAT API 消耗账户 credits，不等于无限免费；Provider 返回 cost=0 �
 [lifecycle](../../apps/api/src/agent/lifecycle.js) 拥有资料包的对话公开快照与引用投影、事件关系检查、恢复操作冻结及 HTTP 守卫、账户删除 SQL。部署恢复仅调用 `prepareRestoredAgent(db)`，保留原生 conversation 字节；reconcile 与提案 execute 共用冻结检查。底座先等待 runtime 真正停止再调用删除，保留既有撤销身份和迟到结果保护。
 
 确定性 HTTP/浏览器与保留库 live 入口见[验证选择](../acceptance/README.md#模块与底座入口)；真实模型必须有本次授权，回放、人工 HTTP 或固定回答不能代签真实业务调用。
+
+## 持久状态转换
+
+[records](../../apps/api/src/agent/records.js) 拥有对话受理、草稿与引用捕获、停止标记、消息/用量/工具投影、提案槽位、结束结算及普通启动恢复。HTTP 只做身份、schema、原键幂等与传输；引用的公共读取和接受发送仍在同一同步 SQLite 事务。SDK runtime 取得本轮输入与原生 entries，通过本轮记录接口报告消息和请求，不解释提案来源或重启裁决。
+
+[store](../../apps/api/src/agent/store.js) 保留 document 与有序事件的事务落盘；其可变 document/emit 只供 records 的实现使用。[record-tools](../../apps/api/src/agent/record-tools.js) 在该实现内共同维护 Operation、关联 ToolCall 与同身份原生结果。结束结算也会替换 SDK 已写入的临时错误结果，保持原 entry ID/父链与最终卡片同义。
+
+[tools](../../apps/api/src/agent/tools.js) 负责公共业务调用和响应分类，按“持久 executing、同步业务调用、持久结果”执行；结果落盘失败请求保留未知结果，核实继续使用记录模块返回的原请求与原键。提案只读卡与点击 Operation 分开，已结束 turn 的提案 prepared/executing 由 records 在普通启动时裁决。部署恢复的冻结账本与 HTTP 守卫仍归 lifecycle，不由普通启动恢复代替。
