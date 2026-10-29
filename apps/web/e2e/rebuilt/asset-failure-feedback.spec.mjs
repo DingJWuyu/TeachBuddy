@@ -1,4 +1,4 @@
-import { chromium } from 'playwright';
+import { chromium } from '@playwright/test';
 import { test, expect, register, navigate } from './fixture.mjs';
 import { json, finished } from '../../../api/test/rebuilt-outputs/helpers.js';
 import { question, questions } from '../../../api/test/rebuilt/helpers.js';
