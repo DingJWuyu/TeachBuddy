@@ -69,23 +69,8 @@ export function createQuestionsModule({
     port: {
       operations: materialOperations,
       businessOperations: createQuestionBusinessOperations({ legacy: operations, current: materialOperations }),
-      readForExport(principal) {
-        return {
-          questions: store.questions(principal),
-          taxonomy: store.taxonomy(principal),
-          imports: store.list("imports", principal),
-          recognitionEvidence: store.list("tasks", principal)
-            .filter(task => Object.keys(task.lateResults ?? {}).length || Object.keys(task.nativeWordSources ?? {}).length)
-            .map(task => ({ jobId: task.id, importId: task.importId, lateResults: task.lateResults, nativeWordSources: task.nativeWordSources, originalDocuments: task.originalDocuments })),
-        };
-      },
     },
   };
 }
 
 export { migrations };
-// Account lifecycle owned by this module; the composition root owns the transaction.
-export function deleteAccountData(db, accountKey) {
-  for (const table of ['question_items', 'questions_materials_meta', 'questions_materials_imports', 'questions_materials_taxonomy', 'questions_materials_tasks'])
-    db.prepare(`DELETE FROM ${table} WHERE accountKey=?`).run(accountKey);
-}

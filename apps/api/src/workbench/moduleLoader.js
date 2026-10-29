@@ -139,7 +139,6 @@ export function createModuleLoader({
         moduleId,
         router: implementation.router,
         port: implementation.port ?? null,
-        operations: implementation.operations ?? {},
         jobHandlers: implementation.jobHandlers ?? {}
       });
     }
