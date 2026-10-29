@@ -4,7 +4,7 @@
 
 ## 工作现场与授权
 
-前后端十二项架构改进已获用户授权开始实施，完整目标、裁决依据、固定输入、分工、候选与接续事实统一在本机忽略记录 `test-results/architecture-implementation-20261029/task.md`。总控负责派发、独立审查与集成，五条作者工作线从固定基线 `240665b26e4263a383a31c70ffd7681d571969ba` 分别实施班级、设备恢复、助理、材料和数学改进；日程整体重构已明确排除。沿现有授权完成定点验证、CI、任务 PR、`preview/integration` 集成、preview 核对与本轮现场清理；不合 `main`、不正式发布、不新增费用，不操作真实模型、邮件、GPU 或私人业务数据。
+前后端十二项架构改进已全部实现并通过六个独立 PR 集成，具名结果见[核查入口](#核查入口)。三表单提交、设备未决保全与偏好恢复、助理持久状态、班级同版本统计、数学编辑接续及五项材料改进均完成；日程整体编辑重构仍明确不做。双轴审查无开放发现，最终完整 CI 151 项全部通过，preview 已同步重启核对，五条作者及六个独立集成现场和本轮临时分支均已清理。稳定交付记录在本机 `test-results/architecture-implementation-20261029/verification/integration/DELIVERY.md`，含范围裁决、已审源码重建、原始验证与清理证据；当前没有执行中的本轮改进任务。
 
 后端架构扫描的五项改进已由 [PR #53](https://github.com/DingJWuyu/TeachBuddy/pull/53) 集成：数据生命周期所有权、静态装配真实依赖、题库版本兼容、数学成果制作及原始材料定位校验。独立 Standards/Spec 发现均关闭，最终 CI 108 项全部通过；preview 已同步重启并核对，三条临时工作线及分支已清理。本轮后端任务已完成，验证证据在本机 `test-results/backend-architecture/verification/`，扫描报告同级 `review.html`。前端结构尚未纳入本轮扫描，不由后端结果推断整站完全解耦；正式发布、外部模型和用户数据操作授权保持原边界。
 
@@ -21,7 +21,6 @@
 | `TeachBuddy-preview` / `preview/integration` | 集成及用户体验入口，保护私有配置和数据；当前分支与 HEAD 以 Git 核对 |
 | `TeachBuddy` / `main` | 保留稳定分支工作树，不在本轮开发范围 |
 | `TeachBuddy-resources` / `feat/resources-core` | 保留已有资源库现场；本轮不修改或删除，接续前核对其成果和负责 session |
-| `TeachBuddy-architecture-{classroom,device,agent,materials,math}` / `refactor/architecture-{role}` | 本轮五条隔离作者现场；路径、固定版本、写入边界与回执沿当前任务记录接续，公共文件由 integration 唯一写 |
 
 下表能力已集成到 preview。根 [buffer](../../buffer.md) 仅保留用户暂缓的学期数据定义和反馈实际收件方式；此前已采纳的七项修复均完成。测试重建修复的题库冲突刷新、标签重复改名、日程横拖时间漂移与昵称成功误报已集成，版本与证据见[核查入口](#核查入口)。
 
@@ -114,6 +113,7 @@
 
 | 范围 | 已集成证据 | 可重建入口及边界 |
 | --- | --- | --- |
+| 前后端十二项架构与故障接续改进 | [PR #54](https://github.com/DingJWuyu/TeachBuddy/pull/54)、[#55](https://github.com/DingJWuyu/TeachBuddy/pull/55)、[#56](https://github.com/DingJWuyu/TeachBuddy/pull/56)、[#57](https://github.com/DingJWuyu/TeachBuddy/pull/57)、[#58](https://github.com/DingJWuyu/TeachBuddy/pull/58)、[#59](https://github.com/DingJWuyu/TeachBuddy/pull/59)；最终代码 `2f4f2914`，[最终 CI](https://github.com/DingJWuyu/TeachBuddy/actions/runs/40914805262) 对应 `1bc1ae97`，squash 后文件树一致 | 十二项均完成，Standards/Spec 无开放发现；HTTP/SQLite 60、真实输出与扩展 44、浏览器 47 项全部通过，0 fail/skip/cancelled，静态及构建通过。首次材料 CI 的测试依赖导入失败已按原门禁修正并完整复验，不冒充首次全过。preview 健康、匿名登录及受保护入口已核对，未写私人业务数据；本轮临时现场已清理。本机稳定证据与范围/源码重建入口见 `test-results/architecture-implementation-20261029/verification/integration/DELIVERY.md`；真实模型、邮件、GPU、Office 人工操作及目标设备未由此代签 |
 | 后端模块职责收拢 | [PR #53](https://github.com/DingJWuyu/TeachBuddy/pull/53)，`b63e5cb4`；[最终 CI](https://github.com/DingJWuyu/TeachBuddy/actions/runs/40876808341) 对应 `17d71b9f`，squash 后文件树一致 | 五项改进全部完成，保留现有接口、历史数据与原请求回执。Standards/Spec 原发现均关闭，无新增；HTTP/SQLite 56、真实输出与扩展 29、浏览器 23 项全过，0 skip，静态及构建通过。补验空/仅日程装配、休眠数据维护、损坏账本拒绝、缺席模块未知操作接续，以及数学真实二维/三维/纯公式禁网冷开。preview 健康、匿名登录实页、控制台与受保护入口已核对，未写私人业务数据；临时工作树/分支已清理，证据归档本机 `test-results/backend-architecture/verification/` |
 | 测试套件消融与重建 | [PR #52](https://github.com/DingJWuyu/TeachBuddy/pull/52)，`fdf72f1b`；[最终 CI](https://github.com/DingJWuyu/TeachBuddy/actions/runs/40649041101) 对应 `31b95156`，squash 后文件树一致 | 144 旧入口均移除，历史裁决随 PR 提交保留；API 45、输出及扩展 24、主应用浏览器 23 项全过，0 skip，静态/构建通过。独立 24 项代表性故障和移组对照，不宣称逐条 mutation 或全部旧断言等价覆盖；四处产品修复、双轴审查、preview 核对和清理完成。当前入口及外部验收边界见[验证指南](../acceptance/README.md)，本机原始证据归档 `test-results/test-suite-rebuild/` |
 | 静态检查与复盘 | 代码候选 `583bff81`，基线 `5a69610f`；Standards/Spec 发现均已关闭 | 根静态脚本及 Knip/Oxlint 配置；独立检出干净安装、两项静态检查、共享/API 装配与 Web 源码构建通过，CI 配置通过 actionlint。冻结 OCR 输入与原摘要一致，buffer 两项保留；文档同步完整目标、检查覆盖、局部小问题及 CI 证据使用规则。未重跑产品全量回归、未改资产的冷构建或云端 CI；本机回执 `test-results/static-analysis-retro/root-receipt.md` |
