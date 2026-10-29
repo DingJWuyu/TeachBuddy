@@ -2758,6 +2758,9 @@ components:
           - provider-result-unknown
           - conversion-failed
           - unsupported-formula
+          - asset-image-failed
+          - asset-render-failed
+          - asset-storage-failed
           - missing-asset
           - disk-full
           - interrupted

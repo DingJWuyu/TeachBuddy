@@ -24,6 +24,7 @@ export function createQuestionsModule({
   jobs,
   provider,
   recognition,
+  logger,
 } = {}) {
   if (!db || typeof db.prepare !== "function") {
     throw new TypeError(
@@ -49,7 +50,7 @@ export function createQuestionsModule({
   const materialOperations = createMaterialsOperations({ service: materials.service, mutations });
   router.use(createMaterialsRouter({ operations: materialOperations }));
   const jobHandlers = {
-    "question-asset": createAssetHandler({ store, files }),
+    "question-asset": createAssetHandler({ store, files, logger }),
     extraction: createExtractionHandler({
       store,
       files,

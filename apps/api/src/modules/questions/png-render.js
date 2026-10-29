@@ -16,6 +16,16 @@ const escape = value => value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").r
 const width = 1504;
 const maxHeight = 2328;
 
+// Only errors observed at a content-specific operation can blame content.
+export class AssetGenerationError extends Error {
+  constructor(code, stage, cause, field = null) {
+    super(`Asset generation failed at ${stage}`, { cause });
+    this.code = code;
+    this.stage = stage;
+    this.field = field;
+  }
+}
+
 // This renderer belongs to question assets: the browser lays out each complete
 // paragraph, then PNG cuts follow blocks or actual lines, never source lengths.
 export async function renderQuestionPng(sections, { bytes, signal }) {
@@ -29,17 +39,27 @@ export async function renderQuestionPng(sections, { bytes, signal }) {
     OutputJax: new SVG({ fontCache: "none" }),
   });
   function formula(latex, display = false) {
-    checkFormula(latex);
-    const node = math.convert(latex, { display, em: 42, ex: 21 });
-    const svg = adaptor.outerHTML(adaptor.firstChild(node));
-    if (/data-mjx-error|<merror/.test(svg)) throw Error("公式无法排版");
-    return `<span class="${display ? "display-math" : "inline-math"}">${svg}</span>`;
+    try {
+      checkFormula(latex);
+      const node = math.convert(latex, { display, em: 42, ex: 21 });
+      const svg = adaptor.outerHTML(adaptor.firstChild(node));
+      if (/data-mjx-error|<merror/.test(svg)) throw Error("公式无法排版");
+      return `<span class="${display ? "display-math" : "inline-math"}">${svg}</span>`;
+    } catch (error) {
+      throw new AssetGenerationError("unsupported-formula", "formula", error);
+    }
   }
   const images = new Map();
   async function image(fileId) {
     if (!images.has(fileId)) {
-      const png = await sharp(await bytes(fileId)).rotate()
-        .resize({ width, height: 2200, fit: "inside", withoutEnlargement: true }).png().toBuffer();
+      let source;
+      try { source = await bytes(fileId); }
+      catch (error) { throw new AssetGenerationError(error.status === 404 ? "missing-asset" : "asset-render-failed", "image-read", error); }
+      let png;
+      try {
+        png = await sharp(source).rotate()
+          .resize({ width, height: 2200, fit: "inside", withoutEnlargement: true }).png().toBuffer();
+      } catch (error) { throw new AssetGenerationError("asset-image-failed", "image-decode", error); }
       images.set(fileId, `data:image/png;base64,${png.toString("base64")}`);
     }
     return `<img src="${images.get(fileId)}" alt="">`;
@@ -70,14 +90,24 @@ export async function renderQuestionPng(sections, { bytes, signal }) {
     return result.join("");
   }
   const rendered = [];
-  for (const section of sections) rendered.push(await blocks(section));
-  const font = (await readFile(fontfile)).toString("base64");
+  for (const [index, section] of sections.entries()) {
+    try { rendered.push(await blocks(section)); }
+    catch (error) {
+      if (error instanceof AssetGenerationError && ["formula", "image-decode"].includes(error.stage))
+        error.field = index === 0 ? "/body" : "/solution";
+      throw error;
+    }
+  }
+  let font;
+  try { font = (await readFile(fontfile)).toString("base64"); }
+  catch (error) { throw new AssetGenerationError("asset-render-failed", "font-read", error); }
   let browser;
   let deadline;
   const stop = () => { browser?.close().catch(() => {}); };
   try {
     signal.throwIfAborted();
-    browser = await chromium.launch({ headless: true, timeout: 10000 });
+    try { browser = await chromium.launch({ headless: true, timeout: 10000 }); }
+    catch (error) { throw new AssetGenerationError("asset-render-failed", "browser-start", error); }
     signal.addEventListener("abort", stop, { once: true });
     deadline = setTimeout(stop, 30000);
     const context = await browser.newContext({ viewport: { width: 1600, height: 2400 }, deviceScaleFactor: 1, serviceWorkers: "block" });
@@ -162,6 +192,9 @@ export async function renderQuestionPng(sections, { bytes, signal }) {
       }
     }
     return output;
+  } catch (error) {
+    if (error instanceof AssetGenerationError || signal.aborted) throw error;
+    throw new AssetGenerationError("asset-render-failed", "browser-render", error);
   } finally {
     clearTimeout(deadline);
     signal.removeEventListener("abort", stop);

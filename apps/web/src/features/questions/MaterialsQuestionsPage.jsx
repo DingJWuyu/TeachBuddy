@@ -572,7 +572,11 @@ export default function MaterialsQuestionsPage({
                       ? t("素材已生成")
                       : active.has(assets.state)
                         ? t("正在生成素材")
-                        : t("生成未完成，可重新生成")}
+                        : assets.issues?.some(issue => issue.code === "unsupported-formula")
+                          ? t("公式无法排版，请修改后重新生成。")
+                          : assets.issues?.some(issue => ["missing-asset", "asset-image-failed"].includes(issue.code))
+                            ? t("配图无法读取，请检查后重新生成。")
+                            : t("生成未完成，可重新生成")}
                   </p>
                 )}
                 {assets?.outputFileIds.map((id, i) => (

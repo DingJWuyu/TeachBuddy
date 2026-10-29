@@ -126,6 +126,8 @@ QuestionTaxonomy/ResourceTaxonomy 是各模块内部一个版本化集合，不�
 
 用于 PPT 的 question-asset Job 冻结题目版本。question-png 生成透明背景题面分片，includeAnswers=true 时答案另成分片，不含长期笔记；figure-png 必须给属于该快照的 figureFileId，其他模式该字段为 null。PNG 宽度 1600 px，文字与行内公式按段混排，保留选项、表格和配图顺序。分片优先使用块边界，长块按真实行边界拆分，单片高度不超过 2400 px；超高单个图等比缩小，公式保持完整。outputFileIds 按显示顺序排列。文字/公式复制直接从 Document 读取，不新增服务端端口。
 
+素材 Job 只有在全部输出成功保存后才发布 outputFileIds。`unsupported-formula` 仅表示实际公式校验或排版失败，field 指向已确定的题干或答案；配图内容、浏览器运行与受管文件存储分别归 missing-asset/asset-image-failed、asset-render-failed、asset-storage-failed，明确 ENOSPC 才归 disk-full。未知异常不推测为公式问题，运行/存储问题允许从原入口重新生成；提示与诊断均不包含原始路径、异常正文或敏感内容。
+
 ## 短任务与恢复
 
 只为页预览、提取、页识别和题面素材这些长操作保存 Job。单进程中顺序执行重操作，UI 轮询 GET（运行时 2 秒，离页停止）；不用消息队列、分布式锁或通用工作流平台。progress.completed/total 按实际页/阶段统计，未知 total=null，不编造百分比。Job.target 不携带账户，账户由服务端持有。
