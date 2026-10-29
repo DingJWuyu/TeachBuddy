@@ -91,7 +91,12 @@ function checkStructure(db, actual) {
 }
 function storedOwners(db) {
   const present = new Set(ledger(db).map(row => row.moduleId));
-  return owners.filter(owner => present.has(owner.moduleId));
+  return owners.filter(owner => {
+    const hasStorage = owner.maintenance.hasStorage(db);
+    const recorded = present.has(owner.moduleId);
+    if (hasStorage !== recorded) throw new Error(`Module ${owner.moduleId} storage and migration ledger disagree.`);
+    return recorded;
+  });
 }
 function contentSchemas(db, { allowOlder = false } = {}) {
   const schemas = [...validateAgentStorage(db), ...validateRetiredStorage(db, { allowOlder })];
@@ -103,7 +108,7 @@ function contentSchemas(db, { allowOlder = false } = {}) {
   return [...new Map(schemas.map(schema => [schema.name, schema.version]))].map(([name, version]) => ({ name, version })).sort((a, b) => a.name.localeCompare(b.name));
 }
 function supportedFor(db) {
-  const present = new Set(ledger(db).map(row => row.moduleId));
+  const present = new Set(storedOwners(db).map(owner => owner.moduleId));
   const business = new Set(owners.map(owner => owner.moduleId));
   return supported.filter(group => !business.has(group.moduleId) || present.has(group.moduleId));
 }

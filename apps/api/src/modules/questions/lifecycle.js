@@ -6,6 +6,12 @@ import { portableObject, readableContent, reference } from '../../workbench/reli
 const labels = {"body": "题干", "solution": "答案解析", "note": "备注", "noteFragments": "教学笔记摘录", "source": "来源与源码", "snapshot": "已采用的历史快照", "references": "关联资料", "draft": "已保存输入", "content": "内容", "text": "正文", "items": "条目", "origin": "来源"};
 const record = (kind, value, options) => portableObject(kind, value, { html: readableContent(value, labels), ...options });
 
+// Schema presence is independent of its migration ledger: a damaged ledger
+// must not make existing account data disappear from maintenance.
+export function hasStorage(db) {
+  return Boolean(db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND (name GLOB 'question_*' OR name GLOB 'questions_*') LIMIT 1").get());
+}
+
 export function snapshot(db, principal) {
   const store = createMaterialsStore(db, createQuestionsRepository(db));
   const imports = store.list('imports', principal);

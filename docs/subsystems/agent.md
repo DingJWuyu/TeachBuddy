@@ -51,7 +51,7 @@ GOAT API 消耗账户 credits，不等于无限免费；Provider 返回 cost=0 �
 
 ## 业务端口与验证
 
-[apps/api/src/agent/business.js#connectBusinessOperations](../../apps/api/src/agent/business.js) 只连接已装配的公共业务端口。题库以 `port.businessOperations` 拥有旧请求与当前材料题的兼容裁决，助理不检查题面版本或重试另一套实现；资源和日程引用使用各模块同步 `readReference`，在同一事务捕获快照。缺席模块的引用沿既有 not-found 拒绝，工具只向模型声明实际可用的业务操作。提案仍能生成可阅读卡片，点击保存前核对对应业务操作存在；缺席能力不建立新的执行意图。
+[apps/api/src/agent/business.js#connectBusinessOperations](../../apps/api/src/agent/business.js) 只连接已装配的公共业务端口。题库以 `port.businessOperations` 拥有旧请求与当前材料题的兼容裁决，助理不检查题面版本或重试另一套实现；资源和日程引用使用各模块同步 `readReference`，在同一事务捕获快照。缺席模块的引用沿既有 not-found 拒绝，工具只向模型声明实际可用的业务操作。提案仍能生成可阅读卡片，点击保存前核对对应业务操作存在；缺席能力不建立新的执行意图。历史 unconfirmed 操作在所属模块缺席时保持原状态与 journal；缺席意味着暂时无法读取原回执，不能裁决为写入失败。模块重新装配后仍沿原键核实，找回已提交结果。
 
 当前工具由机器 schema 的 `x-agent-tools` 封闭定义；`proposals.js` 将已持久卡片转换为业务请求，`tools.js` 复用原 Operation/journal 执行及核实。四模块扩展仍按[未来扩展](../contracts/agent.md#四模块扩展契约)形成现行 schema 后接入。
 

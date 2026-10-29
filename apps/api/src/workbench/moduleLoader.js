@@ -84,12 +84,15 @@ export function createModuleLoader({
     const storedIds = dependencies.db.prepare('SELECT DISTINCT moduleId FROM workbench_migrations').all().map(row => row.moduleId);
     // Storage outlives availability. The same static map supplies its owner even
     // when its runtime is absent from this product composition.
-    for (const moduleId of new Set([...enabledIds, ...storedIds.filter(id => implementations[id])])) {
-      const implementation = implementations[moduleId];
+    for (const [moduleId, implementation] of Object.entries(implementations)) {
       if (typeof implementation.maintenance !== 'function') throw new Error(`Module ${moduleId} must provide storage maintenance.`);
       const maintenance = await implementation.maintenance();
-      for (const operation of ['snapshot', 'validateStorage', 'deleteAccountData'])
+      for (const operation of ['hasStorage', 'snapshot', 'validateStorage', 'deleteAccountData'])
         if (typeof maintenance[operation] !== 'function') throw new Error(`Module ${moduleId} maintenance must provide ${operation}.`);
+      const hasStorage = maintenance.hasStorage(dependencies.db);
+      const recorded = storedIds.includes(moduleId);
+      if (hasStorage !== recorded) throw new Error(`Module ${moduleId} storage and migration ledger disagree.`);
+      if (!enabledIds.includes(moduleId) && !recorded) continue;
       maintenanceByModule.set(moduleId, maintenance);
       if (implementation.migrations) {
         const imported = await implementation.migrations();
@@ -139,6 +142,7 @@ export function createModuleLoader({
         moduleId,
         router: implementation.router,
         port: implementation.port ?? null,
+        operations: implementation.operations ?? {},
         jobHandlers: implementation.jobHandlers ?? {}
       });
     }

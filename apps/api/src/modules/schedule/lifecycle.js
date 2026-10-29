@@ -7,6 +7,12 @@ import { portableObject, readableContent } from '../../workbench/reliability/por
 const labels = {"note": "备注", "text": "正文", "items": "条目"};
 const record = (kind, value, options) => portableObject(kind, value, { html: readableContent(value, labels), ...options });
 
+// Schema presence is independent of its migration ledger: a damaged ledger
+// must not make existing account data disappear from maintenance.
+export function hasStorage(db) {
+  return Boolean(db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND (name GLOB 'schedule_*') LIMIT 1").get());
+}
+
 export function snapshot(db, principal) {
   const repository = createScheduleRepository(db);
   const settings = repository.readSettings(principal.accountKey);

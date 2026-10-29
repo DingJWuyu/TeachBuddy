@@ -85,7 +85,7 @@ Job 内部 Interface：`jobs.enqueue({principal, kind, target}, mutation)` 在�
 
 [apps/api/src/workbench/reliability/](../../apps/api/src/workbench/reliability) 拥有个人资料包的受理事务、ZIP 封装、维护锁、停服备份与恢复顺序，制品格式归同目录 `archive.schema.json`。各模块 `lifecycle.js` 拥有 `snapshot(db, principal)`、`validateStorage(db)` 与 `deleteAccountData(db, accountKey)`：分别投影个人包的对象、关系及可读正文，校验所属存储，清理本账户数据。受理事务同步固定这些投影和公共附件，异步封装只消费保存的快照，不重新解释模块对象；读取不补写默认设置或结算提醒。部署维护组合各拥有者的校验与迁移，底座仍核对 SQLite 物理结构、账户归属和受管文件完整性。认证和助理各自提供维护入口，恢复工具不解释其内部状态。
 
-运行装配和存储维护共用 [moduleImplementations](../../apps/api/src/workbench/moduleImplementations.js) 的固定映射。目录只决定启动哪些业务工厂；迁移账本中仍存在的模块继续加载自身维护与迁移，无需启动其运行能力。未知存储拥有者或未知迁移拒绝启动和恢复；已正式退役的数据仅沿既有具名迁移处理。空目录、仅日程与默认完整目录使用同一装配路径；默认产品目录不因这些隔离组合改变。页面隐藏仍只是账户偏好。
+运行装配和存储维护共用 [moduleImplementations](../../apps/api/src/workbench/moduleImplementations.js) 的固定映射。目录只决定启动哪些业务工厂；装配与维护先逐个调用已有映射中模块的 `hasStorage(db)`，由模块辨认自有表是否存在，并与其账本记录核对。存储与拥有者账本只有一边存在时明确拒绝，不能将损坏账本解释为空模块；两边都存在的模块继续加载自身维护与迁移，无需启动其运行能力。未知存储拥有者或未知迁移拒绝启动和恢复；已正式退役的数据仅沿既有具名迁移处理。空目录、仅日程与默认完整目录使用同一装配路径；默认产品目录不因这些隔离组合改变。页面隐藏仍只是账户偏好。
 
 维护入口为 `node apps/api/src/scripts/reliability.js --help`；backup/restore/activate 的停服、独占目录及物理隔离要求见[恢复契约](../contracts/data.md#部署备份与还原)。认证清理调用[认证恢复端口](identity.md#恢复与账户生命周期)，外层不拼认证表 SQL。Web `features/reliability/DataManagement.jsx` 被设置的真实导出调用；列表删除通过 `POST /exports/:id/deletion` 取消并等待生成任务、撤销下载、移除 ZIP 与临时包，保留业务原件，未确认结果沿原键核实。主应用没有设备草稿查看、下载或清理管理入口；隔离 archive/恢复底座继续按数据契约保护既有内容。
 

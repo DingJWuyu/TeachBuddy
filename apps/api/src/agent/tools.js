@@ -167,9 +167,9 @@ export function createToolExecutor({ store, operations }) {
         for (let previous = 0; previous < slot; previous++) {
           if (!doc.snapshot.operations.some(value => value.proposalSource?.proposalId === proposalId && value.proposalSource.slot === previous && value.state === 'confirmed')) throw contractError(problems.invalidInput('/body/slot', 'out-of-range'));
         }
-        if (operation) { updateOperation(doc, emit, operation, { state: 'prepared', result: null, problem: null }); return operation; }
         const request = proposalRequest(card, slot);
         if (typeof operations[request.operationId] !== 'function') throw contractError(problems.notFound());
+        if (operation) { updateOperation(doc, emit, operation, { state: 'prepared', result: null, problem: null }); return operation; }
         const definition = operationDefinition(request.operationId);
         const now = timestamp();
         operation = { id: randomUUID(), turnId: call.turnId, toolCallId: call.toolCallId, proposalSource: { proposalId, slot }, request,
@@ -184,6 +184,9 @@ export function createToolExecutor({ store, operations }) {
       const doc = store.read(account, conversationId);
       const operation = doc.snapshot.operations.find(o => o.id === id);
       if (operation.state !== 'unconfirmed') return operation;
+      // An absent owner cannot inspect the original receipt. Keep the original
+      // intent unresolved so bringing the owner back can reconcile the same key.
+      if (typeof operations[operation.request.operationId] !== 'function') return operation;
       const patch = operationResult(doc, operation, principal);
       return store.update(account, conversationId, (d, emit) => {
         const op = d.snapshot.operations.find(o => o.id === id); updateOperation(d, emit, op, patch); return op;

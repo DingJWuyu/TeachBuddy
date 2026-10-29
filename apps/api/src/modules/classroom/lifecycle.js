@@ -50,6 +50,12 @@ function readableClassroom(object, lookup) {
 }
 
 
+// Schema presence is independent of its migration ledger: a damaged ledger
+// must not make existing account data disappear from maintenance.
+export function hasStorage(db) {
+  return Boolean(db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND (name GLOB 'classroom_*') LIMIT 1").get());
+}
+
 export function snapshot(db, principal) {
   const repository = createClassroomRepository(db);
   const objects = Object.entries({ classes: 'class', students: 'student', records: 'record', exams: 'exam', results: 'result', imports: 'import', tags: 'tag' }).flatMap(([collection, kind]) => repository.list(collection, principal.accountKey).map(value => portableObject(`classroom-${kind}`, value, { label: kindLabels[`classroom-${kind}`], title: value.title || (kind === 'record' ? `${value.occurredOn} 自由记录` : '') || value.name || kindLabels[`classroom-${kind}`] })));
