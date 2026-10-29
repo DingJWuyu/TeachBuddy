@@ -3983,6 +3983,20 @@ components:
               excerpt:
                 type: string
                 maxLength: 400
+              native:
+                type: object
+                additionalProperties: false
+                description: 命中正文的不可变文件与预览身份；打开前核对当前资料来源。
+                properties:
+                  fileId:
+                    $ref: '#/components/schemas/Id'
+                  textFileId:
+                    $ref: '#/components/schemas/Id'
+                  renditionFileId:
+                    anyOf:
+                    - $ref: '#/components/schemas/Id'
+                    - type: 'null'
+                required: [fileId, textFileId, renditionFileId]
               recognition:
                 type: object
                 additionalProperties: false
