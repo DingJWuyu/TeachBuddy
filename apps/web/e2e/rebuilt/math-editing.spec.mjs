@@ -20,7 +20,7 @@ async function installBridge(page) {
       window.mathEditingRequests.push(body);
       if (body.execution) { window.replyMathEditing(request, JSON.stringify({ message: '核对结束', changes: {} })); return; }
       if (body.request === '等待期间我会修改') { window.heldMathEditing = request; return; }
-      const changes = body.current.source ? { formulas: body.current.source.formulas.map(formula => ({ ...formula, latex: 'x+99' })) }
+      const changes = body.request === '只改公式' ? { formulas: [] } : body.current.source ? { formulas: body.current.source.formulas.map(formula => ({ ...formula, latex: 'x+99' })) }
         : { operations: body.request === '建立新点后停止' ? [{ type: 'define', name: 'Q', expression: '(2,3)' }] : [{ type: 'setValue', name: 'a', value: 2 }] };
       window.replyMathEditing(request, JSON.stringify({ message: '应用修改', changes }));
     });
@@ -153,6 +153,23 @@ test('M-L2 等待 AI 时真实构造更新仍冲突，保留老师的新值', as
   const execution = await page.evaluate(() => window.mathEditingRequests[1].execution);
   expect(execution).toMatchObject({ ok: false, code: 'conflict' });
   expect(await page.evaluate(() => window.mathEditingEngine.getValue('a'))).toBe(3);
+});
+
+test('M-L2 旧源拒绝不支持的制作字段时，错误使用当前界面语言且构造保持原样', async ({ page, world }, info) => {
+  test.setTimeout(120_000);
+  await openLegacy(page, world);
+  await ask(page, '只改公式');
+  const failures = page.locator('.math-ai-message[data-state="failed"]');
+  await expect(failures.last()).toContainText('修改内容格式不正确。');
+  await expect(page.getByText('核对结束', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '简体中文', exact: true }).click();
+  await page.getByRole('menuitemradio', { name: 'English', exact: true }).click();
+  await page.getByRole('textbox', { name: 'Ask Math Assistant', exact: true }).fill('只改公式');
+  await page.getByRole('button', { name: 'Send message', exact: true }).click();
+  await expect(failures).toHaveCount(2);
+  await expect(failures.last()).toContainText('The changes have an invalid format.');
+  expect(await page.evaluate(() => window.mathEditingEngine.getValue('a'))).toBe(1);
+  await page.screenshot({ path: info.outputPath('legacy-unsupported-english.png') });
 });
 
 test('M-L2 停止正在执行的旧 GGB 操作会恢复原构造，迟到完成不能重新应用', async ({ page, world }) => {
