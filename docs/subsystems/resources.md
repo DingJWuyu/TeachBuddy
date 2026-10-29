@@ -6,7 +6,7 @@
 
 [createResourcesModule](../../apps/api/src/modules/resources/index.js) 接收 `db/mutations/files/jobs/recognition/now`，返回 `router` 与 `port`。资源库拥有条目、分类、文件版本关联和正文缓存；原件、补充预览及识别任务归公共 files/jobs。条目版本不是 File ID。
 
-业务 definitions 与 `port.operations` 由 [service](../../apps/api/src/modules/resources/service.js) 聚合，模块 [index](../../apps/api/src/modules/resources/index.js) 负责 HTTP 装配与返回公开 port：查询与收录、修改/替换文件、文件历史读取与恢复、批量整理、分类维护、补充预览、正文重试、归档/恢复及彻底删除。精确操作名与输入看 service 的 definitions 和材料 schema 的资源 operationId；没有另一个顶层 operations。`port.readForExport(principal)` 同步读取 resources、stored taxonomy 和 fileRevisions；导出的 `deleteAccountData` 由账户生命周期事务调用。`port.readReference(principal, id)` 同步返回与资源 GET 相同的完整 Resource，供引用快照在调用方事务内捕获；校验 ID 与账户归属，不存在或外账户抛 404，已归档资料保留 `deletedAt` 返回，由消费方决定是否接受。端口不读取文件字节，也不保证原件当前可读取。目前 Agent adapter 没有接通全部资源操作，不能把进程内可调用等同模型工具已开放。
+业务 definitions 与 `port.operations` 由 [service](../../apps/api/src/modules/resources/service.js) 聚合，模块 [index](../../apps/api/src/modules/resources/index.js) 负责 HTTP 装配与返回公开 port：查询与收录、修改/替换文件、文件历史读取与恢复、批量整理、分类维护、补充预览、正文重试、归档/恢复及彻底删除。精确操作名与输入看 service 的 definitions 和材料 schema 的资源 operationId；没有另一个顶层 operations。[lifecycle](../../apps/api/src/modules/resources/lifecycle.js) 同步投影个人包对象、历史版本及关系，并拥有恢复检查与账户事务内删除；这些维护操作不依赖资源页面或运行工厂已装配。`port.readReference(principal, id)` 同步返回与资源 GET 相同的完整 Resource，供引用快照在调用方事务内捕获；校验 ID 与账户归属，不存在或外账户抛 404，已归档资料保留 `deletedAt` 返回，由消费方决定是否接受。端口不读取文件字节，也不保证原件当前可读取。目前 Agent adapter 没有接通全部资源操作，不能把进程内可调用等同模型工具已开放。
 
 ## 可信调用与提交
 
@@ -39,7 +39,7 @@ Web 的 [useResourceOperations](../../apps/web/src/features/resources/resourceOp
 
 Web 的 PDF.js worker、CMap 和标准字体随本机构建提供，不依赖外部 CDN。列表在已受理的预览任务运行期间只读轮询预览与任务状态，转换完成后更新缩略图，不创建新任务。已加载缩略图在当前列表的 client 生命周期内复用，筛选和视图切换不重取字节；离开资源模块或 client 更换时释放浏览器 URL。
 
-[模块迁移](../../apps/api/src/modules/resources/migrations/index.js) 提供表结构；其他模块不直接读取这些表，导出沿 readForExport。
+[模块迁移](../../apps/api/src/modules/resources/migrations/index.js) 提供表结构；其他模块不直接读取这些表，导出沿模块 lifecycle.snapshot。
 
 ## 新版列表与设备呈现
 

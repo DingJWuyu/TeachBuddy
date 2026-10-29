@@ -23,7 +23,7 @@ Web [apps/web/src/features/auth/](../../apps/web/src/features/auth)，API [apps/
 
 ## 恢复与账户生命周期
 
-认证离线端口为 [apps/api/src/features/auth/recovery.js#prepareRestoredAuth](../../apps/api/src/features/auth/recovery.js)；外层恢复工具只调用公开操作，清理范围与幂等结果由[恢复契约](../contracts/auth.md#部署恢复的认证撤销)拥有。认证等待账户删除与设备清理完成，业务存储拥有者各自删除本账户资料；设置和 App 只组合回调。未完成删除的启动接续见[账户删除交换](../contracts/auth.md#账户删除交换-i08)。
+认证离线端口为 [apps/api/src/features/auth/recovery.js#prepareRestoredAuth](../../apps/api/src/features/auth/recovery.js)；外层恢复工具只调用公开操作，清理范围与幂等结果由[恢复契约](../contracts/auth.md#部署恢复的认证撤销)拥有。[只读维护事实](../../apps/api/src/features/auth/lifecycle.js) 提供资料包昵称和物理归属检查所需账户键，公共恢复不读取凭据来建立自己的保留判据。认证等待账户删除与设备清理完成；工作台先停止并等待生产任务，再在同一事务调用各存储拥有者的删除操作，包括当前目录未开放但账本仍存续的模块。设置和 App 只组合回调。未完成删除的启动接续见[账户删除交换](../contracts/auth.md#账户删除交换-i08)。
 
 ## 验证入口
 

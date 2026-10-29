@@ -20,7 +20,7 @@
 
 [createClassroomModule](../../apps/api/src/modules/classroom/index.js) 接收 `db/mutations/files/clock`，必须有 `mutations.execute/peek` 和受管文件 `read/open`，返回 `router`、顶层 `operations` 与 `port`。班级拥有七类对象及其 `classroom_*` 表，种类由 [repository.kinds](../../apps/api/src/modules/classroom/repository.js) 定义：classes、students、records、exams、tags、imports、results。
 
-[createClassroomOperations / routes](../../apps/api/src/modules/classroom/operations.js) 是公开业务调用面：名单、记录、考试、标签、导入、成绩的读取和写入，以及座位、标签合并、导入确认、学生/班级统计和同场比较。参数为 `{principal, arguments, requestPath, key}`，业务操作在工厂顶层 `operations`，不是 `port.operations`。`port` 只提供同步纯读 `readForExport(principal)`。模块另导出账户 `deleteAccountData` 和恢复维护只读 `validateStoredData`，仓储与 SQL 留模块内部。
+[createClassroomOperations / routes](../../apps/api/src/modules/classroom/operations.js) 是公开业务调用面：名单、记录、考试、标签、导入、成绩的读取和写入，以及座位、标签合并、导入确认、学生/班级统计和同场比较。参数为 `{principal, arguments, requestPath, key}`，业务操作在工厂顶层 `operations`，不是 `port.operations`。[lifecycle](../../apps/api/src/modules/classroom/lifecycle.js) 提供个人包对象、班级表格正文与关系投影、恢复维护校验和账户删除；维护使用模块仓储及 `validateStoredData`，不依赖运行工厂或模型操作。仓储与 SQL 留模块内部。
 
 ## 可信调用与导入提交
 

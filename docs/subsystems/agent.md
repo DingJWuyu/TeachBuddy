@@ -51,6 +51,10 @@ GOAT API 消耗账户 credits，不等于无限免费；Provider 返回 cost=0 �
 
 ## 业务端口与验证
 
-[apps/api/src/agent/business.js#connectBusinessOperations](../../apps/api/src/agent/business.js) 适配题库兼容 operations 与当前 v2 材料操作；副本只读查询调用 [materials-operations](../../apps/api/src/modules/questions/materials-operations.js) 的 `listQuestionCopiesForAgent`，不从 HTTP router 构造工具。资源和日程引用使用各模块同步 readReference 端口，以便同事务捕获版本；提案创建题目使用 questions.port.operations.createQuestionV2，创建日程使用 schedule.port.operations.createEntry，后者保留原校验、mutations 与提醒结算。当前工具由机器 schema 的 `x-agent-tools` 封闭定义；提案生成只保存结构化结果，`proposals.js` 将已持久卡片转换为业务请求，`tools.js` 复用原 Operation/journal 执行及核实。四模块扩展仍按[未来扩展](../contracts/agent.md#四模块扩展契约)形成现行 schema 后接入。
+[apps/api/src/agent/business.js#connectBusinessOperations](../../apps/api/src/agent/business.js) 只连接已装配的公共业务端口。题库以 `port.businessOperations` 拥有旧请求与当前材料题的兼容裁决，助理不检查题面版本或重试另一套实现；资源和日程引用使用各模块同步 `readReference`，在同一事务捕获快照。缺席模块的引用沿既有 not-found 拒绝，工具只向模型声明实际可用的业务操作。提案仍能生成可阅读卡片，点击保存前核对对应业务操作存在；缺席能力不建立新的执行意图。
+
+当前工具由机器 schema 的 `x-agent-tools` 封闭定义；`proposals.js` 将已持久卡片转换为业务请求，`tools.js` 复用原 Operation/journal 执行及核实。四模块扩展仍按[未来扩展](../contracts/agent.md#四模块扩展契约)形成现行 schema 后接入。
+
+[lifecycle](../../apps/api/src/agent/lifecycle.js) 拥有资料包的对话公开快照与引用投影、事件关系检查、恢复操作冻结及 HTTP 守卫、账户删除 SQL。部署恢复仅调用 `prepareRestoredAgent(db)`，保留原生 conversation 字节；reconcile 与提案 execute 共用冻结检查。底座先等待 runtime 真正停止再调用删除，保留既有撤销身份和迟到结果保护。
 
 确定性 HTTP/浏览器与保留库 live 入口见[验证选择](../acceptance/README.md#模块与底座入口)；真实模型必须有本次授权，回放、人工 HTTP 或固定回答不能代签真实业务调用。

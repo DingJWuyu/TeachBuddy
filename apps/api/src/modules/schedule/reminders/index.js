@@ -29,7 +29,7 @@ function validateBatch(body) {
   });
   return body;
 }
-function project(row) {
+export function projectNotification(row) {
   return {
     id: row.id, key: { entryId: row.entryId, originDate: row.originDate || null },
     title: row.title, dueAt: row.dueAt, readAt: row.readAt, dismissedAt: row.dismissedAt
@@ -57,7 +57,7 @@ export function createReminders({ db, mutations, schedule, clock }) {
   }
   const settleAndList = db.transaction((principal) => {
     captureDue(principal, clock.now());
-    const items = list.all(principal.accountKey).map(project);
+    const items = list.all(principal.accountKey).map(projectNotification);
     return { items, unreadCount: items.filter(item => item.readAt === null).length };
   });
   function change(principal, ids, action) {
@@ -90,9 +90,6 @@ export function createReminders({ db, mutations, schedule, clock }) {
   return {
     router,
     captureDue,
-    readForExport(principal) {
-      return db.prepare('SELECT * FROM schedule_notifications WHERE accountKey=?')
-        .all(principal.accountKey).map(project);
-    },
+
   };
 }

@@ -83,6 +83,7 @@ export function createToolExecutor({ store, operations }) {
   function operationResult(doc, operation, principal) {
     const definition = operationDefinition(operation.request.operationId);
     try {
+      if (typeof operations[operation.request.operationId] !== 'function') throw contractError(problems.notFound());
       const response = operations[operation.request.operationId]({ principal, arguments: operation.request.arguments, key: doc.journals[operation.id].key });
       if (![200, 201].includes(response?.status) || !definition.response(response.body)) throw new Error('Unexpected business response');
       return { state: 'confirmed', result: response.body, problem: null };
@@ -153,6 +154,7 @@ export function createToolExecutor({ store, operations }) {
     });
   }
   return { execute, executeOperation,
+    availableTools: toolDefinitions.filter(tool => tool.operationId === 'proposeTeachingCard' || typeof operations[tool.operationId] === 'function'),
     prepareProposal(account, conversationId, proposalId, slot) {
       return store.update(account, conversationId, (doc, emit) => {
         const call = doc.snapshot.toolCalls.find(value => value.name === 'wb_propose_teaching_card' && value.state === 'read' && value.result.proposalId === proposalId);
@@ -167,6 +169,7 @@ export function createToolExecutor({ store, operations }) {
         }
         if (operation) { updateOperation(doc, emit, operation, { state: 'prepared', result: null, problem: null }); return operation; }
         const request = proposalRequest(card, slot);
+        if (typeof operations[request.operationId] !== 'function') throw contractError(problems.notFound());
         const definition = operationDefinition(request.operationId);
         const now = timestamp();
         operation = { id: randomUUID(), turnId: call.turnId, toolCallId: call.toolCallId, proposalSource: { proposalId, slot }, request,

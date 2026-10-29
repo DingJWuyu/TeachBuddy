@@ -259,50 +259,6 @@ export function createReliability({
     next(error);
   });
   router.use(createWorkbenchErrorHandler({ logger }));
-  const agentRecoveryGuard = express.Router();
-  agentRecoveryGuard.post(
-    [
-      "/conversations/:conversationId/operations/:operationId/reconcile",
-      "/conversations/:conversationId/proposals/:proposalId/execute",
-    ],
-    (req, res, next) => {
-      res.set("Cache-Control", "no-store");
-      next();
-    },
-    guards.originGuard,
-    guards.protectionGuard,
-    guards.identityGuard,
-    express.json({ limit: "2mb" }),
-    asyncHandler(async (req, res, next) => {
-      await ready();
-      let operationId = req.params.operationId;
-      if (req.params.proposalId) {
-        const row = db.prepare("SELECT document FROM agent_conversations WHERE id=? AND accountKey=?")
-          .get(req.params.conversationId, req.workbenchPrincipal.accountKey);
-        const operation = row && JSON.parse(row.document).snapshot.operations.find(item =>
-          item.proposalSource?.proposalId === req.params.proposalId && item.proposalSource.slot === req.body?.slot);
-        operationId = operation?.id;
-      }
-      if (!operationId) return next();
-      const frozen = db
-        .prepare(
-          "SELECT 1 FROM reliability_frozen_operations WHERE id=? AND conversationId=? AND accountKey=?",
-        )
-        .get(
-          operationId,
-          req.params.conversationId,
-          req.workbenchPrincipal.accountKey,
-        );
-      if (frozen)
-        return sendProblem(res, 409, {
-          type: "/problems/reliability/recovery-review-required",
-          status: 409,
-          title: "工作台已从备份恢复，请基于当前资料重新核对这项操作。",
-        });
-      next();
-    }),
-  );
-  agentRecoveryGuard.use(createWorkbenchErrorHandler({ logger }));
   function removeExportFiles(accountKey, ids) {
     for (const id of ids) {
       validateIdPath(id);
@@ -327,7 +283,6 @@ export function createReliability({
     },
     removeAccountExports: removeExportFiles,
     router,
-    agentRecoveryGuard,
     initialize() {
       // Packages are derived caches. A removed export row revokes its archive,
       // including packages created before a module was retired.

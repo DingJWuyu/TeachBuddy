@@ -1,4 +1,4 @@
-import { createClassroomRepository, kinds } from './repository.js';
+import { createClassroomRepository } from './repository.js';
 import { createRoster } from './roster.js';
 import { createTags } from './tags.js';
 import { createImports } from './imports.js';
@@ -6,9 +6,7 @@ import { createAssessment } from './assessment.js';
 import { createClassroomStatistics } from './statistics.js';
 import { createClassroomOperations } from './operations.js';
 import { createClassroomRouter } from './router.js';
-import { account } from './records.js';
 export { migrations } from './migrations/index.js';
-export { validateStoredData } from './stored-data.js';
 export function createClassroomModule({
   db,
   mutations,
@@ -54,16 +52,6 @@ export function createClassroomModule({
       operations
     }),
     operations,
-    port: {
-      readForExport(principal) {
-        const key = account(principal);
-        return Object.fromEntries(kinds.map(kind => [kind, repository.list(kind, key)]));
-      }
-    }
+
   };
-}
-export function deleteAccountData(db, accountKey) {
-  for (const kind of kinds) {
-    db.prepare(`DELETE FROM classroom_${kind} WHERE accountKey=?`).run(accountKey);
-  }
 }
