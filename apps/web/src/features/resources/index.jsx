@@ -332,7 +332,7 @@ function ResourceWorkspace({
     triggerRef.current = event?.currentTarget;
     const match = searchInfo?.matches[id];
     let resource = allItems.find((entry) => entry.id === id);
-    if (match?.recognition) {
+    if (match?.recognition || match?.native) {
       try {
         resource = await client.request(`${root}/items/${id}`);
         const source = resource.supplementPreviewFileId || resource.fileId;
@@ -341,12 +341,18 @@ function ResourceWorkspace({
           client.request(`/api/workbench/files/${resource.fileId}`),
         ]);
         if (request !== opening.current) return;
-        const location = match.recognition.location;
+        const expected = match.recognition?.location ?? match.native;
+        const latest = await client.request(`${root}/items/${id}`);
+        if (request !== opening.current) return;
         if (
-          source !== location.fileId ||
-          preview.renditionFileId !== location.renditionFileId
+          source !== expected.fileId ||
+          (expected.renditionFileId && preview.renditionFileId !== expected.renditionFileId) ||
+          (match.native && match.native.textFileId !== source && match.native.textFileId !== preview.renditionFileId) ||
+          latest.fileId !== resource.fileId ||
+          latest.supplementPreviewFileId !== resource.supplementPreviewFileId
         )
           throw new Error(t("资料文件已更新，请在最新搜索结果中重新打开。"));
+        resource = latest;
         // Polling can receive a newer file than the detail snapshot. Commit
         // the validated resource and its file before opening that preview.
         setAllItems((items) =>

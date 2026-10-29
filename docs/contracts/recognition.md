@@ -41,6 +41,10 @@
 
 服务端依赖 `recognition` 提供 `get`、`readPage`、`readResult`、`request` 和 `ensurePage`。`readResult(principal,resultId,source)` 同时核对已完成结果和来源。题库 extraction Job 在自己的执行内调用 `ensurePage(principal,{fileId,renditionFileId,page},{signal,retry})`，不能把子任务排入同一串行执行器再等待。已有失败页默认只读，显式重试才重新执行。
 
+`ensurePage` 完成时返回 `{page,evidence,outputFileIds,stop}`。共用识别先持久化完整返回的原始结果与附件、结算取消/超时并等待必要的停止确认，再交付与本次执行固定绑定的 `evidence` 整值。`outputFileIds` 是供 Job 发布的每页一个原始结果文件，所选页至多 500 页，不能把它当成完整附件集合。完整 raw、原始图、派生图及 derivations 始终保留在 evidence、受管文件与个人包/部署备份中；附件数量不决定已完成 Job 的成败。`page` 仍采用现有机器页形状；`evidence` 包含该次机器值及固定 `source`，没有完整 raw 时为 null。`stop.kind` 为 cancelled、timeout 或 cleanup-unconfirmed；最后一种携带 `stop.error`，消费者持久关联证据后将该错误交给 Jobs，不能报告取消完成。执行未停止时 `stop` 为 null。
+
+直接识别和题库只负责将整值关联到自己的 page/unit/import，使用共用层给出的产物集合；不从页 issues 推导停止，也不在取消后回读会被后续尝试覆盖的页缓存。直接请求的 `evidence[page]` 与题库任务的 `recognitionEvidence[unitId]` 持久关联整值。旧任务的 `lateResult/lateResults` 继续读取与导出，新停止任务仍保存该兼容关联；固定证据不随共享缓存重试更新；不另建尝试历史表。
+
 资源查询把原生文字与已完成 OCR 结果合并，原生 PDF 文字层保持其原有坐标。识别正文不冒充精确文字层。题库独立负责题号、答案、题图和跨页关联。
 
 两个消费者显示结果中已有的具体疑点，并可查看对应原页区域。题库使用 `uncertain-text` 和可选静态 `detail` 表达局部内容疑点；疑点只关联可唯一确定的题目。同一识别块含多题时，按保留的正文范围关联；无法唯一确定时留为带原页位置的未分配片段，不给整页所有题添加同一个提示。局部校对与原稿对照后可保存、刷新继续，其他已核对题目可以先入库。

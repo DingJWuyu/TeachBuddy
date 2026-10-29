@@ -55,13 +55,15 @@ export function createResourceTextSearch({ db, files, jobs, recognition, mutatio
         ? { fileId: id, renditionFileId: preview.renditionFileId }
         : null;
       if (["application/pdf", "text/plain"].includes(file.mediaType))
-        return { id, paged: file.mediaType === "application/pdf", ocrSource };
+        return { id, paged: file.mediaType === "application/pdf", ocrSource,
+          native: { fileId: id, textFileId: id, renditionFileId: preview.renditionFileId ?? null } };
       if (
         preview.renditionFileId &&
         files.read(principal, preview.renditionFileId).mediaType ===
           "application/pdf"
       )
-        return { id: preview.renditionFileId, paged: true, ocrSource };
+        return { id: preview.renditionFileId, paged: true, ocrSource,
+          native: { fileId: id, textFileId: preview.renditionFileId, renditionFileId: preview.renditionFileId } };
       if (
         preview.jobId &&
         ["queued", "running", "cancelling"].includes(
@@ -176,7 +178,7 @@ export function createResourceTextSearch({ db, files, jobs, recognition, mutatio
           search.matches[item.id] = {
             page: page.page,
             excerpt: excerpt(display, offset, needle.length),
-            ...(page.recognition ? { recognition: page.recognition } : {}),
+            ...(page.recognition ? { recognition: page.recognition } : { native: entry.native }),
           };
           return true;
         }

@@ -131,7 +131,7 @@ export function createWorkbench({
       ...implementations,
       ...(workbenchEnv.extraImplementations ?? {}),
     },
-    dependencies: { db, mutations, files, content, jobs, recognition, mathRuntimeDirectory,
+    dependencies: { db, mutations, files, content, jobs, recognition, mathRuntimeDirectory, logger,
       clock: { now: () => (clock ? clock() : new Date()).toISOString() } },
     logger,
   });

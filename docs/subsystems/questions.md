@@ -4,7 +4,7 @@
 
 ## 责任与调用面
 
-[createQuestionsModule](../../apps/api/src/modules/questions/index.js) 接收 `db/mutations/now/files/content/jobs/provider/recognition`，返回 `router`、`port` 和 `jobHandlers`。题库拥有题目、材料元数据、原稿绑定、校对草稿、分类、提取事实及复制来源；文件字节和持久 Job 分别归公共 files/jobs。
+[createQuestionsModule](../../apps/api/src/modules/questions/index.js) 接收 `db/mutations/now/files/content/jobs/provider/recognition/logger`，返回 `router`、`port` 和 `jobHandlers`。题库拥有题目、材料元数据、原稿绑定、校对草稿、分类、提取事实及复制来源；文件字节和持久 Job 分别归公共 files/jobs。
 
 | 调用目的 | 实际入口 |
 | --- | --- |
@@ -34,13 +34,13 @@ const result = questions.port.operations.copyQuestionV2({
 
 v2 操作同步返回 `{status, body}`，合法失败抛带 `status/problem` 的 Error。读取不传 key；写入经 `mutations.execute` 同事务提交题目、来源快照和成功回执，版本/归属/内容错误整笔回滚。`arguments: {id, body, query}` 只属于兼容 operations，不可混传。结果未知保持原键、原体及原路径，先核实再处理新输入，见 [共享保存](../contracts/workbench.md#写入冲突与未知结果)。旧操作遇富内容明确拒绝，不能压平为旧文稿。
 
-材料任务受理只确认 Job 与业务初态；提取/图片生成在事务外执行。停止、重试、迟到结果和校对保护由 [materials-service](../../apps/api/src/modules/questions/materials-service.js)、[extraction](../../apps/api/src/modules/questions/extraction.js) 与公共 jobs 共同处理，202 不等于已入库。
+材料任务受理只确认 Job 与业务初态；提取/图片生成在事务外执行。停止、重试、迟到结果和校对保护由 [materials-service](../../apps/api/src/modules/questions/materials-service.js)、[extraction](../../apps/api/src/modules/questions/extraction.js) 与公共 jobs 共同处理，202 不等于已入库。提取的原件准备循环将 signal 传给预览；Word 预览降级和下一原件开始前均核对停止，不能将取消当转换失败继续读取。公共预览等待转换进程 close，排队启动及派生文件落库后再次检查停止，才发布新预览；原件与既有完成页保留。识别停止及整份机器证据交付沿[共用识别](../contracts/recognition.md#模块接缝)，题库不回读共享缓存重建停止证据。
 
 ## 运行路径与持久化
 
 - [Web 题库](../../apps/web/src/features/questions/index.jsx) 经认证 transport 调用 v2 HTTP router，再到同一 materials operations/service/store；[materials-store](../../apps/api/src/modules/questions/materials-store.js) 与 [repository](../../apps/api/src/modules/questions/repository.js) 持有题目和 `questions_materials_*` 表。
 - 收录操作保存 import 并 enqueue extraction，handler 保留原生读取与模型结果，老师校对后 `commitImportDrafts` 才创建题目与确认映射。
-- 题面素材操作受理 question-asset，由 [assets](../../apps/api/src/modules/questions/assets.js) 和 [png-render](../../apps/api/src/modules/questions/png-render.js) 保存受管 File；下载复用文件授权，不公开本机路径。
+- 题面素材操作受理 question-asset，由 [assets](../../apps/api/src/modules/questions/assets.js) 和 [png-render](../../apps/api/src/modules/questions/png-render.js) 保存受管 File；下载复用文件授权，不公开本机路径。renderer 在公式校验/排版、配图读取/解码、字体、浏览器启动/排版处记录实际失败阶段；assets 在输出存储处归因，只有明确 ENOSPC 才归磁盘满。未知失败保持通用生成失败，field 仅在已确定的内容位置填写。持久 Job 保留分类和简洁提示；诊断通过现有 logger 关联 Job，只记录受控阶段、错误类型和系统错误码，不记录原始异常消息、路径或题目正文。全部输出完成后才保存 task.outputFileIds，失败不发布输出；重新生成创建新的素材 Job，不开放公共 retryJob。
 
 [useQuestionSession](../../apps/web/src/features/questions/useQuestionSession.js) 拥有题库完整持久编辑流程：设备草稿、原请求核实、版本冲突、收录、校对与确认入库。页面 [MaterialsQuestionsPage](../../apps/web/src/features/questions/MaterialsQuestionsPage.jsx) 消费该 session 呈现内容，[QuestionFinder](../../apps/web/src/features/questions/QuestionFinder.jsx) 组织新版列表、搜索与模块右轨；新建、编辑、改编及三步收录继续调用真实 session，无本地业务模拟。[QuestionControls](../../apps/web/src/features/questions/QuestionControls.jsx) 负责编辑控件与浮层；[question-documents](../../apps/web/src/features/questions/question-documents.js) 拥有文稿操作，[review-drafts](../../apps/web/src/features/questions/review-drafts.js) 处理校对拆分。[materials-api](../../apps/web/src/features/questions/materials-api.js) 只承担 HTTP 读写/上传/下载，[uploadRecovery](../../apps/web/src/features/questions/uploadRecovery.js) 保存上传核实所需的设备记录，[OriginalPane](../../apps/web/src/features/questions/OriginalPane.jsx) 读取原稿。文稿编辑复用公共 [DocumentEditor](../../apps/web/src/components/materials/DocumentEditor.jsx)，原生输入沿 [native-word](../../apps/api/src/modules/questions/native-word.js)、[native-pdf](../../apps/api/src/modules/questions/native-pdf.js) 和 [recognized-page](../../apps/api/src/modules/questions/recognized-page.js)。
 

@@ -64,7 +64,9 @@ LocatedPart 区分题面/答案/配图/未分配片段；跨页一题包含多�
 
 ## 资源正文检索
 
-`listResources` 的非空 `q` 同时匹配名称、原文件名、备注和当前文件可提取正文，返回 `ResourceList.search`。先应用账户、活动/归档、文件夹、标签和格式条件，再匹配关键词；结果排序保持原规则。`matches` 只包含本次返回且正文命中的资源 ID，值为第一处命中的 `page` 和纯文本 `excerpt`；纯文本的页码为 null。
+`listResources` 的非空 `q` 同时匹配名称、原文件名、备注和当前文件可提取正文，返回 `ResourceList.search`。先应用账户、活动/归档、文件夹、标签和格式条件，再匹配关键词；结果排序保持原规则。`matches` 只包含本次返回且正文命中的资源 ID，值包含第一处命中的 `page` 和纯文本 `excerpt`；纯文本的页码为 null。原生正文另带 `native:{fileId,textFileId,renditionFileId}`，分别固定正文所属原件/补充文件、实际提取文字的不可变文件和已存在的预览身份；Office 的 textFileId 为派生 PDF，原 PDF/纯文本为自身。尚无固定预览时 renditionFileId 为 null。OCR 命中继续使用 recognition 的结果及来源身份。
+
+打开正文命中时重新读取条目、原件和预览，再核对当前条目仍关联相同来源与派生文件，最后一起提交已核验的详情快照。来源失配提示重新查询，不能将旧命中页码应用到新文件；正文轮询得到的新文件也不能打开列表旧快照。
 
 原 PDF 和 UTF-8 纯文本可直接提取，Office 使用已有预览 PDF；有补充 PDF 时以补充文件为准。`resource_text_cache` 按账户与不可变文件 ID 保存派生文字；每次检索重新解析资料当前文件，替换与历史恢复无需修改旧缓存。缓存可重建，不作为个人资料包的用户成果；实例备份可保留缓存。GET 计算派生缓存不改变资源版本、文件或预览任务。
 
@@ -123,6 +125,8 @@ QuestionTaxonomy/ResourceTaxonomy 是各模块内部一个版本化集合，不�
 ## 引用和输出
 
 用于 PPT 的 question-asset Job 冻结题目版本。question-png 生成透明背景题面分片，includeAnswers=true 时答案另成分片，不含长期笔记；figure-png 必须给属于该快照的 figureFileId，其他模式该字段为 null。PNG 宽度 1600 px，文字与行内公式按段混排，保留选项、表格和配图顺序。分片优先使用块边界，长块按真实行边界拆分，单片高度不超过 2400 px；超高单个图等比缩小，公式保持完整。outputFileIds 按显示顺序排列。文字/公式复制直接从 Document 读取，不新增服务端端口。
+
+素材 Job 只有在全部输出成功保存后才发布 outputFileIds。`unsupported-formula` 仅表示实际公式校验或排版失败，field 指向已确定的题干或答案；配图内容、浏览器运行与受管文件存储分别归 missing-asset/asset-image-failed、asset-render-failed、asset-storage-failed，明确 ENOSPC 才归 disk-full。未知异常不推测为公式问题，运行/存储问题允许从原入口重新生成；提示与诊断均不包含原始路径、异常正文或敏感内容。
 
 ## 短任务与恢复
 
