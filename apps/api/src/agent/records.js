@@ -4,7 +4,7 @@ import { requestFingerprint } from '../workbench/mutations.js';
 import { agentError, agentProblem } from './schema.js';
 import { timestamp, emptyUsage } from './store.js';
 import { proposalRequest, proposalSize } from './proposals.js';
-import { appendNative, nativeResult, outcome, terminal, operationDefinition, prepareCalls, settleCalls, updateOperation } from './record-tools.js';
+import { appendNative, nativeResult, outcome, terminal, operationDefinition, prepareCalls, settleCalls, settleTool, updateOperation } from './record-tools.js';
 
 // Owns conversation transitions. The store's mutable document and event writer
 // stay here; HTTP, the SDK and business execution exchange intent and results.
@@ -225,7 +225,15 @@ export function createAgentRecords({ store, operations }) {
           }
           const { entryId, header, entries } = appendToSession();
           store.update(account, id, (d, emit) => {
-            d.entries = [header, ...entries];
+            // The SDK creates its own entry when receiving an already durable
+            // tool result. Keep the durable identity/result when a later message
+            // snapshots that session, and translate the SDK child's parent link.
+            const results = new Map(d.entries.filter(e => e.message?.role === 'toolResult').map(e => [e.message.toolCallId, e]));
+            const identities = new Map(entries.filter(e => e.message?.role === 'toolResult' && results.has(e.message.toolCallId)).map(e => [e.id, results.get(e.message.toolCallId).id]));
+            d.entries = [header, ...entries.map(entry => {
+              const saved = entry.message?.role === 'toolResult' ? results.get(entry.message.toolCallId) : undefined;
+              return saved ?? { ...entry, parentId: identities.get(entry.parentId) ?? entry.parentId };
+            })];
             d.pi = { package: '@earendil-works/pi-coding-agent', version: '0.85.1', entriesVersion: 3, sessionId: header.id };
             (d.nativeLinks ??= {})[entryId] = { turnId, role: message.role, toolCallId: message.toolCallId ?? null };
             if (message.role !== 'assistant') return;
@@ -241,9 +249,17 @@ export function createAgentRecords({ store, operations }) {
           });
           return entryId;
         },
-        toolOutcome(toolCallId) {
-          const call = store.snapshot(account, id).toolCalls.find(c => c.toolCallId === toolCallId);
-          return call && terminal(call.state) ? outcome(call) : undefined;
+        finishTool(toolCallId) {
+          const call = store.snapshot(account, id).toolCalls.find(c => c.turnId === turnId && c.toolCallId === toolCallId);
+          if (!call) return undefined;
+          if (terminal(call.state)) return outcome(call);
+          // Execution has returned, but its receipt may have failed. Settle only
+          // this call before the SDK publishes its final event and native result.
+          return store.update(account, id, (d, emit) => {
+            const current = d.snapshot.toolCalls.find(c => c.turnId === turnId && c.toolCallId === toolCallId);
+            settleTool(d, emit, current);
+            return outcome(current);
+          });
         }
       };
     },

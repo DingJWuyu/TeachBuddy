@@ -65,14 +65,25 @@ export function prepareCalls(doc, emit, turnId, message) {
     if (terminal(call.state)) appendNative(doc, nativeResult(call));
   }
 }
+function settleOperation(doc, emit, operation) {
+  updateOperation(doc, emit, operation, { state: operation.state === 'prepared' ? 'cancelled' : 'unconfirmed',
+    problem: operation.state === 'prepared' ? null : agentProblem('operation-unconfirmed') });
+}
+function settleRead(doc, emit, call) {
+  call.state = call.state === 'prepared' ? 'cancelled' : 'interrupted'; call.updatedAt = timestamp();
+  emit('toolCall', call); projectNativeResult(doc, call);
+}
+export function settleTool(doc, emit, call) {
+  if (terminal(call.state)) return;
+  if (call.operationId) settleOperation(doc, emit, doc.snapshot.operations.find(o => o.id === call.operationId));
+  else settleRead(doc, emit, call);
+}
 export function settleCalls(doc, emit, turnId) {
   for (const operation of doc.snapshot.operations.filter(o => o.turnId === turnId && !terminal(o.state))) {
-    updateOperation(doc, emit, operation, { state: operation.state === 'prepared' ? 'cancelled' : 'unconfirmed',
-      problem: operation.state === 'prepared' ? null : agentProblem('operation-unconfirmed') });
+    settleOperation(doc, emit, operation);
   }
   for (const call of doc.snapshot.toolCalls.filter(c => c.turnId === turnId && !c.operationId && !terminal(c.state))) {
-    call.state = call.state === 'prepared' ? 'cancelled' : 'interrupted'; call.updatedAt = timestamp();
-    emit('toolCall', call); projectNativeResult(doc, call);
+    settleRead(doc, emit, call);
   }
 }
 export function operationDefinition(name) {

@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import https from 'node:https';
+import { AgentSession } from '@earendil-works/pi-coding-agent';
 import { createIntegration } from '../support/application.js';
 import { provider } from '../fixtures/c26/provider.js';
 import { createWorld, register, login, ok, problem, question, questions, doc, write, schedule } from './helpers.js';
@@ -345,7 +346,18 @@ test('提案启动恢复：executing保留未知写入并阻止后槽，原键�
 });
 
 test('助理只读中断：结果落盘失败保留interrupted与原生结果，不制造待核实写入', async t => {
-  const controlled = await provider([[tool('wb_list_questions', { query: {} })], text('不应继续')]);
+  const sdkEnds = [], durableAtEnd = [];
+  const subscribe = AgentSession.prototype.subscribe;
+  t.mock.method(AgentSession.prototype, 'subscribe', function(listener) {
+    return subscribe.call(this, event => {
+      if (event.type === 'tool_execution_end') {
+        sdkEnds.push(structuredClone(event));
+        durableAtEnd.push(persisted(world, id));
+      }
+      return listener(event);
+    });
+  });
+  const controlled = await provider([[tool('wb_list_questions', { query: {} })], text('明确再次发送后完成')]);
   const world = await createWorld(t, { agent: controlled.config }), { client } = await register(world);
   const id = ok(await write(client, 'POST', conversations, {}), 201).conversation.id;
   world.app.workbench.db.exec(`CREATE TRIGGER reject_read_receipt BEFORE UPDATE ON agent_conversations
@@ -356,12 +368,27 @@ test('助理只读中断：结果落盘失败保留interrupted与原生结果，
   assert.equal(snapshot.toolCalls[0].state, 'interrupted');
   assert.equal(snapshot.toolCalls[0].operationId, null);
   assert.deepEqual(snapshot.operations, []);
-  const result = persisted(world, id).entries.find(e => e.message?.role === 'toolResult').message;
+  const native = persisted(world, id).entries.find(e => e.message?.role === 'toolResult');
+  const result = native.message;
   assert.deepEqual(result.details, { state: 'interrupted', operationId: null });
   assert.equal(result.isError, true);
+  assert.equal(sdkEnds.length, 1);
+  assert.deepEqual(durableAtEnd[0].snapshot.toolCalls[0], snapshot.toolCalls[0], 'SDK发布最终事件前，卡片终态已经持久提交');
+  assert.deepEqual(durableAtEnd[0].entries.find(e => e.message?.role === 'toolResult'), native, '后续SDK append保留已提交原生结果的身份、父链和内容');
+  assert.deepEqual(sdkEnds[0].result.details, result.details, 'SDK最终事件、原生结果与公开卡片必须同义');
+  assert.deepEqual(sdkEnds[0].result.content, result.content);
+  assert.equal(sdkEnds[0].isError, result.isError);
+  const events = await replay(client, id, snapshot.lastEventSeq);
+  assert.deepEqual(events.filter(e => e.type === 'toolCall').at(-1).value, snapshot.toolCalls[0]);
   assert.equal(controlled.requests(), 1);
   world.app.workbench.db.exec('DROP TRIGGER reject_read_receipt');
   await world.restart();
   assert.deepEqual(ok(await client.request('GET', `${conversations}/${id}`)).toolCalls, snapshot.toolCalls);
   assert.equal(controlled.requests(), 1, '重开只读中断不重查');
+  await send(client, id, '明确继续');
+  const resumed = await settled(client, id);
+  assert.equal(resumed.turns[1].state, 'completed', '保留原生身份后，重开上下文和父链仍有效');
+  assert.deepEqual(resumed.toolCalls, snapshot.toolCalls);
+  assert.equal(controlled.requests(), 2);
+  assert.deepEqual(persisted(world, id).entries.find(e => e.message?.role === 'toolResult'), native);
 });

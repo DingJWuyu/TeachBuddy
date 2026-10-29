@@ -86,7 +86,7 @@ export function createPiRuntime({ records, executor, identity, config = {} }) {
         }
       };
       session.agent.afterToolCall = async ({ result, toolCall }) => {
-        const details = turn.toolOutcome(toolCall.id) ?? result.details;
+        const details = turn.finishTool(toolCall.id) ?? result.details;
         return { content: [{ type: 'text', text: JSON.stringify(details ?? { state: 'cancelled', operationId: null }) }], details: details ?? { state: 'cancelled', operationId: null }, isError: !['read','confirmed'].includes(details?.state) };
       };
       const stream = session.agent.streamFunction;
