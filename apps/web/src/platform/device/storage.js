@@ -40,6 +40,20 @@ function decode(raw) {
   if (value && typeof value === 'object' && value.formatVersion > 2) throw new Error('设备资料版本暂不支持');
   return value;
 }
+/** Internal device seam: interpret a raw snapshot without selecting a branch
+ * or rewriting legacy/damaged bytes. Archive and active readers use this alike. */
+export function inspectLocalRecord(account, key, raw) {
+  const prefix = `${PREFIX}:${account}:`;
+  if (!key.startsWith(prefix)) return null;
+  const name = key.slice(prefix.length);
+  const value = decode(raw);
+  if (name.startsWith('head:')) return null;
+  if (!name.startsWith('branch:')) return { name, value };
+  if (value?.formatVersion !== 2 || value.accountKey !== account ||
+      typeof value.name !== 'string' || !name.endsWith(`:${value.name}`))
+    throw new Error('设备草稿分区不匹配');
+  return { name: value.name, value: value.value };
+}
 function remember(account, name, source) {
   selected.set(scope(account, name), source);
   // A denied sessionStorage cannot degrade into silently sharing another tab.
@@ -123,13 +137,6 @@ export function removeLocal(account, name) {
     remember(account, name, null);
     return true;
   } catch (error) { report(error); return false; }
-}
-export function listLocalNames(account) {
-  const store = storage(); if (!store || !account) return [];
-  const prefix = `${PREFIX}:${account}:`;
-  try {
-    return Object.keys(store).filter(key => key.startsWith(prefix)).map(key => key.slice(prefix.length));
-  } catch (error) { report(error); return []; }
 }
 /** Select existing snapshots for this tab's next document, without modifying
  * another tab or replacing any saved snapshot. The caller performs a reload.
