@@ -75,7 +75,8 @@ export default function WorkshopWorkspace({ draft, accountKey, takeAssistantRequ
   const previewOperation = useRef(null);
   const [confirmation, confirmationDialog] = useMathConfirm();
   const [localFormula, setLocalFormula] = useState(null);
-  const localFormulaRef = useRef(null); localFormulaRef.current = localFormula;
+  const localFormulaRef = useRef(null);
+  function changeLocalFormula(value) { localFormulaRef.current = value; setLocalFormula(value); }
   current.current = { onChangeSource, onSave, onError, draft, busy, pending, status };
   const source = state.source;
   const graphVisible = !!(source.graph || drawingTool || state.graphMounting);
@@ -145,7 +146,7 @@ export default function WorkshopWorkspace({ draft, accountKey, takeAssistantRequ
     autoTimer.current = setTimeout(() => { if (!current.current.busy && !current.current.pending) void current.current.onSave(); }, 1400);
     return () => clearTimeout(autoTimer.current);
   }, [ready, busy, pending, status, source, frozen, draft.title]);
-  useEffect(() => { setLocalFormula(null); setLocalStep(null); }, [state.selection?.id]);
+  useEffect(() => { changeLocalFormula(null); setLocalStep(null); }, [state.selection?.id]);
   useEffect(() => {
     const keys = event => {
       const dialogOpen = [...document.querySelectorAll('[role="dialog"], [role="alertdialog"]')].some(node => node.getClientRects().length && !node.closest('[inert]'));
@@ -180,7 +181,7 @@ export default function WorkshopWorkspace({ draft, accountKey, takeAssistantRequ
     } catch (error) { onError(error); }
   }
   async function moveHistory(direction) {
-    try { await capture(); await editor.current[direction](); setLocalFormula(null); setLocalStep(null); } catch (error) { onError(error); }
+    try { await capture(); await editor.current[direction](); changeLocalFormula(null); setLocalStep(null); } catch (error) { onError(error); }
   }
   function beginTool(next) { setTool(next); if (next === 'graph') setShowExpression(true); shell?.openPanel('math-workshop-tools'); }
   async function chooseDrawingTool(next) {
@@ -239,16 +240,17 @@ export default function WorkshopWorkspace({ draft, accountKey, takeAssistantRequ
     } catch (error) { onError(error); }
   }
   async function removeFormula(formula) {
-    if (localFormula?.id === formula.id) { clearTimeout(localTimer.current); localTimer.current = null; setLocalFormula(null); }
+    if (localFormula?.id === formula.id) { clearTimeout(localTimer.current); localTimer.current = null; changeLocalFormula(null); }
     const affected = source.steps.filter(step => step.visibleFormulas.includes(formula.id));
     if (affected.length && !await confirmation(t('删除此公式也会从 {{count}} 个步骤中移除它。', { count: affected.length }))) return;
     await apply({ formulas: source.formulas.filter(item => item.id !== formula.id), steps: source.steps.map(step => ({ ...step, visibleFormulas: step.visibleFormulas.filter(id => id !== formula.id) })) });
     editor.current?.select(null);
   }
   function updateFormula(patch) {
-    const next = { ...(localFormula ?? selectedFormula), ...patch }; setLocalFormula(next); clearTimeout(localTimer.current);
+    const next = { ...(localFormulaRef.current ?? selectedFormula), ...patch }; changeLocalFormula(next); clearTimeout(localTimer.current);
     const commit = async () => { if (!next.latex.trim()) { onError(new Error(t('公式不能为空。删除公式请使用移除。'))); return; }
-      await apply({ formulas: editor.current.read().source.formulas.map(formula => formula.id === next.id ? next : formula) }); };
+      const result = await apply({ formulas: editor.current.read().source.formulas.map(formula => formula.id === next.id ? next : formula) });
+      if (result && localFormulaRef.current === next) changeLocalFormula(null); };
     commitFormulaRef.current = commit;
     localTimer.current = setTimeout(() => { localTimer.current = null; void commit(); }, 650);
   }

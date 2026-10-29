@@ -35,6 +35,8 @@ const result = await math.port.operations.exportWork({
 
 [WorkshopWorkspace](../../apps/web/src/features/math/WorkshopWorkspace.jsx) 承接当前统一编辑器，workshop/editor 统一内容快照、试演和撤销，[geogebra/workshop-runtime](../../apps/web/src/features/math/geogebra/workshop-runtime.js) 封装本地 GGB 控制。公式输入使用 MathLive，排版使用本地 MathJax。workshop-render 使用隔离、限时 Chromium 与 Web 同一资产根目录的本地运行时，禁用导入文件脚本并拒绝外部资源；纯公式渲染不启动 GGB，数学源错误与运行时/浏览器故障分开返回。
 
+公式编辑缓冲仅保护尚未成功提交的手动输入；提交成功只退休该次缓冲，提交期间产生的新输入继续保留。已提交内容由编辑器拥有，AI 对同一公式 ID 的后续修改直接呈现，并进入离开保护与原保存流程。
+
 
 - [useMathWorkSession](../../apps/web/src/features/math/useMathWorkSession.js) 拥有作品持久会话与保存/恢复流程；[Web 数学入口](../../apps/web/src/features/math/index.jsx) 保留页面入口和 renderer 分派，[LegacyWorkspace](../../apps/web/src/features/math/LegacyWorkspace.jsx) 承接旧源工作区。统一制作的编辑/试演细节仍由 [workshop editor](../../apps/web/src/features/math/workshop/editor.js) 拥有；认证请求到 module router/service，保存到 `math_works` 和 `math_revisions`，导出记录到 `math_exports`，表结构见 [migrations](../../apps/api/src/modules/math/migrations.js)。
 - `useMathWorkSession.refresh` 在发起时读取最新搜索及归档条件，返回时同时核对账户代次、读取顺序和当前条件。过期成功与失败均不发布；保存、导入、归档和前台刷新共用此读取边界。
@@ -43,6 +45,8 @@ const result = await math.port.operations.exportWork({
 - 离线演示沿 [presentation](../../apps/api/src/modules/math/presentation.js) 或 [workshop-presentation](../../apps/api/src/modules/math/workshop-presentation.js)，使用公开 shared 入口打包本地运行资源；外部 HTML 使用隔离包装器，边界见 [隔离语义](../contracts/math.md#导出与-html-隔离)。
 
 网页助理的 [web-ai](../../apps/web/src/features/math/web-ai) 通过 [浏览器扩展](../../extensions/math-web-ai/README.md) 接老师的 DeepSeek 页面；构造执行仍由编辑器校验/读回，不成为服务器任意 JS、文件或 SQL 工具。当前统一制作与旧源读取兼容共存，兼容/未知 renderer 与源版本处理见数学契约。
+
+旧 GGB 工作区通过 [legacyAssistantController](../../apps/web/src/features/math/geogebra/assistant.js) 接入助理：把统一编辑修订映射为旧控制器的构造修订，只接受图形操作并传递本轮取消 signal。旧控制器仍负责真实修订冲突、执行、取消恢复和对象读回；适配不把其他制作字段解释成旧源能力，也不将应用成功视作服务器保存成功。
 
 ## 验证入口
 

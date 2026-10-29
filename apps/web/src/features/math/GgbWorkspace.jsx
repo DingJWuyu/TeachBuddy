@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { GeoGebraEditor } from './geogebra/index.js';
+import { legacyAssistantController } from './geogebra/assistant.js';
 import { MathWebAssistant } from './web-ai/MathWebAssistant.jsx';
 import { useAuxiliaryAssistant } from '../workbench/shellContext.js';
 import { Icon } from '../../components/icons.jsx';
@@ -30,7 +31,8 @@ export default function GgbWorkspace({ draft, accountKey, busy, pending, status,
   // Loading and resizing can change native layout XML without editing objects.
   // Apply the same content check to lifecycle capture and explicit flush.
   const unchangedWithoutInteraction = useCallback(objects => !interacted.current && objects === serializedObjects.current, []);
-  const assistant = useCallback(() => <MathWebAssistant controller={draft.deletedAt ? null : controller} title={draft.title} accountKey={accountKey}/>, [controller, draft.title, draft.deletedAt, accountKey]);
+  const assistantController = useMemo(() => controller ? legacyAssistantController(controller) : null, [controller]);
+  const assistant = useCallback(() => <MathWebAssistant controller={draft.deletedAt ? null : assistantController} title={draft.title} accountKey={accountKey}/>, [assistantController, draft.title, draft.deletedAt, accountKey]);
   useAuxiliaryAssistant(assistant);
 
   const captureNow = useCallback(() => {

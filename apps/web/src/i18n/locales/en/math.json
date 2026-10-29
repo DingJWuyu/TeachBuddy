@@ -697,5 +697,6 @@
   "连接已断开，重新连接后可继续制作。": "Connection lost. Reconnect to continue creating.",
   "连接助理后，即可在此直接制作数学作品。": "Connect the assistant to create math works directly here.",
   "彻底删除“{{title}}”？作品及历史版本将无法恢复。已下载文件仍保留。": "Permanently delete “{{title}}”? The work and its history cannot be recovered. Downloaded files will be kept.",
-  "选一版查看。恢复后成为当前编辑内容，保存时生成新版本。": "Select a version to review. Restoring makes it the current editing content; saving creates a new version."
+  "选一版查看。恢复后成为当前编辑内容，保存时生成新版本。": "Select a version to review. Restoring makes it the current editing content; saving creates a new version.",
+  "修改内容格式不正确。": "The changes have an invalid format."
 }
