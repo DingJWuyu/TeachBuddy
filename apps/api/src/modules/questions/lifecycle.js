@@ -24,8 +24,8 @@ export function snapshot(db, principal) {
   objects.push(record('question-taxonomy', store.taxonomy(principal), { label: '题目分类' }));
   objects.push(...imports.map(value => record('import', value, { label: '收录' })));
   const recognitionEvidence = store.list('tasks', principal)
-    .filter(task => Object.keys(task.lateResults ?? {}).length || Object.keys(task.nativeWordSources ?? {}).length)
-    .map(task => ({ jobId: task.id, importId: task.importId, lateResults: task.lateResults, nativeWordSources: task.nativeWordSources, originalDocuments: task.originalDocuments }));
+    .filter(task => Object.keys(task.recognitionEvidence ?? {}).length || Object.keys(task.lateResults ?? {}).length || Object.keys(task.nativeWordSources ?? {}).length)
+    .map(task => ({ jobId: task.id, importId: task.importId, recognitionEvidence: task.recognitionEvidence, lateResults: task.lateResults, nativeWordSources: task.nativeWordSources, originalDocuments: task.originalDocuments }));
   return { objects, supplemental: { questionRecognitionEvidence: recognitionEvidence } };
 }
 export function validateStorage(db) {

@@ -227,6 +227,7 @@ export function createExtractionHandler({
         text: m.input.text,
       });
     for (const id of [...(m.input.fileIds ?? []), ...m.supplementFileIds]) {
+      if (signal.aborted) break;
       if (
         task.units &&
         !task.units.some(
@@ -242,13 +243,15 @@ export function createExtractionHandler({
           !m.input.pages?.some((x) => x.fileId === id)
         ) {
           try {
-            const preview = await files.ensurePreview(p, id);
+            const preview = await files.ensurePreview(p, id, { signal });
+            signal.throwIfAborted();
             task.renditions = task.renditions.concat({
               fileId: id,
               renditionFileId: preview.renditionFileId,
               pages: preview.pageCount,
             });
           } catch (error) {
+            if (signal.aborted) throw error;
             issues.push(
               issue(
                 "conversion-failed",
@@ -270,7 +273,9 @@ export function createExtractionHandler({
             nativeFileId = source.fileId;
             outputFileIds.push(nativeFileId);
           }
+          signal.throwIfAborted();
           const parsed = await readWord(p, {...file, nativeFileId});
+          signal.throwIfAborted();
           task.paragraphs[id] = parsed.paragraphs;
           task.originalDocuments ??= {};
           task.originalDocuments[id] = parsed.original;
@@ -282,7 +287,8 @@ export function createExtractionHandler({
             });
           continue;
         }
-        const preview = await files.ensurePreview(p, id);
+        const preview = await files.ensurePreview(p, id, { signal });
+          signal.throwIfAborted();
         if (
           preview.state === "failed" ||
           !preview.renditionFileId ||
@@ -326,6 +332,7 @@ export function createExtractionHandler({
           });
         }
       } catch (e) {
+        if (signal.aborted) break;
         issues.push(
           issue("corrupt-file", `file:${id}`, e.message.slice(0, 500)),
         );
@@ -349,7 +356,7 @@ export function createExtractionHandler({
         completed++;
         continue;
       }
-      let result, recognitionSource;
+      let result;
       try {
         const previous = unit.file && task.machineResults?.[`file:${unit.file.id}:page:${unit.page - 1}`]?.tableContext;
         if (unit.file && !provider && recognition) {
@@ -378,17 +385,31 @@ export function createExtractionHandler({
         }
         if (!result) {
           const source = { fileId: unit.file.id, renditionFileId: unit.preview.renditionFileId, page: unit.page };
-          recognitionSource = source;
-          const page = await recognition?.ensurePage(p, source, { signal, retry: Boolean(job.attemptOf) });
+          const attempt = await recognition?.ensurePage(p, source, { signal, retry: Boolean(job.attemptOf) });
+          if (attempt?.evidence) {
+            task.recognitionEvidence ??= {};
+            task.recognitionEvidence[unit.id] = attempt.evidence;
+            if (attempt.stop) {
+              task.lateResults ??= {};
+              task.lateResults[unit.id] = attempt.evidence;
+            }
+            s.save("tasks", p, task);
+          }
+          if (attempt?.stop) {
+            outputFileIds.push(...attempt.outputFileIds);
+            if (attempt.stop.error) throw attempt.stop.error;
+            issues.push(issue(attempt.stop.kind === "cancelled" ? "cancelled" : "provider-result-unknown", unit.id,
+              attempt.stop.kind === "timeout" ? "本页识别超时，未自动识别后续页；完整原始结果仅保留为本次任务证据。" : "整理已停止，迟到的识别结果仅保留为本次任务证据。"));
+            break;
+          }
           signal.throwIfAborted();
+          const page = attempt?.page;
           if (page?.state !== "ready") {
-            const terminated = page?.issues?.find(issue => ["recognition-timeout", "recognition-cancelled"].includes(issue.code));
-            if (terminated) throw Object.assign(new Error("Recognition stopped"), { code: terminated.code });
             issues.push(issue(page?.state === "unavailable" || !page ? "provider-unavailable" : "provider-result-unknown", unit.id,
               page?.issues?.[0]?.detail ?? "本地识别暂不可用，原稿已保存；配置恢复后可重试本页。"));
             continue;
           }
-          result = readRecognizedPage(recognition.readResult(p, page.resultId, source), {
+          result = readRecognizedPage(page, {
             section: unit.file.id, previous,
           });
         }
@@ -460,26 +481,8 @@ export function createExtractionHandler({
         reportProgress({ completed, total: units.length, unit: "pages" });
       } catch (e) {
         if (e?.code === "recognition-cleanup") throw e;
-        const recognitionTerminated = ["recognition-timeout", "recognition-cancelled"].includes(e?.code);
-        if (signal.aborted || recognitionTerminated) {
-          // A late complete page is evidence of this attempt, never a draft.
-          // Freeze its files before a retry replaces the shared page record.
-          if (recognitionSource && recognition && s.db.open) {
-            const late = recognition.readPage(p, recognitionSource);
-            if (late.rawFileId) {
-              task.lateResults ??= {};
-              task.lateResults[unit.id] = {
-                source: structuredClone(late.location), resultId: late.resultId,
-                revision: late.revision, inputHash: late.inputHash, rawFileId: late.rawFileId,
-                assetFileIds: late.assetFileIds ?? [], originalAssetFileIds: late.originalAssetFileIds ?? [],
-                derivations: late.derivations ?? [],
-              };
-              s.save("tasks", p, task);
-              outputFileIds.push(late.rawFileId, ...(late.assetFileIds ?? []));
-            }
-          }
-          issues.push(issue(signal.aborted || e?.code === "recognition-cancelled" ? "cancelled" : "provider-result-unknown", unit.id,
-            e?.code === "recognition-timeout" ? "本页识别超时，未自动识别后续页；完整原始结果仅保留为本次任务证据。" : "整理已停止，迟到的识别结果仅保留为本次任务证据。"));
+        if (signal.aborted) {
+          issues.push(issue("cancelled", unit.id, "整理已停止，原稿与已完成内容仍保留。"));
           break;
         }
         issues.push(

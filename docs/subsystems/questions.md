@@ -34,7 +34,7 @@ const result = questions.port.operations.copyQuestionV2({
 
 v2 操作同步返回 `{status, body}`，合法失败抛带 `status/problem` 的 Error。读取不传 key；写入经 `mutations.execute` 同事务提交题目、来源快照和成功回执，版本/归属/内容错误整笔回滚。`arguments: {id, body, query}` 只属于兼容 operations，不可混传。结果未知保持原键、原体及原路径，先核实再处理新输入，见 [共享保存](../contracts/workbench.md#写入冲突与未知结果)。旧操作遇富内容明确拒绝，不能压平为旧文稿。
 
-材料任务受理只确认 Job 与业务初态；提取/图片生成在事务外执行。停止、重试、迟到结果和校对保护由 [materials-service](../../apps/api/src/modules/questions/materials-service.js)、[extraction](../../apps/api/src/modules/questions/extraction.js) 与公共 jobs 共同处理，202 不等于已入库。
+材料任务受理只确认 Job 与业务初态；提取/图片生成在事务外执行。停止、重试、迟到结果和校对保护由 [materials-service](../../apps/api/src/modules/questions/materials-service.js)、[extraction](../../apps/api/src/modules/questions/extraction.js) 与公共 jobs 共同处理，202 不等于已入库。提取的原件准备循环将 signal 传给预览；Word 预览降级和下一原件开始前均核对停止，不能将取消当转换失败继续读取。公共预览等待转换进程 close，排队启动及派生文件落库后再次检查停止，才发布新预览；原件与既有完成页保留。识别停止及整份机器证据交付沿[共用识别](../contracts/recognition.md#模块接缝)，题库不回读共享缓存重建停止证据。
 
 ## 运行路径与持久化
 

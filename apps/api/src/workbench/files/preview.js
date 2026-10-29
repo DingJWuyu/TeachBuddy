@@ -94,6 +94,7 @@ export function createPreviews({
   let conversionQueue = Promise.resolve();
   const textConversions = new Map();
   async function ensurePreview(principal, id, { signal } = {}) {
+    signal?.throwIfAborted();
     const current = preview(principal, id);
     if (["ready", "limited"].includes(current.state)) {
       files.read(principal, current.renditionFileId);
@@ -121,15 +122,16 @@ export function createPreviews({
         });
       let result;
       try {
-        const next = conversionQueue.then(() =>
-          convertFile({
+        const next = conversionQueue.then(() => {
+          signal?.throwIfAborted();
+          return convertFile({
             bytes: readBytes(principal, id),
             mediaType: file.mediaType,
             ...conversion,
             directory: files.accountWorkDirectory(principal),
             signal,
-          }),
-        );
+          });
+        });
         conversionQueue = next.catch(() => {});
         result = await next;
       } catch {
@@ -155,9 +157,11 @@ export function createPreviews({
       let rendition = result.pdf
         ? (await store("preview.pdf", result.pdf)).id
         : id;
+      signal?.throwIfAborted();
       const pages = [];
       for (const page of result.pages) {
         const image = await store(page.name, page.bytes);
+        signal?.throwIfAborted();
         pages.push({
           page: page.page,
           width: page.width,
@@ -166,6 +170,7 @@ export function createPreviews({
         });
       }
       if (file.mediaType === "text/html") rendition = pages[0].imageFileId;
+      signal?.throwIfAborted();
       return db.transaction(() =>
         save(principal, {
           ...preview(principal, id),
@@ -186,18 +191,9 @@ export function createPreviews({
   }
   async function crop(principal, input, mutation) {
     validateSchema("CropInput", input);
-    const prior = db
-      .prepare(
-        "SELECT 1 FROM workbench_mutation_keys WHERE accountKey=? AND key=?",
-      )
-      .get(principal.accountKey, mutation.key);
+    const prior = mutations.peek({ principal, ...mutation, body: input });
     if (prior) {
-      const saved = mutations.execute(
-        { principal, ...mutation, body: input },
-        () => {
-          throw new Error("Unreachable");
-        },
-      ).body;
+      const saved = prior.body;
       files.read(principal, saved.id);
       return saved;
     }
