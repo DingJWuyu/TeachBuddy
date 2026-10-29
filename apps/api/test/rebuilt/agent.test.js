@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import https from 'node:https';
+import { AgentSession } from '@earendil-works/pi-coding-agent';
 import { createIntegration } from '../support/application.js';
 import { provider } from '../fixtures/c26/provider.js';
 import { createWorld, register, login, ok, problem, question, questions, doc, write, schedule } from './helpers.js';
@@ -163,6 +164,8 @@ test('助理未知写入：业务已提交但日志结果失败时保持 unconfi
   assert.equal(snapshot.turns[0].reason, 'tool-unconfirmed');
   const saved = ok(await client.request('GET', questions)).items;
   assert.equal(saved.length, 1, '未知回执不表示业务未执行');
+  const before = persisted(world, id);
+  const originalEntry = before.entries.find(e => e.message?.role === 'toolResult' && e.message.toolCallId === snapshot.toolCalls[0].toolCallId);
   world.app.workbench.db.exec('DROP TRIGGER rebuilt_reject_confirmation');
   await world.restart();
   const confirmed = ok(await write(client, 'POST', `${conversations}/${id}/operations/${op.id}/reconcile`, {}));
@@ -171,6 +174,16 @@ test('助理未知写入：业务已提交但日志结果失败时保持 unconfi
   assert.equal(ok(await client.request('GET', questions)).items.length, 1);
   assert.equal(ok(await client.request('GET', `${conversations}/${id}`)).toolCalls[0].state, 'confirmed');
   assert.equal(controlled.requests(), 1, '未知写入和核实都不能继续模型请求');
+  const after = persisted(world, id), entry = after.entries.find(e => e.id === originalEntry.id);
+  assert.deepEqual(after.journals, before.journals, '核实逐字保留原键、指纹和请求体');
+  assert.deepEqual({ ...entry, message: null }, { ...originalEntry, message: null }, '核实只替换同一原生 entry 的结果，不改身份或父链');
+  assert.equal(entry.message.details.state, 'confirmed');
+  assert.equal(entry.message.details.result.id, saved[0].id);
+  const events = await replay(client, id, after.snapshot.lastEventSeq);
+  const lastOperation = events.findLastIndex(e => e.type === 'operation');
+  assert.deepEqual(events.slice(lastOperation).map(e => e.type), ['operation', 'toolCall', 'conversation']);
+  assert.deepEqual(events[lastOperation].value, confirmed);
+  assert.deepEqual(events[lastOperation + 1].value, after.snapshot.toolCalls[0]);
 });
 
 test('助理工具输入：注入身份、路径或幂等键的参数拒绝且不公开原始无效输入', async t => {
@@ -221,4 +234,161 @@ test('助理历史未知写入：模块缺席仍保持未确认，重新装配�
   assert.deepEqual(readJournal(app.workbench.db), journal);
   assert.equal(controlled.requests(), 1, '核实不请求模型重建输入');
   await app.close(); app = null;
+});
+
+function persisted(world, id) {
+  return JSON.parse(world.app.workbench.db.prepare('SELECT document FROM agent_conversations WHERE id=?').get(id).document);
+}
+
+test('助理受理：引用与发送同事务，旧键重放不清新草稿、不重启模型', async t => {
+  const controlled = await provider([text('已阅读历史引用')]);
+  const world = await createWorld(t, { agent: controlled.config }), { client } = await register(world);
+  const reference = ok(await write(client, 'POST', questions, question()), 201);
+  const id = ok(await write(client, 'POST', conversations, {}), 201).conversation.id;
+  const url = `${conversations}/${id}`;
+  const input = { baseVersion: 1, text: '引用已保存题目', references: [{ kind: 'question', id: reference.id, version: reference.version }] };
+  const draft = ok(await write(client, 'PUT', `${url}/draft`, input));
+  const key = randomUUID(), body = { draftVersion: draft.version, modelId };
+  world.app.workbench.db.exec(`CREATE TRIGGER reject_turn_commit BEFORE UPDATE ON agent_conversations
+    WHEN json_array_length(NEW.document, '$.snapshot.turns') > 0
+    BEGIN SELECT RAISE(ABORT, 'turn commit unavailable'); END`);
+  assert.equal((await write(client, 'POST', `${url}/turns`, body, key)).status, 503);
+  const failed = ok(await client.request('GET', url));
+  assert.deepEqual(failed.draft, draft);
+  assert.deepEqual(failed.messages, []);
+  assert.deepEqual(failed.turns, []);
+  assert.equal(controlled.requests(), 0);
+  world.app.workbench.db.exec('DROP TRIGGER reject_turn_commit');
+  const accepted = ok(await write(client, 'POST', `${url}/turns`, body, key), 202);
+  assert.deepEqual(accepted.message.references[0].snapshot, reference);
+  assert.equal(accepted.draft.version, draft.version + 1);
+  assert.equal(accepted.draft.text, '');
+  const done = await settled(client, id);
+  const next = ok(await write(client, 'PUT', `${url}/draft`, { baseVersion: done.draft.version, text: '下一条未发送输入', references: [] }));
+  assert.deepEqual(ok(await write(client, 'POST', `${url}/turns`, body, key), 202), accepted);
+  const reopened = ok(await client.request('GET', url));
+  assert.deepEqual(reopened.draft, next);
+  assert.equal(reopened.turns.length, 1);
+  assert.equal(controlled.requests(), 1);
+  const events = await replay(client, id, reopened.lastEventSeq);
+  const user = events.findIndex(e => e.type === 'message' && e.value.role === 'user');
+  assert.deepEqual(events.slice(user, user + 4).map(e => e.type), ['message', 'turn', 'draft', 'conversation']);
+  assert.deepEqual(events.map(e => e.seq), Array.from({ length: reopened.lastEventSeq }, (_, i) => i + 1));
+});
+
+test('提案启动恢复：已结束turn的prepared取消，明确再点击复用原槽位与原请求', async t => {
+  const card = { kind: 'plan', title: '准备后重启', entryTitle: '恢复后明确保存', steps: ['核对原始步骤'] };
+  const controlled = await provider([[tool('wb_propose_teaching_card', { card })], text('请审阅')]);
+  const world = await createWorld(t, { agent: controlled.config }), { client } = await register(world);
+  const id = ok(await write(client, 'POST', conversations, {}), 201).conversation.id;
+  await send(client, id);
+  const original = await settled(client, id), call = original.toolCalls[0];
+  const url = `${conversations}/${id}/proposals/${call.result.proposalId}/execute`;
+  world.app.workbench.db.exec(`CREATE TRIGGER reject_proposal_start BEFORE UPDATE ON agent_conversations
+    WHEN json_extract(NEW.document, '$.snapshot.operations[0].state')='executing'
+    BEGIN SELECT RAISE(ABORT, 'execution start unavailable'); END`);
+  const accepted = ok(await write(client, 'POST', url, { slot: 0 }));
+  assert.equal(accepted.state, 'prepared');
+  assert.equal(persisted(world, id).snapshot.operations[0].state, 'prepared');
+  const journal = persisted(world, id).journals[accepted.id];
+  world.app.workbench.db.exec('DROP TRIGGER reject_proposal_start');
+  await world.restart();
+  const recovered = ok(await client.request('GET', `${conversations}/${id}`));
+  assert.equal(recovered.operations[0].state, 'cancelled');
+  assert.deepEqual(recovered.turns, original.turns, '原已结束turn不能重新开始或改判');
+  assert.deepEqual(recovered.toolCalls[0], call);
+  assert.equal(ok(await client.request('GET', `${schedule}/entries`)).items.length, 0);
+  assert.equal(controlled.requests(), 2);
+  assert.equal(ok(await write(client, 'POST', url, { slot: 0 })).id, accepted.id);
+  const saved = ok(await client.request('GET', `${schedule}/entries`)).items;
+  assert.equal(saved.length, 1);
+  const finished = persisted(world, id);
+  assert.equal(finished.snapshot.operations[0].state, 'confirmed');
+  assert.deepEqual(finished.journals[accepted.id], journal, '重启后明确再点击保留原键及含事项ID的完整原体');
+  assert.deepEqual(finished.snapshot.toolCalls[0], call);
+});
+
+test('提案启动恢复：executing保留未知写入并阻止后槽，原键核实后才继续', async t => {
+  const item = title => ({ title, body: '求 $2x=4$ 的解', solution: '$x=2$' });
+  const card = { kind: 'practice', title: '两题顺序保存', items: [item('第一题'), item('第二题')] };
+  const controlled = await provider([[tool('wb_propose_teaching_card', { card })], text('请审阅')]);
+  const world = await createWorld(t, { agent: controlled.config }), { client } = await register(world);
+  const id = ok(await write(client, 'POST', conversations, {}), 201).conversation.id;
+  await send(client, id);
+  const original = await settled(client, id), call = original.toolCalls[0];
+  const url = `${conversations}/${id}/proposals/${call.result.proposalId}/execute`;
+  world.app.workbench.db.exec(`CREATE TRIGGER reject_proposal_result BEFORE UPDATE ON agent_conversations
+    WHEN json_extract(NEW.document, '$.snapshot.operations[0].state') IN ('confirmed', 'unconfirmed')
+    BEGIN SELECT RAISE(ABORT, 'execution receipt unavailable'); END`);
+  const accepted = ok(await write(client, 'POST', url, { slot: 0 }));
+  const before = persisted(world, id);
+  assert.equal(before.snapshot.operations[0].state, 'executing');
+  const first = ok(await client.request('GET', questions)).items[0];
+  assert.equal(first.title, '第一题');
+  world.app.workbench.db.exec('DROP TRIGGER reject_proposal_result');
+  await world.restart();
+  const recovered = ok(await client.request('GET', `${conversations}/${id}`));
+  assert.equal(recovered.operations[0].state, 'unconfirmed');
+  assert.deepEqual(recovered.toolCalls[0], call);
+  assert.deepEqual(recovered.turns, original.turns);
+  problem(await write(client, 'POST', url, { slot: 1 }), 409, 'pending-operation');
+  assert.equal(ok(await write(client, 'POST', url, { slot: 0 })).state, 'unconfirmed');
+  const confirmed = ok(await write(client, 'POST', `${conversations}/${id}/operations/${accepted.id}/reconcile`, {}));
+  assert.equal(confirmed.result.id, first.id);
+  assert.deepEqual(persisted(world, id).journals, before.journals);
+  ok(await write(client, 'POST', url, { slot: 1 }));
+  const after = persisted(world, id);
+  assert.deepEqual(after.snapshot.operations.map(o => o.state), ['confirmed', 'confirmed']);
+  assert.deepEqual(after.snapshot.toolCalls[0], call);
+  assert.deepEqual(after.entries, before.entries, '提案执行与核实不得改写原提案原生结果');
+  assert.equal(ok(await client.request('GET', questions)).items.length, 2);
+  assert.equal(controlled.requests(), 2, '重启和核实都不自动请求模型');
+});
+
+test('助理只读中断：结果落盘失败保留interrupted与原生结果，不制造待核实写入', async t => {
+  const sdkEnds = [], durableAtEnd = [];
+  const subscribe = AgentSession.prototype.subscribe;
+  t.mock.method(AgentSession.prototype, 'subscribe', function(listener) {
+    return subscribe.call(this, event => {
+      if (event.type === 'tool_execution_end') {
+        sdkEnds.push(structuredClone(event));
+        durableAtEnd.push(persisted(world, id));
+      }
+      return listener(event);
+    });
+  });
+  const controlled = await provider([[tool('wb_list_questions', { query: {} })], text('明确再次发送后完成')]);
+  const world = await createWorld(t, { agent: controlled.config }), { client } = await register(world);
+  const id = ok(await write(client, 'POST', conversations, {}), 201).conversation.id;
+  world.app.workbench.db.exec(`CREATE TRIGGER reject_read_receipt BEFORE UPDATE ON agent_conversations
+    WHEN json_extract(NEW.document, '$.snapshot.toolCalls[0].state')='read'
+    BEGIN SELECT RAISE(ABORT, 'read receipt unavailable'); END`);
+  await send(client, id);
+  const snapshot = await settled(client, id);
+  assert.equal(snapshot.toolCalls[0].state, 'interrupted');
+  assert.equal(snapshot.toolCalls[0].operationId, null);
+  assert.deepEqual(snapshot.operations, []);
+  const native = persisted(world, id).entries.find(e => e.message?.role === 'toolResult');
+  const result = native.message;
+  assert.deepEqual(result.details, { state: 'interrupted', operationId: null });
+  assert.equal(result.isError, true);
+  assert.equal(sdkEnds.length, 1);
+  assert.deepEqual(durableAtEnd[0].snapshot.toolCalls[0], snapshot.toolCalls[0], 'SDK发布最终事件前，卡片终态已经持久提交');
+  assert.deepEqual(durableAtEnd[0].entries.find(e => e.message?.role === 'toolResult'), native, '后续SDK append保留已提交原生结果的身份、父链和内容');
+  assert.deepEqual(sdkEnds[0].result.details, result.details, 'SDK最终事件、原生结果与公开卡片必须同义');
+  assert.deepEqual(sdkEnds[0].result.content, result.content);
+  assert.equal(sdkEnds[0].isError, result.isError);
+  const events = await replay(client, id, snapshot.lastEventSeq);
+  assert.deepEqual(events.filter(e => e.type === 'toolCall').at(-1).value, snapshot.toolCalls[0]);
+  assert.equal(controlled.requests(), 1);
+  world.app.workbench.db.exec('DROP TRIGGER reject_read_receipt');
+  await world.restart();
+  assert.deepEqual(ok(await client.request('GET', `${conversations}/${id}`)).toolCalls, snapshot.toolCalls);
+  assert.equal(controlled.requests(), 1, '重开只读中断不重查');
+  await send(client, id, '明确继续');
+  const resumed = await settled(client, id);
+  assert.equal(resumed.turns[1].state, 'completed', '保留原生身份后，重开上下文和父链仍有效');
+  assert.deepEqual(resumed.toolCalls, snapshot.toolCalls);
+  assert.equal(controlled.requests(), 2);
+  assert.deepEqual(persisted(world, id).entries.find(e => e.message?.role === 'toolResult'), native);
 });

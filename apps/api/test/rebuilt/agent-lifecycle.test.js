@@ -36,9 +36,9 @@ test('D12 Agent停止：首个写入confirmed保留，同批第二个prepared取
   identity.resolvePrincipal = async request => {
     const principal = await authorize(request);
     if (request.originalUrl?.endsWith('/turns')) {
-      const snapshot = world.app.workbench.agent.store.read(principal.accountKey, id).snapshot;
+      const snapshot = JSON.parse(world.app.workbench.db.prepare('SELECT document FROM agent_conversations WHERE accountKey=? AND id=?').get(principal.accountKey, id).document).snapshot;
       if (snapshot.toolCalls.length === 2 && ++toolAuthorizations === 2) {
-        while (['prepared', 'executing'].includes(world.app.workbench.agent.store.read(principal.accountKey, id).snapshot.toolCalls[0].state)) {
+        while (['prepared', 'executing'].includes(JSON.parse(world.app.workbench.db.prepare('SELECT document FROM agent_conversations WHERE accountKey=? AND id=?').get(principal.accountKey, id).document).snapshot.toolCalls[0].state)) {
           if (t.signal.aborted) throw new Error('测试已结束');
           await new Promise(resolve => setImmediate(resolve));
         }

@@ -34,7 +34,7 @@ try {
  const until=Date.now()+195000;
  while(Date.now()<until) {
   const snapshot=(await client.request('GET',endpoint)).json;
-  const internal=world.workbench.agent.store.read(accountKey,conversationId);
+  const internal=JSON.parse(world.workbench.db.prepare('SELECT document FROM agent_conversations WHERE accountKey=? AND id=?').get(accountKey,conversationId).document);
   report.snapshot=snapshot;report.requests=internal.requests[accepted.json.turn.id]??[];
   fs.writeFileSync(evidence,JSON.stringify(report,null,2)+'\n');
   if(snapshot.turns[0].state!=='running') break;
@@ -44,6 +44,6 @@ try {
  report.status=report.snapshot.turns[0].state;
  console.log(JSON.stringify({model,status:report.status,usage:report.snapshot.turns[0].usage,calls:report.snapshot.toolCalls.map(c=>({name:c.name,state:c.state,problem:c.problem})),directory,evidence}));
 } finally {
- if(accountKey&&conversationId) {const doc=world.workbench.agent.store.read(accountKey,conversationId);report.requests=doc.requests;report.snapshot=doc.snapshot;report.nativeToolResults=doc.entries.filter(e=>e.message?.role==='toolResult');}
+ if(accountKey&&conversationId) {const doc=JSON.parse(world.workbench.db.prepare('SELECT document FROM agent_conversations WHERE accountKey=? AND id=?').get(accountKey,conversationId).document);report.requests=doc.requests;report.snapshot=doc.snapshot;report.nativeToolResults=doc.entries.filter(e=>e.message?.role==='toolResult');}
  fs.writeFileSync(evidence,JSON.stringify(report,null,2)+'\n');await world.close();
 }
