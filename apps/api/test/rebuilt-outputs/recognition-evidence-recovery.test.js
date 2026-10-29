@@ -4,17 +4,20 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import JSZip from 'jszip';
+import sharp from 'sharp';
 import { createTestDirectory } from '../support/directories.js';
 import { createIntegration } from '../support/application.js';
 import { application, upload, preview, json, finished, download, importsPath, filesPath } from './helpers.js';
 import { sourceImage } from '../../../../test/fixtures/questions/recognition/replay.mjs';
 
-// Complete stopped machine output with both original and derived attachments.
+// More evidence files than Job outputs allow, with both original and derived
+// attachments. Tiny valid PNG bytes keep the recovery test's archive bounded.
+const evidenceImage = await sharp({ create: { width: 1, height: 1, channels: 3, background: 'white' } }).png().toBuffer();
 const recognizer = { revision: 'evidence-recovery-v1', available: true, async run({ width, height }) {
-  const image = sourceImage('I-1');
+  const image = evidenceImage;
   return { width, height, raw: { attempt: 'stopped' }, pageBlocks: [],
-    assets: [{ name: 'derived.png', bytes: image }], originalAssets: [{ name: 'original.png', bytes: image }],
-    derivations: [{ name: 'derived.png', source: 'original.png', issues: [] }],
+    assets: [{ name: 'derived.png', bytes: image }], originalAssets: Array.from({ length: 499 }, (_, index) => ({ name: `original-${index}.png`, bytes: image })),
+    derivations: [{ name: 'derived.png', source: 'original-0.png', issues: [] }],
     termination: { code: 'recognition-timeout' } };
 } };
 
@@ -23,23 +26,29 @@ test('识别旧新任务整份证据经个人资料包、重启与停服备份�
   const file = await upload(world.client, '原页.png', sourceImage('I-1'));
   const view = await preview(world.client, file.id);
   const direct = await json(world.client, 'POST', `${filesPath}/${file.id}/recognition`, { renditionFileId: view.renditionFileId, pages: [1] }, 202);
-  assert.equal((await finished(world.client, direct.id)).state, 'failed');
+  const stopped = await finished(world.client, direct.id);
+  assert.equal(stopped.state, 'failed');
   // Keep a genuine prior task in its older shape alongside a new full snapshot.
   const directRow = world.workbench.db.prepare('SELECT value FROM materials_recognition_requests WHERE jobId=?').get(direct.id);
   const oldRequest = JSON.parse(directRow.value), full = oldRequest.lateResult;
+  assert.equal(full.assetFileIds.length, 500);
+  assert.deepEqual(stopped.outputFileIds, [full.rawFileId], '超时只发布原始结果，完整附件集合仍是固定证据');
   oldRequest.lateResult = { page: full.page, rawFileId: full.rawFileId, assetFileIds: full.assetFileIds,
     originalAssetFileIds: full.originalAssetFileIds, derivations: full.derivations };
   world.workbench.db.prepare('UPDATE materials_recognition_requests SET value=? WHERE jobId=?').run(JSON.stringify(oldRequest), direct.id);
   const material = await json(world.client, 'POST', importsPath, { title: '停止证据', origin: '隔离固定输出',
     input: { kind: 'files', fileIds: [file.id], pages: [] } }, 201);
-  assert.equal((await finished(world.client, material.jobId)).state, 'failed');
+  const extraction = await finished(world.client, material.jobId);
+  assert.equal(extraction.state, 'failed');
   const task = JSON.parse(world.workbench.db.prepare('SELECT value FROM questions_materials_tasks WHERE id=?').get(material.jobId).value);
   const evidence = Object.values(task.lateResults)[0];
   assert.equal(evidence.source.fileId, file.id);
-  assert.ok(evidence.originalAssetFileIds.length);
+  assert.equal(evidence.originalAssetFileIds.length, 499);
+  assert.deepEqual(extraction.outputFileIds, [evidence.rawFileId]);
   assert.ok(evidence.derivations.length);
   const ids = [...new Set([evidence.rawFileId, ...evidence.assetFileIds, ...oldRequest.lateResult.assetFileIds])];
-  const bytes = new Map(await Promise.all(ids.map(async id => [id, await download(world.client, id)])));
+  const bytes = new Map();
+  for (const id of ids) bytes.set(id, await download(world.client, id));
   const exportJob = await json(world.client, 'POST', '/api/reliability/v1/exports', {}, 202);
   let exported;
   do {

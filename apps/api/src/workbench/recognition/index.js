@@ -115,7 +115,10 @@ export function createRecognition({ db, files, readBytes, mutations, jobs, conte
     const page = bindResult(principal, value, sourcePage);
     const evidence = value?.rawFileId ? structuredClone({ ...page, source: page.location }) : null;
     return { page, evidence,
-      outputFileIds: evidence ? [...new Set([evidence.rawFileId, ...(evidence.assetFileIds ?? [])])] : [],
+      // A Job publishes one primary raw result per requested page (at most
+      // 500 pages). Its output list is not the complete machine file graph;
+      // every original/derived attachment remains in the fixed evidence value.
+      outputFileIds: evidence ? [evidence.rawFileId] : [],
       stop: stopped ? { kind: stopped, ...(error ? { error } : {}) } : null };
   }
 
