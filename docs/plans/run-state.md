@@ -4,6 +4,8 @@
 
 ## 工作现场与授权
 
+前后端十二项架构改进已获用户授权开始实施，完整目标、裁决依据、固定输入、分工、候选与接续事实统一在本机忽略记录 `test-results/architecture-implementation-20261029/task.md`。总控负责派发、独立审查与集成，五条作者工作线从固定基线 `240665b26e4263a383a31c70ffd7681d571969ba` 分别实施班级、设备恢复、助理、材料和数学改进；日程整体重构已明确排除。沿现有授权完成定点验证、CI、任务 PR、`preview/integration` 集成、preview 核对与本轮现场清理；不合 `main`、不正式发布、不新增费用，不操作真实模型、邮件、GPU 或私人业务数据。
+
 后端架构扫描的五项改进已由 [PR #53](https://github.com/DingJWuyu/TeachBuddy/pull/53) 集成：数据生命周期所有权、静态装配真实依赖、题库版本兼容、数学成果制作及原始材料定位校验。独立 Standards/Spec 发现均关闭，最终 CI 108 项全部通过；preview 已同步重启并核对，三条临时工作线及分支已清理。本轮后端任务已完成，验证证据在本机 `test-results/backend-architecture/verification/`，扫描报告同级 `review.html`。前端结构尚未纳入本轮扫描，不由后端结果推断整站完全解耦；正式发布、外部模型和用户数据操作授权保持原边界。
 
 测试套件消融与重建已完成并由 [PR #52](https://github.com/DingJWuyu/TeachBuddy/pull/52) 集成：144 个旧执行入口逐行裁决并移除，新套件 92 项在干净 CI 全部通过，独立完成 24 项代表性故障与移组对照，Standards/Spec 无开放发现。四处实际产品缺陷已修复，preview 已同步核对，任务工作树、分支和确认归属的临时文件已清理；当前没有正在执行的测试重建任务。
@@ -19,6 +21,7 @@
 | `TeachBuddy-preview` / `preview/integration` | 集成及用户体验入口，保护私有配置和数据；当前分支与 HEAD 以 Git 核对 |
 | `TeachBuddy` / `main` | 保留稳定分支工作树，不在本轮开发范围 |
 | `TeachBuddy-resources` / `feat/resources-core` | 保留已有资源库现场；本轮不修改或删除，接续前核对其成果和负责 session |
+| `TeachBuddy-architecture-{classroom,device,agent,materials,math}` / `refactor/architecture-{role}` | 本轮五条隔离作者现场；路径、固定版本、写入边界与回执沿当前任务记录接续，公共文件由 integration 唯一写 |
 
 下表能力已集成到 preview。根 [buffer](../../buffer.md) 仅保留用户暂缓的学期数据定义和反馈实际收件方式；此前已采纳的七项修复均完成。测试重建修复的题库冲突刷新、标签重复改名、日程横拖时间漂移与昵称成功误报已集成，版本与证据见[核查入口](#核查入口)。
 
