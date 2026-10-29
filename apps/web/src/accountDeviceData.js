@@ -3,7 +3,7 @@ import { clearQuestionDeviceData } from './features/questions/uploadRecovery.js'
 import { clearResourceDeviceData } from './features/resources/pendingRequests.js';
 import { clearMathDeviceData } from './features/math/uploadDraft.js';
 import { clearAgentDeviceData } from './features/agent/AgentProvider.jsx';
-import { clearRecoveryDeviceData } from './features/reliability/deviceRecovery.js';
+import { clearRecoveryDeviceData } from './platform/device/deviceRecovery.js';
 import { clearClassroomDeviceData } from './features/classroom/api.js';
 import { clearSampleWeekDeviceData } from './features/workbench/demo/seed.js';
 

@@ -407,7 +407,17 @@ export function useSavableDocument({
       const object = await apiRef.current.load();
       if (epoch !== seqRef.current) return null;
       const latest = stateRef.current;
-      if (latest.pending || !['clean', 'saved'].includes(latest.status)) {
+      if (latest.loadState === 'error') {
+        // A comparison read restores the ability to confirm the original request;
+        // it never adopts the server input over a pending or newer local draft.
+        const local = readLocal(accountKey, draftName(kind, draftId));
+        const baseline = latest.baseline ?? restoreBaseline(local, object) ?? object;
+        const input = latest.input ?? apiRef.current.inputFromObject(object);
+        const conflict = latest.status === 'conflict' || baseline.version !== object.version;
+        commit({ loadState: 'ready', loadError: null, baseline, input, serverObject: object,
+          status: conflict ? 'conflict' : latest.pending ? 'unconfirmed' : sameInput(input, apiRef.current.inputFromObject(object)) ? 'clean' : 'dirty',
+          problem: conflict ? { kind: 'conflict', currentVersion: object.version, message: '内容已在别处修改' } : null });
+      } else if (latest.pending || !['clean', 'saved'].includes(latest.status)) {
         if (!latest.pending && (latest.status === 'conflict' || (latest.baseline && latest.baseline.version !== object.version)))
           commit({ status: 'conflict', serverObject: object, problem: { kind: 'conflict', currentVersion: object.version, message: '内容已在别处修改' } });
       } else {
@@ -415,7 +425,7 @@ export function useSavableDocument({
       }
       return object;
     } catch { return null; }
-  }, [commit]);
+  }, [accountKey, commit, draftId, kind]);
 
   useForegroundRefresh(() => enabled && stateRef.current.baseline ? refreshServer() : null);
 

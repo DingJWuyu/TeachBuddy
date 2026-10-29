@@ -30,7 +30,7 @@ export async function seedSampleWeek({ accountKey, transport, signal }) {
     if (saved?.result) return saved.result;
     const binary = input instanceof FormData;
     let pending = saved;
-    const binaryOptions = { database: 'teachbuddy-sample-week', storeName: 'requests', account: accountKey, name: `pending:sample-week:${step}` };
+    const binaryOptions = { identity: 'sampleWeek', account: accountKey, slot: step };
     if (!pending) {
       pending = { key: crypto.randomUUID(), method, path, ...(binary ? { binary: true } : { body: input }) };
       if (binary) await deviceRequestStore({ ...binaryOptions, action: 'put', value: { key: pending.key, file: input.get('file') } });
@@ -63,4 +63,4 @@ export async function seedSampleWeek({ accountKey, transport, signal }) {
   persist({ ...journal, complete: true });
 }
 
-export const clearSampleWeekDeviceData = account => clearDeviceRequestAccount({ database: 'teachbuddy-sample-week', storeName: 'requests', account });
+export const clearSampleWeekDeviceData = account => clearDeviceRequestAccount({ identity: 'sampleWeek', account });

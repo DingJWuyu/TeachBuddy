@@ -107,7 +107,7 @@ Job 内部 Interface：`jobs.enqueue({principal, kind, target}, mutation)` 在�
 
 示例题目输入为 [question-data.js](../../apps/web/src/features/workbench/demo/question-data.js)，班级、考试和成绩输入为 [classroom-data.json](../../apps/web/src/features/workbench/demo/classroom-data.json)。修改成绩内容后，从仓库根目录运行 `node scripts/demo/generate-sample-assets.mjs`，由[生成器](../../scripts/demo/generate-sample-assets.mjs)通过 xlsx 重建五份成绩表；随代码保留这些可重建资产，正常启动不执行生成器。示例考试按原型不附原卷，不再生成或上传替代原卷。
 
-每步保留账户范围的原请求体、幂等键与已确认对象 ID，失败接续继续原步骤；上传字节独立保留在 `teachbuddy-sample-week` IndexedDB，删号确认后由 `accountDeviceData` 调用 `clearSampleWeekDeviceData` 清理；时间点恢复由 `deviceRecovery` 按 `pending:sample-week:*` 指针转入原有恢复隔离，不自动重发。已确认步骤不因重复点击或恢复而新建。业务记录通过普通真实 API 保存，既有账户内容继续保留。载入示例不创建模拟助理会话，也不证明真实模型效果。当前候选的完整载入与恢复验证查任务记录。
+每步保留账户范围的原请求体、幂等键与已确认对象 ID，失败接续继续原步骤；上传字节独立保留在 `teachbuddy-sample-week` IndexedDB，删号确认后由 `accountDeviceData` 调用 `clearSampleWeekDeviceData` 清理；时间点恢复由设备资料拥有者按示例周槽位转入原有恢复隔离，不自动重发。已确认步骤不因重复点击或恢复而新建。业务记录通过普通真实 API 保存，既有账户内容继续保留。载入示例不创建模拟助理会话，也不证明真实模型效果。当前候选的完整载入与恢复验证查任务记录。
 
 ## 验证入口
 
@@ -116,7 +116,7 @@ Job 内部 Interface：`jobs.enqueue({principal, kind, target}, mutation)` 在�
 ## Web 公共能力的调用边界
 
 - [platform/http](../../apps/web/src/platform/http) 的 `apiClient.js`、`problems.js`、`request.js` 统一请求/问题语义；账户 transport 附加可信身份，平台层不拥有登录表单或模块业务。
-- [platform/device](../../apps/web/src/platform/device) 的 `storage.js`、`deviceRequestStore.js`、`useScene.js`、`uuid.js` 拥有设备存储、未决请求、场景与 ID 原语；账户隔离和迟到响应由使用这些原语的模块保持。
+- [platform/device](../../apps/web/src/platform/device) 的 `storage.js`、`deviceRequestStore.js`、`deviceRecovery.js`、`useScene.js`、`uuid.js` 拥有设备存储、未决请求保全与回收、恢复点隔离、场景与 ID 原语。`requestIdentity.js` 是现有五类原件持久身份的唯一映射，业务 adapter 只绑定逻辑身份和示例周槽位；不参与模块目录装配。`requestReferences.js` 通过 storage 的原文 reader 统一解释活动与归档引用，损坏、未来格式或读取失败均阻止普通回收。恢复 gate 保持账户锁、先归档读回、再迁移旧账户键与移除活动指针的次序；业务决定确认时机，删号仍由 `accountDeviceData` 显式组合各拥有者清理。
 - [platform/saving](../../apps/web/src/platform/saving) 的 `useSavableDocument.js`、`useIdempotentSubmit.js`、`saveStates.js` 承担公共保存状态与幂等提交机制，不解释题目/作品业务内容。
 - [components/ui](../../apps/web/src/components/ui) 提供确认、浮层、分段、日期时间、筛选与模块右轨；`menu.jsx` 的 Menu/MenuItem 与 `dialog.jsx` 的 Dialog/Overlay 统一业务菜单和对话框的 portal、键盘及焦点。菜单 Tab/Shift+Tab 关闭浮层后从触发器继续原页面的键盘顺序；`motion.js`、`colors.js`、`classNames.js` 提供公共呈现原语。共享图标统一由 `components/icons.jsx` 导出，产品通过正常 imports 消费，不使用原型全局桥接。
 - `popover.jsx` 的 `shellRoot()` 为锚定浮层和确认框选择宿主：存在原生全屏元素时挂入该元素，否则使用工作台外壳。这样课堂展示中的菜单和二次确认仍处于可交互的全屏层内。

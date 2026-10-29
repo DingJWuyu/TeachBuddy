@@ -7,8 +7,8 @@ import { tx } from '../../i18n/presentation.js';
 
 const BASE = '/api/modules/classroom';
 const PENDING = 'pending:classroom';
-const binaryStore = (account, action, value) => deviceRequestStore({ database: 'teachbuddy-classroom-pending', storeName: 'requests', account, name: 'pending:classroom-upload', action, value });
-export const clearClassroomDeviceData = account => clearDeviceRequestAccount({ database: 'teachbuddy-classroom-pending', storeName: 'requests', account });
+const binaryStore = (account, action, value) => deviceRequestStore({ identity: 'classroom', account, action, value });
+export const clearClassroomDeviceData = account => clearDeviceRequestAccount({ identity: 'classroom', account });
 const query = params => {
   const search = new URLSearchParams();
   for (const [name, value] of Object.entries(params || {})) if (value != null && value !== '' && (!Array.isArray(value) || value.length)) search.set(name, Array.isArray(value) ? value.join(',') : value);

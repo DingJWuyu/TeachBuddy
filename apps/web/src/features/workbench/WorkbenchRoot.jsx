@@ -1,7 +1,7 @@
 import { getWorkbenchContext } from './api.js';
 import { moduleCatalogVersion } from '@teachbuddy/shared';
 import { useTranslation } from 'react-i18next';
-import { prepareDeviceRecovery } from '../reliability/deviceRecovery.js';
+import { prepareDeviceRecovery } from '../../platform/device/deviceRecovery.js';
 import { useEffect, useState } from 'react';
 import { useAuth } from '../auth/index.jsx';
 import { bindWorkbenchTransport, setIdentityLostListener, workbenchGet } from '../../platform/http/apiClient.js';

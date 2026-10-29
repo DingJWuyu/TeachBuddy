@@ -1,26 +1,13 @@
-import { isDeletedAccount } from '../../platform/device/storage.js';
+import { isDeletedAccount } from './storage.js';
+import { requestIdentities, openRequestDatabase } from './requestIdentity.js';
+import { archivePrefix as prefix, readArchive, archivedRequestKeys } from './requestReferences.js';
 // Move existing device state out of the active namespaces before mounting any
 // editor after a time-point restore. Values remain byte-for-byte inspectable.
 const tracker = (account) => `teachbuddy:data-recovery:${account}`;
-const prefix = (account) => `teachbuddy:data-recovery-archive:${account}:`;
-const stores = [
-  ["teachbuddy-resources-pending", "requests", "pending:resources"],
-  ["teachbuddy.math.uploads", "pending", "pending:math-upload"],
-  ["teachbuddy.questions.uploads", "pending", "pending:questions-upload"],
-  ["teachbuddy-classroom-pending", "requests", "pending:classroom-upload"],
-  ["teachbuddy-sample-week", "requests", "pending:sample-week:"],
-];
-function database(name, store) {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(name, 1);
-    request.onupgradeneeded = () => request.result.createObjectStore(store);
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
-  });
-}
 async function moveUploads(account, recoveryId) {
-  for (const [name, storeName] of stores) {
-    const db = await database(name, storeName);
+  for (const binding of Object.values(requestIdentities)) {
+    const { storeName } = binding;
+    const db = await openRequestDatabase(binding);
     try {
       await new Promise((resolve, reject) => {
         const tx = db.transaction(storeName, "readwrite"),
@@ -55,12 +42,13 @@ async function prepare(account, context) {
     (previous !== null || context.recoveredFrom);
   if (changed) {
     const key = prefix(account) + context.recoveryId;
-    const archive = JSON.parse(localStorage.getItem(key) || "null") ?? {
+    const raw = localStorage.getItem(key);
+    const archive = raw === null ? {
       from: previous,
       to: context.recoveryId,
       createdAt: new Date().toISOString(),
       records: {},
-    };
+    } : readArchive(raw);
     const names = Object.keys(localStorage).filter(
       (name) =>
         name.startsWith(`tb.workbench.v1:${account}:`) ||
@@ -94,14 +82,7 @@ export function recoveryArchives(account) {
       .map((name) => {
         const raw = localStorage.getItem(name);
         try {
-          const archive = JSON.parse(raw);
-          if (
-            !archive ||
-            typeof archive.to !== "string" ||
-            !archive.records ||
-            typeof archive.records !== "object"
-          )
-            throw new Error("Unknown archive");
+          const archive = readArchive(raw);
           return archive;
         } catch {
           return { to: name, createdAt: null, records: { unrecognized: raw } };
@@ -115,26 +96,10 @@ export function recoveryArchives(account) {
 export async function archivedUploads(account, recoveryId) {
   const result = [];
   const archive = recoveryArchives(account).find(item => item.to === recoveryId);
-  for (const [name, storeName, logicalName] of stores) {
-    const keys = new Set([`${account}:recovery:${recoveryId}`]);
-    // New requests keep immutable binary records behind legacy or branch pointers.
-    // Read the archived pointers, including restores completed before this reader existed.
-    for (const [recordName, raw] of Object.entries(archive?.records ?? {})) {
-      if (!recordName.startsWith(`tb.workbench.v1:${account}:`)) continue;
-      const ownsPointer = logicalName.endsWith(":")
-        ? recordName.includes(`:${logicalName}`)
-        : recordName.endsWith(`:${logicalName}`);
-      if (!ownsPointer) continue;
-      try {
-        const record = JSON.parse(raw);
-        const pointer = record?.formatVersion === 2 ? record.value : record;
-        if (typeof pointer?.idbKey === "string" && pointer.idbKey.startsWith(`${account}:`))
-          keys.add(pointer.idbKey);
-      } catch {
-        // Unrecognized draft text remains available through the original archive.
-      }
-    }
-    const db = await database(name, storeName);
+  for (const binding of Object.values(requestIdentities)) {
+    const keys = new Set([`${account}:recovery:${recoveryId}`, ...archivedRequestKeys(account, archive, binding)]);
+    const { storeName } = binding;
+    const db = await openRequestDatabase(binding);
     try {
       for (const key of keys) {
         const value = await new Promise((resolve, reject) => {
@@ -142,7 +107,7 @@ export async function archivedUploads(account, recoveryId) {
           request.onsuccess = () => resolve(request.result);
           request.onerror = () => reject(request.error);
         });
-        if (value !== undefined) result.push({ store: name, value });
+        if (value !== undefined) result.push({ store: binding.database, value });
       }
     } finally {
       db.close();

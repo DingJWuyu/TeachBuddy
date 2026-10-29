@@ -199,9 +199,9 @@ export function WorkbenchSettings() {
       <Row title={t("语言")}><LanguageMenu value={language} onChange={setLanguage} disabled={appearanceDisabled} /></Row>
       <Row title={t("内容背景")} description={t("自定义所有页面的内容区背景")} className="settings-background-row"><BackgroundChoices value={background} image={shell.appearance.backgroundImage || ''} disabled={appearanceDisabled} onChange={patch => shell.setAppearance(patch)} choices={backgrounds.map(([value, text]) => [value, t(text)])} /></Row>
       <div className="settings-save-status" role="status">{preferences.isSaving ? t("正在保存…") : preferences.status === 'saved' || preferences.status === 'clean' ? t("已保存") : ''}</div>
-      {preferences.loadState === 'error' && <p role="alert">{t("设置读取失败。")}<button className="wb-button" onClick={() => preferences.adoptServer()}>{t("重新读取")}</button></p>}
-      {['failed', 'unconfirmed'].includes(preferences.status) && <p role="alert">{t("设置尚未保存。")}<button className="wb-button" onClick={() => preferences.pending ? preferences.retryConfirm() : preferences.save()}>{t("重试保存")}</button></p>}
-      {preferences.status === 'conflict' && <p role="alert">{t("设置已在其他页面更新。")}<button className="wb-button" onClick={() => preferences.pending ? preferences.retryConfirm() : preferences.adoptServer()}>{preferences.pending ? t("确认上次保存") : t("使用已保存设置")}</button></p>}
+      {preferences.loadState === 'error' && <p role="alert">{t("设置读取失败。")}<button className="wb-button" onClick={() => preferences.refreshServer()}>{t("重新读取")}</button></p>}
+      {['failed', 'unconfirmed'].includes(preferences.status) && <p role="alert">{t("设置尚未保存。")}<button className="wb-button" onClick={() => preferences.retrySave()}>{t("重试保存")}</button></p>}
+      {preferences.status === 'conflict' && <p role="alert">{t("设置已在其他页面更新。")}<button className="wb-button" onClick={() => preferences.pending ? preferences.retrySave() : preferences.adoptServer()}>{preferences.pending ? t("确认上次保存") : t("使用已保存设置")}</button></p>}
     </div>
     <DataManagement accountActions={<>
       <Row title={t("数据处理协议")}><button className="wb-button" onClick={() => setModal('agreement')}>{t("签署协议")}</button></Row>

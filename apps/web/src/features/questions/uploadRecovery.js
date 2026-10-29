@@ -4,8 +4,7 @@ import { deviceRequestStore, clearDeviceRequestAccount } from '../../platform/de
 import { readLocal, writeLocal } from '../../platform/device/storage.js';
 import { upload } from './materials-api.js';
 const store = (account, action = 'get', value) => deviceRequestStore({
-  database: 'teachbuddy.questions.uploads', storeName: 'pending', account,
-  name: 'pending:questions-upload', action, value
+  identity: 'questions', account, action, value
 });
 export const pendingQuestionUpload = account => store(account);
 export async function uploadQuestionFile(account, transport, file) {
@@ -31,5 +30,5 @@ export async function uploadQuestionFile(account, transport, file) {
 }
 
 export async function clearQuestionDeviceData(account) {
-  await clearDeviceRequestAccount({ database: 'teachbuddy.questions.uploads', storeName: 'pending', account });
+  await clearDeviceRequestAccount({ identity: 'questions', account });
 }

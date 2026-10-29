@@ -1,4 +1,6 @@
-import { listLocalNames, readLocal, removeLocal, writeLocal, isDeletedAccount } from './storage.js';
+import { requestIdentity, openRequestDatabase } from './requestIdentity.js';
+import { canReclaimRequest } from './requestReferences.js';
+import { readLocal, removeLocal, writeLocal, isDeletedAccount } from './storage.js';
 async function fileIdentity(file) {
   const sha256 = [...new Uint8Array(await crypto.subtle.digest('SHA-256', await file.arrayBuffer()))]
     .map(value => value.toString(16).padStart(2, '0')).join('');
@@ -16,13 +18,12 @@ export async function reselectDeviceFile(request, file) {
 
 /** Binary upload bodies live in IndexedDB. A branch-local pointer prevents two
  * tabs from replacing each other's original request or file bytes. */
-export async function deviceRequestStore({ database, storeName, account, name, action = 'get', value }) {
-  const db = await new Promise((resolve, reject) => {
-    const request = indexedDB.open(database, 1);
-    request.onupgradeneeded = () => request.result.createObjectStore(storeName);
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
-  });
+export async function deviceRequestStore({ identity, slot, account, action = 'get', value }) {
+  const binding = requestIdentity(identity);
+  const { storeName } = binding;
+  if (binding.slots && (typeof slot !== 'string' || !slot)) throw new Error('Device request slot required');
+  const name = binding.slots ? binding.name + slot : binding.name;
+  const db = await openRequestDatabase(binding);
   const transact = (method, key, data) => new Promise((resolve, reject) => {
     if (method === 'put' && isDeletedAccount(account)) { reject(new Error('Account deleted')); return; }
     const tx = db.transaction(storeName, method === 'get' ? 'readonly' : 'readwrite');
@@ -33,21 +34,7 @@ export async function deviceRequestStore({ database, storeName, account, name, a
   });
   async function removeIfUnreferenced(key) {
     if (!key) return;
-    const prefix = `tb.workbench.v1:${account}:`;
-    const referenced = listLocalNames(account).some(name => {
-      try { return localStorage.getItem(prefix + name)?.includes(JSON.stringify(key)); } catch { return true; }
-    });
-    if (referenced) return;
-    // Recovery archives still own these bytes after active pointers are removed.
-    const archivePrefix = `teachbuddy:data-recovery-archive:${account}:`;
-    try {
-      for (const name of Object.keys(localStorage)) {
-        if (!name.startsWith(archivePrefix)) continue;
-        const archive = JSON.parse(localStorage.getItem(name));
-        if (Object.values(archive.records ?? {}).some(raw =>
-          typeof raw === 'string' && raw.includes(JSON.stringify(key)))) return;
-      }
-    } catch { return; }
+    if (!canReclaimRequest(account, binding, key)) return;
     await transact('delete', key);
   }
   try {
@@ -82,13 +69,10 @@ export async function deviceRequestStore({ database, storeName, account, name, a
 }
 
 /** Remove every binary record in this account partition, including archives. */
-export async function clearDeviceRequestAccount({ database, storeName, account }) {
-  const db = await new Promise((resolve, reject) => {
-    const request = indexedDB.open(database, 1);
-    request.onupgradeneeded = () => request.result.createObjectStore(storeName);
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
-  });
+export async function clearDeviceRequestAccount({ identity, account }) {
+  const binding = requestIdentity(identity);
+  const { storeName } = binding;
+  const db = await openRequestDatabase(binding);
   try {
     await new Promise((resolve, reject) => {
       const tx = db.transaction(storeName, 'readwrite');
