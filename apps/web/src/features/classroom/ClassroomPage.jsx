@@ -1,9 +1,10 @@
 import { useScene } from '../../platform/device/useScene.js';
 import React from 'react';
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { tx, useLocale } from '../../i18n/presentation.js';
 import { cx } from '../../components/ui/classNames.js';
 import { Icon, Seg, Menu, Dialog, Confirm, Field, Empty, useToast } from './ui.jsx';
+import { useClassroomSubmission } from './useSubmission.js';
 import { Seating } from './Seating.jsx';
 import { Roster, StudentDetail, StudentForm } from './Students.jsx';
 import { ClassScores } from './Scores.jsx';
@@ -40,31 +41,13 @@ function useData(api) {
   return [data, load];
 }
 
-function ClassForm({ api, initial, onClose, onSaved }) {
+function ClassForm({ api, initial, reload, onClose, onSaved }) {
   const [name, setName] = useState(initial?.name ?? '');
   const [term, setTerm] = useState(initial?.term ?? '');
-  const [error, setError] = useState('');
-  const [busy, setBusy] = useState(false);
-  const written = useRef(null);
-  const save = async (e) => {
+  const { busy, error, submit } = useClassroomSubmission({ api, collection: 'classes', initial, reload });
+  const save = (e) => {
     e?.preventDefault();
-    if (busy) return;
-    setBusy(true);
-    setError('');
-    let completing = false;
-    try {
-      const body = { name, term }, signature = JSON.stringify(body);
-      if (written.current?.signature !== signature) {
-        const target = written.current?.saved || initial;
-        const saved = target
-          ? await api.put(`/classes/${target.id}`, { baseVersion: target.version, ...body })
-          : await api.post('/classes', body);
-        written.current = { saved, signature };
-      }
-      completing = true;
-      await onSaved(written.current.saved);
-      onClose();
-    } catch (err) { setError(completing ? tx('班级暂时无法读取') : err.message); } finally { setBusy(false); }
+    return submit({ name, term }, (saved) => { onSaved(saved); onClose(); });
   };
   return (
     <Dialog
@@ -206,7 +189,7 @@ export function ClassroomWorkspace({ api, shell }) {
         <RailHint tone="green" onClick={() => shell.openPanel?.('ai')}>{tx('想知道谁最近进步了、哪类题失分多？问问助理。')}</RailHint>
       </Rail>
 
-      {dialog?.name === 'class' && <ClassForm api={api} {...dialog.props} onClose={close} onSaved={async (c) => { await reload({ propagate: true }); go({ view: 'class', classId: c.id, studentId: null }); toast(dialog.props.initial ? tx('已保存') : tx('班级已创建')); }} />}
+      {dialog?.name === 'class' && <ClassForm api={api} reload={reload} {...dialog.props} onClose={close} onSaved={(c) => { go({ view: 'class', classId: c.id, studentId: null }); toast(dialog.props.initial ? tx('已保存') : tx('班级已创建')); }} />}
       {dialog?.name === 'student' && <StudentForm ctx={ctx} {...dialog.props} onClose={close} />}
       {dialog?.name === 'exam' && <ExamForm ctx={ctx} {...dialog.props} onClose={close} />}
       {dialog?.name === 'import' && data.loaded && !data.error && <ImportDialog ctx={ctx} {...dialog.props} onClose={close} />}
