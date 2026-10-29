@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { createAgentSession, SessionManager, SettingsManager, DefaultResourceLoader, ModelRuntime } from '@earendil-works/pi-coding-agent';
 import { InMemoryCredentialStore } from '@earendil-works/pi-ai';
-import { toolDefinitions, agentError, agentProblem } from './schema.js';
+import { agentError, agentProblem } from './schema.js';
 import { timestamp } from './store.js';
 import { outcome, prepareCalls, settleCalls, updateOperation } from './tools.js';
 export const MODEL_IDS = ['deepseek/deepseek-v4.1-flash', 'z-ai/glm-5.3-flash'];
@@ -72,7 +72,7 @@ export function createPiRuntime({ store, executor, identity, config = {} }) {
         if (Date.now() >= deadline) { handle.reason = 'run-limit'; throw new Error('Run limit'); }
         return p;
       }
-      const customTools = toolDefinitions.map(tool => ({ name: tool.name, label: tool.operationId, description: tool.operationId === 'proposeTeachingCard' ? '提出可审阅的讲解安排、练习或变式卡片。仅生成卡片，等待老师点击后才保存业务对象。' : `${tool.operationId}: ${tool.mutation ? '按明确请求保存，必须使用当前版本' : '读取老师自己的已保存内容'}`,
+      const customTools = executor.availableTools.map(tool => ({ name: tool.name, label: tool.operationId, description: tool.operationId === 'proposeTeachingCard' ? '提出可审阅的讲解安排、练习或变式卡片。仅生成卡片，等待老师点击后才保存业务对象。' : `${tool.operationId}: ${tool.mutation ? '按明确请求保存，必须使用当前版本' : '读取老师自己的已保存内容'}`,
         parameters: tool.parameters,
         async execute(callId) {
           const principal = await authorize();
@@ -87,7 +87,7 @@ export function createPiRuntime({ store, executor, identity, config = {} }) {
         }
       }));
       const created = await createAgentSession({ modelRuntime: runtime, model, sessionManager: manager, settingsManager: settings,
-        resourceLoader: loader, noTools: 'builtin', tools: toolDefinitions.map(t => t.name), customTools, thinkingLevel: 'off' });
+        resourceLoader: loader, noTools: 'builtin', tools: executor.availableTools.map(t => t.name), customTools, thinkingLevel: 'off' });
       const session = created.session; handle.session = session;
       if (handle.reason === 'auth-invalid') throw new Error('Account deleted');
       if (created.modelFallbackMessage || session.model?.id !== turn.modelId || session.model?.provider !== PROVIDER) throw agentError('model-unavailable');

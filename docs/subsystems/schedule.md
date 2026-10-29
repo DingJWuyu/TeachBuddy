@@ -4,9 +4,9 @@
 
 ## 责任与调用面
 
-[createScheduleModule](../../apps/api/src/modules/schedule/index.js) 是唯一日程模块入口，接收公共数据库、mutations 与可信时钟，内部组合业务 service 和 reminders：先为业务绑定同步 beforeChange 闭包，再创建提醒，将 reminders router 挂入模块 router，并扩展只读导出包含通知。提醒结算和迁移均归日程。显式 `beforeChange` 只用于隔离 fixture 的同步接缝，正常组合使用本模块的 `reminders.captureDue`。
+[createScheduleModule](../../apps/api/src/modules/schedule/index.js) 是日程运行入口，接收公共数据库、mutations 与可信时钟，内部组合业务 service 和 reminders：先为业务绑定同步 beforeChange 闭包，再创建提醒，将 reminders router 挂入模块 router。提醒结算和迁移均归日程，资料维护经下述 lifecycle 入口。显式 `beforeChange` 只用于隔离 fixture 的同步接缝，正常组合使用本模块的 `reminders.captureDue`。
 
-HTTP 在 [router](../../apps/api/src/modules/schedule/router.js) 提供安排、事项、重复/例外、分离/移动、删除、标签、设置及日历查询，通知由 [reminders](../../apps/api/src/modules/schedule/reminders/index.js) 提供。公开 port 的同步 `readReference(principal, {id, originDate?})` 返回 `{entry, occurrence}`；未选实例时 occurrence 为 null，选定时复用 `readOccurrence`。引用读不自行拒绝已归档 Entry，发送时由消费者按公开状态判断。原 `readOccurrence`、`listReminderCandidates`、`readForExport` 保留。
+HTTP 在 [router](../../apps/api/src/modules/schedule/router.js) 提供安排、事项、重复/例外、分离/移动、删除、标签、设置及日历查询，通知由 [reminders](../../apps/api/src/modules/schedule/reminders/index.js) 提供。公开 port 的同步 `readReference(principal, {id, originDate?})` 返回 `{entry, occurrence}`；未选实例时 occurrence 为 null，选定时复用 `readOccurrence`。引用读不自行拒绝已归档 Entry，发送时由消费者按公开状态判断。`readOccurrence` 与 `listReminderCandidates` 保留。
 
 `port.operations.createEntry({principal, key, input})` 返回 `{status: 201, body: Entry}`，复用 HTTP 的 `validateCreateEntry`、规范路径和幂等事务，调用同一 service 与提醒结算。助理确认安排卡通过此入口创建待安排事项，不修改引用的原课程。导出的 `createScheduleService` 仍只是构造能力；跨模块调用使用上述已装配 port，不直接构造服务或访问日程表。
 
@@ -31,7 +31,7 @@ HTTP 写入由认证 transport 附加页面/保护头和逻辑 UUID key，router
 
 - [Web 日历](../../apps/web/src/features/schedule/index.jsx) 通过本模块 [api](../../apps/web/src/features/schedule/api.js) 经公共认证 transport 到模块 router，业务 [service](../../apps/api/src/modules/schedule/service.js) / [repository](../../apps/api/src/modules/schedule/repository.js) 管理安排、例外、实例启用点、标签与设置。
 - [reminders](../../apps/api/src/modules/schedule/reminders/index.js) 以 schedule port 读取候选/实例，保存通知与去重事实；安排改动和到期结算共用 SQLite。永久删除保留已有通知与成功回执，旧软删除请求仍可核实，见契约。
-- 资料包读取组合后的 `readForExport`，包含完整安排/例外和通知；执行去重与 armedAt 是部署状态，不混为可移植个人资料。
+- [lifecycle](../../apps/api/src/modules/schedule/lifecycle.js) 在受理事务内读取完整安排/例外和通知，生成资料包对象，并拥有恢复关系校验和账户清理；只读快照不补写设置或结算通知。执行去重与 armedAt 是部署状态，不混为可移植个人资料。
 
 模块 [index](../../apps/api/src/modules/schedule/index.js) 合并业务与 reminders migrations 后统一导出；账户生命周期沿 [account-deletion](../../apps/api/src/workbench/account-deletion.js) 调用日程模块的 `deleteAccountData`，在外层事务中按 accountKey 显式清理该账户通知和日程数据，保留其他账户。reminders 工厂没有独立公开清理端口。日程不依赖题库、班级或教学记录业务。
 

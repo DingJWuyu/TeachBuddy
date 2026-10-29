@@ -111,8 +111,11 @@ test('C4 统一作品课堂包禁网 file 冷开，完整构造与参数步骤�
   const source = JSON.parse(fs.readFileSync(new URL('../fixtures/math-workshop/saved-plane-view-source.json', import.meta.url)));
   const work = await create(world.client, { title: '统一课堂作品', source, originalFileId: null });
   assert.equal(work.render.state, 'ready');
+  const construction = await exported(world.client, work, 'ggb', { selection: 'graph', width: 1600 });
+  assert.deepEqual(await download(world.client, construction.file.id), Buffer.from(source.graph.base64, 'base64'), '构造文件下载须保留保存版本的完整原字节');
   const artifact = await exported(world.client, work, 'bundle', { selection: 'work' });
   assert.equal(artifact.offline, 'self-contained');
+  assert.equal(artifact.file.id, work.render.presentationFileId, '课堂下载须复用 revision 的固定成果，不能重新解释源');
   const zip = await JSZip.loadAsync(await download(world.client, artifact.file.id));
   assert.deepEqual(JSON.parse(await zip.file('workshop.json').async('string')), source, '课堂包应包含同一已保存完整制作源');
   const directory = path.join(world.directory, 'classroom');
@@ -244,6 +247,20 @@ test('C4 纯公式统一作品可保存编辑源并导出真实透明公式', { 
   const stats = await sharp(bytes).stats();
   assert.equal(metadata.hasAlpha, true);
   assert.ok(stats.channels[3].min === 0 && stats.channels[3].max === 255, '公式须包含透明留白与真实字形');
+  const classroom = await exported(world.client, work, 'bundle', { selection: 'work' });
+  assert.equal(classroom.file.id, work.render.presentationFileId);
+  const zip = await JSZip.loadAsync(await download(world.client, classroom.file.id));
+  const filename = path.join(world.directory, 'formula-classroom.html');
+  fs.writeFileSync(filename, await zip.file('index.html').async('nodebuffer'));
+  await world.close();
+  const { context, remote } = await offlineBrowser(t);
+  const page = await context.newPage();
+  await page.goto(pathToFileURL(filename).href);
+  await page.locator('.formula-row svg path').first().waitFor();
+  assert.match(await page.locator('.formula-row').textContent(), /判别式/, '课堂公式须保留原说明与实际矢量字形');
+  assert.equal(await page.locator('.graph').count(), 0, '纯公式课堂无需图形引擎');
+  assert.deepEqual(remote, [], '纯公式课堂也不能依赖 CDN 或制作服务');
+  await context.close();
   world.complete();
 });
 

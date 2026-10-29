@@ -1062,7 +1062,7 @@
                 "type": "string"
               },
               "snapshot": {
-                "$ref": "workbench.openapi.yaml#/components/schemas/Question"
+                "$ref": "#/components/schemas/Question"
               },
               "capturedAt": {
                 "type": "string",
@@ -1719,7 +1719,7 @@
         "type": "object",
         "properties": {
           "body": {
-            "$ref": "workbench.openapi.yaml#/components/schemas/CreateQuestion"
+            "$ref": "#/components/schemas/CreateQuestion"
           }
         },
         "required": [
@@ -1735,7 +1735,7 @@
             "format": "uuid"
           },
           "body": {
-            "$ref": "workbench.openapi.yaml#/components/schemas/UpdateQuestion"
+            "$ref": "#/components/schemas/UpdateQuestion"
           }
         },
         "required": [
@@ -1752,7 +1752,7 @@
             "format": "uuid"
           },
           "body": {
-            "$ref": "workbench.openapi.yaml#/components/schemas/CopyQuestion"
+            "$ref": "#/components/schemas/CopyQuestion"
           }
         },
         "required": [
@@ -1915,7 +1915,7 @@
               {
                 "oneOf": [
                   {
-                    "$ref": "workbench.openapi.yaml#/components/schemas/Question"
+                    "$ref": "#/components/schemas/Question"
                   }
                 ]
               },
@@ -2042,10 +2042,10 @@
               "result": {
                 "anyOf": [
                   {
-                    "$ref": "workbench.openapi.yaml#/components/schemas/Question"
+                    "$ref": "#/components/schemas/Question"
                   },
                   {
-                    "$ref": "workbench.openapi.yaml#/components/schemas/QuestionList"
+                    "$ref": "#/components/schemas/QuestionList"
                   },
                   {
                     "$ref": "#/components/schemas/TeachingProposal"
@@ -2072,7 +2072,7 @@
               "result": {
                 "oneOf": [
                   {
-                    "$ref": "workbench.openapi.yaml#/components/schemas/Question"
+                    "$ref": "#/components/schemas/Question"
                   },
                   {
                     "$ref": "schedule-v2.openapi.json#/components/schemas/Entry"
@@ -2863,10 +2863,10 @@
           "result": {
             "anyOf": [
               {
-                "$ref": "workbench.openapi.yaml#/components/schemas/QuestionList"
+                "$ref": "#/components/schemas/QuestionList"
               },
               {
-                "$ref": "workbench.openapi.yaml#/components/schemas/Question"
+                "$ref": "#/components/schemas/Question"
               },
               {
                 "type": "null"
@@ -3005,7 +3005,7 @@
                   "result": {
                     "anyOf": [
                       {
-                        "$ref": "workbench.openapi.yaml#/components/schemas/QuestionList"
+                        "$ref": "#/components/schemas/QuestionList"
                       },
                       {
                         "type": "null"
@@ -3032,7 +3032,7 @@
                   "result": {
                     "anyOf": [
                       {
-                        "$ref": "workbench.openapi.yaml#/components/schemas/Question"
+                        "$ref": "#/components/schemas/Question"
                       },
                       {
                         "type": "null"
@@ -3059,7 +3059,7 @@
                   "result": {
                     "anyOf": [
                       {
-                        "$ref": "workbench.openapi.yaml#/components/schemas/QuestionList"
+                        "$ref": "#/components/schemas/QuestionList"
                       },
                       {
                         "type": "null"
@@ -3086,7 +3086,7 @@
                   "result": {
                     "anyOf": [
                       {
-                        "$ref": "workbench.openapi.yaml#/components/schemas/Question"
+                        "$ref": "#/components/schemas/Question"
                       },
                       {
                         "type": "null"
@@ -3113,7 +3113,7 @@
                   "result": {
                     "anyOf": [
                       {
-                        "$ref": "workbench.openapi.yaml#/components/schemas/Question"
+                        "$ref": "#/components/schemas/Question"
                       },
                       {
                         "type": "null"
@@ -3140,7 +3140,7 @@
                   "result": {
                     "anyOf": [
                       {
-                        "$ref": "workbench.openapi.yaml#/components/schemas/Question"
+                        "$ref": "#/components/schemas/Question"
                       },
                       {
                         "type": "null"
@@ -3167,7 +3167,7 @@
                   "result": {
                     "anyOf": [
                       {
-                        "$ref": "workbench.openapi.yaml#/components/schemas/Question"
+                        "$ref": "#/components/schemas/Question"
                       },
                       {
                         "type": "null"
@@ -3538,6 +3538,56 @@
       },
       "ProposalQuestionResult": {
         "$ref": "materials.openapi.yaml#/components/schemas/Question"
+      },
+      "Question": {
+        "anyOf": [
+          {
+            "$ref": "workbench.openapi.yaml#/components/schemas/Question"
+          },
+          {
+            "$ref": "materials.openapi.yaml#/components/schemas/Question"
+          }
+        ]
+      },
+      "QuestionList": {
+        "anyOf": [
+          {
+            "$ref": "workbench.openapi.yaml#/components/schemas/QuestionList"
+          },
+          {
+            "$ref": "materials.openapi.yaml#/components/schemas/QuestionList"
+          }
+        ]
+      },
+      "CreateQuestion": {
+        "anyOf": [
+          {
+            "$ref": "workbench.openapi.yaml#/components/schemas/CreateQuestion"
+          },
+          {
+            "$ref": "materials.openapi.yaml#/components/schemas/CreateQuestion"
+          }
+        ]
+      },
+      "UpdateQuestion": {
+        "anyOf": [
+          {
+            "$ref": "workbench.openapi.yaml#/components/schemas/UpdateQuestion"
+          },
+          {
+            "$ref": "materials.openapi.yaml#/components/schemas/UpdateQuestion"
+          }
+        ]
+      },
+      "CopyQuestion": {
+        "anyOf": [
+          {
+            "$ref": "workbench.openapi.yaml#/components/schemas/CopyQuestion"
+          },
+          {
+            "$ref": "materials.openapi.yaml#/components/schemas/CopyQuestion"
+          }
+        ]
       }
     }
   },
@@ -3551,7 +3601,7 @@
         "$ref": "#/components/schemas/Tool_listQuestions"
       },
       "response": {
-        "$ref": "workbench.openapi.yaml#/components/schemas/QuestionList"
+        "$ref": "#/components/schemas/QuestionList"
       },
       "mutation": false
     },
@@ -3564,7 +3614,7 @@
         "$ref": "#/components/schemas/Tool_getQuestion"
       },
       "response": {
-        "$ref": "workbench.openapi.yaml#/components/schemas/Question"
+        "$ref": "#/components/schemas/Question"
       },
       "mutation": false
     },
@@ -3577,7 +3627,7 @@
         "$ref": "#/components/schemas/Tool_listDerivatives"
       },
       "response": {
-        "$ref": "workbench.openapi.yaml#/components/schemas/QuestionList"
+        "$ref": "#/components/schemas/QuestionList"
       },
       "mutation": false
     },
@@ -3590,7 +3640,7 @@
         "$ref": "#/components/schemas/Tool_createQuestion"
       },
       "response": {
-        "$ref": "workbench.openapi.yaml#/components/schemas/Question"
+        "$ref": "#/components/schemas/Question"
       },
       "mutation": true
     },
@@ -3603,7 +3653,7 @@
         "$ref": "#/components/schemas/Tool_updateQuestion"
       },
       "response": {
-        "$ref": "workbench.openapi.yaml#/components/schemas/Question"
+        "$ref": "#/components/schemas/Question"
       },
       "mutation": true
     },
@@ -3616,7 +3666,7 @@
         "$ref": "#/components/schemas/Tool_copyQuestion"
       },
       "response": {
-        "$ref": "workbench.openapi.yaml#/components/schemas/Question"
+        "$ref": "#/components/schemas/Question"
       },
       "mutation": true
     },
@@ -3629,7 +3679,7 @@
         "$ref": "#/components/schemas/Tool_setQuestionDeletion"
       },
       "response": {
-        "$ref": "workbench.openapi.yaml#/components/schemas/Question"
+        "$ref": "#/components/schemas/Question"
       },
       "mutation": true
     },

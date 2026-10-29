@@ -5,6 +5,7 @@ import { createServer } from "node:http";
 import { fileURLToPath } from "node:url";
 import { createApp } from "../../../src/app.js";
 import { createQuestionsModule } from "../../../src/modules/questions/index.js";
+import { moduleImplementations } from "../../../src/workbench/moduleImplementations.js";
 export async function startQuestionsFixture({
   dataDir,
   port = 48339,
@@ -37,12 +38,11 @@ export async function startQuestionsFixture({
         logDir: path.resolve(dataDir, "logs"),
         extraImplementations: {
           questions: {
+            ...moduleImplementations.questions,
             factory: async () => ({
               createQuestionsModule: (deps) =>
                 (module = createQuestionsModule({ ...deps, provider })),
             }),
-            migrations: () =>
-              import("../../../src/modules/questions/migrations/index.js"),
           },
         },
         jobHandlers: {

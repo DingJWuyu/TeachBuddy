@@ -1,3 +1,4 @@
+import { createAgentRecoveryGuard } from '../agent/lifecycle.js';
 import { classRetirementMigrations, assertRetiredClassLedger } from './retire-classes.js';
 import { retirementMigrations } from './retire-lessons.js';
 import { createNavigationRouter, navigationMigrations } from './navigation.js';
@@ -183,6 +184,12 @@ export function createWorkbench({
     initialization ??= (async () => {
       await loader.discover();
       assertRetiredClassLedger(db);
+      const knownOwners = new Set(['auth', 'agent', 'lessons', 'classes',
+        'reliability', 'materials-files', 'materials-jobs', 'materials-recognition',
+        'reliability-preferences', 'workbench-navigation', 'workbench-retirement',
+        ...loader.moduleMigrations().map(entry => entry.moduleId)]);
+      for (const row of db.prepare('SELECT DISTINCT moduleId FROM workbench_migrations').all())
+        if (!knownOwners.has(row.moduleId)) throw new Error(`Unsupported migration owner: ${row.moduleId}`);
       const migrationResult = migrations.run(
         [...fileMigrations, ...jobMigrations, ...recognitionMigrations, ...reliabilityMigrations, ...preferenceMigrations, ...navigationMigrations, ...loader.moduleMigrations(), ...retirementMigrations, ...classRetirementMigrations],
         {
@@ -194,7 +201,7 @@ export function createWorkbench({
             "reliability-preferences",
             "workbench-navigation",
             "workbench-retirement",
-            ...catalog.map((entry) => entry.id),
+            ...loader.moduleMigrations().map(entry => entry.moduleId),
           ],
         },
       );
@@ -213,7 +220,7 @@ export function createWorkbench({
         ...workbenchEnv.jobHandlers,
       };
       if (env.nodeEnv === "production") {
-        for (const kind of ["preview", "extraction", "question-asset"]) {
+        for (const kind of ["preview", "recognition", ...(loader.get("questions") ? ["extraction", "question-asset"] : [])]) {
           if (typeof handlers[kind]?.run !== "function" || handlers[kind].fixture)
             throw new Error(`Materials production startup requires ${kind} handler.`);
         }
@@ -235,7 +242,7 @@ export function createWorkbench({
     recognition,
     filesRouter,
     reliabilityRouter: reliability.router,
-    agentRecoveryGuard: reliability.agentRecoveryGuard,
+    agentRecoveryGuard: createAgentRecoveryGuard({ db, identity, trustedOrigins: workbenchEnv.trustedOrigins ?? [], ready: () => initialize(), logger }),
     preferencesRouter,
     navigationRouter,
     jobs,
@@ -266,7 +273,7 @@ export function createWorkbench({
       if (!savedFiles) rememberFiles(manifest);
       files.removeAccountFiles(accountKey, manifest.blobs);
       reliability.removeAccountExports(accountKey, manifest.exports);
-      eraseAccountRows(db, accountKey);
+      eraseAccountRows(db, accountKey, loader.maintenance());
     },
 
     close() {

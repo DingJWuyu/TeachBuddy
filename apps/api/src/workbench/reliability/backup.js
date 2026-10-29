@@ -1,3 +1,8 @@
+import { accountKeys, detachedAccountTables, optionalMigrationIds as authOptionalMigrations } from '../../features/auth/lifecycle.js';
+import { moduleImplementations } from '../moduleImplementations.js';
+import { validateStorage as validateAgentStorage, prepareRestoredAgent } from '../../agent/lifecycle.js';
+import { inspectDocuments, assertRelation } from './inspection.js';
+import { validateRetiredStorage } from './legacy-storage.js';
 import { classRetirementMigrations, classRetirementMigrationId, retiredClassMigrationIds } from '../retire-classes.js';
 import retiredClassSchema from './retired-classes-schema.json' with { type: 'json' };
 import { retirementMigrations, retirementMigrationId, retiredLessonMigrationIds } from '../retire-lessons.js';
@@ -8,21 +13,12 @@ import { validateArchive } from "./schema.js";
 import { randomUUID } from "node:crypto";
 import { prepareRestoredAuth, assertNoPendingAccountDeletion } from "../../features/auth/recovery.js";
 import { migrations as auth } from "../../features/auth/migrations/index.js";
-import { migrations as questions } from "../../modules/questions/migrations/index.js";
-import { migrations as resources } from "../../modules/resources/migrations/index.js";
-import { migrations as math } from "../../modules/math/migrations.js";
-import { migrations as classroom } from "../../modules/classroom/migrations/index.js";
-import { validateStoredData } from "../../modules/classroom/index.js";
-import { createPreviews } from "../files/preview.js";
-import { migrations as schedule } from "../../modules/schedule/index.js";
 import { migrations as agent } from "../../agent/store.js";
 import { navigationMigrations } from "../navigation.js";
 import { preferenceMigrations } from "../preferences.js";
 import { fileMigrations } from "../files/migrations.js";
 import { jobMigrations } from "../jobs/migrations.js";
 import { recognitionMigrations } from '../recognition/migrations.js';
-import { validateSchema } from "../content/schema.js";
-import { supportedRendererVersions } from "../../modules/math/render.js";
 import { createMutations } from "../mutations.js";
 import { createMigrationRunner } from "../migrations.js";
 import {
@@ -36,14 +32,14 @@ import {
   context,
 } from "./storage.js";
 
+const owners = await Promise.all(Object.entries(moduleImplementations).map(async ([moduleId, implementation]) => ({
+  moduleId, migrations: (await implementation.migrations()).migrations,
+  maintenance: await implementation.maintenance(),
+})));
 const supported = [
+  ...owners.map(({ moduleId, migrations }) => ({ moduleId, migrations })),
   ...Object.entries({
     auth,
-    questions,
-    resources,
-    math,
-    schedule,
-    classroom,
     agent,
   }).map(([moduleId, migrations]) => ({ moduleId, migrations })),
   ...fileMigrations,
@@ -93,100 +89,28 @@ function checkStructure(db, actual) {
     reference.close();
   }
 }
-function contentSchemas(db) {
-  const found = new Map([["agent-native", "opaque-preserved"]]);
-  const fileOwners = new Map(
-    db
-      .prepare("SELECT id,accountKey FROM materials_files")
-      .all()
-      .map((r) => [r.id, r.accountKey]),
-  );
-  function visit(value, account) {
-    if (!value || typeof value !== "object") return;
-    if (Array.isArray(value.blocks) && value.version !== undefined) {
-      validateSchema("Document", value);
-      found.set(`document-${value.version}`, String(value.version));
-    }
-    if (
-      value.schemaVersion !== undefined &&
-      ["formula", "plane", "space", "dynamic", "html", "geogebra", "workshop"].includes(value.kind)
-    ) {
-      if (value.schemaVersion !== 1)
-        throw new Error("Unsupported mathematical source version");
-      found.set("math-source", "1");
-    }
-    for (const [key, item] of Object.entries(value)) {
-      if (
-        /fileId$/i.test(key) &&
-        typeof item === "string" &&
-        fileOwners.get(item) !== account
-      )
-        throw new Error("Missing or foreign file reference");
-      if (
-        /fileIds$/i.test(key) &&
-        Array.isArray(item) &&
-        item.some((id) => fileOwners.get(id) !== account)
-      )
-        throw new Error("Missing or foreign file references");
-      if (key === "rendererVersion" && typeof item === "string") {
-        if (!supportedRendererVersions.has(item))
-          throw new Error("Unsupported renderer version");
-        found.set("math-renderer", item);
-      }
-      visit(item, account);
-    }
-  }
-  const jsonColumns = {
-    question_items: ["body", "solution", "source"],
-    questions_materials_meta: ["value"],
-    questions_materials_imports: ["value"],
-    questions_materials_tasks: ["value"],
-    resource_items: ["value"],
-    math_works: ["value"],
-  };
-  if (db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='classroom_classes'").get()) {
-    const readFile = (principal, id) => {
-      const row = db.prepare("SELECT metadata FROM materials_files WHERE id=? AND accountKey=?").get(id, principal.accountKey);
-      if (!row) throw new Error("Missing or foreign classroom file reference");
-      const metadata = JSON.parse(row.metadata);
-      validateSchema("File", metadata);
-      if (metadata.id !== id) throw new Error("Inconsistent classroom file identity");
-      return metadata;
-    };
-    const previews = createPreviews({ db, files: { read: readFile } });
-    validateStoredData(db, { readFile, readRendition: previews.readRendition });
-    for (const collection of ["classes", "students", "records", "exams", "results", "imports", "tags"])
-      jsonColumns[`classroom_${collection}`] = ["value"];
-    found.set("classroom-data", "1");
-  }
-  // These former tables exist only while inspecting a pre-retirement backup.
-  // Validate its declared content versions before removing it in the restored copy.
-  for (const [table, columns] of Object.entries({
-    classes_records: ['content'], lesson_items: ['intro'], lesson_sections: ['content', 'pageSource'],
-    lesson_references: ['snapshot'], lesson_history: ['snapshot'], lesson_exports: ['record', 'snapshot'],
-  })) if (db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?").get(table))
-    jsonColumns[table] = columns;
-  for (const [table, columns] of Object.entries(jsonColumns))
-    for (const row of db.prepare(`SELECT * FROM ${table}`).all())
-      for (const column of columns)
-        if (row[column] !== undefined) visit(JSON.parse(row[column]), row.accountKey);
-  // Older backups predate resource file history; their migration seeds the current file.
-  if (db.prepare("SELECT name FROM sqlite_master WHERE name='resource_file_history'").get())
-    for (const row of db.prepare("SELECT accountKey, value FROM resource_file_history").all())
-      visit(JSON.parse(row.value), row.accountKey);
+function storedOwners(db) {
+  const present = new Set(ledger(db).map(row => row.moduleId));
+  return owners.filter(owner => {
+    const hasStorage = owner.maintenance.hasStorage(db);
+    const recorded = present.has(owner.moduleId);
+    if (hasStorage !== recorded) throw new Error(`Module ${owner.moduleId} storage and migration ledger disagree.`);
+    return recorded;
+  });
+}
+function contentSchemas(db, { allowOlder = false } = {}) {
+  const schemas = [...validateAgentStorage(db), ...validateRetiredStorage(db, { allowOlder })];
+  for (const owner of storedOwners(db)) schemas.push(...owner.maintenance.validateStorage(db));
+  const records = [];
   for (const table of ['materials_recognition_results', 'materials_recognition_requests'])
-    if (db.prepare('SELECT name FROM sqlite_master WHERE name=?').get(table))
-      for (const row of db.prepare(`SELECT accountKey,value FROM ${table}`).all())
-        visit(JSON.parse(row.value), row.accountKey);
-  for (const row of db
-    .prepare(
-      "SELECT r.value,w.accountKey FROM math_revisions r JOIN math_works w ON w.id=r.workId",
-    )
-    .all())
-    visit(JSON.parse(row.value), row.accountKey);
-  return [...found]
-    .map(([name, version]) => ({ name, version }))
-    .sort((a, b) => a.name.localeCompare(b.name));
+    if (db.prepare('SELECT 1 FROM sqlite_master WHERE name=?').get(table)) records.push(...db.prepare(`SELECT accountKey,value FROM ${table}`).all());
+  schemas.push(...inspectDocuments(db, records));
+  return [...new Map(schemas.map(schema => [schema.name, schema.version]))].map(([name, version]) => ({ name, version })).sort((a, b) => a.name.localeCompare(b.name));
+}
+function supportedFor(db) {
+  const present = new Set(storedOwners(db).map(owner => owner.moduleId));
+  const business = new Set(owners.map(owner => owner.moduleId));
+  return supported.filter(group => !business.has(group.moduleId) || present.has(group.moduleId));
 }
 
 function checkDatabase(db, { allowOlder = false } = {}) {
@@ -195,7 +119,7 @@ function checkDatabase(db, { allowOlder = false } = {}) {
     db.pragma("foreign_key_check").length
   )
     throw new Error("Database integrity check failed");
-  const expected = supported
+  const expected = supportedFor(db)
     .flatMap((s) =>
       s.migrations.map((m) => ({ id: m.id, moduleId: s.moduleId })),
     )
@@ -210,7 +134,7 @@ function checkDatabase(db, { allowOlder = false } = {}) {
     db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name GLOB 'classes_*'").get()
   )) throw new Error('Retired classes storage remains in a current database');
   const optional = new Set(
-    [...migrations, ...navigationMigrations].flatMap((s) => s.migrations.map((m) => m.id)).concat('auth_0008_account_deletions', retirementMigrationId, classRetirementMigrationId, 'schedule_0003_remove_teaching_links', ...classroom.map(migration => migration.id)),
+    [...migrations, ...navigationMigrations].flatMap((s) => s.migrations.map((m) => m.id)).concat(authOptionalMigrations, retirementMigrationId, classRetirementMigrationId, owners.flatMap(owner => owner.maintenance.optionalMigrationIds ?? [])),
   );
   if (
     actual.some((a) => !expected.some((e) => equal(e, a)) && !(allowOlder && ((a.moduleId === 'lessons' && retiredLessonMigrationIds.includes(a.id)) || (a.moduleId === 'classes' && retiredClassMigrationIds.includes(a.id))))) ||
@@ -223,13 +147,9 @@ function checkDatabase(db, { allowOlder = false } = {}) {
       "Unsupported migration set; use the matching product version",
     );
   checkStructure(db, actual);
-  contentSchemas(db);
-  const accounts = new Set(
-    db
-      .prepare("SELECT accountKey FROM auth_accounts")
-      .all()
-      .map((r) => r.accountKey),
-  );
+  contentSchemas(db, { allowOlder });
+  const accounts = new Set(accountKeys(db));
+  const detached = detachedAccountTables(db);
   for (const { name } of db
     .prepare("SELECT name FROM sqlite_master WHERE type='table'")
     .all()) {
@@ -239,76 +159,24 @@ function checkDatabase(db, { allowOlder = false } = {}) {
       for (const r of db
         .prepare(`SELECT DISTINCT accountKey FROM ${name}`)
         .all())
-        if (name === 'auth_account_deletions' && r.accountKey === null) {
-          if (db.prepare(`SELECT 1 FROM auth_account_deletions WHERE accountKey IS NULL AND
-            (completedAt IS NULL OR accountId IS NOT NULL OR filesJson IS NOT NULL) LIMIT 1`).get())
-            throw new Error('Invalid account deletion receipt');
-        } else if (!accounts.has(r.accountKey))
+        if (!accounts.has(r.accountKey) && !(r.accountKey === null && detached.has(name)))
           throw new Error(`Unowned rows in ${name}`);
     }
   }
   const links = [
-    ["math_revisions", "workId", "math_works"],
-    ["schedule_exceptions", "entryId", "schedule_entries"],
-    ["agent_events", "conversationId", "agent_conversations"],
     ["materials_previews", "fileId", "materials_files"],
     ["materials_renditions", "fileId", "materials_files"],
   ];
-  if (actual.some(row => row.moduleId === 'classes')) links.push(
-    ['classes_records', 'classId', 'classes_items'], ['classes_record_sources', 'recordId', 'classes_records']);
   for (const [child, key, parent] of links) {
-    const scoped = db
-      .pragma(`table_info(${child})`)
-      .some((c) => c.name === "accountKey");
-    if (
-      db
-        .prepare(
-          `SELECT 1 FROM ${child} c LEFT JOIN ${parent} p ON c.${key}=p.id WHERE p.id IS NULL ${scoped ? "OR c.accountKey <> p.accountKey" : ""} LIMIT 1`,
-        )
-        .get()
-    )
-      throw new Error(`Broken relation in ${child}`);
+    assertRelation(db, child, key, parent);
   }
+
   if (db.prepare("SELECT name FROM sqlite_master WHERE name='materials_recognition_requests'").get()) {
     for (const [column, parent] of [['jobId', 'materials_jobs'], ['fileId', 'materials_files'], ['renditionFileId', 'materials_files']])
       if (db.prepare(`SELECT 1 FROM materials_recognition_requests c LEFT JOIN ${parent} p ON c.${column}=p.id WHERE p.id IS NULL OR c.accountKey <> p.accountKey LIMIT 1`).get())
         throw new Error('Broken recognition source or job relation');
   }
-  const sourceTables = {
-    question: "question_items",
-    resource: "resource_items",
-    math: "math_works",
-    class: "classes_items",
-    record: "classes_records",
-  };
-  // Permanently removed teaching objects retain only an owned identity for
-  // existing schedule links; older backups may predate this classes migration.
-  const removedTeachingObject = db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='classes_removed_objects'").get()
-    ? db.prepare("SELECT 1 FROM classes_removed_objects WHERE id=? AND accountKey=? AND kind=?") : null;
-  function owned(kind, id, account, adoptedSnapshot = null) {
-    const table = sourceTables[kind];
-    const source = table && db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?").get(table) && db.prepare(`SELECT accountKey FROM ${table} WHERE id=?`).get(id);
-    if (source && source.accountKey !== account)
-      throw new Error("Missing or foreign object reference");
-    const removed = ["class", "record"].includes(kind) && removedTeachingObject?.get(id, account, kind);
-    // Adopted content survives permanent source deletion. Existing sources must
-    // still belong to this account; nested files are checked by contentSchemas.
-    const captured = table && adoptedSnapshot && typeof adoptedSnapshot === "object" && !Array.isArray(adoptedSnapshot);
-    if (!source && !removed && !captured)
-      throw new Error("Missing or foreign object reference");
-  }
-  if (actual.some(row => row.moduleId === 'classes')) for (const row of db.prepare("SELECT * FROM classes_record_sources").all())
-    if (!(allowOlder && row.kind === 'lesson')) owned(row.kind, row.sourceId, row.accountKey);
-  for (const row of db
-    .prepare("SELECT * FROM question_items WHERE sourceQuestionId IS NOT NULL")
-    .all())
-    owned("question", row.sourceQuestionId, row.accountKey, JSON.parse(row.source).snapshot);
-  for (const row of db.prepare("SELECT * FROM schedule_entries").all()) {
-    if (row.courseJson === undefined) continue;
-    const course = JSON.parse(row.courseJson);
-    if (course.classId) owned("class", course.classId, row.accountKey);
-    for (const id of course.recordIds) owned("record", id, row.accountKey);
-  }
+
 }
 function requireStopped(stopped) {
   if (stopped !== true)
@@ -438,7 +306,7 @@ export async function backup({ database, files, target, stopped }) {
       database: entry("workspace.sqlite", bytes, "application/vnd.sqlite3"),
       files: entries,
       migrationIds: ledger(db).map((r) => r.id),
-      schemas: contentSchemas(db),
+      schemas: contentSchemas(db, { allowOlder: true }),
     };
     validateArchive("DeploymentManifest", manifest);
     syncWrite(
@@ -498,7 +366,7 @@ export function restore({ source, target, stopped }) {
     db = new Database(database, { fileMustExist: true });
     db.pragma("synchronous = FULL");
     checkDatabase(db, { allowOlder: true });
-    if (!equal(contentSchemas(db), manifest.schemas))
+    if (!equal(contentSchemas(db, { allowOlder: true }), manifest.schemas))
       throw new Error("Manifest content schema mismatch");
     if (
       !equal(
@@ -507,7 +375,7 @@ export function restore({ source, target, stopped }) {
       )
     )
       throw new Error("Manifest migration mismatch");
-    createMigrationRunner({ db }).run(supported, {
+    createMigrationRunner({ db }).run(supportedFor(db), {
       knownModuleIds: supported.map((s) => s.moduleId),
     });
     checkDatabase(db);
@@ -520,24 +388,7 @@ export function restore({ source, target, stopped }) {
     )
       throw new Error("Incomplete managed files");
     for (const row of rows) checkedBlob(path.join(target, "files"), row);
-    const beforeAccounts = JSON.stringify(
-      db.prepare("SELECT * FROM auth_accounts ORDER BY id").all(),
-    );
-    // Preserve native conversation bytes. Only record old execution intents in
-    // a separate recovery guard; never upgrade historical tool-card schemas.
-    for (const row of db
-      .prepare("SELECT id,accountKey,document FROM agent_conversations")
-      .all()) {
-      const document = JSON.parse(row.document);
-      for (const operation of document.snapshot.operations ?? [])
-        if (
-          ["prepared", "executing", "unconfirmed"].includes(operation.state)
-        ) {
-          db.prepare(
-            "INSERT OR IGNORE INTO reliability_frozen_operations VALUES (?,?,?)",
-          ).run(operation.id, row.id, row.accountKey);
-        }
-    }
+    prepareRestoredAgent(db);
     const first = prepareRestoredAuth({ db });
     if (
       first.contractRevision !== "auth-recovery/2" ||
@@ -554,13 +405,6 @@ export function restore({ source, target, stopped }) {
       Object.values(second.remaining).some((n) => n !== 0)
     )
       throw new Error("Authentication cleanup did not persist");
-    if (
-      beforeAccounts !==
-      JSON.stringify(
-        db.prepare("SELECT * FROM auth_accounts ORDER BY id").all(),
-      )
-    )
-      throw new Error("Account preservation failed");
     db.prepare("UPDATE reliability_context SET recoveryId=? WHERE id=1").run(
       randomUUID(),
     );

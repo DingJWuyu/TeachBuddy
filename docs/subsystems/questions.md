@@ -4,17 +4,20 @@
 
 ## 责任与调用面
 
-[createQuestionsModule](../../apps/api/src/modules/questions/index.js) 接收 `db/mutations/now/files/content/jobs/provider/recognition`，返回 `router`、兼容 `operations`、`port` 和 `jobHandlers`。题库拥有题目、材料元数据、原稿绑定、校对草稿、分类、提取事实及复制来源；文件字节和持久 Job 分别归公共 files/jobs。
+[createQuestionsModule](../../apps/api/src/modules/questions/index.js) 接收 `db/mutations/now/files/content/jobs/provider/recognition`，返回 `router`、`port` 和 `jobHandlers`。题库拥有题目、材料元数据、原稿绑定、校对草稿、分类、提取事实及复制来源；文件字节和持久 Job 分别归公共 files/jobs。
 
 | 调用目的 | 实际入口 |
 | --- | --- |
 | 当前题目查询、创建、修改、复制、来源读取、位置和素材；分类；收录、校对、补充和确认 | `port.operations`，由 [createMaterialsOperations](../../apps/api/src/modules/questions/materials-operations.js) 构造，使用同文件导出的 `materialsContract`；[materials-router](../../apps/api/src/modules/questions/materials-router.js) 只把 HTTP 映射到这些操作 |
-| 仍可表示的旧文稿及既有工具请求 | 顶层 `operations`，由 [createQuestionsOperations](../../apps/api/src/modules/questions/operations.js) 定义，参数使用 `arguments`，不是 v2 的 `input/id/query` |
-| 资料导出 | 同步 `port.readForExport(principal)`，含题目、分类、imports 与需保留的识别证据 |
+| 旧 HTTP | 内部 [createQuestionsOperations](../../apps/api/src/modules/questions/operations.js) 与 [router](../../apps/api/src/modules/questions/router.js)，冻结 schema、原路径和原键回执保持 |
+| 既有工具及新文稿的统一业务调用 | `port.businessOperations`，由 [createQuestionBusinessOperations](../../apps/api/src/modules/questions/business.js) 接受 `principal/key/id/input/query`；题库选择旧请求或当前文稿实现，调用者不判断文稿版本 |
+| 资料导出与恢复校验 | [lifecycle](../../apps/api/src/modules/questions/lifecycle.js) 的 `snapshot(db, principal)` 提供题目、分类、imports 与需保留的识别证据；`validateStorage(db)` 校验本模块记录与关系 |
 | 已受理任务执行 | `jobHandlers.extraction` 和 `jobHandlers['question-asset']`，由组合入口绑定，不作为任意业务工具 |
-| 删号清理 | 模块导出的 `deleteAccountData(db, accountKey)`，由账户生命周期在外层事务内调用 |
+| 删号清理 | 同一 lifecycle 的 `deleteAccountData(db, accountKey)`，由账户生命周期在外层事务内调用 |
 
-[connectBusinessOperations](../../apps/api/src/agent/business.js) 同时消费两种 operations，保留旧请求核实并将当前文稿交给 v2；只读副本查询由 [materials-operations](../../apps/api/src/modules/questions/materials-operations.js) 的 `listQuestionCopiesForAgent` 提供；这不是全部材料能力已开放给模型的声明。v1 的 [legacy-contract](../../apps/api/src/modules/questions/legacy-contract.js) 只维护基础兼容定义，不作为 v2 材料 schema。导出的 `createQuestionsService` 是构造能力，业务调用沿已装配 operations，才能保留校验与幂等。
+[connectBusinessOperations](../../apps/api/src/agent/business.js) 只将工具参数转换到 `port.businessOperations`。题库复用旧 HTTP 的校验、兼容拒绝和幂等操作，旧成功请求先在原路径重放；无法表示当前对象时转入当前操作，不将富文稿投影为 v1。只读副本查询由 [materials-operations](../../apps/api/src/modules/questions/materials-operations.js) 的 `listQuestionCopiesForAgent` 提供。工具接受的旧/新请求和响应通过 [Agent schema](../../apps/api/src/contracts/agent.openapi.json) 的 `anyOf/$ref` 声明；这不是全部材料能力已开放给模型的声明。v1 的 [legacy-contract](../../apps/api/src/modules/questions/legacy-contract.js) 只维护基础兼容定义，不作为 v2 材料 schema。
+
+原始材料定位归 [materials-locations](../../apps/api/src/modules/questions/materials-locations.js) 的 `createLocationValidator`：它从题库持久收录及提取任务取得原件、固定 rendition、DOC 转换来源摘要和段落 run 范围，供提取、校对、确认和入库后的重定位共用。调用者只交 principal、材料和待校验片段；公共 content 负责通用文稿结构和附件归属，不解释题库来源链。
 
 ## 可信调用与提交
 
@@ -53,7 +56,7 @@ v2 操作同步返回 `{status, body}`，合法失败抛带 `status/problem` 的
 
 对象深链只在目标题目改变时初始化阅读场景；同一对象因业务更新重新挂载时，`useQuestionSession` 恢复其持久编辑与对照状态。读取最新服务器内容与保留设备草稿分别处理，后续保存仍按原版本检查冲突。
 
-迁移由 [migrations](../../apps/api/src/modules/questions/migrations/index.js) 提供。跨模块不直接读题库表；资料包沿 readForExport，Agent 沿 operations。
+迁移由 [migrations](../../apps/api/src/modules/questions/migrations/index.js) 提供。跨模块不直接读题库表；资料包和维护沿静态装配加载的 lifecycle，Agent 沿 `port.businessOperations`。目录不开放题库时，已有题库数据仍由其 lifecycle 维护。
 
 [native-text](../../apps/api/src/modules/questions/native-text.js) 拥有 `nativeText` 及题目起始、答案标题、显式续题规则，保留原文字符范围、唯一规范题号匹配和未分配片段。[extraction](../../apps/api/src/modules/questions/extraction.js) 只编排提取；原生 Word、PDF、识别页与[配图定位](../../apps/api/src/modules/questions/extraction-figures.js) 直接读取文本规则，不反向依赖编排入口。
 

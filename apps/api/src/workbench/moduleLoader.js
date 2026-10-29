@@ -73,19 +73,33 @@ export function createModuleLoader({
   const discovered = new Map();
   const implementationsById = new Map();
   const migrationsByModule = new Map();
+  const maintenanceByModule = new Map();
   let orderedIds = [];
   let discoverOnce = null;
   let instantiateOnce = null;
 
   async function discover() {
-    const enabledIds = Object.keys(implementations);
-    for (const moduleId of enabledIds) {
-      if (!catalogById.has(moduleId)) {
-        throw new Error(`Module implementation ${moduleId} has no catalog mapping.`);
+    const enabledIds = catalog.map(entry => entry.id);
+    for (const moduleId of enabledIds) assertImplementation(moduleId, implementations[moduleId]);
+    const storedIds = dependencies.db.prepare('SELECT DISTINCT moduleId FROM workbench_migrations').all().map(row => row.moduleId);
+    // Storage outlives availability. The same static map supplies its owner even
+    // when its runtime is absent from this product composition.
+    for (const [moduleId, implementation] of Object.entries(implementations)) {
+      if (typeof implementation.maintenance !== 'function') throw new Error(`Module ${moduleId} must provide storage maintenance.`);
+      const maintenance = await implementation.maintenance();
+      for (const operation of ['hasStorage', 'snapshot', 'validateStorage', 'deleteAccountData'])
+        if (typeof maintenance[operation] !== 'function') throw new Error(`Module ${moduleId} maintenance must provide ${operation}.`);
+      const hasStorage = maintenance.hasStorage(dependencies.db);
+      const recorded = storedIds.includes(moduleId);
+      if (hasStorage !== recorded) throw new Error(`Module ${moduleId} storage and migration ledger disagree.`);
+      if (!enabledIds.includes(moduleId) && !recorded) continue;
+      maintenanceByModule.set(moduleId, maintenance);
+      if (implementation.migrations) {
+        const imported = await implementation.migrations();
+        if (!Array.isArray(imported.migrations)) throw new Error(`Module ${moduleId} migrations must export a migrations array.`);
+        migrationsByModule.set(moduleId, imported.migrations);
       }
-      assertImplementation(moduleId, implementations[moduleId]);
     }
-
     orderedIds = loadOrderFor(catalog, enabledIds);
 
     for (const moduleId of orderedIds) {
@@ -97,14 +111,6 @@ export function createModuleLoader({
         throw new Error(`Module ${moduleId} must export ${factoryName}({db, mutations}).`);
       }
       discovered.set(moduleId, { moduleId, factory });
-
-      if (implementation.migrations) {
-        const migrationsModule = await implementation.migrations();
-        if (!Array.isArray(migrationsModule.migrations)) {
-          throw new Error(`Module ${moduleId} migrations must export a migrations array.`);
-        }
-        migrationsByModule.set(moduleId, migrationsModule.migrations);
-      }
     }
 
     assertModuleDependencies(orderedIds, catalog);
@@ -166,10 +172,9 @@ export function createModuleLoader({
 
     enabledIds,
 
+    maintenance() { return [...maintenanceByModule.values()]; },
     moduleMigrations() {
-      return enabledIds()
-        .filter((moduleId) => migrationsByModule.has(moduleId))
-        .map((moduleId) => ({ moduleId, migrations: migrationsByModule.get(moduleId) }));
+      return [...migrationsByModule].map(([moduleId, migrations]) => ({ moduleId, migrations }));
     }
   };
 }

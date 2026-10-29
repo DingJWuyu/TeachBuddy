@@ -340,9 +340,6 @@ export function createResourcesService({
       validateIdPath(id);
       return read(principal, id);
     },
-    readForExport(principal) {
-      return { resources: all(principal), taxonomy: taxonomy.readStored(principal), fileRevisions: history.readForExport(principal) };
-    },
   };
 }
 

@@ -2,8 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import https from 'node:https';
+import { createIntegration } from '../support/application.js';
 import { provider } from '../fixtures/c26/provider.js';
-import { createWorld, register, ok, problem, question, questions, doc, write, schedule } from './helpers.js';
+import { createWorld, register, login, ok, problem, question, questions, doc, write, schedule } from './helpers.js';
 
 const conversations = '/api/agent/conversations';
 const modelId = 'deepseek/deepseek-v4.1-flash';
@@ -184,4 +185,40 @@ test('助理工具输入：注入身份、路径或幂等键的参数拒绝且�
   assert.deepEqual(snapshot.operations, []);
   assert.deepEqual(ok(await client.request('GET', questions)).items, []);
   assert.ok(!JSON.stringify(snapshot).includes('INJECTED_IDENTITY'));
+});
+
+
+test('助理历史未知写入：模块缺席仍保持未确认，重新装配后用原键确认已保存对象', async t => {
+  const controlled = await provider([[tool('wb_create_question', { body: legacyQuestion() })]]);
+  const world = await createWorld(t, { agent: controlled.config }), account = await register(world);
+  const id = ok(await write(account.client, 'POST', conversations, {}), 201).conversation.id;
+  world.app.workbench.db.exec(`CREATE TRIGGER rebuilt_missing_owner_confirmation BEFORE UPDATE ON agent_conversations
+    WHEN json_extract(NEW.document, '$.snapshot.operations[0].state')='confirmed'
+    BEGIN SELECT RAISE(ABORT, 'journal receipt unavailable'); END`);
+  await send(account.client, id);
+  const operation = (await settled(account.client, id)).operations[0];
+  assert.equal(operation.state, 'unconfirmed');
+  const saved = ok(await account.client.request('GET', questions)).items[0];
+  const readJournal = db => JSON.parse(db.prepare('SELECT document FROM agent_conversations WHERE id=?').get(id).document).journals[operation.id];
+  const journal = readJournal(world.app.workbench.db);
+  world.app.workbench.db.exec('DROP TRIGGER rebuilt_missing_owner_confirmation');
+  await world.app.close();
+  let app = await createIntegration({ directory: world.directory, workbench: { catalogOverride: [] } });
+  t.after(() => app?.close());
+  let signed = await login({ client: () => app.client() }, account);
+  const url = `${conversations}/${id}/operations/${operation.id}/reconcile`;
+  const unresolved = ok(await write(signed.client, 'POST', url, {}));
+  assert.equal(unresolved.state, 'unconfirmed', '模块缺席不能证明历史写入失败');
+  assert.deepEqual(readJournal(app.workbench.db), journal, '保留原请求键、指纹和请求体');
+  await app.close(); app = null;
+  app = await createIntegration({ directory: world.directory });
+  signed = await login({ client: () => app.client() }, account);
+  const confirmed = ok(await write(signed.client, 'POST', url, {}));
+  assert.equal(confirmed.state, 'confirmed');
+  assert.equal(confirmed.result.id, saved.id);
+  assert.equal(confirmed.result.version, saved.version);
+  assert.equal(ok(await signed.client.request('GET', questions)).items.length, 1, '原键核实不能重复创建');
+  assert.deepEqual(readJournal(app.workbench.db), journal);
+  assert.equal(controlled.requests(), 1, '核实不请求模型重建输入');
+  await app.close(); app = null;
 });

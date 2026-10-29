@@ -69,7 +69,7 @@ SQLite 业务写入和幂等成功记录同事务提交；同步 write 不进行
 
 Job 内部 Interface：`jobs.enqueue({principal, kind, target}, mutation)` 在调用方已有业务受理事务内同步返回 Job，不嵌套提交 mutations.execute；任务输入由 kind 对应的业务拥有者保存已验证请求/固定快照标识，enqueue 不接受任意 input，jobs 不复制业务输入，jobs 不存任意可执行指令。`jobs.get(principal,id)`、`jobs.cancel(principal,id,mutation)`、`jobs.retry(principal,id,RetryJob,mutation)` 对应 HTTP。组合入口以固定处理函数绑定执行器，handler 返回进度/文件 ID/JobIssue，业务输出写回各自 Module。固定绑定由组合入口装配；不做动态注册或发现。任务创建衍生文件使用持久保存的独立内部请求键，不复用用户已经确认的受理键；确保同任务重启后不重复产物。
 
-跨模块的执行绑定固定为 `jobs.start({preview, extraction, recognition, 'question-asset'})`，服务器启动前调用一次，缺项以明确未接入的测试handler占位且禁止生产启动。每项具有 `run({principal, job, signal, reportProgress})`，返回Promise的 `{state, outputFileIds, issues}`，state仅succeeded/partial/failed，其他字段复用Job定义；signal为AbortSignal，reportProgress接收Job.progress并持久记录。停止状态由jobs裁决，迟到run结果不能把cancelled改成succeeded。preview/extraction/recognition 另提供同步 `retry({principal, job, unitIds, mutation}) -> Job`，在jobs.retry已开启的事务中调用enqueue并同步更新业务记录，question-asset 不接受 retry。questions 的任务出口见[题库技术入口](questions.md#责任与调用面)；files 提供 preview，共用识别提供 recognition，具体工厂返回形状按所属实现，不以此段统一所有模块。各handler在报告成功前持久保存自己的输出，按jobId/输入单元保持重复执行不重复写入。
+任务执行器在服务器启动前通过 `jobs.start` 固定绑定：公共文件与识别提供 preview/recognition，已装配题库提供 extraction/question-asset。隔离组合不要求缺席模块的处理器；生产仍拒绝 fixture，并核对当前装配所需的处理器。每项具有 `run({principal, job, signal, reportProgress})`，返回Promise的 `{state, outputFileIds, issues}`，state仅succeeded/partial/failed，其他字段复用Job定义；signal为AbortSignal，reportProgress接收Job.progress并持久记录。停止状态由jobs裁决，迟到run结果不能把cancelled改成succeeded。preview/extraction/recognition 另提供同步 `retry({principal, job, unitIds, mutation}) -> Job`，在jobs.retry已开启的事务中调用enqueue并同步更新业务记录，question-asset 不接受 retry。questions 的任务出口见[题库技术入口](questions.md#责任与调用面)；files 提供 preview，共用识别提供 recognition，具体工厂返回形状按所属实现，不以此段统一所有模块。各handler在报告成功前持久保存自己的输出，按jobId/输入单元保持重复执行不重复写入。
 
 ### 材料迁移
 
@@ -83,11 +83,13 @@ Job 内部 Interface：`jobs.enqueue({principal, kind, target}, mutation)` 在�
 
 ## 个人资料包与维护恢复
 
-[apps/api/src/workbench/reliability/](../../apps/api/src/workbench/reliability) 拥有个人资料包、维护锁、停服备份与恢复，制品格式归同目录 `archive.schema.json`，装配在 `schema.js`。个人导出受理事务同步调用各模块 `port.readForExport(principal)`，读取业务值、历史和专属证据，不补写默认设置或结算提醒；`portable.js` 组装关系与附件，异步打包在受理提交后执行。模块存储改变时同步其只读导出端口。
+[apps/api/src/workbench/reliability/](../../apps/api/src/workbench/reliability) 拥有个人资料包的受理事务、ZIP 封装、维护锁、停服备份与恢复顺序，制品格式归同目录 `archive.schema.json`。各模块 `lifecycle.js` 拥有 `snapshot(db, principal)`、`validateStorage(db)` 与 `deleteAccountData(db, accountKey)`：分别投影个人包的对象、关系及可读正文，校验所属存储，清理本账户数据。受理事务同步固定这些投影和公共附件，异步封装只消费保存的快照，不重新解释模块对象；读取不补写默认设置或结算提醒。部署维护组合各拥有者的校验与迁移，底座仍核对 SQLite 物理结构、账户归属和受管文件完整性。认证和助理各自提供维护入口，恢复工具不解释其内部状态。
+
+运行装配和存储维护共用 [moduleImplementations](../../apps/api/src/workbench/moduleImplementations.js) 的固定映射。目录只决定启动哪些业务工厂；装配与维护先逐个调用已有映射中模块的 `hasStorage(db)`，由模块辨认自有表是否存在，并与其账本记录核对。存储与拥有者账本只有一边存在时明确拒绝，不能将损坏账本解释为空模块；两边都存在的模块继续加载自身维护与迁移，无需启动其运行能力。未知存储拥有者或未知迁移拒绝启动和恢复；已正式退役的数据仅沿既有具名迁移处理。空目录、仅日程与默认完整目录使用同一装配路径；默认产品目录不因这些隔离组合改变。页面隐藏仍只是账户偏好。
 
 维护入口为 `node apps/api/src/scripts/reliability.js --help`；backup/restore/activate 的停服、独占目录及物理隔离要求见[恢复契约](../contracts/data.md#部署备份与还原)。认证清理调用[认证恢复端口](identity.md#恢复与账户生命周期)，外层不拼认证表 SQL。Web `features/reliability/DataManagement.jsx` 被设置的真实导出调用；列表删除通过 `POST /exports/:id/deletion` 取消并等待生成任务、撤销下载、移除 ZIP 与临时包，保留业务原件，未确认结果沿原键核实。主应用没有设备草稿查看、下载或清理管理入口；隔离 archive/恢复底座继续按数据契约保护既有内容。
 
-`agentRecoveryGuard` 同时保护恢复前操作的 reconcile 和提案卡 execute 入口。提案槽定位到既存 Operation 后仍核对恢复冻结表，不能借再次点击绕过时间点恢复保护；正常进程重启按助理 journal 接续。个人资料包完整保留 conversation snapshot 中的标题、置顶、引用、提案与执行记录，正文及关系投影沿 `portable.js`。
+[助理生命周期入口](../../apps/api/src/agent/lifecycle.js) 的 `createAgentRecoveryGuard` 同时保护恢复前操作的 reconcile 和提案卡 execute 入口。提案槽定位到既存 Operation 后仍核对恢复冻结表，不能借再次点击绕过时间点恢复保护；正常进程重启按助理 journal 接续。个人资料包完整保留 conversation snapshot 中的标题、置顶、引用、提案与执行记录，对话正文及关系由助理维护入口投影。
 
 ## 工作台外壳、偏好与支持页
 

@@ -3,7 +3,7 @@ import { casefold } from "../../workbench/text.js";
 import { questionDocuments, supportedDocument } from "@teachbuddy/shared";
 import { isDeepStrictEqual } from "node:util";
 import { compareByUpdatedDescThenId } from "./legacy-contract.js";
-import { validateLocation } from "../../workbench/content/index.js";
+import { createLocationValidator } from "./materials-locations.js";
 import { documentText, images, walkBlocks } from "../../workbench/content/document.js";
 import { validateQuestionContent, validateTaxonomyIds } from "./materials-content.js";
 const busy = new Set(["queued", "running", "cancelling"]);
@@ -43,25 +43,7 @@ export function createMaterialsService({ store: s, files, content, jobs }) {
     if (jobs.list(p).items.some(job => job.target.kind === kind && job.target.id === item.id && busy.has(job.state)))
       throw materialsError('processing-in-progress', 409);
   }
-  function locations(p, m, parts) {
-    const originals = [...(m.input.fileIds ?? []), ...m.supplementFileIds];
-    const task = s.get("tasks", p, m.jobId);
-    for (const part of parts)
-      for (const l of part.locations) {
-        try {
-          validateLocation(files, p, l, {
-            text: m.input.text,
-            originals,
-            renditions: task.renditions ?? [],
-            paragraphs: task.paragraphs?.[l.fileId] ?? [],
-            nativeWordSource: task.nativeWordSources?.[l.fileId],
-          });
-        } catch (e) {
-          if (e.status === 404) throw e;
-          throw materialsError("invalid-location", 422, "/parts", e.message);
-        }
-      }
-  }
+  const locations = createLocationValidator({ store: s, files });
   function validate(p, q, options) {
     validateTaxonomyIds(s.taxonomy(p), q);
     validateQuestionContent(content, p, q, options);
