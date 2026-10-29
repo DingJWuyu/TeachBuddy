@@ -4,7 +4,7 @@
 
 ## 责任与调用面
 
-[createMathModule](../../apps/api/src/modules/math/index.js) 接收 `db/mutations/files/content/mathRuntimeDirectory`，返回 `router/port/migrations`。[createMathService](../../apps/api/src/modules/math/service.js) 从 schema 构造 `operationDefinitions` 与 `port.operations`：作品查找/创建/保存/复制、归档/恢复/彻底删除、历史版本、引用读取和导出。同步 `port.readForExport(principal)` 读取 works/revisions/exports；模块导出的 `deleteAccountData` 由外层账户事务调用。作品、Revision、ExportRecord 归数学，字节归公共 files，不跨模块读表。
+[createMathModule](../../apps/api/src/modules/math/index.js) 接收 `db/mutations/files/content/mathRuntimeDirectory`，返回 `router/port/migrations`。[createMathService](../../apps/api/src/modules/math/service.js) 从 schema 构造 `operationDefinitions` 与 `port.operations`：作品查找/创建/保存/复制、归档/恢复/彻底删除、历史版本、引用读取和导出。[lifecycle](../../apps/api/src/modules/math/lifecycle.js) 提供资料包快照、存储校验及 `deleteAccountData`；静态装配在数学当前停用但数据仍存续时也加载其维护入口，删除由外层账户事务调用。作品、Revision、ExportRecord 归数学，字节归公共 files，不跨模块读表。
 
 数学公共纯计算、源校验与浏览器/离线呈现通过 [shared exports](../../packages/shared/package.json) 消费：`@teachbuddy/shared/math/{formula,expression,geometry,graphics,dynamic,analysis,isolation,presentation,offline,workshop,workshop-runtime,workshop-presentation}`，路径无 `.js`。调用方按用途选择现有子入口；需要构建文件路径时解析 package specifier，不越过 exports 拼 shared 源目录。数据库、身份、受管文件和 Node render worker 留 API。
 
