@@ -224,6 +224,8 @@
   "素材已生成": "Assets generated",
   "正在生成素材": "Generating assets",
   "生成未完成，可重新生成": "Generation incomplete. Try again.",
+  "公式无法排版，请修改后重新生成。": "The formula could not be rendered. Edit it and generate again.",
+  "配图无法读取，请检查后重新生成。": "An image could not be read. Check it and generate again.",
   "题面-{{v0}}.png": "题面-{{v0}}.png",
   "下载分片": "Download image part",
   "从资料收录题目": "Import questions from materials",
