@@ -33,7 +33,7 @@ const importIssueView = issue => ({
  * Replaying after reload retains its request key, payload and account scope. */
 export function createClassroomApi({ accountKey, transport, getSignal, onIdentityLost }) {
   let classes = [], students = [], activeWrite = null;
-  const exams = new Map(), imports = new Map(), files = new Map();
+  const imports = new Map(), files = new Map();
   async function json(method, path, body, key) {
     const signal = getSignal();
     let response, value;
@@ -71,7 +71,6 @@ export function createClassroomApi({ accountKey, transport, getSignal, onIdentit
     return files.get(id);
   }
   async function examView(e) {
-    exams.set(e.id, e);
     return { ...e, date: e.occurredOn, fullScore: e.totalMax, questions: (e.questions || []).map(questionView), source: { files: await Promise.all((e.source || []).map(async s => ({ ...await fileInfo(s.fileId), ...s }))) } };
   }
   function importView(d) {
@@ -138,13 +137,10 @@ export function createClassroomApi({ accountKey, transport, getSignal, onIdentit
     activeWrite = execute(pending);
     try { return await activeWrite; } finally { activeWrite = null; }
   }
-  async function classPoint(p, result) {
-    const ranked = (result?.rows || []).filter(r => r.status === 'present' && r.totalScore != null).sort((a,b) => b.totalScore - a.totalScore);
-    let rank = 0;
-    const people = ranked.map((r, i) => { if (!i || r.totalScore !== ranked[i - 1].totalScore) rank = i + 1; return { ...r, total: r.totalScore, name: r.studentSnapshot.name, studentNo: r.studentSnapshot.studentNumber, rate: r.totalScore / p.exam.totalMax, rank }; });
-    people.push(...(result?.rows || []).filter(r => r.status !== 'present' || r.totalScore == null).map(r => ({ ...r, total: r.totalScore, name: r.studentSnapshot.name, studentNo: r.studentSnapshot.studentNumber, rate: null, rank: null })));
+  async function classPoint(p) {
+    const people = (p.students || []).map(row => ({ ...row, total: row.totalScore, name: row.studentSnapshot.name, studentNo: row.studentSnapshot.studentNumber }));
     people.sort((a, b) => (a.rank ?? 1e9) - (b.rank ?? 1e9) || a.name.localeCompare(b.name, 'zh'));
-    return { ...p, ...p.overall, distribution: p.overall.distribution.map((bin, index) => ({ ...bin, bin: index })), state: 'ok', exam: await examView({ ...exams.get(p.exam.id), ...p.exam, questions: p.questions }), present: p.overall.presentCount, absent: p.overall.absentCount, unrecorded: p.overall.unrecordedCount, missingTotal: p.overall.missingTotalCount, students: people, questions: p.questions.map(questionView), tags: p.tags.map(t => ({ ...t, state: t.reason || 'ok' })) };
+    return { ...p, ...p.overall, distribution: p.overall.distribution.map((bin, index) => ({ ...bin, bin: index })), state: 'ok', exam: await examView({ ...p.exam, questions: p.questions }), present: p.overall.presentCount, absent: p.overall.absentCount, unrecorded: p.overall.unrecordedCount, missingTotal: p.overall.missingTotalCount, students: people, questions: p.questions.map(questionView), tags: p.tags.map(t => ({ ...t, state: t.reason || 'ok' })) };
   }
   async function statistics(path, params) {
     const selected = params.examId || [], filters = { ...params, tagIds: params.tagId }; delete filters.tagId; delete filters.examId;
@@ -152,20 +148,15 @@ export function createClassroomApi({ accountKey, transport, getSignal, onIdentit
     const value = await rawGet(path, filters);
     if (Array.isArray(selected) && selected.length) value.points = value.points.filter(p => selected.includes(p.exam.id));
     if (path.startsWith('/classes/')) {
-      const classId = path.split('/')[2];
-      const results = await rawGet('/results', { classId });
-      const points = await Promise.all(value.points.map(p => classPoint(p, results.items.find(r => r.id === p.resultId))));
-      const ids = new Set(points.map(p => p.exam.id));
-      for (const e of exams.values()) if (!e.deletedAt && !ids.has(e.id) && (!selected.length || selected.includes(e.id))) points.push({ exam: await examView(e), state: 'no-result' });
+      const points = await Promise.all(value.points.map(classPoint));
+      for (const exam of value.unrecordedExams) if (!selected.length || selected.includes(exam.id)) points.push({ exam: await examView(exam), state: 'no-result' });
       points.sort((a,b) => a.exam.date.localeCompare(b.exam.date) || a.exam.id.localeCompare(b.exam.id));
       if (params.tagId?.length) for (const point of points) if (point.tags) point.tags = point.tags.filter(t => params.tagId.includes(t.id));
       return { ...value, points };
     }
     const points = await Promise.all(value.points.map(async p => {
-      const reference = await rawGet(`/classes/${p.overall.classReference.id}/statistics`, { examId: p.exam.id });
-      const ref = reference.points[0];
       return { ...p, ...p.overall, exam: await examView({ ...p.exam, questions: p.questions }), total: p.overall.totalScore, className: p.overall.classReference.name, classMean: p.overall.classReference.overall.mean, rankCount: p.overall.rankedCount,
-        questions: p.questions.map(q => ({ ...questionView(q), score: q.observedCells ? q.scoreSum : null, classRate: ref?.questions.find(x => x.id === q.id)?.rate ?? null })), tags: p.tags.map(t => ({ ...t, state: t.reason || 'ok' })) };
+        questions: p.questions.map(questionView), tags: p.tags.map(t => ({ ...t, state: t.reason || 'ok' })) };
     }));
     return { ...value, points };
   }
@@ -173,7 +164,7 @@ export function createClassroomApi({ accountKey, transport, getSignal, onIdentit
     if (path.endsWith('/statistics')) return statistics(path, params);
     if (path.endsWith('/comparison')) {
       const value = await rawGet(path, { classIds: classes.map(c => c.id) });
-      return { ...value, classes: await Promise.all(value.classes.map(async c => c.point ? { ...await classPoint(c.point), classId: c.class.id, name: c.class.name } : { ...c, classId: c.class.id, name: c.class.name })) };
+      return { ...value, exam: await examView(value.exam), classes: await Promise.all(value.classes.map(async c => c.point ? { ...await classPoint(c.point), classId: c.class.id, name: c.class.name } : { ...c, classId: c.class.id, name: c.class.name })) };
     }
     if (params.state === 'deleted') { params = { ...params, deleted: 'deleted' }; delete params.state; }
     if (path === '/students' && !params.classId && !params.deleted) {

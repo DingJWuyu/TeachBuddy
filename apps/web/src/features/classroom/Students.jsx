@@ -1,5 +1,5 @@
 import React from 'react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { tx } from '../../i18n/presentation.js';
 import { cx } from '../../components/ui/classNames.js';
 import { Icon, Avatar, Seg, Menu, Dialog, Field, Empty, Search, Spinner } from './ui.jsx';
@@ -186,7 +186,6 @@ function StudentScores({ ctx, student }) {
     ctx.api.get(`/students/${student.id}/statistics`).then((s) => live && setStats(s)).catch((err) => live && setStats({ error: err }));
     return () => { live = false; };
   }, [student.id]);
-  const tagName = useMemo(() => new Map(ctx.data.tags.map((t) => [t.id, t.name])), [ctx.data.tags]);
   if (!stats) return <div className="cr-loading is-inline"><Spinner /></div>;
   if (stats.error) return <Empty compact icon="info" title={tx('成绩暂时无法读取')} text={stats.error.message} />;
   if (!stats.points.length) return <Empty compact icon="graph" title={tx('还没有考试成绩')} text={tx('导入一场考试的成绩表后，这里会按时间列出每一场。')} />;
@@ -228,7 +227,7 @@ function StudentScores({ ctx, student }) {
           <RateBars compareKey="classRate" rows={current.questions.map((q) => ({ id: q.id, label: q.label, rate: q.score == null ? null : q.score / q.fullScore, classRate: q.classRate, meta: q.score == null ? tx('缺分') : `${fmt(q.score)} / ${fmt(q.fullScore)}`, state: 'missing-scores' }))} />
           {current.tags.length > 0 && (
             <div className="cr-tagline">
-              {current.tags.map((t) => <span key={t.id} className="cr-tagstat"><Icon name="tag" size={12} stroke={2.2} />{tagName.get(t.id) || t.name}<b>{t.rate == null ? tx('缺分') : pct(t.rate)}</b></span>)}
+              {current.tags.map((t) => <span key={t.id} className="cr-tagstat"><Icon name="tag" size={12} stroke={2.2} />{t.name}<b>{t.rate == null ? tx('缺分') : pct(t.rate)}</b></span>)}
             </div>
           )}
           <p className="cr-footnote">{tx('题目得分率描述的是这场考试的证据，不等于知识掌握度。')}</p>

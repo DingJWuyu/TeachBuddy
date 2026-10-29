@@ -5459,14 +5459,59 @@
               ],
               "additionalProperties": true
             }
+          },
+          "classes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "version": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              },
+              "required": [
+                "id",
+                "version"
+              ],
+              "additionalProperties": true
+            }
+          },
+          "students": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "version": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              },
+              "required": [
+                "id",
+                "version"
+              ],
+              "additionalProperties": true
+            }
           }
         },
         "required": [
           "exam",
           "results",
-          "tags"
+          "tags",
+          "classes",
+          "students"
         ],
-        "additionalProperties": true
+        "additionalProperties": true,
+        "description": "覆盖此次读取快照所使用的事实。历史学生快照由 results 版本覆盖；当前学生 scope 和班级名称分别由 students/classes 版本覆盖。"
       },
       "ExamInfo": {
         "type": "object",
@@ -5797,6 +5842,13 @@
               ],
               "additionalProperties": true
             }
+          },
+          "students": {
+            "type": "array",
+            "description": "仅班级统计提供。与本 point 的分布、排名来自同一份成绩；不包含逐题成绩行。",
+            "items": {
+              "$ref": "#/components/schemas/StudentStanding"
+            }
           }
         },
         "required": [
@@ -5832,6 +5884,13 @@
           },
           "dataVersions": {
             "$ref": "#/components/schemas/DataVersions"
+          },
+          "unrecordedExams": {
+            "type": "array",
+            "description": "仅班级统计提供：同一读取快照与筛选下尚无本班成绩的活动考试。",
+            "items": {
+              "$ref": "#/components/schemas/ExamInfo"
+            }
           }
         },
         "required": [
@@ -5872,7 +5931,27 @@
             "additionalProperties": true
           },
           "exam": {
-            "$ref": "#/components/schemas/ExamInfo"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ExamInfo"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "questions": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/Question"
+                    },
+                    "maxItems": 300
+                  }
+                },
+                "required": [
+                  "questions"
+                ]
+              }
+            ],
+            "description": "同一统计快照中的考试元数据及完整计分题；没有录入成绩时仍提供。"
           },
           "classes": {
             "type": "array",
@@ -5937,13 +6016,40 @@
           },
           "dataVersions": {
             "$ref": "#/components/schemas/DataVersions"
+          },
+          "tags": {
+            "type": "array",
+            "description": "该快照所使用的标签名称和版本，供考试题目呈现。",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "version": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "version"
+              ],
+              "additionalProperties": false
+            }
           }
         },
         "required": [
           "scope",
           "exam",
           "classes",
-          "dataVersions"
+          "dataVersions",
+          "tags"
         ],
         "additionalProperties": true
       },
@@ -6365,6 +6471,20 @@
               "number",
               "null"
             ]
+          },
+          "score": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "description": "仅学生统计提供：该生实际题分，缺失、缺考或未记录时为 null。"
+          },
+          "classRate": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "description": "仅学生统计提供：同一成绩版本、考试时班级的该题得分率。"
           }
         },
         "required": [
@@ -6634,6 +6754,55 @@
             "format": "uuid"
           }
         }
+      },
+      "StudentStanding": {
+        "type": "object",
+        "properties": {
+          "studentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "studentSnapshot": {
+            "$ref": "#/components/schemas/StudentSnapshot"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "present",
+              "absent",
+              "unrecorded"
+            ]
+          },
+          "totalScore": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "rate": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "rank": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1
+          }
+        },
+        "required": [
+          "studentId",
+          "studentSnapshot",
+          "status",
+          "totalScore",
+          "rate",
+          "rank"
+        ],
+        "additionalProperties": false
       }
     },
     "securitySchemes": {

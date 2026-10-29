@@ -1597,11 +1597,10 @@
   white-space: nowrap;
 }
 :is(.wb-shell, .tbx-portal-host) .cr-stat small {
-  overflow: hidden;
   color: var(--tb-muted);
   font-size: 12.5px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
 }
 :is(.wb-shell, .tbx-portal-host) .cr-stat.is-green {
   background: var(--cr-green-soft);

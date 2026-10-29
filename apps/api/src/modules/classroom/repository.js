@@ -18,6 +18,9 @@ export function createClassroomRepository(db) {
     }];
   }));
   return {
+    snapshot(read) {
+      return db.transaction(read)();
+    },
     get(kind, accountKey, id) {
       const row = statements[kind].get.get(accountKey, id);
       return row ? JSON.parse(row.value) : null;
