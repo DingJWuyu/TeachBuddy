@@ -1,4 +1,3 @@
-import { readHtml, dynamicPresentation, isolatedHtml } from "./presentation.js";
 import { randomUUID, createHash } from "node:crypto";
 import {
   contractError,
@@ -12,11 +11,8 @@ import {
   mathError,
   contract,
 } from "./contract.js";
-import { renderSource, rendererVersion, workshopRendererVersion } from "./render.js";
-import { MathSourceError } from "@teachbuddy/shared/math/expression";
 import { requestFingerprint } from "../../workbench/mutations.js";
-import { renderWorkshop } from "./workshop-render.js";
-import { workshopPresentation } from "./workshop-presentation.js";
+import { createMathArtifacts } from "./artifacts.js";
 export const operationDefinitions = Object.entries(contract.paths)
   .filter(([p]) => p.startsWith("/api/modules/math/"))
   .flatMap(([path, methods]) =>
@@ -30,6 +26,7 @@ export const operationDefinitions = Object.entries(contract.paths)
     })),
   );
 export function createMathService({ db, mutations, files, mathRuntimeDirectory }) {
+  const artifacts = createMathArtifacts({ files, mathRuntimeDirectory });
   const select = db.prepare(
     "SELECT value FROM math_works WHERE id=? AND accountKey=?",
   );
@@ -41,17 +38,6 @@ export function createMathService({ db, mutations, files, mathRuntimeDirectory }
     const row = select.get(id, principalKey(principal));
     if (!row) throw contractError(problems.notFound());
     return JSON.parse(row.value);
-  }
-  function assets(principal, work) {
-    for (const id of [
-      work.render.posterFileId,
-      work.render.graphPosterFileId,
-      work.render.presentationFileId,
-      work.source.kind === "html" ? work.source.fileId : null,
-      work.originalFileId,
-    ])
-      if (id) files.read(principal, id);
-    return work;
   }
   function current(principal, id, version, active = true) {
     const work = get(principal, id);
@@ -81,7 +67,7 @@ export function createMathService({ db, mutations, files, mathRuntimeDirectory }
     return work;
   }
   function readForReferenceV1(principal, id) {
-    const work = assets(principal, get(principal, id));
+    const work = artifacts.assertAvailable(principal, get(principal, id));
     return {
       id: work.id,
       version: work.version,
@@ -202,11 +188,11 @@ export function createMathService({ db, mutations, files, mathRuntimeDirectory }
             break;
           }
           case "getWork":
-            body = assets(principal, get(principal, id));
+            body = artifacts.assertAvailable(principal, get(principal, id));
             break;
           case "getWorkVersion":
             validate("Version", query.version);
-            body = assets(principal, revision(principal, id, query.version));
+            body = artifacts.assertAvailable(principal, revision(principal, id, query.version));
             break;
           case "listWorkVersions":
             get(principal, id);
@@ -240,54 +226,10 @@ export function createMathService({ db, mutations, files, mathRuntimeDirectory }
       }
       if (definition.name === "exportWork") {
         const saved = revision(principal, id, input.version);
-        const { format, background, width, selection = "work", formulaId } = input;
-        const workshop = saved.source.kind === "workshop";
-        if (
-          (format === "html" && !saved.render.presentationFileId) ||
-          (saved.source.kind === "html" &&
-            !["html", "source"].includes(format)) ||
-          (saved.source.kind === "geogebra" && format !== "source") ||
-          (saved.render.state === "invalid" && format !== "source") ||
-          (saved.source.kind === "formula" && background !== "transparent") ||
-          (["source", "html", "bundle", "ggb"].includes(format) &&
-            (width !== 1600 || background !== "transparent")) ||
-          (!workshop && (["bundle", "ggb"].includes(format) || input.selection !== undefined || formulaId !== undefined)) ||
-          (workshop && ((selection === "formula") !== (formulaId !== undefined))) ||
-          (workshop && ["source", "bundle"].includes(format) && selection !== "work") ||
-          (workshop && format === "ggb" && (selection !== "graph" || !saved.source.graph)) ||
-          (workshop && format === "bundle" && !saved.render.presentationFileId) ||
-          (workshop && format === "html") ||
-          (workshop && selection === "formula" && background !== "transparent")
-        )
-          throw mathError("unsupported-export");
-        let bytes;
-        if (["html", "bundle"].includes(format)) {
-          const stream = await files.open(
-            principal,
-            saved.render.presentationFileId,
-          );
-          const chunks = [];
-          for await (const chunk of stream) chunks.push(chunk);
-          bytes = Buffer.concat(chunks);
-        } else if (format === "ggb") bytes = Buffer.from(saved.source.graph.base64, "base64");
-        else if (format === "source")
-          bytes =
-            saved.source.kind === "html"
-              ? (await readHtml(files, principal, saved.source.fileId)).bytes
-              : Buffer.from(JSON.stringify(saved.source, null, 2));
-        else {
-          assets(principal, saved);
-          bytes = workshop ? (await renderWorkshop(saved.source, { ...input, runtimeDirectory: mathRuntimeDirectory })).bytes : await renderSource(saved.source, input);
-        }
-        const file =
-          ["html", "bundle"].includes(format)
-            ? files.read(principal, saved.render.presentationFileId)
-            : await store(
-                principal,
-                request,
-                bytes,
-                `math-${id}-v${input.version}.${format === "source" ? (saved.source.kind === "html" ? "html" : "json") : format === "bundle" ? "zip" : format}`,
-              );
+        const { file, offline } = await artifacts.prepareExport(saved, input, {
+          principal,
+          store: (bytes, name) => store(principal, request, bytes, name),
+        });
         if (Date.now() - started > 30000) throw mathError("render-unavailable", undefined, undefined, 503);
         return mutations.execute(request, () => {
           revision(principal, id, input.version);
@@ -295,14 +237,9 @@ export function createMathService({ db, mutations, files, mathRuntimeDirectory }
             id: randomUUID(),
             workId: id,
             workVersion: input.version,
-            format,
+            format: input.format,
             file,
-            offline:
-              format === "bundle" ? "self-contained" : format === "html"
-                ? saved.source.kind === "dynamic"
-                  ? "self-contained"
-                  : "unverified"
-                : "not-applicable",
+            offline,
             createdAt: new Date().toISOString(),
           };
           db.prepare("INSERT INTO math_exports VALUES (?,?,?)").run(
@@ -338,75 +275,14 @@ export function createMathService({ db, mutations, files, mathRuntimeDirectory }
       if (source.kind === "workshop" && !source.graph && !source.formulas.length)
         throw mathError("invalid-math-source", "/source", "empty-workshop");
       if (input.source) await validateGeoGebraSource(source);
-      let render = prior?.render;
+      let prepared = prior;
       if (["createWork", "updateWork"].includes(definition.name)) {
-        try {
-          if (source.kind === "workshop") {
-            const output = await renderWorkshop(source, { runtimeDirectory: mathRuntimeDirectory });
-            const poster = await store(principal, request, output.bytes, "math-workshop-poster.png");
-            const graph = output.graphBytes ? await store(principal, request, output.graphBytes, "math-workshop-graph.png") : null;
-            const presentation = await store(principal, request, await workshopPresentation(source, { title: input.title, formulaAssets: output.formulaAssets, runtimeDirectory: mathRuntimeDirectory }), "math-workshop-classroom.zip");
-            render = { state: "ready", posterFileId: poster.id, graphPosterFileId: graph?.id ?? null, presentationFileId: presentation.id, reason: null };
-          } else if (source.kind === "geogebra") {
-            render = {
-              state: "source-only",
-              posterFileId: null,
-              presentationFileId: null,
-              reason: null,
-            };
-          } else if (source.kind === "html") {
-            const html = await readHtml(files, principal, source.fileId);
-            const presentation =
-              html.text === null
-                ? null
-                : await store(
-                    principal,
-                    request,
-                    Buffer.from(isolatedHtml(html.text)),
-                    "math-presentation.html",
-                  );
-            render = {
-              state: "source-only",
-              posterFileId: null,
-              presentationFileId: presentation?.id ?? null,
-              reason: null,
-            };
-          } else {
-            const bytes = await renderSource(source);
-            const file = await store(
-              principal,
-              request,
-              bytes,
-              "math-poster.png",
-            );
-            render = {
-              state: "ready",
-              posterFileId: file.id,
-              presentationFileId:
-                source.kind === "dynamic"
-                  ? (
-                      await store(
-                        principal,
-                        request,
-                        await dynamicPresentation(source),
-                        "math-presentation.html",
-                      )
-                    ).id
-                  : null,
-              reason: null,
-            };
-          }
-        } catch (e) {
-          if (!(e instanceof MathSourceError)) throw e;
-          render = {
-            state: "invalid",
-            posterFileId: null,
-            presentationFileId: null,
-            reason: e.reason,
-            ...(source.kind === "workshop" ? { graphPosterFileId: null } : {}),
-          };
-        }
-      } else assets(principal, prior);
+        prepared = await artifacts.prepareWork(source, {
+          title: input.title,
+          principal,
+          store: (bytes, name) => store(principal, request, bytes, name),
+        });
+      } else artifacts.assertAvailable(principal, prior);
       if (Date.now() - started > 30000) throw mathError("render-unavailable", undefined, undefined, 503);
       return mutations.execute(request, () => {
         if (prior)
@@ -424,11 +300,8 @@ export function createMathService({ db, mutations, files, mathRuntimeDirectory }
           title: input.title ?? prior.title,
           source,
           originalFileId: prior?.originalFileId ?? input.originalFileId ?? null,
-          render,
-          rendererVersion:
-            prior && definition.name !== "updateWork"
-              ? prior.rendererVersion
-              : source.kind === "workshop" ? workshopRendererVersion : rendererVersion,
+          render: prepared.render,
+          rendererVersion: prepared.rendererVersion,
           createdAt: created ? now : prior.createdAt,
           updatedAt: now,
           deletedAt:
