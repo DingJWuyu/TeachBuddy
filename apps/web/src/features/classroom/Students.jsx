@@ -1,9 +1,10 @@
 import React from 'react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { tx } from '../../i18n/presentation.js';
 import { cx } from '../../components/ui/classNames.js';
 import { Icon, Avatar, Seg, Menu, Dialog, Field, Empty, Search, Spinner } from './ui.jsx';
 import { TrendChart, RateBars } from './charts.jsx';
+import { useClassroomSubmission } from './useSubmission.js';
 import { Journal } from './Records.jsx';
 import { longDate, age, fmt, pct } from './util.js';
 
@@ -17,36 +18,17 @@ export function StudentForm({ ctx, classId, initial, onClose }) {
     personality: initial?.personality ?? '',
     classId: initial?.classId ?? classId,
   });
-  const [error, setError] = useState('');
-  const [busy, setBusy] = useState(false);
-  const written = useRef(null);
+  const { busy, error, submit } = useClassroomSubmission({ api: ctx.api, collection: 'students', initial, reload: ctx.reload });
   const [more, setMore] = useState(Boolean(initial));
   const set = (key) => (e) => setForm({ ...form, [key]: e.target.value });
-  const save = async (again) => {
-    if (busy || !form.name.trim()) return;
-    setBusy(true);
-    setError('');
-    let completing = false;
-    try {
-      const body = { name: form.name, studentNo: form.studentNo, birthday: form.birthday || null, interests: form.interests, personality: form.personality };
-      body.classId = form.classId;
-      const signature = JSON.stringify(body);
-      if (written.current?.signature !== signature) {
-        const target = written.current?.saved || initial;
-        const saved = target
-          ? await ctx.api.put(`/students/${target.id}`, { baseVersion: target.version, ...body })
-          : await ctx.api.post('/students', body);
-        written.current = { saved, signature };
-      }
-      completing = true;
-      await ctx.reload({ propagate: true });
+  const save = (again) => {
+    if (!form.name.trim()) return;
+    const body = { name: form.name, studentNo: form.studentNo, birthday: form.birthday || null, interests: form.interests, personality: form.personality, classId: form.classId };
+    return submit(body, () => {
       ctx.toast(initial ? tx('已保存') : tx('已添加 {{name}}', { name: form.name.trim() }));
-      if (again) {
-        written.current = null;
-        setForm({ ...form, name: '', studentNo: '', birthday: '', interests: '', personality: '' });
-      }
+      if (again) setForm({ ...form, name: '', studentNo: '', birthday: '', interests: '', personality: '' });
       else onClose();
-    } catch (err) { setError(completing ? tx('班级暂时无法读取') : err.message); } finally { setBusy(false); }
+    });
   };
   const moving = initial && form.classId !== initial.classId;
   return (

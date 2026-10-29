@@ -1,3 +1,4 @@
+import { useClassroomSubmission } from './useSubmission.js';
 import React from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { tx } from '../../i18n/presentation.js';
@@ -150,9 +151,7 @@ export function ExamForm({ ctx, initial, onClose }) {
     questions: initial?.questions.map((q) => ({ ...q, fullScore: String(q.fullScore) })) ?? [],
   });
   const [bulk, setBulk] = useState({ count: '10', score: '10' });
-  const [error, setError] = useState('');
-  const [busy, setBusy] = useState(false);
-  const written = useRef(null);
+  const { busy, error, submit } = useClassroomSubmission({ api: ctx.api, collection: 'exams', initial, reload: ctx.reload });
   const set = (key) => (e) => setForm({ ...form, [key]: e.target.value });
   const total = sum(form.questions.map((q) => Number(q.fullScore) || 0));
   const patchQ = (i, patch) => setForm({ ...form, questions: form.questions.map((q, j) => (j === i ? { ...q, ...patch } : q)) });
@@ -161,31 +160,17 @@ export function ExamForm({ ctx, initial, onClose }) {
     const start = form.questions.length;
     setForm({ ...form, questions: [...form.questions, ...Array.from({ length: n }, (_, i) => ({ label: String(start + i + 1), group: '', fullScore: bulk.score, tagIds: [] }))] });
   };
-  const save = async () => {
-    if (busy) return;
-    setBusy(true);
-    setError('');
-    let completing = false;
-    try {
-      const body = {
-        name: form.name, date: form.date, subject: form.subject,
-        fullScore: form.fullScore ? Number(form.fullScore) : total,
-        questions: form.questions.map((q) => ({ ...(q.id ? { id: q.id } : {}), label: q.label, group: q.group || '', fullScore: Number(q.fullScore), tagIds: q.tagIds })),
-      };
-      const signature = JSON.stringify(body);
-      if (written.current?.signature !== signature) {
-        const target = written.current?.saved || initial;
-        const saved = target
-          ? await ctx.api.put(`/exams/${target.id}`, { baseVersion: target.version, ...body })
-          : await ctx.api.post('/exams', body);
-        written.current = { saved, signature };
-      }
-      completing = true;
-      await ctx.reload({ propagate: true });
+  const save = () => {
+    const body = {
+      name: form.name, date: form.date, subject: form.subject,
+      fullScore: form.fullScore ? Number(form.fullScore) : total,
+      questions: form.questions.map((q) => ({ ...(q.id ? { id: q.id } : {}), label: q.label, group: q.group || '', fullScore: Number(q.fullScore), tagIds: q.tagIds })),
+    };
+    return submit(body, (saved) => {
       ctx.toast(initial ? tx('已保存') : tx('考试已创建'));
-      ctx.go({ view: 'exams', examId: written.current.saved.id });
+      ctx.go({ view: 'exams', examId: saved.id });
       onClose();
-    } catch (err) { setError(completing ? tx('班级暂时无法读取') : err.message); } finally { setBusy(false); }
+    });
   };
   const covered = form.fullScore && total && Number(form.fullScore) !== total;
   return (
