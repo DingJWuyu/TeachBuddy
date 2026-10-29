@@ -70,7 +70,7 @@ export function createReminders({ db, mutations, schedule, clock }) {
       if (action === 'unread') markUnread.run(principal.accountKey, id);
       else (action === 'read' ? markRead : dismiss).run(now, principal.accountKey, id);
     }
-    return ids.map(id => project(find.get(principal.accountKey, id)));
+    return ids.map(id => projectNotification(find.get(principal.accountKey, id)));
   }
   const router = Router();
   router.get('/notifications', (req, res) => {

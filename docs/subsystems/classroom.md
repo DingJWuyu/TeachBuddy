@@ -18,7 +18,7 @@
 
 ## 责任与调用面
 
-[createClassroomModule](../../apps/api/src/modules/classroom/index.js) 接收 `db/mutations/files/clock`，必须有 `mutations.execute/peek` 和受管文件 `read/open`，返回 `router`、顶层 `operations` 与 `port`。班级拥有七类对象及其 `classroom_*` 表，种类由 [repository.kinds](../../apps/api/src/modules/classroom/repository.js) 定义：classes、students、records、exams、tags、imports、results。
+[createClassroomModule](../../apps/api/src/modules/classroom/index.js) 接收 `db/mutations/files/clock`，必须有 `mutations.execute/peek` 和受管文件 `read/open`，返回 `router` 与顶层 `operations`。班级拥有七类对象及其 `classroom_*` 表，种类由 [repository.kinds](../../apps/api/src/modules/classroom/repository.js) 定义：classes、students、records、exams、tags、imports、results。
 
 [createClassroomOperations / routes](../../apps/api/src/modules/classroom/operations.js) 是公开业务调用面：名单、记录、考试、标签、导入、成绩的读取和写入，以及座位、标签合并、导入确认、学生/班级统计和同场比较。参数为 `{principal, arguments, requestPath, key}`，业务操作在工厂顶层 `operations`，不是 `port.operations`。[lifecycle](../../apps/api/src/modules/classroom/lifecycle.js) 提供个人包对象、班级表格正文与关系投影、恢复维护校验和账户删除；维护使用模块仓储及 `validateStoredData`，不依赖运行工厂或模型操作。仓储与 SQL 留模块内部。
 
@@ -42,7 +42,7 @@ const result = await classroom.operations.confirmImport({
 
 - 认证 HTTP 到 router/operations，再到 [roster](../../apps/api/src/modules/classroom/roster.js)、[tags](../../apps/api/src/modules/classroom/tags.js)、imports/assessment，由 repository 写模块表；成绩保留考试时名单快照。
 - 受管 Excel File 经 imports/[workbook](../../apps/api/src/modules/classroom/workbook.js) 在事务外解析，校对草稿与固定原表事实保存在 import，确认生成 results。原卷/定位通过公共 files 读取，固定 rendition 使用文件服务，不另建预览系统。
-- [statistics](../../apps/api/src/modules/classroom/statistics.js) 从保存的活动考试/成绩计算口径并返回参与版本，不存派生结论；导出沿 port，恢复维护沿 [stored-data](../../apps/api/src/modules/classroom/stored-data.js) 校验保存对象及关系。
+- [statistics](../../apps/api/src/modules/classroom/statistics.js) 从保存的活动考试/成绩计算口径并返回参与版本，不存派生结论；导出与恢复维护沿 lifecycle，存储校验复用 [stored-data](../../apps/api/src/modules/classroom/stored-data.js) 的对象及关系检查。
 
 [模块迁移](../../apps/api/src/modules/classroom/migrations/index.js) 归班级，账户删除由外层生命周期事务调用模块清理。新班级不复用退役 classes 模块 ID 或数据。
 

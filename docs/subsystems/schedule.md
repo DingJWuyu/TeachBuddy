@@ -4,7 +4,7 @@
 
 ## 责任与调用面
 
-[createScheduleModule](../../apps/api/src/modules/schedule/index.js) 是唯一日程模块入口，接收公共数据库、mutations 与可信时钟，内部组合业务 service 和 reminders：先为业务绑定同步 beforeChange 闭包，再创建提醒，将 reminders router 挂入模块 router，并扩展只读导出包含通知。提醒结算和迁移均归日程。显式 `beforeChange` 只用于隔离 fixture 的同步接缝，正常组合使用本模块的 `reminders.captureDue`。
+[createScheduleModule](../../apps/api/src/modules/schedule/index.js) 是日程运行入口，接收公共数据库、mutations 与可信时钟，内部组合业务 service 和 reminders：先为业务绑定同步 beforeChange 闭包，再创建提醒，将 reminders router 挂入模块 router。提醒结算和迁移均归日程，资料维护经下述 lifecycle 入口。显式 `beforeChange` 只用于隔离 fixture 的同步接缝，正常组合使用本模块的 `reminders.captureDue`。
 
 HTTP 在 [router](../../apps/api/src/modules/schedule/router.js) 提供安排、事项、重复/例外、分离/移动、删除、标签、设置及日历查询，通知由 [reminders](../../apps/api/src/modules/schedule/reminders/index.js) 提供。公开 port 的同步 `readReference(principal, {id, originDate?})` 返回 `{entry, occurrence}`；未选实例时 occurrence 为 null，选定时复用 `readOccurrence`。引用读不自行拒绝已归档 Entry，发送时由消费者按公开状态判断。`readOccurrence` 与 `listReminderCandidates` 保留。
 
