@@ -22,6 +22,14 @@ function rankedRows(rows) {
   return { ordered, ranks };
 }
 
+function studentRows(exam, rows) {
+  const { ranks } = rankedRows(rows);
+  return rows.map(row => ({ studentId: row.studentId, studentSnapshot: row.studentSnapshot,
+    status: row.status, totalScore: row.totalScore,
+    rate: row.status === 'present' && known(row.totalScore) ? ratio(cents(row.totalScore), cents(exam.totalMax)) : null,
+    rank: ranks.get(row.studentId) ?? null }));
+}
+
 function overall(exam, rows) {
   const { ordered } = rankedRows(rows);
   const totals = ordered.map(row => cents(row.totalScore));
@@ -148,41 +156,58 @@ export function createClassroomStatistics({ repository }) {
   }
   return {
     studentStatistics(principal, studentId, filters = {}) {
-      const student = required(repository, 'students', principal, studentId);
-      const { exams, results, tags } = facts(principal, filters);
-      const points = [];
-      for (const result of results) {
-        const row = result.rows.find(row => row.studentId === studentId);
-        if (!row) continue;
-        const exam = exams.get(result.examId);
-        const klass = required(repository, 'classes', principal, result.classId);
-        points.push({ exam: examInfo(exam), resultId: result.id, resultVersion: result.version,
-          examVersionAtConfirmation: result.examVersionAtConfirmation,
-          overall: studentOverall(exam, result, row, klass), ...details(exam, [row], tags, filters.tagIds) });
-      }
-      return { scope: { type: 'student', studentId, name: student.name, version: student.version, deletedAt: student.deletedAt },
-        points: orderedPoints(points), dataVersions: versions(points, tags, filters.tagIds) };
+      return repository.snapshot(() => {
+        const student = required(repository, 'students', principal, studentId);
+        const { exams, results, tags } = facts(principal, filters);
+        const points = [], classes = new Map();
+        for (const result of results) {
+          const row = result.rows.find(row => row.studentId === studentId);
+          if (!row) continue;
+          const exam = exams.get(result.examId);
+          const klass = required(repository, 'classes', principal, result.classId);
+          classes.set(klass.id, versionOf(klass));
+          const personal = details(exam, [row], tags, filters.tagIds);
+          const reference = details(exam, result.rows, tags, filters.tagIds);
+          points.push({ exam: examInfo(exam), resultId: result.id, resultVersion: result.version,
+            examVersionAtConfirmation: result.examVersionAtConfirmation,
+            overall: studentOverall(exam, result, row, klass), ...personal,
+            questions: personal.questions.map((question, index) => ({ ...question,
+              score: row.status === 'present' && known(row.scores[question.id]) ? row.scores[question.id] : null,
+              classRate: reference.questions[index].rate })) });
+        }
+        return { scope: { type: 'student', studentId, name: student.name, version: student.version, deletedAt: student.deletedAt },
+          points: orderedPoints(points), dataVersions: { ...versions(points, tags, filters.tagIds),
+            classes: [...classes.values()], students: [versionOf(student)] } };
+      });
     },
     classStatistics(principal, classId, filters = {}) {
-      const klass = required(repository, 'classes', principal, classId);
-      const { exams, results, tags } = facts(principal, filters);
-      const points = orderedPoints(results.filter(result => result.classId === classId)
-        .map(result => classPoint(exams.get(result.examId), result, tags, filters.tagIds)));
-      return { scope: { type: 'class', ...classInfo(klass) }, points,
-        dataVersions: versions(points, tags, filters.tagIds) };
+      return repository.snapshot(() => {
+        const klass = required(repository, 'classes', principal, classId);
+        const { exams, results, tags } = facts(principal, filters);
+        const points = orderedPoints(results.filter(result => result.classId === classId)
+          .map(result => ({ ...classPoint(exams.get(result.examId), result, tags, filters.tagIds),
+            students: studentRows(exams.get(result.examId), result.rows) })));
+        const recorded = new Set(points.map(point => point.exam.id));
+        const unrecordedExams = [...exams.values()].filter(exam => !recorded.has(exam.id)).map(examInfo);
+        return { scope: { type: 'class', ...classInfo(klass) }, points, unrecordedExams,
+          dataVersions: { ...versions(points, tags, filters.tagIds), exam: [...exams.values()].map(versionOf),
+            classes: [versionOf(klass)], students: [] } };
+      });
     },
     compareExam(principal, examId, { classIds, tagIds } = {}) {
-      const exam = required(repository, 'exams', principal, examId);
-      const { results, tags } = facts(principal, { examId, tagIds });
-      const classes = classIds.map(id => {
-        const klass = required(repository, 'classes', principal, id);
-        const result = results.find(result => result.classId === id);
-        return { class: classInfo(klass), state: result ? 'recorded' : 'no-result',
-          point: result ? classPoint(exam, result, tags, tagIds) : null };
+      return repository.snapshot(() => {
+        const exam = required(repository, 'exams', principal, examId);
+        const { results, tags } = facts(principal, { examId, tagIds });
+        const classes = classIds.map(id => {
+          const klass = required(repository, 'classes', principal, id);
+          const result = results.find(result => result.classId === id);
+          return { class: classInfo(klass), state: result ? 'recorded' : 'no-result',
+            point: result ? classPoint(exam, result, tags, tagIds) : null };
+        });
+        const dataVersions = { ...versions(classes.map(value => value.point).filter(Boolean), tags, tagIds),
+          exam: [versionOf(exam)], classes: classes.map(value => versionOf(value.class)), students: [] };
+        return { scope: { type: 'comparison', examId, classIds }, exam: examInfo(exam), classes, dataVersions };
       });
-      const dataVersions = versions(classes.map(value => value.point).filter(Boolean), tags, tagIds);
-      dataVersions.exam = [versionOf(exam)];
-      return { scope: { type: 'comparison', examId, classIds }, exam: examInfo(exam), classes, dataVersions };
     }
   };
 }

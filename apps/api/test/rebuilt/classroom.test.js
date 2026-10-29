@@ -30,7 +30,7 @@ test('班级：学号唯一，换班移除原座位并升版，归档按班级/�
 test('成绩：真实工作簿确认原子且幂等，零分/缺总分/缺考/未记录有独立统计，历史姓名换班后保持', async t => {
   const world = await createWorld(t), { client } = await register(world);
   const { c, students } = await roster(client);
-  const { exam, tag, q, mapped } = await assessment(client, c, students);
+  const { exam, tag, q, mapped, file, mapping } = await assessment(client, c, students);
   assert.equal(mapped.rows[0].studentId, students[0].id, '前导零学号正确匹配');
   assert.equal(mapped.rows[2].totalScore, 0, '0 分不是空白');
   const confirmation = { baseVersion: mapped.version };
@@ -49,12 +49,52 @@ test('成绩：真实工作簿确认原子且幂等，零分/缺总分/缺考/�
   assert.equal(overall.distribution[9].count, 2, '满分进入最后一档');
   assert.equal(point.questions[0].observedCount, 4);
   assert.equal(point.questions[0].rate, 230 / 400, '单题分母仅已知人数');
+  const standings = students.map(s => point.students.find(row => row.studentId === s.id));
+  assert.deepEqual(standings.map(row => row.rank), [1, 1, 3, null, null, null]);
+  assert.deepEqual(standings.map(row => row.rate), [1, 1, 0, null, null, null]);
+  assert.deepEqual(standings.map(row => row.status), ['present', 'present', 'present', 'present', 'absent', 'unrecorded']);
+  assert.ok(point.students.every(row => !('scores' in row)), '排名与分布不返回全班逐题原始成绩');
+  assert.deepEqual(stats.dataVersions.classes, [{ id: c.id, version: c.version }]);
+  assert.deepEqual(stats.dataVersions.results, [{ id: confirmed.result.id, version: confirmed.result.version }]);
+  const personal = ok(await client.request('GET', `${classes}/students/${students[0].id}/statistics`));
+  assert.equal(personal.points[0].questions[0].score, 100);
+  assert.equal(personal.points[0].questions[0].classRate, 230 / 400);
+  assert.equal('students' in personal.points[0], false, '个人查询不返回全班名单');
+  assert.deepEqual(personal.dataVersions.students, [{ id: students[0].id, version: students[0].version }]);
+  const compared = ok(await client.request('GET', `${classes}/exams/${exam.id}/comparison?classIds=${c.id}`));
+  assert.equal('students' in compared.classes[0].point, false, '同场比较不附带全班名单');
+  assert.deepEqual(compared.dataVersions.classes, stats.dataVersions.classes);
+
   const ranks = [];
   for (const s of students.slice(0, 3)) ranks.push(ok(await client.request('GET', `${classes}/students/${s.id}/statistics`)).points[0].overall.rank);
   assert.deepEqual(ranks, [1, 1, 3], '同分排名必须跳名次');
   const newClass = ok(await write(client, 'POST', `${classes}/classes`, { name: '转入班级' }), 201);
   const changed = ok(await write(client, 'PUT', `${classes}/students/${students[0].id}`, { ...updateStudent(students[0]), classId: newClass.id, name: '改名后', baseVersion: students[0].version }));
   assert.equal(changed.name, '改名后');
+  const historical = ok(await client.request('GET', `${classes}/classes/${c.id}/statistics`));
+  assert.equal(historical.points[0].students.find(row => row.studentId === changed.id).studentSnapshot.name, '甲');
+  const movedStats = ok(await client.request('GET', `${classes}/students/${changed.id}/statistics`));
+  assert.deepEqual(movedStats.dataVersions.students, [{ id: changed.id, version: changed.version }]);
+  assert.equal(movedStats.points[0].questions[0].classRate, 230 / 400, '换班后的班级参照仍来自历史成绩');
+  const empty = ok(await client.request('GET', `${classes}/classes/${newClass.id}/statistics`));
+  assert.deepEqual(empty.points, []);
+  assert.deepEqual(empty.unrecordedExams.map(e => e.id), [exam.id]);
+  assert.deepEqual(empty.dataVersions.exam, [{ id: exam.id, version: exam.version }]);
+  const nextDraft = ok(await write(client, 'POST', `${classes}/imports`, { examId: exam.id, classId: c.id, sourceFileId: file.id }), 201);
+  const nextMapped = ok(await write(client, 'PUT', `${classes}/imports/${nextDraft.id}`, { baseVersion: nextDraft.version, mapping, rows: null }));
+  const nextRows = nextMapped.rows.map((row, index) => ({ sourceRow: row.sourceRow, studentId: index ? row.studentId : null,
+    status: row.status, totalScore: row.totalScore, scores: row.scores, ignored: index === 0 }));
+  const nextReviewed = ok(await write(client, 'PUT', `${classes}/imports/${nextDraft.id}`, { baseVersion: nextMapped.version, mapping, rows: nextRows }));
+  const nextResult = ok(await write(client, 'POST', `${classes}/imports/${nextDraft.id}/confirmation`, { baseVersion: nextReviewed.version })).result;
+  const afterImport = ok(await client.request('GET', `${classes}/classes/${c.id}/statistics`));
+  const historicalRow = afterImport.points[0].students.find(row => row.studentId === changed.id);
+  assert.equal(historicalRow.studentSnapshot.name, '甲', '重新导入仍保留换班前姓名');
+  assert.equal(historicalRow.totalScore, 100);
+  assert.equal(historicalRow.rank, 1);
+  assert.equal(afterImport.points[0].students.length, 6, '当前名单替换不删除换班历史行');
+  assert.deepEqual(afterImport.dataVersions.results, [{ id: nextResult.id, version: nextResult.version }]);
+
+
   assert.equal(ok(await client.request('GET', `${classes}/results/${confirmed.result.id}`)).rows.find(row => row.studentId === students[0].id).studentSnapshot.name, '甲', '成绩保留考试时姓名');
   assert.equal(ok(await client.request('GET', `${classes}/students/${students[0].id}/statistics`)).points[0].overall.classReference.id, c.id, '换班后统计仍使用考试时班级');
   const tag2 = ok(await write(client, 'POST', `${classes}/tags`, { name: '综合' }), 201);
