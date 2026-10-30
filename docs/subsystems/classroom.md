@@ -1,6 +1,6 @@
 # 班级技术入口
 
-改名单、成绩导入/确认、统计或维护校验时读本页。行为见 [班级规格](../features/classroom.md)，交换关系、统计口径与失败保证见 [班级契约](../contracts/classroom.md)，字段见 [classroom.openapi.json](../../apps/api/src/contracts/classroom.openapi.json)。Web 页面按单一模块目录装配，页面开放及当前候选验收查[项目状态](../plans/run-state.md)，不从前端存在推定班级 Agent 工具已接通。
+改名单、成绩导入/确认、统计或维护校验时读本页。行为见 [班级规格](../features/classroom.md)，交换关系、统计口径与失败保证见 [班级契约](../contracts/classroom.md)，字段见 [classroom.openapi.json](../../apps/api/src/contracts/classroom.openapi.json)。Web 页面按单一模块目录装配，不从前端存在推定班级 Agent 工具已接通。
 
 ## 教师页面与适配
 
@@ -50,4 +50,4 @@ const result = await classroom.operations.confirmImport({
 
 ## 验证入口
 
-入口和受影响场景统一从[班级验证](../acceptance/classroom.md)选择，执行分工沿[CI 与本地验证](../agents/github-workflow.md#ci-与本地验证)。后端 HTTP/Excel/原卷、统计与生命周期不代签教师页面或实际 AI 接入。技术入口只描述调用路径，不声明本候选通过。
+入口和受影响场景统一从[班级验证](../acceptance/classroom.md)选择。后端 HTTP/Excel/原卷、统计与生命周期不代签教师页面或实际 AI 接入。技术入口只描述调用路径，不声明本候选通过。

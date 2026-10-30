@@ -59,9 +59,5 @@
   "ignoreBinaries": [
     "openssl",
     "pdftotext"
-  ],
-  // .github/workflows/prepare-release.yml requires semver in its inline Node script.
-  "ignoreDependencies": [
-    "semver"
   ]
 }

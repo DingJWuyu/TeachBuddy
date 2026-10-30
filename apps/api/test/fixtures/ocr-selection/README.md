@@ -29,4 +29,4 @@ node apps/api/test/fixtures/ocr-selection/rebuild-authored.mjs test-results/ocr-
 node apps/api/test/fixtures/ocr-selection/rebuild-authored.mjs test-results/ocr-selection/inputs/author-heldout-rebuild heldout
 ```
 
-重建文件进入指定输出目录，固定 fixture 保持只读。不同 Poppler、Chromium 或平台可能产生不同 PNG 编码字节；比较实验始终使用 manifest 校验通过的入库图。任何原图或真值修订都先记录原摘要、具体错误与原因，再由总控决定是否重启受影响的比较。
+重建文件进入指定输出目录，固定 fixture 保持只读。不同 Poppler、Chromium 或平台可能产生不同 PNG 编码字节；比较实验始终使用 manifest 校验通过的入库图。任何原图或真值修订都先记录原摘要、具体错误与原因，再决定是否重启受影响的比较。

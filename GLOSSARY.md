@@ -1,6 +1,6 @@
 # 教师个人工作台
 
-供一位高中数学教师使用的个人教学工作空间。本文只定义共同词汇；范围见 [MVP 产品范围](docs/PRODUCT_SCOPE.md)，实现进度见[项目状态](docs/plans/run-state.md)。
+供一位高中数学教师使用的个人教学工作空间。本文只定义共同词汇；范围见 [MVP 产品范围](docs/PRODUCT_SCOPE.md)。
 
 ## Language
 

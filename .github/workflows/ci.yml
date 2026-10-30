@@ -4,18 +4,13 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
-  workflow_call:
-    inputs:
-      release_artifact:
-        type: boolean
-        default: false
 
 permissions:
   contents: read
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: ${{ !inputs.release_artifact }}
+  cancel-in-progress: true
 
 jobs:
   api:
@@ -154,29 +149,6 @@ jobs:
             test-results/
             !test-results/ci/**
           retention-days: 7
-      - name: Package the verified application
-        if: inputs.release_artifact
-        run: |
-          version=$(node -p 'require("./package.json").version')
-          archive="teachbuddy-$version-$GITHUB_SHA.tar.gz"
-          mkdir -p "$RUNNER_TEMP/release"
-          printf '%s\n' "$GITHUB_SHA" > "$RUNNER_TEMP/REVISION"
-          tar -czf "$RUNNER_TEMP/release/$archive" \
-            -C "$RUNNER_TEMP" REVISION -C "$GITHUB_WORKSPACE" \
-            LICENSE package.json package-lock.json .env.example \
-            apps/api/package.json apps/api/src \
-            apps/web/package.json apps/web/dist \
-            packages/shared/package.json packages/shared/src
-          cd "$RUNNER_TEMP/release"
-          sha256sum "$archive" > "$archive.sha256"
-      - name: Retain the verified release artifact
-        if: inputs.release_artifact
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: release-${{ github.sha }}
-          path: ${{ runner.temp }}/release/*
-          if-no-files-found: error
-          retention-days: 14
 
   build-and-api:
     # Keep the existing required check; neither job may fail or be skipped.

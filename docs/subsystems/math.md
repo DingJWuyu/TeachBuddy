@@ -50,4 +50,4 @@ const result = await math.port.operations.exportWork({
 
 ## 验证入口
 
-入口和受影响场景统一从[数学验证](../acceptance/README.md#数学专项)选择，执行分工沿[CI 与本地验证](../agents/github-workflow.md#ci-与本地验证)。制品须沿真实 HTTP 下载、停服并禁网冷启动；包解析不证明离线可操作，浏览器网页替身不证明真实模型。技术入口只描述调用路径，不声明本候选通过。
+入口和受影响场景统一从[数学验证](../acceptance/README.md#数学专项)选择。制品须沿真实 HTTP 下载、停服并禁网冷启动；包解析不证明离线可操作，浏览器网页替身不证明真实模型。技术入口只描述调用路径，不声明本候选通过。

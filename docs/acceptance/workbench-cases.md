@@ -1,6 +1,6 @@
 # 共享保存与基础题目验收
 
-核验[共享保存与基础题目契约](../contracts/workbench.md)时读本页。本文拥有交换顺序与双侧断言，字段归机器契约；结果和未验条件归[运行台账](../plans/run-state.md)。协议或保护行为改变时同步用例，场景编号保持稳定。
+核验[共享保存与基础题目契约](../contracts/workbench.md)时读本页。本文拥有交换顺序与双侧断言，字段归机器契约。协议或保护行为改变时同步用例，场景编号保持稳定。
 
 本节消费工作台 `0.1.0-candidate.2` 与认证 `1.0.0-rc.2`，为设计用例，不是运行通过证据。字段和样本值唯一在 [OpenAPI](../../apps/api/src/contracts/workbench.openapi.yaml)；[共享保存契约](../contracts/workbench.md)区分旧测试身份首流与当前认证接续。前端替身与后端 HTTP 集成都从 `components.examples` 取样本并按下表序列验证，不各造一套模型。
 

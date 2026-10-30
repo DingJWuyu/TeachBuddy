@@ -31,7 +31,7 @@ A pane closes when its program exits, taking its output with it, so run each wor
 - `apps/api/src/workbench/account-deletion.js`, `apps/api/src/features/auth/account-deletion.js`
 - every `migrations` file or folder under `apps/`
 - `apps/api/src/workbench/reliability/`
-- `.github/workflows/`, `.release-it.json`
+- `.github/workflows/`
 
 ## Worktrees
 

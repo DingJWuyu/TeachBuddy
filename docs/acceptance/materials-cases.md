@@ -1,6 +1,6 @@
 # 材料交换验收
 
-核验[材料交换契约](../contracts/materials.md)时读本页。本文拥有交换顺序与双侧断言，字段归机器契约；结果和未验条件归[运行台账](../plans/run-state.md)。协议或保护行为改变时同步用例，场景编号保持稳定。
+核验[材料交换契约](../contracts/materials.md)时读本页。本文拥有交换顺序与双侧断言，字段归机器契约。协议或保护行为改变时同步用例，场景编号保持稳定。
 
 这些是设计用例，不能标为产品运行 PASS。精确请求、响应和文件格式由 [OpenAPI](../../apps/api/src/contracts/materials.openapi.yaml) 的 schemas、paths、examples 唯一拥有；本节定义交换顺序与断言，语义沿[材料契约](../contracts/materials.md)约定。
 

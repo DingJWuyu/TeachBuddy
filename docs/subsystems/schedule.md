@@ -51,4 +51,4 @@ Web 的 [useScheduleSettings](../../apps/web/src/features/schedule/useScheduleSe
 
 ## 验证入口
 
-入口和受影响场景统一从[日程验证](../acceptance/README.md#日程专项)选择，执行分工沿[CI 与本地验证](../agents/github-workflow.md#ci-与本地验证)。真实 HTTP/SQLite 核对实例、改动前结算和通知，浏览器核对刷新、键盘与系统时区；真实触屏和输入法另验。技术入口只描述调用路径，不声明本候选通过。
+入口和受影响场景统一从[日程验证](../acceptance/README.md#日程专项)选择。真实 HTTP/SQLite 核对实例、改动前结算和通知，浏览器核对刷新、键盘与系统时区；真实触屏和输入法另验。技术入口只描述调用路径，不声明本候选通过。

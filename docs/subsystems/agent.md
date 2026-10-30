@@ -1,6 +1,6 @@
 # AI 助理技术入口
 
-修改对话持久化、pi、SSE/journal、工具装配或 provider 时读本页。用户行为见[助理规格](../features/agent.md)，请求间不变量见[助理契约](../contracts/agent.md)，当前范围与调用授权归[运行台账](../plans/run-state.md)。接缝、存储或运行配置变化时同步；历史设计与工具可调用性不代表实际接入。
+修改对话持久化、pi、SSE/journal、工具装配或 provider 时读本页。用户行为见[助理规格](../features/agent.md)，请求间不变量见[助理契约](../contracts/agent.md)。接缝、存储或运行配置变化时同步；历史设计与工具可调用性不代表实际接入。
 
 ## 装配与持久化
 
@@ -35,15 +35,15 @@ pi SDK 负责模型与工具循环、原生 entries 和上下文重建；应用�
 <a id="allowed-models"></a>
 ### 模型白名单
 
-仅允许 `deepseek/deepseek-v4.1-flash` 和 `z-ai/glm-5.3-flash`。精确 ID 在创建、恢复和发请求前校验，不用相似名字或其他目录项 fallback。开发 Codex 模型路由另见[开发约定](../agents/module-development.md#模型与固定派发)。
+仅允许 `deepseek/deepseek-v4.1-flash` 和 `z-ai/glm-5.3-flash`。精确 ID 在创建、恢复和发请求前校验，不用相似名字或其他目录项 fallback。
 
-首批业务工具的具名结果与当前开发授权见[项目状态](../plans/run-state.md)；局部通过不证明完整四模块、任意数学质量、当前余额或未来可用性。材料的本地 OCR 使用独立的[页识别链路](../contracts/recognition.md)，不以 AI 助理的开发状态判断其是否可用。
+首批业务工具的局部通过不证明完整四模块、任意数学质量、当前余额或未来可用性。材料的本地 OCR 使用独立的[页识别链路](../contracts/recognition.md)，不以 AI 助理的开发状态判断其是否可用。
 
 ### 费用与未决
 
 GOAT API 消耗账户 credits，不等于无限免费；Provider 返回 cost=0 不证明账单为零。余额、额外 credits、自动充值和实际费用未知。真实调用需当前任务的明确请求/轮次/token 上限；旧未用额度不结转，新 session 不重置消耗。`responses`、思考开关、视觉能力及流式参数必须有精确 Provider/模型实证，不能从原厂文档或目录名字推导。
 
-旧模型实验与费用记录从 Git 查询，已关闭窗口不提供新的调用额度。当前授权只看[台账](../plans/run-state.md)。
+旧模型实验与费用记录从 Git 查询，已关闭窗口不提供新的调用额度。
 
 ### 外部资料
 

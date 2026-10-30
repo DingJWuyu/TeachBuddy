@@ -1,6 +1,6 @@
 # 账户与身份契约
 
-I01-I07 采用认证 `1.0.0-rc.2` 与基础工作台 `0.1.0-candidate.2` 的 PageContext 约定。源版本 `6f3003250d170b44e89f6ac9b0a74f91d658a357`，协议已冻结且真实接入；接线状态与目标环境缺口见[账户规格](../features/identity.md)和[能力证据](../plans/run-state.md#核查入口)。
+I01-I07 采用认证 `1.0.0-rc.2` 与基础工作台 `0.1.0-candidate.2` 的 PageContext 约定。源版本 `6f3003250d170b44e89f6ac9b0a74f91d658a357`，协议已冻结且真实接入；接线状态与目标环境缺口见[账户规格](../features/identity.md)。
 
 [OpenAPI](../../apps/api/src/contracts/auth.openapi.yaml)拥有方法、地址、字段、状态码与样本；本文拥有跨操作语义；[交换用例](../acceptance/auth-cases.md)拥有前后端独立验证条件。接线见[技术接线](../subsystems/identity.md#页面与可信调用)，页面见[账户规格](../features/identity.md)。CA/S 编号用于稳定定位表单场景，现行状态与输入规则归[账户规格](../features/identity.md)，CA 与 CC 的覆盖关系归交换用例；编号不代表当前候选已通过。
 
@@ -95,7 +95,7 @@ Cookie 被浏览器完全禁用时，没有任何可用当前会话，应停在�
 
 ## 部署恢复的认证撤销
 
-当前内部契约为 `auth-recovery/2`，要求账户删除迁移及完成回执清理。当前候选按[核查入口](../plans/run-state.md#核查入口)验证，旧 revision 的结果不能证明当前恢复契约。这里拥有认证接口、表级不变量和错误；整体停服、复制、两次读回复核、开放及回退流程只归[数据恢复](../features/data.md#部署备份与还原)。它不是 I06 的浏览器 remembered 会话恢复。
+当前内部契约为 `auth-recovery/2`，要求账户删除迁移及完成回执清理。旧 revision 的验证结果不能证明当前恢复契约。这里拥有认证接口、表级不变量和错误；整体停服、复制、两次读回复核、开放及回退流程只归[数据恢复](../features/data.md#部署备份与还原)。它不是 I06 的浏览器 remembered 会话恢复。
 
 ### 唯一操作接口
 

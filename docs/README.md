@@ -1,14 +1,12 @@
 # 文档入口
 
-供人和 agent 按任务进入。正式产品文档分为规格、契约、验收：规格拥有用户行为，契约拥有跨调用方语义，验收拥有通过判据和交换用例。技术/运行及工程规则按需作为参考，当前任务状态留运行台账。先读本次分区规格，再按改动边界展开；本页只维护入口，归属或路径变化时同步。范围见[产品分区](PRODUCT_SCOPE.md#产品分区)，当前授权与进度见[项目状态](plans/run-state.md)。
+供人和 agent 按任务进入。正式产品文档分为规格、契约、验收：规格拥有用户行为，契约拥有跨调用方语义，验收拥有通过判据和交换用例。技术/运行及工程规则按需作为参考；未完成的工作和已知缺口记在 [GitHub issues](https://github.com/DingJWuyu/TeachBuddy/issues)。先读本次分区规格，再按改动边界展开；本页只维护入口，归属或路径变化时同步。范围见[产品分区](PRODUCT_SCOPE.md#产品分区)。
 
 | 要做什么 | 先读什么 | 何时继续展开 |
 | --- | --- | --- |
 | 了解产品、体验或启动 | 根[README](../README.md) | 配置、隔离实例或维护操作读[SETUP](SETUP.md) |
-| 查看进度、选下一项工作 | [项目状态](plans/run-state.md) | 核查某项结论才读其证据；实施时进入对应功能页 |
-| 接手分区、派发或执行任务 | [开发约定](agents/module-development.md) | 先确认本次目标、工作树和权限，再读下表对应分区 |
-| 创建 PR、配置 GitHub/CI 或发布 | [GitHub 协作与发布](agents/github-workflow.md) | 当前授权和未完成条件读项目状态；部署运行条件读 SETUP |
-| 执行仓库维护、阶段整理或集成后的整体核查 | [仓库维护流程](agents/module-development.md#仓库维护) | 按检查面展开现行规则，处理实际发现并完成验证与收尾 |
+| 选下一项工作 | [GitHub issues](https://github.com/DingJWuyu/TeachBuddy/issues) | 实施时进入对应功能页 |
+| 修改 CI | [CI](acceptance/README.md#ci) | 工作流与 Rulesets 在 `.github/` |
 | 判断是否属于既定目标 | [产品范围](PRODUCT_SCOPE.md) | 页面和跨模块往返读[共同交互](features/workbench.md) |
 | 修改界面 | 对应功能页和[设计输入](design-system/README.md) | 调整外观时核对当前运行页面及用户指定参考 |
 | 修改模块实现、存储或跨模块调用 | [子系统入口](subsystems/README.md) | 沿实际公开操作找到源码；交换语义读其文字契约，精确字段读机器 schema |
@@ -30,7 +28,7 @@
 | 日程 | 日期视图、安排、事项、重复、提醒与时区 | [日程](features/schedule.md) |
 | AI 助理 | 首页/侧栏对话、上下文引用、业务工具与模型接入 | [AI 助理](features/agent.md) |
 
-行为页回答老师使用时发生什么；[子系统入口](subsystems/README.md)回答代码由谁拥有、通过哪个操作调用、状态怎样变化以及怎样验证。规格不授予新增开发、模型调用或外部操作权限；当前暂停和待办只查项目状态及本次用户指令。
+行为页回答老师使用时发生什么；[子系统入口](subsystems/README.md)回答代码由谁拥有、通过哪个操作调用、状态怎样变化以及怎样验证。规格不授予新增开发、模型调用或外部操作权限。
 
 ## 共享技术底座
 
@@ -60,10 +58,8 @@
 
 代码职责和当前调用路径从[技术入口](subsystems/README.md)进入，环境与维护运行从[SETUP](SETUP.md)进入。[设计输入](design-system/README.md)与[完整应用原型](design-system/teachbuddy-app/index.html)拥有界面、状态、交互和动效参考。业务范围、交换与持久化语义继续由规格和契约拥有；原型演示与模拟结果不证明后端实现或本候选通过。固定输入留测试/源码目录，原始生成报告留证据，不成为新的正式规范类型。
 
-[运行台账](plans/run-state.md)是现场、授权、暂停、当前阶段和下一动作的唯一入口；活跃计划拥有该任务目标、依赖和完成证据映射，完成后稳定事实回归所属规范，不保留第二份全局进度。
-
 ### 维护入口
 
-维护文档时使用 `writing-for-agents`，按[文档维护](CODING_STANDARDS.md#文档维护)更新权威事实；保护边界见根 [AGENTS](../AGENTS.md#保护与完成标准)。本页只维护任务导航。
+维护文档时使用 `writing-for-agents`，按[文档维护](CODING_STANDARDS.md#文档维护)更新权威事实。本页只维护任务导航。
 
 术语与 ADR 按[领域约定](agents/domain.md)，问题记录按[Issue约定](agents/issue-tracker.md)与[标签表](agents/triage-labels.md)。

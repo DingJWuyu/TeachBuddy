@@ -1,6 +1,6 @@
 # 运行与部署
 
-维护实例看[已有本机实例](#已有本机实例)，验证代码看[新的隔离环境](#新的隔离环境)，定位实现看[代码结构](subsystems/README.md#代码结构)。[正式部署](#正式部署)是尚未选定的运行条件；当前能力和授权见[运行台账](plans/run-state.md)。
+维护实例看[已有本机实例](#已有本机实例)，验证代码看[新的隔离环境](#新的隔离环境)，定位实现看[代码结构](subsystems/README.md#代码结构)。[正式部署](#正式部署)是尚未选定的运行条件。
 
 ## 已有本机实例
 
@@ -10,7 +10,7 @@
 
 前端源码保存后热更新，API 加载的 JS 模块保存后自动重启；提交不是生效条件。环境变量、证书、依赖和通过文件系统读取的契约改变后，执行 `systemctl --user restart teachbuddy-preview.service`。文档修改无需重启。
 
-preview 由总控协调集成；模块 session 在独立端口、数据库和文件目录自测。维护后核对实际页面和受影响功能，进程存活不等于业务验证通过。
+worktree 在独立端口、数据库和文件目录自测，不连接体验实例。维护后核对实际页面和受影响功能，进程存活不等于业务验证通过。
 
 启动在工作台初始化后，对已受理且未完成的账户删除各接续一次；不创建新删除或周期重试。单条清理失败保留账户锁和文件清单，其他账户仍可使用。修复底层文件故障后可正常重启接续；原浏览器证明丢失时不以启动完成冒充浏览器已核实删除，语义见[账户删除交换](contracts/auth.md#账户删除交换-i08)。
 
@@ -84,7 +84,7 @@ WantedBy=default.target
 - 转换还调用 `bwrap` 和相应格式工具；准确命令从同目录的 `conversion-worker.mjs` 核对。
 - 工具安装在源码之外的持久目录，配置指向实际可执行文件；新环境独立安装，不从旧任务现场复制。
 
-当前实例的工具可用性与待处理项由[台账](plans/run-state.md)维护；修改运行配置后必须实际转换并打开文件验证。
+修改运行配置后必须实际转换并打开文件验证。
 
 新机器从 [Pandoc 官方安装入口](https://pandoc.org/installing.html)和 [LibreOffice 官方安装入口](https://www.libreoffice.org/installation-instructions/)准备工具；本机验证版本分别为 3.11 与 26.8，其他版本须重新核对输出。通过系统包管理器安装 Poppler、Bubblewrap、Fontconfig 和中文字体（例如 Noto Sans CJK SC），确保 `/usr/bin/pdfinfo`、`/usr/bin/pdftoppm`、`/usr/bin/pdftotext` 与 `bwrap` 可执行。用 `fc-match ':lang=zh-cn'` 核对实际中文字体，再运行材料回归并打开生成文件。Xpdf 按下节单独安装，不能用 Poppler 同名程序代替。浏览器回归另需[安装 Playwright 浏览器](acceptance/README.md#浏览器准备)。
 
@@ -157,7 +157,7 @@ python3 scripts/recognition/install.py "$ocrHome"
 
 当前只交付本机体验。用户将后续选择服务器与域名，尚未批准采购或部署，也没有已验证的正式环境。启动、持久化和转换要求见本页前述配置。
 
-代码协作与发布准备按[GitHub 工作流](agents/github-workflow.md)执行。Actions 可验证并打包固定提交，正式 Tag/Release 由获准的 main 发布产生；部署主机、生产配置及备份目的地未确定前，CD 保留为明确待办。首次日程先行版还须完成其他模块占位和发布范围验收，不能把工作流验证当成产品上线。
+发布方式尚未确定；部署主机、生产配置、备份目的地与首次日程先行版的范围验收见 [#68](https://github.com/DingJWuyu/TeachBuddy/issues/68)。
 
 ### 必须具备
 

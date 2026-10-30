@@ -13,7 +13,7 @@
 | 题库与资源识别消费 | 仓库根 `test/fixtures/questions/recognition/`、`test/fixtures/questions/recognition-document-4/` 与 `apps/web/e2e/fixtures/resources-recognition/`；固定机器结果仅证明消费与保存 |
 | 外部 PDF E 与扩展页 | 完整 PDF 按下节下载和校验，用 `M33_PRIVATE_PDF` 显式指定；E7/E8/E9 的固定机器结果在 `test/fixtures/questions/recognition-document-4/`，完整原件与渲染页均核对摘要；可选覆盖参数见[题库验证](README.md#题库专项) |
 
-缺少外部 PDF、模型或目标设备时，只将对应专项标为未验证，不影响仓库固定样本的必要消费回归。测试生成结果放在输出目录，固定输入保持只读；当前验证安排见[项目状态](../plans/run-state.md#核查入口)。
+缺少外部 PDF、模型或目标设备时，只将对应专项标为未验证，不影响仓库固定样本的必要消费回归。测试生成结果放在输出目录，固定输入保持只读。
 
 ## 提取与 Office 共用样本
 
@@ -77,7 +77,7 @@ Office 输入 `test/fixtures/materials/w.doc` 与题库 W 原件不同：旧 DOC
 
 ### 人工 Office 样本
 
-固定文件在 [Office fixtures](../../apps/web/e2e/fixtures/office)：`docx/` 含教案、讲义、练习的学生/教师六份 DOCX；`source/` 含对应 Markdown、公式和配图。`make-sources.py` 重建 Markdown 源，不生成 DOCX，也不代表产品转换器。目标环境的当前安排见[项目状态](../plans/run-state.md#用户验收与待决定)，在相应验收任务中执行以下操作。
+固定文件在 [Office fixtures](../../apps/web/e2e/fixtures/office)：`docx/` 含教案、讲义、练习的学生/教师六份 DOCX；`source/` 含对应 Markdown、公式和配图。`make-sources.py` 重建 Markdown 源，不生成 DOCX，也不代表产品转换器。目标环境验收见 [#70](https://github.com/DingJWuyu/TeachBuddy/issues/70)，执行以下操作。
 
 1. 在 Word、WPS 中分别从 [学生讲义](../../apps/web/e2e/fixtures/office/docx/handout-student.docx) 原件开始。确认中文、分式、根式、分段函数、对数公式和配图完整。
 2. 第一轮改“我的判断”的中文、例 1 分母 `x-2` 为 `x-5`、第二页根式内指数 `2` 为 `3`。另存带软件名的新 DOCX，关闭重开，核对修改及公式可编辑性。

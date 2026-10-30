@@ -1,6 +1,6 @@
 # 数学交换验收
 
-核验[数学交换契约](../contracts/math.md)时读本页。本文拥有交换顺序与双侧断言，字段归机器契约；结果和未验条件归[运行台账](../plans/run-state.md)。协议或保护行为改变时同步用例，场景编号保持稳定。
+核验[数学交换契约](../contracts/math.md)时读本页。本文拥有交换顺序与双侧断言，字段归机器契约。协议或保护行为改变时同步用例，场景编号保持稳定。
 
 与同提交 [schema](../../apps/api/src/contracts/math.openapi.json)、[样本](../../apps/api/test/fixtures/contracts/math-samples.json)一起消费。样本 UUID 是隔离 fixture 标识，不是生产种子。前端替身按下表返回已定义结果；后端从公开 HTTP 用相同顺序断言，均不需要另一侧猜字段。替身只能记 self。
 
