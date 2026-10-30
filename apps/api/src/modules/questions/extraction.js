@@ -251,6 +251,7 @@ export function createExtractionHandler({
               pages: preview.pageCount,
             });
           } catch (error) {
+            // A stop during Word preview must not be downgraded to a conversion failure that keeps reading natively.
             if (signal.aborted) throw error;
             issues.push(
               issue(
@@ -388,6 +389,7 @@ export function createExtractionHandler({
           const attempt = await recognition?.ensurePage(p, source, { signal, retry: Boolean(job.attemptOf) });
           if (attempt?.evidence) {
             task.recognitionEvidence ??= {};
+            // Keep the fixed evidence value as handed over; the shared page cache is overwritten by later attempts.
             task.recognitionEvidence[unit.id] = attempt.evidence;
             if (attempt.stop) {
               task.lateResults ??= {};

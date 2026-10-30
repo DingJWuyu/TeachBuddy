@@ -192,6 +192,7 @@ export function ClassroomWorkspace({ api, shell }) {
       {dialog?.name === 'class' && <ClassForm api={api} reload={reload} {...dialog.props} onClose={close} onSaved={(c) => { go({ view: 'class', classId: c.id, studentId: null }); toast(dialog.props.initial ? tx('已保存') : tx('班级已创建')); }} />}
       {dialog?.name === 'student' && <StudentForm ctx={ctx} {...dialog.props} onClose={close} />}
       {dialog?.name === 'exam' && <ExamForm ctx={ctx} {...dialog.props} onClose={close} />}
+      {/* Mount only after recover() and the roster read, so the dialog never opens a draft from before the pending write was replayed. */}
       {dialog?.name === 'import' && data.loaded && !data.error && <ImportDialog ctx={ctx} {...dialog.props} onClose={close} />}
       {dialog?.name === 'confirm' && <Confirm {...dialog.props} onClose={close} onError={async error => {
         close();

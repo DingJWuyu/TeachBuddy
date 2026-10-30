@@ -25,6 +25,7 @@ const readableStyle =
 export function takeSnapshot(db, principal, loader) {
   const account = principal.accountKey;
   const rows = (table) => db.prepare(`SELECT * FROM ${table} WHERE accountKey=?`).all(account);
+  // Owner snapshots run inside the export's write transaction and must only read: no default settings, no reminder settlement.
   const fragments = loader.maintenance().map(owner => owner.snapshot(db, principal));
   fragments.push(agentSnapshot(db, principal));
   const objects = fragments.flatMap(fragment => fragment.objects);

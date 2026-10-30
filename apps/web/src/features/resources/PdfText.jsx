@@ -37,6 +37,7 @@ export function PdfText({ client, renditionId, page, onText }) {
       task = pdfjs.getDocument({
         data,
         isEvalSupported: false,
+        // CMaps and standard fonts are served from this build, never a CDN, so CJK text layers work offline.
         cMapUrl: "/resources-pdf/cmaps/",
         cMapPacked: true,
         standardFontDataUrl: "/resources-pdf/standard_fonts/",

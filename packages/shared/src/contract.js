@@ -1,13 +1,12 @@
 /**
- * Shared contract constants for the first-flow workbench.
+ * Shared contract constants for the workbench API.
  *
- * Both sides consume the same frozen OpenAPI document
- * (apps/api/src/contracts/workbench.openapi.yaml); these constants are the
- * small runtime vocabulary that would otherwise be re-typed differently on
- * each side. Values must stay byte-identical to the frozen document: paths,
- * header names, problem type URIs, invalid-input reasons and the JSON body
- * limit. Adding a value here without a new frozen contract revision is a
- * contract change.
+ * Both sides follow the common protocol in
+ * apps/api/src/contracts/workbench.openapi.yaml (its info.description); these
+ * constants are the small runtime vocabulary that would otherwise be re-typed
+ * differently on each side. Values must stay byte-identical to the OpenAPI
+ * documents: paths, header names, problem type URIs, invalid-input reasons and
+ * the JSON body limit. Changing a value here is a contract change.
  */
 
 export const workbenchPaths = Object.freeze({
@@ -72,7 +71,7 @@ export const workbenchInvalidInputReasons = Object.freeze([
   'unsupported-content-version'
 ]);
 
-/** HTTP status fixed by the frozen responses for each problem type. */
+/** HTTP status fixed by the OpenAPI responses for each problem type. */
 export const workbenchProblemStatus = Object.freeze({
   [workbenchProblemTypes.invalidTimeZone]: 422,
   [workbenchProblemTypes.reminderNotFuture]: 422,

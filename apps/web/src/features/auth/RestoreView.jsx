@@ -5,7 +5,7 @@ import AuthEntryLayout from './AuthEntryLayout.jsx';
 import { COPY } from './presentation.js';
 
 /*
- * Neutral entry placeholder, restore waiting (S46) and restore failure (S47).
+ * Neutral entry placeholder, restore waiting and restore failure.
  * The boot placeholder deliberately renders neither the login card nor the
  * workbench, so the first state read cannot flash the wrong surface.
  */

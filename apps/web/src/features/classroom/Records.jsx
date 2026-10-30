@@ -76,6 +76,7 @@ export function Journal({ ctx, subject, placeholder }) {
   const load = async () => {
     const selected = selection.current;
     const generation = ++request.current;
+    // A late response for an earlier subject, query or range must not overwrite the current list.
     const current = () => generation === request.current && selected.criteria === selection.current.criteria;
     try {
       const res = await ctx.api.get('/records', { [selected.key]: selected.id, q: selected.q, from: selected.range === 'all' ? '' : daysAgo(Number(selected.range)) });

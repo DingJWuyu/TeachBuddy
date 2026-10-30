@@ -26,6 +26,7 @@ export function createAssetHandler({ store: s, files, logger }) {
           try { file = await files.store(p, {
             name: `题面-${index + 1}.png`, mediaType: "image/png", bytes: png,
           }, {
+            // Keys derive from the job, so a rerun after restart reuses stored PNGs instead of duplicating them.
             key: stableKey(job.id, index + 1), method: "POST", path: "/questions/assets/" + job.id,
           });
           } catch (error) {

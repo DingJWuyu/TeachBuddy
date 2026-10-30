@@ -1,6 +1,7 @@
 import { deleteAccountData as deleteAgentData } from '../agent/lifecycle.js';
 
 // Shared workbench data is cleared alongside module-owned data in one transaction.
+// Every module with storage takes part, including ones absent from the current catalog.
 const accountTables = [
   'materials_recognition_requests', 'materials_recognition_results', 'materials_renditions', 'materials_previews',
   'materials_jobs', 'materials_files', 'reliability_exports',

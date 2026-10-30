@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$comment": "Manual archive definitions derived from 31575c5c9d386c03a1f9fcde38b9a216f87a5b08:docs/contracts/reliability.schema.json, restricted to the current modules. Conversation payloads retain their existing native public schema.",
+  "$comment": "Personal export and deployment backup formats, validated through schema.js. Conversation payloads retain their existing native public schema.",
   "$defs": {
     "DeploymentManifest": {
       "type": "object",
@@ -40,7 +40,7 @@
             "type": "string",
             "minLength": 1
           },
-          "description": "备份时完整有序迁移账本；与实际库及固定候选支持集合逐项核对，未知模块/ID 或缺升级链即停止；认证子集只按 x-auth-recovery 的固定契约。"
+          "description": "备份时完整有序的迁移账本。恢复时与实际库和本版本支持的迁移集合逐项核对，出现未知模块、未知迁移 ID 或缺少升级链即停止。"
         },
         "schemas": {
           "type": "array",
@@ -74,7 +74,7 @@
         "schemas"
       ],
       "additionalProperties": false,
-      "description": "备份时事实，不含秘密或可复用的认证清理/开放许可。认证操作绑定见 x-auth-recovery；具体配置及兼容/启用顺序归 reliability 架构和契约 E。schemas 列举全部必需内容/数学/Agent 格式版本，版本未知即停止，不能仅凭认证操作成功开放。"
+      "description": "部署备份清单，记录备份时的事实，不含秘密，也不含可复用的认证清理或开放许可。schemas 列出库中全部必需的内容、数学和助理格式版本，版本未知即停止恢复；认证清理成功本身不足以开放恢复副本。"
     },
     "PortableManifest": {
       "type": "object",

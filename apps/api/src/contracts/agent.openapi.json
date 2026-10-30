@@ -1,9 +1,9 @@
 {
   "openapi": "3.2.1",
   "info": {
-    "title": "TeachBuddy early Agent",
-    "version": "0.1.0-c25.2",
-    "description": "C25/v1 READY_FOR_REVIEW/self。仅新增 /api/agent；既有业务与认证操作语义不变。请求封闭、严格类型、未知 query 拒绝、JSON 上限 2 MiB；响应允许附加字段。身份拒绝先于读取账户内容；写入来源防护先于身份。所有响应 no-store。跨请求语义见 docs/contracts/agent.md。"
+    "title": "TeachBuddy agent",
+    "version": "0.1.0",
+    "description": "AI 助理的对话、草稿、发送、事件流、工具调用与教学提案接口。字段以本文件的 schema 为准；页面绑定、来源防护和会话 Cookie 见 auth.openapi.yaml，Problem、幂等和版本冲突的共同协议见 workbench.openapi.yaml。助理只新增 /api/agent，既有业务与认证操作的语义不变。\n\n## 请求处理\n\n- 请求封闭、严格类型，未知 query 拒绝，JSON 上限 2 MiB；响应允许附加字段。所有响应 no-store。\n- 所有请求（包括事件流）使用会话 Cookie 和必填 X-TeachBuddy-Page。账户只来自服务端可信身份，浏览器、模型和工具参数都不能指定账户。\n- 处理顺序：写入来源防护、当前身份、JSON 与基本 schema、幂等重放、资源归属、版本/运行状态/引用等业务条件、持久提交。无效页面绑定返回 401；不属于本账户的对象一律 404，不返回版本。\n- 写请求的 Idempotency-Key 按账户作用域，绑定方法、规范路径和解析后的 JSON 体；同键同体重放优先于版本检查，返回首次的状态码和结果，跨重启保留，同键换体返回 idempotency-key-reused。失败不记录、不消耗键。重放仍验证当前身份，其他账户取不到原响应。GET 不创建会话、不发模型请求。\n- 不暴露 Cookie、密钥、provider 原始响应头、内部文件路径或模型 thinking。\n\n## 对话与草稿\n\n- 列表按 updatedAt 降序、id 升序。preview 从最近一条非空助理消息派生：去掉 Markdown 标记后取首个非空行的前 60 个字符，列表、snapshot 和 conversation 事件一致。\n- 选择、浏览、重命名和置顶不更新 updatedAt；保存草稿、发送和新的消息或工具状态更新它。\n- 草稿每个对话一份。PUT 整份替换并使 version 加 1；baseVersion 过期返回 draft-conflict（含 currentVersion），客户端保留本地输入并让老师选择，不自动覆盖。\n- 引用种类为 question、resource 和 entry，都带明确 version；entry 可带 originDate 指向重复安排的某一次。同一 kind/id/originDate 重复出现为 invalid-input。保存草稿只核对归属，允许保留已过期或已删除的本账户版本以便恢复；发送时要求对象仍有效、版本完全一致。\n\n## 发送与运行\n\n- 每个账户最多一个 running turn，这是避免跨对话写入争抢的简单约束，没有排队。新键发送遇到运行中返回 turn-active；账户仍有执行中或待确认的写入返回 pending-operation。\n- 发送在一个事务中完成：核对引用并捕获本账户对象的公开快照，创建 user message 和 turn，清空这一版草稿并使 version 加 1。事务提交后才启动模型。\n- 每个 turn 固定一个精确模型 ID，之后的模型选择只影响下一个 turn。只允许 configuration 列出的两个模型；接受请求前、开启会话后和每次 provider 请求前都按 provider 加精确 ID 校验，不用相似名字或其他目录项回退。\n- 单个 turn 最多 12 次 provider 请求、24 次工具调用、180 秒，达到任一上限即停止后续动作，保留已完成部分并以 run-limit 结束。这是调用上界，不是费用上限。\n- 终态：模型正常结束且所有已启动操作都有确定结果、没有未处理失败时为 completed；用户停止为 stopped；工具业务拒绝为 failed/tool-rejected，写入结果未知为 failed/tool-unconfirmed，只读异常为 failed/tool-failed；进程重启时 running 一律转为 interrupted/server-restart，不自动重试。非 completed 终态下助理消息标为 partial。\n- 额度或付费授权被拒绝时立即停止后续请求，不自动换模型、充值或重试。不自动压缩、总结或后台命名；上下文超限以 context-limit 结束并保留全部历史。\n- 继续或重试通过新的草稿与发送形成新 turn；新 turn 继承上下文和已持久的工具结果，已确认的提案执行结果作为数据加入上下文，旧调用不再执行。\n\n## 用量\n\n- 每次 provider 请求开始即记一个序号，每个序号只累计一次已报告的 usage。聚合字段是已报告值之和，没有任何报告时为 null；complete 仅当所有已发请求都取得完整 usage。\n- token 字段沿用 provider 的语义：reasoning 是细分，不重复加进 totalTokens。中断、授权失败或网络失败的请求可能已收费但没有 usage，因此必须标为不完整。\n- 实际费用和余额未知，始终为 null；模型元数据里的 cost=0 不参与任何费用计算。\n\n## 事件流\n\n- 客户端先 GET snapshot，再以 events?after=<lastEventSeq> 读取。snapshot 的全部字段与 lastEventSeq 来自同一次一致读取。\n- 每帧为 `id: <seq>\\nevent: change\\ndata: <Event JSON>\\n\\n`。seq 在对话内从 1 严格递增；事件落盘后才发布。message 事件携带该消息截至此刻的完整文本，用于替换，不是待拼接的 token。\n- after 是唯一游标，不读取 Last-Event-ID。服务端先重放 seq>after 的事件再接续新事件，交界不漏；投递至少一次，客户端忽略已应用的序号，发现缺号就重连。after 超过 lastEventSeq 返回 cursor-ahead，客户端重读 snapshot。事件不设过期。\n- 心跳是 SSE 注释，最多 15 秒一条，不写入事件记录。流建立前的错误是标准 Problem；建立后每批发送前重新核验身份，身份失效或存储错误直接关闭流，不在流里发送另一种错误格式。断线不等于停止，也不触发重新生成。\n\n## 工具调用\n\n- x-agent-tools 是封闭的工具清单，模型只看到当前装配的业务模块实际提供的工具。没有任意 URL、SQL、shell、文件系统或插件入口；工具参数不能携带身份、业务幂等键、来源快照或认证参数。\n- 每个调用以 (turnId, toolCallId) 定位；ordinal 是该 turn 内首次出现的顺序，跨刷新和重启不变。工具卡按 ordinal 排列，不依赖助理正文存在。参数不符合该工具 schema 时 arguments 为 null 并给出 invalid-input 拒绝，不保存原始无效输入，也不创建写操作。\n- 只读调用依次为 prepared、executing，再到 read（包括空列表）、rejected（合法业务拒绝，保留原 Problem）或 failed（抛错或响应不符合契约，只给安全的 tool-failed）。停止、身份失效或本轮提前结束时尚未执行的调用为 cancelled，包括同批因前一工具失败而未执行的调用；已执行但还没有持久结果的为 interrupted，之后迟到的结果丢弃。只读调用不创建 Operation 或业务幂等键，operationId 为 null，重开卡片不重新查询。\n- 停止与工具结果竞争时，已持久的停止标记决定 turn 为 stopped，工具卡仍保存真实结果。终态不会被重复事件、重连或新 turn 改写，唯一例外是 unconfirmed 经核实变为确定结果。\n\n## 写入 journal\n\n- Operation 是写入事实的唯一来源，写调用的 ToolCall 是它的公开投影。Operation、所有关联 ToolCall、对应事件和原生工具结果在同一 SQLite 事务中更新，事件先 operation 后 toolCall。浏览器只按 ToolCall 渲染卡片，用 operationId 确认结果；只更新 Operation 的 HTTP 回执不改写卡片。snapshot 中每个非空 ToolCall.operationId 都能在 operations 中找到，turn、参数和状态一致。\n- Operation.request.operationId 是业务操作名，ToolCall.operationId 是 journal UUID，二者不能混用。\n- 首次有效的写调用由服务端分配 operationId 和业务 Idempotency-Key（绝不由模型提供），把规范方法、路径、完整请求体、基线版本和请求指纹保存为 prepared，然后才允许调用业务。开始前先持久 executing，结果单独提交：confirmed 要求契约匹配的成功状态和完整结果，rejected 要求已知、合法的业务拒绝，其他异常一律 unconfirmed。\n- executing 在结果落盘前中断即转为 unconfirmed；prepared 在停止或重启时转为 cancelled，不替老师开始尚未开始的写入。\n- 同一 turn 再次请求一个已 confirmed 的等价写入（规范操作和完整参数一致）时复用原 operationId 和结果，新调用保留自己的 toolCallId 和 ordinal，不执行第二次写入。新的用户消息里再次明确要求创建是新的逻辑提交，不按文字相同去重。\n- 业务 409 不自动刷新版本重试。多步任务逐操作提交，没有跨操作回滚。\n- 所属业务模块缺席时，历史 unconfirmed 操作保持原状态和 journal；模块重新装配后仍用原键核实。\n\n## 教学提案\n\n- wb_propose_teaching_card 接受 plan、practice 和 variant 三种卡片，合法参数还必须能转换成对应的业务请求。它只保存 read 结果 {proposalId, card}，operationId 为 null，不创建业务数据；提案属于原 ToolCall，刷新不重新生成。\n- 点击保存由 executeAgentProposal 完成，执行进度只由 Operation 表达，提案 ToolCall 始终保持 read。\n\n## 恢复与删除\n\n- 普通启动时：running 的 turn 转为 interrupted/server-restart，其中只读 prepared 转 cancelled、executing 转 interrupted；已结束 turn 的提案操作 prepared 转 cancelled、executing 转 unconfirmed。不自动请求模型或执行业务。\n- 从备份恢复后，原有 prepared、executing、unconfirmed 的操作被冻结，reconcile 和提案执行返回 409 recovery-review-required，需要老师基于当前资料重新核对；普通启动的裁决不代替这一冻结。\n- 未知或损坏的原生记录原样保留，历史公开投影仍可读，新生成不可用，不会创建空会话覆盖。\n\n## 错误\n\n- 助理专有的错误码见 x-agent-errors；其余传输、校验、身份和业务错误沿用 workbench.openapi.yaml 的 Problem 与状态映射。"
   },
   "servers": [
     {
@@ -26,7 +26,7 @@
         ],
         "responses": {
           "200": {
-            "description": "持久结果；重复键保持首次状态码和结果。",
+            "description": "成功。",
             "headers": {
               "Cache-Control": {
                 "required": true,
@@ -58,7 +58,8 @@
           "503": {
             "$ref": "#/components/responses/Problem"
           }
-        }
+        },
+        "description": "state=ready 只表示本地配置和模型注册可用，不表示远端余额足够或服务已实测健康。activeTurn 是本账户正在运行的 turn。billing 的实际费用和余额始终为 null。"
       }
     },
     "/api/agent/conversations": {
@@ -71,7 +72,7 @@
         ],
         "responses": {
           "200": {
-            "description": "持久结果；重复键保持首次状态码和结果。",
+            "description": "成功。",
             "headers": {
               "Cache-Control": {
                 "required": true,
@@ -103,7 +104,8 @@
           "503": {
             "$ref": "#/components/responses/Problem"
           }
-        }
+        },
+        "description": "返回本账户全部对话，按 updatedAt 降序、id 升序。"
       },
       "post": {
         "operationId": "createAgentConversation",
@@ -126,7 +128,7 @@
         ],
         "responses": {
           "201": {
-            "description": "持久结果；重复键保持首次状态码和结果。",
+            "description": "持久结果；同键重放返回首次的状态码和结果。",
             "headers": {
               "Cache-Control": {
                 "required": true,
@@ -180,7 +182,8 @@
               }
             }
           }
-        }
+        },
+        "description": "返回持久 snapshot：草稿 version=1，文字和引用为空，消息、turn、工具调用和操作为空，lastEventSeq=0。"
       }
     },
     "/api/agent/conversations/{conversationId}": {
@@ -196,7 +199,7 @@
         ],
         "responses": {
           "200": {
-            "description": "持久结果；重复键保持首次状态码和结果。",
+            "description": "成功。",
             "headers": {
               "Cache-Control": {
                 "required": true,
@@ -228,7 +231,8 @@
           "503": {
             "$ref": "#/components/responses/Problem"
           }
-        }
+        },
+        "description": "全部字段与 lastEventSeq 来自同一次一致读取，只读持久投影，不触发模型请求或工具重查。"
       },
       "patch": {
         "operationId": "updateAgentConversation",
@@ -254,7 +258,7 @@
         ],
         "responses": {
           "200": {
-            "description": "持久结果；重复键保持首次状态码和结果。",
+            "description": "持久结果；同键重放返回首次的状态码和结果。",
             "headers": {
               "Cache-Control": {
                 "required": true,
@@ -308,7 +312,8 @@
               }
             }
           }
-        }
+        },
+        "description": "只接受 title 或 pinned。标题去首尾空白后保存；只有请求明确包含 title 时才设 titleEdited=true，之后首次发送不再自动生成标题。缺失的 titleEdited 与 false 同义，旧会话无需迁移。不改变 updatedAt。"
       },
       "delete": {
         "operationId": "deleteAgentConversation",
@@ -334,7 +339,7 @@
         ],
         "responses": {
           "200": {
-            "description": "持久结果；重复键保持首次状态码和结果。",
+            "description": "持久结果；同键重放返回首次的状态码和结果。",
             "headers": {
               "Cache-Control": {
                 "required": true,
@@ -388,7 +393,8 @@
               }
             }
           }
-        }
+        },
+        "description": "移除会话及其草稿、消息、引用、事件和工具记录，不撤销已经保存的业务对象。有 running turn 时返回 turn-active；有 prepared、executing 或 unconfirmed 的操作时返回 pending-operation，原核实入口保留。"
       }
     },
     "/api/agent/conversations/{conversationId}/draft": {
@@ -416,7 +422,7 @@
         ],
         "responses": {
           "200": {
-            "description": "持久结果；重复键保持首次状态码和结果。",
+            "description": "持久结果；同键重放返回首次的状态码和结果。",
             "headers": {
               "Cache-Control": {
                 "required": true,
@@ -470,7 +476,8 @@
               }
             }
           }
-        }
+        },
+        "description": "整份替换，成功 version 加 1，同键重放不再增加版本。baseVersion 过期返回 draft-conflict 和 currentVersion。引用只核对归属，允许已过期或已删除的本账户版本。"
       }
     },
     "/api/agent/conversations/{conversationId}/turns": {
@@ -498,7 +505,7 @@
         ],
         "responses": {
           "202": {
-            "description": "先持久接受用户消息、清空匹配草稿和 turn，再启动 pi。202 不代表生成或业务写入成功。",
+            "description": "已接受：user message、turn 和草稿清空已持久提交。不代表生成或业务写入成功。",
             "headers": {
               "Cache-Control": {
                 "required": true,
@@ -543,7 +550,7 @@
             "$ref": "#/components/responses/Problem"
           }
         },
-        "description": "先持久接受用户消息、清空匹配草稿和 turn，再启动 pi。202 不代表生成或业务写入成功。",
+        "description": "读取 draftVersion 指定的已保存草稿，去首尾空白后文字必须非空，原文逐字保存。在一个事务中确认账户没有运行中的 turn 或待确认操作、核对引用并捕获快照、创建 user message 和 turn、清空这一版草稿并使 version 加 1；提交后才启动模型。resource 快照是条目公开元数据，不含附件正文或下载凭据；entry 快照为 {entry, occurrence}，未选 originDate 时 occurrence=null，选了则捕获该次的实际结果，取消、删除或超出系列范围的那一次不能发送。引用失效返回 reference-conflict，不生成消息、不清空草稿、不请求模型。迟到重放返回原 202，不清空新草稿，也不再次运行。202 不代表生成或业务写入成功。未明确改名的对话以首次发送文字的前 32 个字符作标题。",
         "requestBody": {
           "required": true,
           "content": {
@@ -584,7 +591,7 @@
         ],
         "responses": {
           "200": {
-            "description": "停止请求持久生效；running 可暂时返回，终态由 snapshot/events 确认。已提交业务不回滚。",
+            "description": "停止标记已持久；turn 可能仍是 running。",
             "headers": {
               "Cache-Control": {
                 "required": true,
@@ -629,7 +636,7 @@
             "$ref": "#/components/responses/Problem"
           }
         },
-        "description": "停止请求持久生效；running 可暂时返回，终态由 snapshot/events 确认。已提交业务不回滚。",
+        "description": "停止标记持久化后返回 200，返回的 turn 可能仍是 running，终态由 snapshot 或事件确认。系统停止下一次 provider 请求和尚未开始的工具，并中止正在生成的文本；已开始的写入先记录或核实结果，再进入 stopped。仍有未确认操作时 turn 也可以是 stopped，但该操作会阻止新生成。重复停止无副作用，终态 turn 不重开。已提交的业务不回滚。",
         "requestBody": {
           "required": true,
           "content": {
@@ -670,7 +677,7 @@
         ],
         "responses": {
           "200": {
-            "description": "原键原请求核实，无模型请求；200 的 Operation.state 仍可能 unconfirmed，不等于写成功。",
+            "description": "核实动作的响应；以 Operation.state 判断结果。",
             "headers": {
               "Cache-Control": {
                 "required": true,
@@ -715,7 +722,7 @@
             "$ref": "#/components/responses/Problem"
           }
         },
-        "description": "原键原请求核实，无模型请求；200 的 Operation.state 仍可能 unconfirmed，不等于写成功。",
+        "description": "零模型操作：用原键和原请求体调用原业务操作确认结果。confirmed、rejected 和 cancelled 直接返回原终态，不再执行写入；仍有 running turn 时返回 turn-active。遇明确版本冲突为 rejected，身份失效不执行并返回 401。并发核实由操作串行和业务幂等保证只有一个结果。200 只表示核实动作已响应，Operation.state 才决定是否成功，仍可能是 unconfirmed。",
         "requestBody": {
           "required": true,
           "content": {
@@ -750,7 +757,7 @@
         ],
         "responses": {
           "200": {
-            "description": "SSE 只读流。event: change；id 为 seq 十进制；data 为 Event JSON。持久后发布，至少一次投递，客户端按 seq 去重。after 默认 0，心跳为注释，断线不停止 turn。",
+            "description": "text/event-stream。",
             "headers": {
               "Cache-Control": {
                 "required": true,
@@ -763,7 +770,7 @@
               "text/event-stream": {
                 "schema": {
                   "type": "string",
-                  "description": "逐帧格式和 Event JSON 见本操作 description 及 agent.md；不是一个 JSON 数组。"
+                  "description": "逐帧为 SSE 文本，data 是 Event JSON；不是一个 JSON 数组。"
                 }
               }
             }
@@ -784,7 +791,7 @@
             "$ref": "#/components/responses/Problem"
           }
         },
-        "description": "SSE 只读流。event: change；id 为 seq 十进制；data 为 Event JSON。持久后发布，至少一次投递，客户端按 seq 去重。after 默认 0，心跳为注释，断线不停止 turn。"
+        "description": "SSE 只读流，帧格式与游标规则见 info 的“事件流”。after 默认 0，超过 lastEventSeq 返回 cursor-ahead。持久后发布，至少一次投递，客户端按 seq 去重。心跳为注释，断线不停止 turn。"
       }
     },
     "/api/agent/conversations/{conversationId}/proposals/{proposalId}/execute": {
@@ -820,7 +827,7 @@
         ],
         "responses": {
           "200": {
-            "description": "原键原请求核实，无模型请求；200 的 Operation.state 仍可能 unconfirmed，不等于写成功。",
+            "description": "已接受；返回该槽位的 Operation，以其 state 判断是否保存。",
             "headers": {
               "Cache-Control": {
                 "required": true,
@@ -865,7 +872,7 @@
             "$ref": "#/components/responses/Problem"
           }
         },
-        "description": "原键原请求核实，无模型请求；200 的 Operation.state 仍可能 unconfirmed，不等于写成功。",
+        "description": "老师显式点击保存提案的一个槽位。服务器按当前账户、会话和 proposalId 找到持久提案并从卡片构造完整业务请求，不信任客户端重发的卡片。plan 和 variant 只接受 slot=0；practice 按数组索引，前一槽 confirmed 后才能开始下一槽；越界或前槽未确认返回 invalid-input（field=/body/slot，reason=out-of-range）。有 running turn 时返回 turn-active，账户有执行中或待确认的写入时新槽返回 pending-operation。plan 新建 time、repeat、reminder 都为 null 的待安排任务，steps 转为事项；practice 和 variant 用 createQuestionV2 新建题目，不修改原题。每槽一个 Operation（带 proposalSource），toolCallId 指向原提案调用。同一槽重试复用原操作、原键和原请求体：confirmed、rejected 保持原终态，unconfirmed 只能走 reconcile，重启后的 cancelled 表示从未开始，再次点击用原键原体重新执行。业务已提交但结果记录失败时保持 unconfirmed，并阻止下一槽。200 只表示已接受，返回的 Operation 通常仍是 prepared，不能据此显示已保存。",
         "requestBody": {
           "required": true,
           "content": {
@@ -937,7 +944,7 @@
     },
     "responses": {
       "Problem": {
-        "description": "按 x-agent-errors 或原工作台错误响应；未知结构保守视为结果未确认。",
+        "description": "按 x-agent-errors 或工作台错误响应；结构未知时保守视为结果未确认。",
         "headers": {
           "Cache-Control": {
             "required": true,
@@ -2805,7 +2812,7 @@
       },
       "ToolCall": {
         "type": "object",
-        "description": "浏览器持久工具卡。键为 (turnId, toolCallId)，ordinal 为 turn 内首次出现顺序。写调用的状态、result、problem 是 Operation 的事务投影，不是第二份写入事实；详见 agent.md。",
+        "description": "浏览器持久工具卡。键为 (turnId, toolCallId)，ordinal 为 turn 内首次出现的顺序。写调用的状态、result 和 problem 是 Operation 的事务投影，不是第二份写入事实。",
         "properties": {
           "turnId": {
             "type": "string",
@@ -3704,7 +3711,7 @@
     },
     "reference-conflict": {
       "status": 409,
-      "meaning": "发送引用已更新、删除或环节失效；读取当前对象重选"
+      "meaning": "发送引用已更新、删除或该次安排已失效；读取当前对象重新选择。返回 field 和 currentVersion。"
     },
     "turn-active": {
       "status": 409,
@@ -3733,13 +3740,10 @@
     "operation-unconfirmed": {
       "status": 503,
       "meaning": "业务结果无法确认，保留原 operation 用原键原体核实"
+    },
+    "tool-failed": {
+      "status": 500,
+      "meaning": "只读工具抛错或响应不符合契约；仅出现在工具卡的 problem 中，不作为 HTTP 响应"
     }
-  },
-  "x-contract-status": "ready-for-review",
-  "x-inputs": {
-    "business": "9aee091a34ba2eb311b51299d9beed78a032d026",
-    "auth": "6f3003250d170b44e89f6ac9b0a74f91d658a357",
-    "authFreeze": "63bfe8f7900b4a2bb7fc9ab5a4145f1c89a6f73b"
-  },
-  "x-common-errors": "Common transport, validation, identity and business errors use workbench.openapi.yaml Problem and its status mapping unchanged."
+  }
 }

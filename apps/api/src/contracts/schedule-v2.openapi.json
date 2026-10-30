@@ -3,9 +3,8 @@
   "info": {
     "title": "TeachBuddy schedule",
     "version": "2.0.0-candidate.1",
-    "description": "日程、日历和提醒操作契约。"
+    "description": "日程、日历和提醒操作契约。字段以本文件的 schema 为准；身份、幂等、版本冲突与未知结果的共同协议见 workbench.openapi.yaml。\n\n## 模型\n\n- 安排（Entry）是一个小聚合：标题、有序事项、可选时间、可选重复规则和至多一个提醒。`time=null` 表示待安排，此时 repeat 与 reminder 必须为 null。API 接受非空标题或至少一条事项；界面新建时要求标题。\n- 事项 ID 由客户端在首次输入时生成，排序、跨安排移动和实例独立都保持不变；完成状态跟着事项走。priority 只用于显示，不参与任何排序。\n- 实例身份是 `(entryId, originDate)`：originDate 是系列中的原始日期，非重复安排为 null。改期只改变实际时间，不改变身份。\n- 一个系列只有一个 version，同时保护模板和全部例外，任何单次操作都使它加 1，避免两台设备互相覆盖。\n- 整组更新保留已有例外的全部内容。缩短 until 只隐藏不再符合规则的例外（例外列表中 eligible=false），延长后恢复，提醒从重新可见的提交时刻生效。\n- 状态优先级：整组 deleted 高于隐藏，隐藏高于 cancelled。\n\n## 日期与时区\n\n- 日期范围为 1900-01-01 至 2100-12-31；startTime 精确到分钟；结束瞬间 = 开始瞬间 + durationMinutes。\n- 重复按安排自身时区的当地日期展开，不在 UTC 上加固定小时。夏令时重叠取较早的瞬间；缺失时刻顺延跳时的间隔（02:30 变为 03:30），持续分钟不变，并标记 timeAdjusted。\n- 范围查询的 from 与 to 都含当天，按账户时区构成半开区间 [from 00:00, to 次日 00:00)；按实际区间相交返回，恰好在首日 00:00 结束的安排不属于该范围。服务端不限制天数。\n- 修改账户时区时，在同一事务中迁移全部有时间的安排（含软删除安排和 override 内容）：保留当地日期、开始钟点、持续分钟和规则，按新时区重算实际瞬间，每个实际迁移的 Entry 版本加 1；待安排不变。\n\n## 提醒与通知\n\n- **修改前先结算**：安排、例外、删除、恢复、事项移动或时区迁移成功时，同一事务先用同一个服务端 now 结算旧状态中 `armedAt < dueAt <= now` 的提醒，再写新状态；校验失败则整体回滚，幂等重放不再结算。所以已经到点的提醒不会被随后的改期抹掉，即使工作台没有打开。\n- reminder 的 anchor 省略时为 end（兼容旧配置），dueAt = 所选起点 ± minutes。\n- armedAt 在首次启用、修改时间、重复范围或提醒、恢复例外或整组时重置为提交时刻；只改标题或事项不重置。dueAt <= armedAt 的提醒不补发。\n- 新启用或改变到期时刻的提醒必须在服务端 now 之后，否则 422 reminder-not-future；重复模板要求至少一个仍符合规则的实例在将来。只改文字时允许保留过去的配置；删除、恢复和 inherit 恢复过去配置时保持安静，不因此拒绝。\n- 通知的唯一键是账户 + entryId + originDate，每个实例一生最多一条；dismiss 后不再生成。通知标题取安排标题去首尾空白，为空时取首个事项，再按 Unicode code point 截取前 300 个，不加省略号。\n- 结算只在通知查询、通知写入和日程变更时发生，不需要常驻任务、队列或推送；服务停止期间到期的提醒在下一次查询时补写，显示原定 dueAt。\n\n## 不在 paths 中的扩展\n\n日历扩展和标签由运行时校验 `apps/api/src/modules/schedule/schema.js` 定义，尚未写进本文件的 paths：\n\n- 写请求可带 `calendar: {allDay, notes, tags}`，读取总是返回它；基础请求省略时保留原值。全天安排从 00:00 开始、按安排时区的当地午夜结束；带 calendar 的单次时长上限为 366 天。\n- 重复规则可指定 frequency（daily/weekly/monthly/yearly）、interval（1 至 999）、weekdays（0 为周日）、monthly（date/weekday）和 count（0 表示不按次数截止，最多 10000）。不存在的月日期或闰日跳过。带 calendar 的更新允许切换重复类型和调整系列起日。\n- 标签：GET/POST `/api/modules/schedule/labels`，PUT `/api/modules/schedule/labels/{id}`（带 expectedVersion 与 deleted）。名称去空白后 1 至 60 字符，颜色为 `#RRGGBB`；删除标签不删除任务。"
   },
-  "x-source-revision": "afda1c5d8d8c2de93f1e045ff2ad32e2681bd116",
   "servers": [
     {
       "url": "/"
@@ -20,7 +19,7 @@
     "/api/modules/schedule/settings": {
       "get": {
         "operationId": "getScheduleSettings",
-        "description": "getScheduleSettings",
+        "description": "未设置过的账户返回 Asia/Shanghai、version=1。",
         "parameters": [],
         "responses": {
           "200": {
@@ -57,7 +56,7 @@
       },
       "put": {
         "operationId": "updateScheduleSettings",
-        "description": "updateScheduleSettings",
+        "description": "采用新时区并在同一事务中迁移全部有时间的安排，见 info 的“日期与时区”。设置与安排已一致时为无操作，不增加版本。",
         "parameters": [
           {
             "$ref": "#/components/parameters/IdempotencyKey"
@@ -188,7 +187,7 @@
       },
       "post": {
         "operationId": "createEntry",
-        "description": "createEntry",
+        "description": "新对象 version 从 1 开始。",
         "parameters": [
           {
             "$ref": "#/components/parameters/IdempotencyKey"
@@ -265,7 +264,6 @@
     "/api/modules/schedule/entries/{id}": {
       "get": {
         "operationId": "getEntry",
-        "description": "getEntry",
         "parameters": [
           {
             "$ref": "#/components/parameters/id"
@@ -306,7 +304,7 @@
       },
       "put": {
         "operationId": "updateEntry",
-        "description": "updateEntry",
+        "description": "完整替换可写内容，省略不等于清空。不带 calendar 的请求不能改变重复首日、时区或重复/非重复种类（409 immutable-series）。把重复安排改为 time=null 会取消整组排期，并在同一事务中清除旧例外和实例提醒生效点。",
         "parameters": [
           {
             "$ref": "#/components/parameters/id"
@@ -386,7 +384,7 @@
     "/api/modules/schedule/entries/{id}/deletion": {
       "post": {
         "operationId": "setEntryDeletion",
-        "description": "setEntryDeletion",
+        "description": "旧的软删除与恢复，保留以兼容旧请求；当前界面不提供入口。恢复沿用原 ID 与例外，不回放停用期间的提醒。",
         "parameters": [
           {
             "$ref": "#/components/parameters/id"
@@ -466,7 +464,6 @@
     "/api/modules/schedule/entries/{id}/exceptions": {
       "get": {
         "operationId": "listExceptions",
-        "description": "listExceptions",
         "parameters": [
           {
             "$ref": "#/components/parameters/id"
@@ -509,7 +506,7 @@
     "/api/modules/schedule/entries/{id}/exceptions/{originDate}": {
       "put": {
         "operationId": "setException",
-        "description": "override/取消/恢复继承；成功返回该实例以及递增后的 entryVersion。",
+        "description": "override、cancelled 或 inherit；成功返回该实例以及递增后的 entryVersion。override 保存完整内容且不能再定义 repeat；cancelled 的 content=null；inherit 删除该日例外并采用当前模板，即使原本没有例外也算一次版本化写入。超出当前 until 的原始日期返回 422 invalid-input（field=/originDate，reason=out-of-range），需先延长系列。",
         "parameters": [
           {
             "$ref": "#/components/parameters/id"
@@ -638,7 +635,7 @@
     "/api/modules/schedule/occurrences": {
       "get": {
         "operationId": "listOccurrences",
-        "description": "listOccurrences",
+        "description": "按 startsAt、entryId、originDate 升序。移入范围的例外即使原始日期不在范围内也会返回。",
         "parameters": [
           {
             "name": "from",
@@ -694,7 +691,7 @@
     "/api/modules/schedule/item-moves": {
       "post": {
         "operationId": "moveItem",
-        "description": "moveItem",
+        "description": "源必须是活动的非重复 Entry。toEntryId=null 时新建一个待安排。重复目标需 toScope：series 将事项插入系列模板；instance 加有效的 toOriginDate 将该次独立为新的非重复 Entry 并加入事项。移动后目标不超过 200 项，目标的时间和提醒不变。源与目标的校验、提醒结算、实例独立和幂等结果在同一事务中提交，任一失败全部回滚；源被移空时有标题则保留，无标题则软删除。",
         "parameters": [
           {
             "$ref": "#/components/parameters/IdempotencyKey"
@@ -771,7 +768,7 @@
     "/api/modules/schedule/notifications": {
       "get": {
         "operationId": "listNotifications",
-        "description": "T53：结算到期后返回未 dismissed 的全部记录和未读计数；不展示生成时间。",
+        "description": "先结算到期提醒，再返回未 dismissed 的全部记录和未读计数，按 dueAt 降序、ID 升序；不展示生成时间。",
         "parameters": [],
         "responses": {
           "200": {
@@ -890,7 +887,7 @@
     "/api/modules/schedule/notification-actions": {
       "post": {
         "operationId": "changeNotifications",
-        "description": "T53：全部已读/清空传当前展示的明确 ID 集合，新到通知不被吞。任一外账户/不存在 ID 404 且整体不写。",
+        "description": "全部已读或清空时传当前展示的明确 ID 集合，新到的通知不被吞。任一外账户或不存在的 ID 返回 404 且整体不写。",
         "parameters": [
           {
             "$ref": "#/components/parameters/IdempotencyKey"
@@ -1006,7 +1003,7 @@
     "/api/modules/schedule/entries/{id}/delete": {
       "post": {
         "operationId": "deleteEntry",
-        "description": "永久删除本账户任务及其系列例外、提醒生效点，保留历史通知与幂等回执；按期望版本同事务提交。",
+        "description": "永久删除本账户任务及其系列例外、提醒生效点，不可恢复；历史通知与幂等回执保留。按期望版本在同一事务中提交。",
         "parameters": [
           {
             "$ref": "#/components/parameters/id"
@@ -1086,7 +1083,7 @@
     "/api/modules/schedule/entries/{id}/occurrences/{originDate}/detach": {
       "post": {
         "operationId": "detachOccurrence",
-        "description": "取消有效原日期并创建独立非重复任务，内容、系列版本与幂等回执原子提交；失败整体回滚。",
+        "description": "取消有效原日期并创建独立的非重复任务，内容、系列版本与幂等回执原子提交，失败整体回滚。事项 ID、备注与标签保留；新任务的提醒从当前时刻生效，不补发过期提醒；系列的后续日期不变，独立任务不随系列删除。",
         "parameters": [
           {
             "$ref": "#/components/parameters/id"
@@ -3063,6 +3060,5 @@
         "additionalProperties": false
       }
     }
-  },
-  "x-math-source-revision": "1a5dd015863d749e5244346f4eaad24ac506670d"
+  }
 }

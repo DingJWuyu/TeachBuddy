@@ -75,6 +75,7 @@ export function ClassScores({ ctx, cls }) {
     </div>
   );
 
+  // Filters stay mounted while statistics load or fail, so an open menu and its selections are not lost.
   if (!stats || stats.error) {
     return (
       <div className="cr-scores">

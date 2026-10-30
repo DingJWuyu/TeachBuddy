@@ -156,7 +156,7 @@ const SESSION_COMMANDS = {
 
 const SESSION_COMMAND_PROPERTIES = new Set(['action', 'sessionId', 'rememberMe']);
 
-// I06 command root: reject properties outside the command union first, then
+// Session command root: reject properties outside the command union first, then
 // resolve action, then apply the selected branch shape.
 export function readSessionCommand(body) {
   if (!isPlainObject(body)) throw authProblem('invalidRequestBody');

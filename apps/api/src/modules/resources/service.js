@@ -336,6 +336,7 @@ export function createResourcesService({
     };
   }
   return { definitions, validateInput, operations,
+    // Synchronous so callers capture it inside their own snapshot transaction; archived items keep deletedAt and the consumer decides.
     readReference(principal, id) {
       validateIdPath(id);
       return read(principal, id);

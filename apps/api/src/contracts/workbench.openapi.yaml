@@ -1,11 +1,61 @@
 openapi: 3.2.1
 info:
-  title: TeachBuddy first-flow 工作台契约
+  title: TeachBuddy workbench
   version: 0.1.0-candidate.2
-  description: AUTH-CONTRACT-CORRECTION@1 页面头接续候选，已由限定独立审查冻结；消费认证 1.0.0-rc.2。版本、旧冻结适用范围及业务语义见 docs/contracts/workbench.md。所有响应 no-store；写请求同源 HTTPS + 保护头；请求拒绝未知字段/隐式类型转换，响应容忍附加字段。JSON 请求体上限 2
-    MiB（解码后的 UTF-8 字节），超限 413。URL/query 非法值 422，未知 query 拒绝。
-x-contract-status: frozen
-x-source-revision: 59a14e95bab667e0a01b8d62f6e87e018ddb1c5f
+  description: |-
+    工作台上下文、模块目录和基础题目 v1 兼容操作。info 里的身份、HTTP、幂等、版本冲突与未知结果规则是所有工作台 API 的共同协议，其他 OpenAPI 文件引用本文件的参数时都遵守它；各文件只写自己的扩展和例外。认证（登录、Cookie、PageContext）由 auth.openapi.yaml 定义。
+
+    ## 身份
+
+    - 每个受保护操作都要求认证会话 Cookie 和当前页面的 PageContext 头。页面头缺失、形状非法、没有当前页的有效绑定或身份已失效，都返回 401 unauthenticated；记住我 Cookie 在新页面未经 restore 也不能直接授权，单独的页面头同样不能授权。身份存储不可用返回 503 temporarily-unavailable，不回退到旧身份。认证端点的 409 browser-context-required 不会作为工作台错误出现。
+    - 服务端从已验证身份得到稳定的账户键。浏览器不拼 Bearer，也不能在请求里传账户 ID（请求体里的账户字段只是未知字段）。`GET /api/workbench/context` 返回的 accountKey 只供客户端给本地缓存分区，客户端传回它不能证明身份。
+    - 所有读、列表、来源、引用、复制、恢复和请求重放都按该身份授权。没有身份返回 401；不属于该账户或不存在的对象一律 404，不泄露对象是否存在。
+    - 客户端只把属于当前身份代次、对应请求对象和提交版本的响应用于界面；身份切换或失效之后才到达的旧响应直接丢弃。
+
+    ## HTTP
+
+    - 只走同源 HTTPS。所有工作台响应都带 `Cache-Control: no-store`，成功直接返回 JSON，失败返回 `application/problem+json`，type 位于 `/problems/workbench/*`。HTTP 状态与 type 的对照见 components/responses。
+    - 写请求（POST、PUT、PATCH、DELETE）必须带固定保护头，并通过来源校验：有 Origin 时只看 Origin，空值或非法值直接拒绝，不能用 Referer 覆盖；没有 Origin 时才用 Referer 的来源。来源按协议、主机和端口完全匹配，否则 403 request-not-allowed。GET 不要求来源或保护头。
+    - 请求体只接受 `application/json`（否则 415），解码后的 UTF-8 字节上限 2 MiB（超出 413），JSON 语法错误为 400 malformed-json。请求拒绝未知字段和隐式类型转换；响应可能附加字段，客户端应容忍。URL 或 query 的非法值返回 422，未知 query 参数同样拒绝。
+    - 422 invalid-input 一次只返回一个错误，field 是 JSON Pointer：按 schema 字段顺序深度优先，数组按索引；根上的未知字段先于字段内容检查，同级的多个未知字段按键名升序取第一个。
+
+    ## 处理顺序
+
+    一次写请求按以下顺序处理，前一步失败就不再执行后一步，也不会有任何业务变更：
+
+    1. 来源与保护头；
+    2. 身份；
+    3. JSON 媒体类型、语法、大小与 schema；
+    4. 已成功请求的幂等回执；
+    5. 对象归属；
+    6. 当前版本与业务校验；
+    7. 原子写入。
+
+    所以相同幂等键加相同请求的重放先于版本检查：即使对象已经被后来的操作升了版，重放仍然返回原来的成功结果。非法请求在读取幂等键之前就被拒绝，不会被报告成键冲突。
+
+    ## 幂等
+
+    - 每个写操作都带 `Idempotency-Key`（UUID），一个键只代表一次逻辑提交。键的作用域是可信账户，绑定 HTTP 方法、不含 query 的规范路径和解析后 JSON 的字段值（对象键顺序无关，数组顺序有关）。不同账户使用相同的键互不影响。
+    - 业务变更与成功状态码、响应体在同一个事务中持久保存，跨进程重启仍可重放。回执一直保留到账户数据被明确清理，没有会让离线重试失效的过期时间。
+    - 相同键、相同请求重放原来的状态码和结果；相同键、不同请求（方法、路径或请求体任一不同）返回 409 idempotency-key-reused。并发的同键请求只提交一次，其余的看到已提交的回执后重放。
+    - 失败的请求不记成成功操作，也不消耗该键：事务失败回滚后可以用同一个键重试，明确的 4xx 拒绝修正后应换新键提交。
+
+    ## 版本与冲突
+
+    - 对象创建时 version=1，每次有效写入（包括删除和恢复）严格加 1；内容相同的新写请求也加 1。时间为服务端 UTC。
+    - 编辑、删除、恢复、复制都携带期望版本。版本不符返回 409 version-conflict 并给出本账户对象的当前版本；引用的来源版本不符返回 reference-version-conflict，带对应 questionId 和当前版本。外账户的来源只会得到 404。
+    - 版本冲突只能由老师对照整理后，用新键在最新版本上重新提交；没有自动覆盖、后台合并或盲目重放。
+
+    ## 未知结果
+
+    - 只有匹配的已知 2xx JSON（ID 和版本等于本次提交的结果），并且编辑器之后没有新的未提交输入，才算已保存。本地缓存写入、请求已发出、断线或 5xx 都不够。
+    - 超时、断线、未知的 Problem type 或结构、无效响应和 5xx 一律当作结果未确认。客户端持久保留原键、原请求体和编辑基线，先用同键同请求重试确认，不能另发一个新的逻辑请求赌前一次失败。
+    - 重放得到的是旧提交的成功结果时，确认的是那次旧提交；客户端随后重新 GET 当前对象，不把已有的较新读数降级。若服务器还有其他变化则进入冲突对照。新输入另存为草稿，确认之后再以明确的基线提交。
+    - 401 后暂停写入，原请求留在原账户的设备记录里；同一账户重新验证后才能继续确认。
+
+    ## 基础题目 v1
+
+    `/api/modules/questions/items` 是基础题目 API 的兼容路径，保留以重放旧的成功请求和读写 v1 文稿；当前题库使用 materials.openapi.yaml 的 v2 路径。已经升级为更新内容版本的题目，经本路径读写返回 422 unsupported-content-version，原内容不变。
 servers:
 - url: /
 security:
@@ -16,7 +66,7 @@ paths:
       parameters:
       - $ref: '#/components/parameters/PageContext'
       operationId: getWorkbenchContext
-      summary: getWorkbenchContext
+      description: 返回当前可信身份的账户键，仅供客户端为本地草稿和现场分区；客户端先取得它才能读取本地账户数据。
       responses:
         '200':
           description: 当前账户的结果。
@@ -43,7 +93,7 @@ paths:
   /api/modules/questions/items:
     get:
       operationId: listQuestions
-      summary: listQuestions
+      description: 一次返回当前账户匹配的全部结果，不分页；按 updatedAt 降序、ID 升序稳定排序。q 去首尾空白后对标题、题面文字和公式源、长期笔记做不区分大小写的子串匹配，不搜索答案和来源。state 默认 active，deleted 只列软删除的题目。
       responses:
         '200':
           description: 当前账户的结果。
@@ -71,7 +121,7 @@ paths:
       - $ref: '#/components/parameters/Starred'
     post:
       operationId: createQuestion
-      summary: createQuestion
+      description: 新题目由服务器分配稳定 UUID，version=1。粘贴来源的原始文本逐字保留，创建后不再改变；整理题面不会改动原稿。
       responses:
         '201':
           description: 已确认的持久结果。重放保持原状态码和结果。
@@ -123,7 +173,7 @@ paths:
   /api/modules/questions/items/{id}:
     get:
       operationId: getQuestion
-      summary: getQuestion
+      description: 允许读取本账户已软删除的题目，以便恢复。
       responses:
         '200':
           description: 当前账户的结果。
@@ -152,7 +202,7 @@ paths:
       - $ref: '#/components/parameters/Id'
     put:
       operationId: updateQuestion
-      summary: updateQuestion
+      description: 直接修改原题，不生成新题或来源；source 不变。已删除的题目返回 409 object-deleted。
       responses:
         '200':
           description: 已确认的持久结果。重放保持原状态码和结果。
@@ -202,7 +252,7 @@ paths:
   /api/modules/questions/items/{id}/copies:
     get:
       operationId: listDerivatives
-      summary: listDerivatives
+      description: 列出由这道题复制改编出的副本。
       responses:
         '200':
           description: 当前账户的结果。
@@ -229,7 +279,7 @@ paths:
       - $ref: '#/components/parameters/State'
     post:
       operationId: copyQuestion
-      summary: copyQuestion
+      description: 以原题的指定版本为来源新建独立题目：服务器分配新 ID，source 记录原题 ID、所用版本和内容快照。原题在复制前已改变时返回 version-conflict，不会悄悄复制新版。之后两题各自编辑互不联动；原题软删除不影响来源快照。已删除的原题返回 409 object-deleted。
       responses:
         '201':
           description: 已确认的持久结果。重放保持原状态码和结果。
@@ -279,7 +329,7 @@ paths:
   /api/modules/questions/items/{id}/deletion:
     post:
       operationId: setQuestionDeletion
-      summary: setQuestionDeletion
+      description: 软删除保留原内容、ID、改编来源和操作记录，没有自动清理期限；恢复只改 deletedAt 并加版本，不重建 ID。删除题目不级联删除副本。
       responses:
         '200':
           description: 已确认的持久结果。重放保持原状态码和结果。
@@ -331,7 +381,7 @@ paths:
       parameters:
       - $ref: '#/components/parameters/PageContext'
       operationId: getModuleCatalog
-      summary: 读取可运行的静态模块目录
+      description: 读取本进程实际装配的模块目录，工作台外壳据此投影导航和路由。
       responses:
         '200':
           description: 与 Web/API 编译期目录一致的模块描述。
@@ -1121,7 +1171,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ModuleDescriptor'
-      description: 来自唯一编译期静态目录；构建检查 ID/path 唯一、运行时映射与依赖完整。top 资格仅预留，不注册未实现的日程。
+      description: 来自唯一的编译期静态目录，只列出本进程实际装配了实现的模块；构建时检查 ID 与 path 唯一、运行时映射与依赖完整。navigation=top 的模块从顶部入口进入，不放进侧栏导航。
   examples:
     CreateManual:
       x-schema: CreateQuestion

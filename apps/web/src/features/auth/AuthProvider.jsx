@@ -34,6 +34,7 @@ const INITIAL_STATE = Object.freeze({
   revocation: null,
 });
 
+// Client cadence only: the server verifies every business request, so this is no authorization grace period.
 const VISIBILITY_RECHECK_MS = 30_000;
 const BROADCAST_CHANNEL = 'teachbuddy-auth';
 const OK = Object.freeze({ ok: true });
@@ -188,7 +189,7 @@ export default function AuthProvider({ children, timeoutMs = 10_000, onAccountDe
   }, [bumpIdentity, enterDeletion]);
 
   const expireSession = useCallback((notice = () => COPY.expired) => {
-    // I06 has proved this page's target invalid, including after a lost I07
+    // A session read has proved this page's target invalid, including after a lost logout
     // response. Release that target here; another logout could clear a peer's
     // newly bootstrapped browser container.
     const target = stateRef.current.revocation?.sessionId;
@@ -446,6 +447,7 @@ export default function AuthProvider({ children, timeoutMs = 10_000, onAccountDe
     if (typeof BroadcastChannel !== 'function') return undefined;
     const channel = new BroadcastChannel(BROADCAST_CHANNEL);
     channelRef.current = channel;
+    // A peer notice only triggers a re-check; it never signs this page out by itself, even for another account.
     channel.onmessage = () => {
       void recheckRef.current?.();
     };
@@ -491,6 +493,7 @@ export default function AuthProvider({ children, timeoutMs = 10_000, onAccountDe
 
   const presentFailure = useCallback((outcome, operation, mutating) => {
     if (outcome.kind === 'problem') {
+      // The account commit may already have succeeded when only the session write failed: not a proven rollback.
       if (mutating && outcome.type === PROBLEM.SESSION_STORE_UNAVAILABLE) {
         return { ok: false, unknown: true };
       }
@@ -732,6 +735,7 @@ export default function AuthProvider({ children, timeoutMs = 10_000, onAccountDe
     if (revocationRunningRef.current) return;
     const previous = stateRef.current.revocation;
     const record = previous?.sessionId === sessionId ? previous : { sessionId, source, uncertain: false };
+    // Persist before sending so a reload keeps blocking this exact target until the revoke is confirmed.
     try { rememberRevocation({ ...record, uncertain: true }); }
     catch {
       setState(current => ({ ...current, revocation: { ...record, phase: 'failed' } }));
@@ -754,6 +758,7 @@ export default function AuthProvider({ children, timeoutMs = 10_000, onAccountDe
         catch { throw logoutError('unconfirmed'); }
         revocationsRef.current = revocationsRef.current.filter(value => value.sessionId !== sessionId);
         lockedRef.current = false; setLocked(false);
+        // Rotate only after the 204: the directed revoke had to carry the page header bound to its target.
         rotatePageContext(); notifyPeers();
         prepareLoginRef.current = true;
         setState(current => signedOut(current, { status: source === 'logout' ? 'booting' : 'anonymous',
@@ -888,7 +893,7 @@ export default function AuthProvider({ children, timeoutMs = 10_000, onAccountDe
           const originalTarget = deletion.body.sessionId;
           if (check.data.rememberedSession?.id === originalTarget
             && !revocationsRef.current.some(value => value.sessionId === originalTarget)) {
-            // The original request might never have reached I08. Restore only
+            // The original request might never have reached the server. Restore only
             // its exact remembered target, without publishing a business identity.
             const restored = await client.restoreSession({ sessionId: originalTarget });
             if (!currentDeletion()) return;

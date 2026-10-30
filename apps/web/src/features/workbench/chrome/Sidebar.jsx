@@ -535,6 +535,7 @@ export default function Sidebar({
                       onContextMenu={(e) => {
                         if (g.fixed || !editable) return;
                         e.preventDefault();
+                        // Escape returns focus to the options button, so a right-click menu still leaves a keyboard path to reopen it.
                         setMenu({ group: g, trigger: e.currentTarget.querySelector('.tbx-group-more') || e.currentTarget, at: { x: Math.min(e.clientX, innerWidth - 220), y: Math.min(e.clientY, innerHeight - 110) } });
                       }}
                     >

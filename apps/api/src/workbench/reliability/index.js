@@ -1,3 +1,40 @@
+/**
+ * Personal data archives and the restore-point context: /api/reliability/v1.
+ * Not covered by OpenAPI; archive and manifest shapes are archive.schema.json.
+ * Identity, origin, Idempotency-Key and unknown-result rules follow the shared
+ * workbench protocol (workbench.openapi.yaml).
+ *
+ * - GET /context returns the non-secret recoveryId (plus recoveredFrom after an
+ *   activated restore). recoveryId changes only on a deployment restore and
+ *   identifies the restore point; it never authorizes anything or replaces
+ *   auth revocation. Clients freeze unconfirmed requests made under another one.
+ * - POST /exports takes an empty object and answers 202 with a queued record.
+ *   The snapshot is fixed inside the accepting transaction, so later edits never
+ *   enter it; the ZIP is then built outside the transaction and becomes ready
+ *   only after every file length and SHA-256 is checked. Missing files or disk
+ *   failure mark it failed, a restart marks it interrupted; business data is
+ *   untouched. Replaying the key returns the original 202; read the current
+ *   state with GET. A new key takes a new snapshot.
+ * - GET /exports lists this account's records, createdAt descending, then id.
+ *   Terminal records have completedAt; failed and interrupted carry a problem.
+ * - GET /exports/:id/content streams the ZIP only when ready, otherwise 409
+ *   archive-not-ready. Another account's or a missing id is 404. An I/O error
+ *   aborts the response so the browser never sees a complete download.
+ * - POST /exports/:id/deletion takes an empty object and answers
+ *   200 {id, deleted: true}. A running build is cancelled and awaited first,
+ *   active downloads are aborted, the ZIP and partial file are removed and the
+ *   record deleted; later reads and downloads are 404. Physical cleanup failure
+ *   is never reported as success and the same key can confirm again. A new key
+ *   on an unknown or already deleted id is 404. Teaching files and downloaded
+ *   copies are not affected; this is not general file reclamation.
+ *
+ * ZIP layout: manifest.json, a script-free index.html, data/ JSON (one
+ * {kind, value} per object), readable/ escaped HTML pages, files/ original
+ * bytes. Auth secrets, sessions, codes, model-internal entries, mutation
+ * journals and never-uploaded device drafts are excluded; teacher text is never
+ * redacted. There is no import: content is recovered by re-uploading or copying,
+ * and the restore command rejects a personal archive by its kind.
+ */
 import express from "express";
 import fs from "node:fs";
 import path from "node:path";
@@ -197,6 +234,7 @@ export function createReliability({
         throw invalidInput('/', 'unknown-field');
       const replay = mutations.peek({ principal: req.workbenchPrincipal, key: readIdempotencyKey(req), method: 'POST', path: canonicalRequestPath(req), body: req.body });
       if (replay) return res.status(replay.status).json(replay.body);
+      // Settle the build before the synchronous write, so a late ZIP cannot reappear after the record is gone.
       const row = db.prepare('SELECT accountKey FROM reliability_exports WHERE id=?').get(req.params.id);
       if (row && row.accountKey !== req.workbenchPrincipal.accountKey) throw contractError(problems.notFound());
       if (row) {

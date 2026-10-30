@@ -34,6 +34,7 @@ export function createAgent({ db, mutations, identity, trustedOrigins, operation
       let fresh = false;
       const result = mutations.execute({ principal: req.workbenchPrincipal, key, method: req.method, path: req.originalUrl.split('?')[0], body: req.body }, () => { fresh = true; return handler(req); });
       res.status(result.status).json(result.body);
+      // Side effects such as starting the model run only after a fresh commit, never on an idempotent replay.
       if (fresh && after) after(req, result.body);
     });
   }
@@ -77,6 +78,7 @@ export function createAgent({ db, mutations, identity, trustedOrigins, operation
   router.get('/conversations/:conversationId/events', asyncHandler(async (req, res) => {
     validateIdPath(req.params.conversationId);
     if (Object.keys(req.query).some(k => k !== 'after') || (req.query.after !== undefined && !/^\d+$/.test(req.query.after))) throw contractError(problems.invalidInput('/query/after', 'invalid-type'));
+    // after is the only cursor; Last-Event-ID is deliberately ignored so a reconnect cannot pick a second position.
     let cursor = Number(req.query.after ?? 0);
     const snapshot = records.snapshot(account(req), req.params.conversationId);
     if (!Number.isSafeInteger(cursor)) throw contractError(problems.invalidInput('/query/after', 'invalid-type'));
@@ -86,6 +88,7 @@ export function createAgent({ db, mutations, identity, trustedOrigins, operation
     async function flush() {
       if (closed || busy) return; busy = true;
       try {
+        // Re-check identity before every batch so a signed-out stream closes instead of delivering later events.
         if ((await identity.resolvePrincipal(req))?.accountKey !== account(req)) return res.end();
         for (const event of records.events(account(req), req.params.conversationId, cursor)) {
           res.write(`id: ${event.seq}\nevent: change\ndata: ${JSON.stringify(event)}\n\n`); cursor = event.seq;

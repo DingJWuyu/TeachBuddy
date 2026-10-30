@@ -23,6 +23,7 @@ export async function workshopPresentation(source, { title, formulaAssets, runti
     const zip = new JSZip();
     const planeViewport = source.graph ? await readSavedWorkshopPlaneViewport(source.graph.base64) : null;
     const css = `${workshopPresentationCss}${mathFontStyle(await registerAndReadFont()).replace(/^<style>|<\/style>$/g, '')}`;
+    // The GGB runtime needs 'unsafe-eval'; construction-file scripts stay disabled and this wrapper never carries external HTML.
     const html = `<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'"><title>${String(title).replace(/[<>&"]/g, '')}</title><style>${css}</style><main id="classroom"></main>${source.graph ? '<script src="runtime/loader.js"></script>' : ''}<script>${await presentationRuntime(Boolean(source.graph))}\nWorkshopClassroom.mountWorkshopPresentation(document.getElementById('classroom'),${safe(source)},{title:${safe(title)},formulas:${safe(formulaAssets)},planeViewport:${safe(planeViewport)},applyView:WorkshopClassroom.applyWorkshopView});</script></html>`;
     zip.file('index.html', html);
     zip.file('workshop.json', JSON.stringify(source, null, 2));

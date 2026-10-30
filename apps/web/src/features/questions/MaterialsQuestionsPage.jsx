@@ -637,6 +637,7 @@ export default function MaterialsQuestionsPage({
         onCancel={cancelLifecycle}>
         {message && <p className="q-error" role="alert">{message}</p>}
       </LifecycleConfirmDialog>
+      {/* Keyed per opening so a quick reopen gets a fresh dialog instead of the instance still playing its exit. */}
       <ModulePresence present={Boolean(newCategory)}>{newCategory && <QuestionDialog key={newCategory.openingId} title={newCategory.kind === 'types' ? t("新建题型") : t("新建标签")} onClose={() => closeCategory()}>
         <form onSubmit={event => { event.preventDefault(); createCategory(); }}>
           <label>{t("名称")}<input aria-label={t("分类名称")} value={categoryName} maxLength={80} onChange={event => changeCategoryName(event.target.value)} /></label>

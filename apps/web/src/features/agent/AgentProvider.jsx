@@ -110,6 +110,7 @@ export function AgentProvider({ accountKey, children }) {
     } finally { saving.current = false; finishSaving(); }
   }
   useEffect(() => {
+    // Autosave pauses while a send is unconfirmed so the server clears the submitted version; typing stays allowed.
     if (!draft?.dirty || draft.pending || conflict || busy || sendPending) return;
     const timer = setTimeout(() => void save(), 650); return () => clearTimeout(timer);
   }, [draft, conflict, busy, sendPending]);

@@ -4,11 +4,11 @@
 
 收录和改编题目，整理教学资料，制作数学图示或离线演示，安排课程和教学事务。资料真实保存，可在后续教学中继续使用。
 
-数学工坊在同一作品中制作公式、二维/三维图形、参数和教学步骤，使用自己的编辑界面与本地 GeoGebra 引擎，自动保存。右侧免费 DeepSeek 网页助理首批支持桌面 Chrome/Edge，需要安装[浏览器扩展](extensions/math-web-ai/README.md)并登录自己的账号；扩展尚未上架，本机开发可按扩展说明连接。能力、输出及当前验证边界见[数学工坊](docs/features/math.md)。
+数学工坊在同一作品中制作公式、二维/三维图形、参数和教学步骤，使用自己的编辑界面与本地 GeoGebra 引擎，自动保存。右侧免费 DeepSeek 网页助理首批支持桌面 Chrome/Edge，需要安装[浏览器扩展](extensions/math-web-ai/README.md)并登录自己的账号；扩展尚未上架，本机开发可按扩展说明连接。能力和边界见[数学工坊](docs/product/math.md)。
 
 ## 功能
 
-产品按八个分区组织，完整职责与目标见[产品范围](docs/PRODUCT_SCOPE.md#产品分区)。班级教师界面及其既有后端见[班级规格](docs/features/classroom.md)，AI 工具接入独立核对。以下描述当前本地实现，未验与能力边界见段末，未完成的工作见 [issues](https://github.com/DingJWuyu/TeachBuddy/issues)。
+产品按八个分区组织，目标与边界见[产品说明](docs/product/README.md)。以下描述当前本地实现，未验与能力边界见段末，未完成的工作见 [issues](https://github.com/DingJWuyu/TeachBuddy/issues)。
 
 - **账户与身份**：邮箱验证码注册、登录、找回密码、会话恢复和退出；确认邮箱后可永久删除账户及服务器内所属资料，网络中断时保留原请求核实。
 - **工作台与设置**：导航分组、模块顺序与隐藏选择按账户保存，同账户在另一设备可恢复；侧栏开合和分组折叠保留各设备习惯。简体中文/English、主题、自定义内容背景和头像按账户保存并同步全站；设置提供账户操作和个人资料导出、下载与删除入口，以及本地中英帮助和既定更新页。
@@ -17,7 +17,7 @@
 - **数学工坊**：统一制作公式、函数与几何、三维构造、参数播放和教学步骤；支持选中编辑、撤销重做、自动保存、历史版本恢复、源文件导入、图片与可编辑源输出和课堂演示 ZIP。作品可归档、恢复和彻底删除。
 - **班级**：班级和学生资料、座位、自由记录、正式考试与 Excel 成绩导入校对、标签和学生/班级统计；原卷可选，按姓名或学号匹配，缺失成绩保持未知，缺总分不参与排名。归档页可查看归档班级下的学生与记录，先恢复上级再恢复子项；
 - **日程**：日历支持日、周、月及自选日期段，拖选、拖动和拉伸安排，标签、备注、全天、自定义重复与单次独立任务；按需设置开始或结束前后提醒，管理待安排、多事项完成、排序与移动。日程自动跟随系统时区并保留当地日期和钟点，任务删除前确认无法恢复。保存结果未知时可确认原请求，冲突时保留草稿供核对。
-- **AI 助理**：首页和业务侧栏共用对话、引用和操作记录，会话重命名、置顶与删除按账户保存。支持题目、资源条目与日程引用、流式回复和题库工具；讲解安排、练习与变式先形成提案，老师点击后真实保存到日程或题库，刷新后可继续核实未确认结果。具体范围见[助理规格](docs/features/agent.md)。
+- **AI 助理**：首页和业务侧栏共用对话、引用和操作记录，会话重命名、置顶与删除按账户保存。支持题目、资源条目与日程引用、流式回复和题库工具；讲解安排、练习与变式先形成提案，老师点击后真实保存到日程或题库，刷新后可继续核实未确认结果。具体范围见[AI 助理](docs/product/agent.md)。
 
 共享技术底座提供文件、识别、保存和数据恢复。个人资料包包含保留的教学内容、历史与附件，可离线阅读并手工取回内容；误删内容在对应模块恢复，实例备份与还原使用维护命令。
 
@@ -27,7 +27,7 @@
 
 需要 Node.js 22、npm、同源 HTTPS、SQLite 与持久文件目录；注册和找回还需邮件配置。Office 预览和成果输出另需 Pandoc、LibreOffice、Poppler、字体及隔离转换工具；数学图形保存、输出及题面 PNG 排版另需 Chromium，本地数学引擎首次准备见[数学运行依赖](docs/SETUP.md#数学运行依赖)。
 
-题库文字 PDF 整理另需 Xpdf 4.06，安装和路径配置见[题库 PDF 运行依赖](docs/SETUP.md#题库文字-pdf)。
+题库文字 PDF 整理另需 Xpdf 4.06，安装和路径配置见[题库 PDF 运行依赖](docs/SETUP.md#题库文字-pdfxpdf)。
 
 本地 OCR 使用 [MinerU](https://github.com/opendatalab/MinerU) 及固定的本地模型，配置 `MATERIALS_OCR_HOME` 后启用；运行时不联网下载或上传材料。未配置时仍可读取已保存的识别结果，准备方法见[本地页识别工具](docs/SETUP.md#本地页识别工具)。
 
@@ -46,11 +46,10 @@ npm run dev
 
 产品实现位于 `apps/web` 与 `apps/api`，`packages/shared` 提供共享目录、协议与数学能力的显式包入口，[design-system](docs/design-system/README.md) 提供只读设计输入，完整界面参考为 [teachbuddy-app](docs/design-system/teachbuddy-app/index.html)。
 
-- [产品范围](docs/PRODUCT_SCOPE.md)：产品目标与边界。
-- [文档目录](docs/README.md)：按功能查行为、接口和验证方法。
-- [代码结构](docs/subsystems/README.md#代码结构)：模块、请求路径和数据归属。
-- [子系统入口](docs/subsystems/README.md)：每个模块的公开操作、实际调用链和验证入口。
-- [编码与验收标准](docs/CODING_STANDARDS.md)：实现、测试和审查标准；[LESSONS](LESSONS.md)沉淀有证据的经验。
+- [产品说明](docs/product/README.md)：产品目标、边界和每个分区的行为。
+- [运行指南](docs/SETUP.md)：配置、隔离实例、测试与 CI。
+- 接口：`apps/api/src/contracts/` 下的 OpenAPI；模块装配见 [ADR 0001](docs/adr/0001-use-a-single-static-module-catalog.md)。
+- [编码标准](docs/CODING_STANDARDS.md)：实现、测试和审查标准；[LESSONS](LESSONS.md)沉淀有证据的经验。
 - [Issues](https://github.com/DingJWuyu/TeachBuddy/issues)：未完成的工作与已知缺口。
 - [Agent 编排](AGENTS.md#agent-roles)：agent 如何领取 issue、开 PR 与审查。
 

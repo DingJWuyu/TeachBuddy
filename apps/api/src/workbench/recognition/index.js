@@ -7,7 +7,28 @@ import { normalizeRecognition } from './document.js';
 const active = new Set(['queued', 'running', 'cancelling']);
 const defaultRevision = 'mineru-pro-2605/document-6';
 
-/** Owns immutable machine results. Consumers own every subsequent human edit. */
+/**
+ * Owns immutable machine results. Consumers own every subsequent human edit.
+ *
+ * HTTP semantics live in materials.openapi.yaml ("识别" section). Module seam:
+ * - Port: get, readPage, readResult, request, ensurePage, cleanupAccount, close. Questions and resources
+ *   consume the same page results and never start their own OCR process.
+ * - readResult(principal, resultId, source) checks both the finished result and its fixed source.
+ * - ensurePage(principal, {fileId, renditionFileId, page}, {signal, retry}) runs inside the caller's own
+ *   job; never enqueue a recognition job and wait on it from another job (single serial executor).
+ *   Existing failed pages stay read-only unless retry is explicit.
+ * - ensurePage resolves {page, evidence, outputFileIds, stop} only after the complete raw result and
+ *   attachments are persisted and cancel/timeout is settled. evidence is the whole fixed value for this
+ *   run (null without a complete raw); consumers attach it to their own page/unit/import as is and must not
+ *   re-read the shared page cache after a stop, because later attempts overwrite it.
+ *   outputFileIds is one raw file per page for job publishing, not the full attachment set.
+ * - stop.kind is cancelled, timeout or cleanup-unconfirmed; the last carries stop.error, which the
+ *   consumer hands to jobs after persisting the evidence so the job never reports a completed cancel.
+ * - Late results after cancel/timeout are kept as evidence only, never published as ready.
+ * - cleanupAccount(accountKey) waits for this instance's write-back, confirms the account's process scope
+ *   stopped, then removes its temporary pages; it stays callable when the engine is unavailable.
+ *   Account deletion cancels and awaits the account's jobs before calling it.
+ */
 export function createRecognition({ db, files, readBytes, mutations, jobs, content, recognizer }) {
   const revision = recognizer?.revision ?? defaultRevision;
   const available = recognizer?.available ?? Boolean(recognizer);

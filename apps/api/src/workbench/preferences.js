@@ -1,3 +1,24 @@
+/**
+ * Account preferences: GET/PUT /api/reliability/v1/preferences.
+ *
+ * One versioned document per account, saved under the shared workbench
+ * identity, Idempotency-Key and version-conflict protocol (workbench.openapi.yaml).
+ * An account that never saved reads the defaults with version 1 and
+ * updatedAt null; every successful PUT adds 1. Stored values are merged over
+ * the defaults on read, and a PUT merges its values over the stored ones, so an
+ * old client that omits newer fields keeps them.
+ *
+ * Current settings: theme, background (custom uses backgroundImage), avatar and
+ * locale. readingSize, motion and externalAi are compatibility fields with no
+ * settings UI; every PUT must still send them.
+ * - avatar: WebP data URL of at most 131072 characters, decoded as one frame of
+ *   at most 256 x 256; the client crops it, the original is never stored. An
+ *   empty string removes it.
+ * - backgroundImage: JPEG or WebP data URL of at most 3145728 characters, one
+ *   frame within 4096 x 4096 input pixels, fully decoded before it is accepted.
+ * - The request body limit is 3400 KiB instead of the shared 2 MiB so that a
+ *   background image fits.
+ */
 import express from 'express';
 import sharp from 'sharp';
 import { createGuards, asyncHandler, createMutationHandler, createWorkbenchErrorHandler } from './http.js';
@@ -70,6 +91,7 @@ export function createPreferencesRouter({ db, mutations, identity, trustedOrigin
     res.json(read(req.workbenchPrincipal));
   }));
   router.put('/preferences', guards.originGuard, guards.protectionGuard, guards.identityGuard,
+    // Images are decoded before the receipt lookup; a replay resends the same valid images, so its result is unchanged.
     express.json({ limit: '3400kb' }), asyncHandler(async (req, res, next) => { await ready(); await validateAvatar(req.body?.values?.avatar); await validateBackground(req.body?.values?.backgroundImage); next(); }),
     createMutationHandler({ mutations, method: 'PUT', validate, write({ principal, body }) {
       const current = read(principal);

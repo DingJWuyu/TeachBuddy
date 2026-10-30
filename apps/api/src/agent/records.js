@@ -243,6 +243,7 @@ export function createAgentRecords({ store, operations }) {
               row.reported = true; row.usage = message.usage;
               const value = d.snapshot.turns.find(t => t.id === turnId), usage = value.usage;
               usage.requestsReported++;
+              // Reasoning is a breakdown already inside totalTokens; each field is summed as reported.
               for (const key of ['input', 'output', 'cacheRead', 'cacheWrite', 'reasoning', 'totalTokens']) if (Number.isFinite(message.usage[key])) usage[key] = (usage[key] ?? 0) + message.usage[key];
               usage.complete = usage.requestsReported === usage.requestsStarted; emit('turn', value);
             }
@@ -263,6 +264,7 @@ export function createAgentRecords({ store, operations }) {
         }
       };
     },
+    // Normal startup never starts a write. Restored backups are frozen separately by lifecycle.prepareRestoredAgent.
     recover() {
       for (const account of store.accounts()) for (const doc of store.list(account)) {
         if (!doc.snapshot.turns.some(t => t.state === 'running') && !doc.snapshot.operations.some(o => o.proposalSource && ['prepared', 'executing'].includes(o.state))) continue;

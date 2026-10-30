@@ -110,6 +110,7 @@ export function ConfirmDialog({ present, ...props }) {
   const opening = useRef({ present: false, key: 0 });
   // A retained exit belongs inside the portal so its inert boundary contains the dialog.
   if (present === undefined) return createPortal(<ConfirmContent {...props} />, shellRoot());
+  // A quick reopen mounts a fresh dialog instead of reviving the one still playing its exit.
   if (present && !opening.current.present) opening.current.key += 1;
   opening.current.present = Boolean(present);
   return createPortal(
@@ -134,6 +135,7 @@ function ConfirmContent({
   const running = useRef(false);
   const actions = useRef(null);
   actions.current = { onConfirm, onCancel, busy, disabled, active, enterConfirms };
+  // Keyed on visibility, not mount: closing drops the key handler and returns focus at once while the exit animation keeps the node.
   useEffect(() => {
     if (!active) return undefined;
     const prev = document.activeElement;

@@ -2,11 +2,11 @@
 
 ## 项目入口
 
-- 产品能力与本地运行读 [README](README.md)；配置、隔离实例与本机体验服务读 [SETUP](docs/SETUP.md)。`apps/` 是产品实现，`docs/design-system/` 是只读设计输入。
-- 查范围、行为、契约或验收时从[文档入口](docs/README.md)按任务展开；产品范围不能由旧代码或原型反推。身份交接或退出读取[认证契约](docs/contracts/auth.md)。
-- 修改或审查子系统时先读[运行参考](docs/subsystems/README.md)，追到实际源码与调用路径。涉及模块装配、跨模块访问或公共职责时另读[模块边界决议](docs/adr/0001-use-a-single-static-module-catalog.md)。
-- 界面改动同时读[设计输入](docs/design-system/README.md)；选择验证读[验证入口](docs/acceptance/README.md)。
-- 编写或整理文档使用 `writing-for-agents`，按[文档维护](docs/CODING_STANDARDS.md#文档维护)更新唯一权威位置。
+- 产品能力与本地运行读 [README](README.md)；配置、隔离实例、测试环境与本机体验服务读 [SETUP](docs/SETUP.md)。
+- 老师应当得到什么、故意不做什么读[产品说明](docs/product/README.md)及对应分区页；产品范围不能由旧代码或原型反推。接口语义读 `apps/api/src/contracts/` 的 OpenAPI。
+- 涉及模块装配、跨模块访问或公共职责时读 [ADR 0001](docs/adr/0001-use-a-single-static-module-catalog.md)。
+- 界面改动同时读只读的[设计输入](docs/design-system/README.md)。
+- 编写或整理文档使用 `writing-for-agents`，按[文档维护](docs/CODING_STANDARDS.md#文档维护)更新。
 
 ## Agent skills
 

@@ -131,7 +131,7 @@ function readSessionStatus(value) {
   };
 }
 
-/* I01/I03 answer with a pending session, never with an active one. */
+/* Login and register answer with a pending session, never with an active one. */
 function readPendingSession(value) {
   const session = readSession(value);
   return session?.state === 'pending' ? session : null;
@@ -403,6 +403,7 @@ export function createTransport({ getPageContext, onUnauthorized, isLocked }) {
       headers.set('X-TeachBuddy-Request', '1');
     }
     const response = await fetcher(path, { ...init, headers, credentials: 'same-origin' });
+    // A 401 only triggers a session re-check; the write is never replayed because it may already have committed.
     if (response.status === 401) onUnauthorized?.();
     return response;
   };

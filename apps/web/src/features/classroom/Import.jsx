@@ -17,6 +17,7 @@ const STEPS = ['选择成绩表', '对应表格的列', '逐行校对'];
 const letter = (n) => { let s = ''; while (n > 0) { const m = (n - 1) % 26; s = String.fromCharCode(65 + m) + s; n = Math.floor((n - 1) / 26); } return s; };
 const clean = (s) => String(s ?? '').replace(/\s+/g, '').toLowerCase();
 
+// Module scope keeps the same select element across mapping re-renders, so focus and keyboard position survive a change.
 function ColSelect({ value, onChange, label, optional, columns }) {
   return (
     <Field label={label} hint={optional ? tx('选填') : null}>

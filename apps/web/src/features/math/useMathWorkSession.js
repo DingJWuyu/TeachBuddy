@@ -292,6 +292,7 @@ export function useMathWorkSession({ transport, route, confirm, reselectHtml }) 
     if (draft?.id !== route.workId) open({ id: route.workId });
     else patchView({ screen: 'editor' });
   }, [route?.workId, storage, loadedStorage]);
+  // Every list read shares this guard: a late success or failure for an older account, request or filter is dropped.
   async function refresh() {
     const epoch = generation.current;
     const query = listQuery.current;

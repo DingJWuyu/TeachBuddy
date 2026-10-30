@@ -226,6 +226,7 @@ export function ExamForm({ ctx, initial, onClose }) {
 /* ---------- one exam ---------- */
 export function ExamDetail({ ctx, exam: listedExam }) {
   const [loadedComparison, setComparison] = useState(null);
+  // A comparison loaded for another exam id or version is dropped at once instead of showing until the new one arrives.
   const comparison = loadedComparison?.examId === listedExam.id && loadedComparison.examVersion === listedExam.version
     ? loadedComparison.value : null;
   const exam = comparison?.exam ?? listedExam;

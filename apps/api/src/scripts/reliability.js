@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+// Maintenance CLI for stopped-service backup, restore, activate and stale-lock removal.
+// --help is the operator reference; guarantees and restore order live in workbench/reliability/backup.js.
 import {
   backup,
   restore,

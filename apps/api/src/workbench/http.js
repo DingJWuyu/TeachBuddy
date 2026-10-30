@@ -237,6 +237,7 @@ export function createWorkbenchRouters({
   contextRouter.use(errorHandler);
 
   const modulesRouter = express.Router();
+  // The parser runs before the source and identity guards, so malformed or oversized JSON gets 400/413 ahead of 403/401 (no business change either way).
   modulesRouter.use(passPreflight, noStore, createRequestLogger(logger), jsonParser);
 
   // Every `/api/modules/<id>...` path is a workbench path: an ID outside the

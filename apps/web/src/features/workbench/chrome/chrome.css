@@ -2552,6 +2552,7 @@
   .wb-shell.tb-prototype .tb-mobile-scrim.is-visible { opacity: 1; pointer-events: auto; }
 }
   @media (max-width: 760px) {
+  /* The tutorial entry is hidden at this width, so its first-run scrim must not block the page. */
   .wb-shell.tb-prototype .tb-coach-scrim { display: none; }
   .wb-shell.tb-prototype .tbx-brand .tbx-wordmark,
   .wb-shell.tb-prototype .tb-global-nav.tbx-segmented {

@@ -272,6 +272,7 @@ function Checklist({ items, onChange, repeating, onMove }) {
           />
         </div>
       </div>
+      {/* Mounted in shellRoot so the panel's animated transform cannot offset the fixed-position ghost. */}
       {dragged && createPortal(
         <div className="tbx-drag-ghost is-item" style={{ transform: `translate(${drag.x - drag.dx}px, ${drag.y - drag.dy}px)` }} aria-hidden="true">
           <span className={cx('tbx-item-check', dragged.completed && 'is-done')} />

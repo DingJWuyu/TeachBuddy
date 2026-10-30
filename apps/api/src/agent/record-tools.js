@@ -52,8 +52,10 @@ export function prepareCalls(doc, emit, turnId, message) {
       const args = call.arguments;
       const path = tool.path.replace('{id}', args.id);
       const fingerprint = requestFingerprint({ method: tool.method, path, body: args.body });
+      // Reuse only a confirmed equivalent write of this turn; a repeat after a new user message is a new submission.
       let operation = doc.snapshot.operations.find(o => o.turnId === turnId && o.state === 'confirmed' && doc.journals[o.id].fingerprint === fingerprint);
       if (!operation) {
+        // request.operationId names the business operation; ToolCall.operationId holds this journal UUID.
         operation = { id: randomUUID(), turnId, toolCallId: raw.id, request: { operationId: tool.operationId, arguments: args }, state: 'prepared', result: null, problem: null, createdAt: now, updatedAt: now };
         doc.snapshot.operations.push(operation);
         doc.journals[operation.id] = { key: randomUUID(), method: tool.method, path, body: args.body, fingerprint };

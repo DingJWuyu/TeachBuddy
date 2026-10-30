@@ -2,7 +2,8 @@
   "openapi": "3.1.0",
   "info": {
     "title": "班级后端",
-    "version": "1.0.0"
+    "version": "1.0.0",
+    "description": "班级的名单、自由记录、考试、标签、成绩导入与统计契约。字段以本文件的 schema 为准；身份、HTTP、幂等、版本冲突与未知结果的共同协议见 workbench.openapi.yaml。模块 ID 为 `classroom`，退役的 `classes` 不复用。\n\n## 公共规则\n\n- 读取无副作用。其他账户的对象和文件一律 404；参数错误 422；版本或状态冲突 409。创建返回 201，更新返回 200。\n- 列表按明确的过滤条件返回全部匹配的 `items`，没有隐藏分页，默认按 updatedAt 降序、ID 升序。`deleted` 缺省为 active。未知或重复的 query 参数、重复的 UUID 筛选值都拒绝。\n- 日期是真实日历日 `YYYY-MM-DD`。分数最多两位小数；所有比较、求和与排名都按整数百分之一分计算，避免浮点误差打破同分。\n- 所有对象都有稳定 ID、version、创建与更新时间和删除状态。\n\n## 名单与关系\n\n- 学生属于当前班级。同班活动学生的非空学号唯一（409 classroom-student-number-conflict），姓名可以相同。\n- 换班时从旧班级座位中移除该学生，旧班级 version 加 1；学生记录仍绑定学生 ID。\n- 成绩行保留考试时的班级与学生姓名、学号快照，之后改名、换班和删除不改写既往成绩。\n\n## 考试与题目\n\n- 题目 ID 在考试内稳定；新增题不带 id，由服务端生成，客户端提交未知 id 拒绝。题目分组只是标题，不计第二份分数。\n- 有实际分数的题不能移除（409 classroom-question-in-use）；没有分数的题移除时，同时从已有成绩中去掉它的空分。修改总满分或题目满分时检查已保存的分数，任一越界整笔拒绝。新增题在旧成绩中为缺失。\n- 题目不能引用已合并的标签（409 classroom-tag-merged，附 targetId）。\n\n## 原卷与固定定位\n\n- Exam.source 按阅读顺序保存原 File ID 和可选的固定 rendition，接受 Word（doc/docx）、PDF、PNG、JPEG、WebP；可以为空。下载、预览、转换和裁图使用 materials.openapi.yaml 的文件接口，班级不另建预览系统。\n- 题目 location 引用该考试 source 中的固定 rendition 和真实页号：页从 1 开始，box 是按显示方向、以左上角为原点归一化的 x/y/width/height，必须位于页内；box=null 表示整页。跨页题可以有多个 location。\n- 保存、确认导入和恢复时都核对原件、派生文件、页映射和账户归属。预览更新不替换旧定位；换原卷必须在同一次考试更新中重新校验全部定位。没有可用预览时允许保留未定位的题和原件。\n\n## 标签\n\n- 名称经 trim、Unicode NFKC 和连续空白合并后检查重复（409 classroom-tag-name-conflict）。\n- 合并同时核对源和目标的版本，在同一事务中把所有考试（包括已删除的）里的源标签换成目标并去重，受影响的考试 version 加 1。源标签保留 mergedIntoId 用于解释来源，不能再用作题目标签，也不出现在标签列表中。\n- 连续合并时，已经指向源标签的旧标签在同一事务中改指最终目标并加版本，始终只有一跳；没有递归别名解析，也不会自动复活。\n\n## Excel 输入\n\n- 接收标准 `.xlsx` 和 Excel 97-2003 `.xls`，按实际字节判别格式，拒绝加密文件和伪装的 HTML/XML。上限：原件 10 MiB，ZIP 实际展开 64 MiB、4096 个成员，20 个工作表，每表 2000 行、256 列，合计 100000 个单元格。超限明确拒绝，不截断录入。工作簿本身的拒绝返回 422 `/problems/workbench/classroom-workbook-input`，带 code 和可直接展示的 detail，是确定的拒绝，修正后可换新文件重试。\n- 读取结果保留工作表、行列、显示文本、合并区域和公式信息。公式只使用已有的有限数值缓存，不执行公式；缓存缺失、非法或错误单元格作为待校对问题。\n- 空白为缺失，数值 0 保持为 0；百分比、日期、布尔和非数字文字不能直接变成分数。学号使用显示文本，保留已有前导零，不补猜 Excel 已经丢掉的零。\n\n## 导入、校对与确认\n\n- 生命周期：创建导入（未映射草稿）→ PUT 映射，服务端生成候选 → PUT 完整 rows 人工校对 → 确认。确认后草稿不能再改，改映射或源表需要新的导入。\n- 学生匹配：有学号时精确匹配本班唯一的活动学生，且表中姓名为空或一致；没有学号时只在完全同名且唯一时给出候选。姓名学号矛盾、重名、未匹配和重复匹配都必须明确处理。导入不新建学生，不接受客户端编造的学生快照。原行可以显式忽略，但不能遗漏（missing-source-row）。\n- 状态：映射了缺考列时，“缺考/absent”为 absent，“未录入/unrecorded”为 unrecorded，“参考/present/出考/正常”或空白为 present，其他文字需要校对。未出现在表内的本班学生在确认时记为 unrecorded。absent 和 unrecorded 不携带分数。\n- 校对可以保留有问题的草稿；确认时重新检查全部错误和基线。error 阻断整笔确认，warning 允许保存。\n- 总分：总分只来自表格或人工校对。没映射总分列时为 null，不由逐题求和；参加者缺总分给 missing-total 警告并允许确认，这些人不进入排名、均值和分布。只录总分时缺失的题分仍为 null。只有逐题完整且计分题满分合计等于总满分时才判定 total-mismatch 警告；逐题不完整只报告覆盖不足（missing-question-score、partial-question-coverage）。不会用题分之和覆盖总分，也不把差额分摊到题目。\n- 原卷：source 为空时给 source-not-ready 警告，有原卷但缺固定预览或有题未定位时给 location-not-ready 警告，都不阻断确认。\n- 确认原子写入一份 `(examId, classId)` 成绩、导入的 confirmed 状态和幂等回执；失败不留下部分成绩。新导入按当前名单替换活动学生的成绩行，保留既有成绩中已换班或删除学生的历史行及快照，不追加第二份成绩；已删除的成绩须先恢复。确认的导入作为成绩来源保留，不能删除。\n\n## 统计口径\n\n- 只使用未删除的考试和成绩。学生改名、换班和软删除不抹去成绩；班级参照来自成绩所属的班级。筛选无结果时返回空序列。\n- 统计在一个 SQLite 读取事务内取得考试、成绩、标签和主体并计算，每份响应是一份完整的观察；读取期间发生的重新导入只在下一次查询中出现。不保存派生统计或 AI 结论。\n- 总成绩、均值、中位数、最高和最低：只有 status=present 且总分为数值者参与，0 分参与；另列缺考、未记录和缺总分人数。中位数在偶数人时取中间两数的平均。\n- 得分率 = 总分 / 本场总满分。排名为同分并列的竞争排名（1、1、3），同时返回参与排名的人数；缺考、未记录和缺总分不参与。\n- 单题：已知分数之和 / (已知人数 × 题目满分)，同时返回可观察、已知和缺失人数；没有已知分数时 rate=null。缺考和未记录不计入可观察人数。\n- 标签：命中题目的已知得分之和 / 这些已知得分对应的满分之和；同时返回全部可能满分 possibleMax、已知格数和缺失格数。多个标签按题目 OR 取并集，同题只算一次。没有命中题时 reason=not-assessed，命中但全部缺分时 reason=missing-scores，两者都不填零。各标签结果可能共享题目，不能相加当作整体。\n- 分布：按总分得分率分十档 `[0, 0.1)` 至 `[0.9, 1]`，满分落入末档，只含参与排名的学生；缺总分、缺考和未记录不进零分档。每档附学生 ID。\n- 跨考试按考试日期、考试 ID、成绩 ID 升序以逐场 points 呈现，可按日期、考试和标签过滤。\n- dataVersions 列出该次计算实际使用的 exam、results、tags、classes 和 students 版本：考试时的学生快照由所属成绩版本覆盖，当前学生只在学生统计中单列，班级名称和归档状态由班级版本覆盖。\n\n## 删除与恢复\n\n- 软删除保留对象和关系。父对象删除不批量改写子对象，恢复父对象也不复活已单独删除的子对象。\n- 删除学生同时移除其当前座位，保留历史成绩；恢复时不自动占回座位，且要重新满足同班学号唯一。删除考试或成绩使其退出统计，恢复后重新使用原成绩。\n- 恢复学生要求所属班级活动；恢复班级记录要求所属班级活动；恢复学生记录要求所属班级和学生都活动。父班级已归档返回 409 classroom-restore-class-required，父学生已归档返回 409 classroom-restore-student-required；失败时子项保持归档，不隐式恢复上级。\n\n## 导出与维护恢复\n\n- 个人资料包包含七类 `classroom-*` 对象（classes、students、records、exams、tags、imports、results）及其原件、固定预览和关系。\n- 部署恢复校验 schema、同账户的对象引用、每个 (examId, classId) 唯一的成绩、分数范围和固定文件定位；历史换班和父级软删除是合法状态。旧备份追加班级模块的空表后执行同样的完整校验，不迁移退役 `classes` 模块的数据。"
   },
   "paths": {
     "/api/modules/classroom/classes": {
@@ -408,6 +409,7 @@
     "/api/modules/classroom/students": {
       "get": {
         "operationId": "listStudents",
+        "description": "除 deleted=deleted 外必须指定 classId。deleted=deleted 可以不传 classId，返回本账户全部已归档学生，包括已归档班级下的；传了 classId 时仍核对它属于本账户，但不要求它是活动的。",
         "parameters": [
           {
             "$ref": "#/components/parameters/PageContext"
@@ -509,8 +511,7 @@
           {
             "session": []
           }
-        ],
-        "description": "归档查询 deleted=deleted 可省略主体筛选，返回本账户全部归档项，包括已归档父主体下的条目；其他查询仍须指定主体。"
+        ]
       },
       "post": {
         "operationId": "createStudent",
@@ -654,6 +655,7 @@
       },
       "put": {
         "operationId": "updateStudent",
+        "description": "修改 classId 即换班：原班级和目标班级都须为活动班级，学生从原班级的座位中移除，原班级 version 总是加 1。",
         "parameters": [
           {
             "$ref": "#/components/parameters/PageContext"
@@ -818,6 +820,7 @@
     "/api/modules/classroom/records": {
       "get": {
         "operationId": "listRecords",
+        "description": "除 deleted=deleted 外必须同时指定 scope 和 subjectId。deleted=deleted 可以都不传，返回本账户全部已归档记录，包括已归档班级或学生下的；要按主体筛选时两者须同时传，主体可以是已归档的。按 occurredOn 降序排列。",
         "parameters": [
           {
             "$ref": "#/components/parameters/PageContext"
@@ -949,8 +952,7 @@
           {
             "session": []
           }
-        ],
-        "description": "归档查询 deleted=deleted 可省略主体筛选，返回本账户全部归档项，包括已归档父主体下的条目；其他查询仍须指定主体。"
+        ]
       },
       "post": {
         "operationId": "createRecord",
@@ -1372,6 +1374,7 @@
       },
       "post": {
         "operationId": "createExam",
+        "description": "新题不带 id，由服务端生成。",
         "parameters": [
           {
             "$ref": "#/components/parameters/PageContext"
@@ -1512,6 +1515,7 @@
       },
       "put": {
         "operationId": "updateExam",
+        "description": "完整替换考试内容。有实际分数的题不能移除；修改满分时已有分数任一越界则整笔拒绝。更换 source 时在同一次更新中重新校验全部定位。",
         "parameters": [
           {
             "$ref": "#/components/parameters/PageContext"
@@ -2099,6 +2103,7 @@
       },
       "post": {
         "operationId": "createImport",
+        "description": "读取 sourceFileId 指向的受管 Excel 文件，得到未映射的草稿。工作簿解析在事务外完成，提交前先检查已有的成功回执，所以原键重放不会重新读取源文件；源文件在两次读取之间变化返回 409 classroom-import-source-changed。",
         "parameters": [
           {
             "$ref": "#/components/parameters/PageContext"
@@ -2239,6 +2244,7 @@
       },
       "put": {
         "operationId": "updateImport",
+        "description": "rows=null 时服务端按 mapping 生成候选；提交完整 rows 数组表示人工校对，此时服务端记录 reviewedSourceRows。改变映射时清空复核标记，须用 rows=null 重新生成候选。复核过的行不再被源单元格的错误拦住，但分数、状态和学生匹配仍完整检查。行列从 1 起，工作表序号从 0 起。已确认的导入返回 409 classroom-import-confirmed。",
         "parameters": [
           {
             "$ref": "#/components/parameters/PageContext"
@@ -2321,6 +2327,7 @@
     "/api/modules/classroom/imports/{id}/deletion": {
       "put": {
         "operationId": "setImportDeletion",
+        "description": "已确认的导入作为成绩来源保留，不能删除（409 classroom-import-confirmed）。",
         "parameters": [
           {
             "$ref": "#/components/parameters/PageContext"
@@ -2403,6 +2410,7 @@
     "/api/modules/classroom/results": {
       "get": {
         "operationId": "listResults",
+        "description": "必须至少指定 examId 或 classId。",
         "parameters": [
           {
             "$ref": "#/components/parameters/PageContext"
@@ -2572,6 +2580,7 @@
       },
       "put": {
         "operationId": "updateResult",
+        "description": "版本化修正一份已确认成绩，同时核对成绩和考试版本。既有行不能删除，纠错须明确改为 unrecorded；新增行只能是本班的活动学生。既有行保留原快照，provenance 保留原导入来源并记录 correctedAt。",
         "parameters": [
           {
             "$ref": "#/components/parameters/PageContext"
@@ -2654,6 +2663,7 @@
     "/api/modules/classroom/results/{id}/deletion": {
       "put": {
         "operationId": "setResultDeletion",
+        "description": "删除的成绩退出统计；同班同场的新导入要求先恢复它。",
         "parameters": [
           {
             "$ref": "#/components/parameters/PageContext"
@@ -2736,6 +2746,7 @@
     "/api/modules/classroom/classes/{id}/seating": {
       "put": {
         "operationId": "setSeating",
+        "description": "完整替换座位布局。座位上的学生必须是本班的活动学生；一个学生只占一个座位，一个位置只坐一人。未出现在 seats 中的学生即未排座。",
         "parameters": [
           {
             "$ref": "#/components/parameters/PageContext"
@@ -2818,6 +2829,7 @@
     "/api/modules/classroom/tags/{id}/merge": {
       "post": {
         "operationId": "mergeTags",
+        "description": "把本标签合并到 targetId，同时核对两边版本；规则见 info 的“标签”。返回合并后的源标签、目标标签和受影响的考试 ID。",
         "parameters": [
           {
             "$ref": "#/components/parameters/PageContext"
@@ -2900,6 +2912,7 @@
     "/api/modules/classroom/imports/{id}/confirmation": {
       "post": {
         "operationId": "confirmImport",
+        "description": "请求只带导入的 baseVersion；考试、班级、学生名单和现有成绩的基线来自草稿，确认时逐一重新核验，任一变化返回 409 classroom-import-baseline-conflict 且草稿保持 draft。仍有 error 时返回 409 classroom-import-review-required 并附 issues。成功返回确认后的导入、成绩和 warnings。",
         "parameters": [
           {
             "$ref": "#/components/parameters/PageContext"
@@ -2982,6 +2995,7 @@
     "/api/modules/classroom/classes/{id}/statistics": {
       "get": {
         "operationId": "classStatistics",
+        "description": "返回本班每场考试的 point，points[].students 给出分布钻取和排名所需的学生 ID、考试时快照、状态、总分、得分率和名次，不附全班逐题原始分。unrecordedExams 列出同一筛选和快照中尚无本班成绩的活动考试，不伪造成 point。口径见 info 的“统计口径”。",
         "parameters": [
           {
             "$ref": "#/components/parameters/PageContext"
@@ -3081,6 +3095,7 @@
     "/api/modules/classroom/students/{id}/statistics": {
       "get": {
         "operationId": "studentStatistics",
+        "description": "返回该学生有成绩行的每场考试（含缺考和未记录），每题同时给出本人 score 和考试时班级的 classRate，overall.classReference 是考试时班级的整体结果。不返回全班学生明细。消费者不需要再补读 Result 或另一份班级统计。",
         "parameters": [
           {
             "$ref": "#/components/parameters/PageContext"
@@ -3180,6 +3195,7 @@
     "/api/modules/classroom/exams/{id}/comparison": {
       "get": {
         "operationId": "compareExam",
+        "description": "classIds 必填。每个班使用同一口径；没有成绩的班 state=no-result、point=null，不伪造零均分。顶层 exam.questions 和 tags 总是给出该快照的计分题与标签名称（即使所有班都没有成绩），消费者显示标题、满分、题目和比较率时都使用本响应，不混用之前读取的考试列表。不返回全班学生明细。",
         "parameters": [
           {
             "$ref": "#/components/parameters/PageContext"

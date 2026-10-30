@@ -1,3 +1,4 @@
+// pi packages ship their own npm-shrinkwrap, so a root override does not prove the installed nested versions; verify node_modules and reopen saved entries before upgrading.
 import { createAgentSession, SessionManager, SettingsManager, DefaultResourceLoader, ModelRuntime } from '@earendil-works/pi-coding-agent';
 import { InMemoryCredentialStore } from '@earendil-works/pi-ai';
 import { agentError } from './schema.js';
@@ -13,6 +14,7 @@ export function createPiRuntime({ records, executor, identity, config = {} }) {
       if (config.modelRuntime) return config.modelRuntime;
       const runtime = await ModelRuntime.create({ credentials: new InMemoryCredentialStore(), modelsPath: null, refreshOnCreate: false, allowModelNetwork: false });
       runtime.registerProvider(PROVIDER, { baseUrl: config.baseUrl, api: 'openai-completions', apiKey: config.apiKey,
+        // cost=0 is a registry placeholder: real billing is unknown and must never be derived from it.
         models: MODEL_IDS.map(id => ({ id, name: id, reasoning: false, input: ['text'], cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 }, contextWindow: 128000, maxTokens: 8192 })) });
       return runtime;
     })();
@@ -39,6 +41,7 @@ export function createPiRuntime({ records, executor, identity, config = {} }) {
         }
       }
       const manager = SessionManager.inMemory(process.cwd(), { id }, entries.length ? entries : undefined);
+      // No compaction or retry: compaction silently drops history and retries send extra paid requests.
       const settings = SettingsManager.inMemory({ compaction: { enabled: false }, retry: { enabled: false }, defaultThinkingLevel: 'off' });
       const loader = new DefaultResourceLoader({ cwd: process.cwd(), agentDir: '/nonexistent-teachbuddy-agent', settingsManager: settings,
         noExtensions: true, noSkills: true, noPromptTemplates: true, noThemes: true, noContextFiles: true, systemPrompt: SYSTEM });
@@ -66,6 +69,7 @@ export function createPiRuntime({ records, executor, identity, config = {} }) {
         resourceLoader: loader, noTools: 'builtin', tools: executor.availableTools.map(t => t.name), customTools, thinkingLevel: 'off' });
       const session = created.session; handle.session = session;
       if (handle.reason === 'auth-invalid') throw new Error('Account deleted');
+      // The SDK may substitute another model instead of failing; any fallback stops the turn before a request is sent.
       if (created.modelFallbackMessage || session.model?.id !== turn.modelId || session.model?.provider !== PROVIDER) throw agentError('model-unavailable');
       session.subscribe(event => {
         if (event.type !== 'message_update' || event.message.role !== 'assistant') return;
@@ -85,6 +89,7 @@ export function createPiRuntime({ records, executor, identity, config = {} }) {
           throw error;
         }
       };
+      // Derive the outer isError from the durable outcome; the SDK flag can disagree with nested details.
       session.agent.afterToolCall = async ({ result, toolCall }) => {
         const details = turn.finishTool(toolCall.id) ?? result.details;
         return { content: [{ type: 'text', text: JSON.stringify(details ?? { state: 'cancelled', operationId: null }) }], details: details ?? { state: 'cancelled', operationId: null }, isError: !['read','confirmed'].includes(details?.state) };

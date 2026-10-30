@@ -33,6 +33,7 @@ export function useNavigation(accountKey, generation) {
   const savable = useSavableDocument({ accountKey, generation: `${generation}:${reload}`, kind: 'navigation', draftId: 'account',
     load: async () => {
       const value = checked((await workbenchGet(path)).body);
+      // An unreadable device layout fails the read, so the default is never saved over it.
       if (value.updatedAt === null) fromLegacy(legacy);
       return value;
     },
@@ -69,6 +70,7 @@ export function useNavigation(accountKey, generation) {
     retryLoad: () => setReload(value => value + 1),
     keepLocal: async () => {
       if (!savable.serverObject || savable.pending) return;
+      // Keep the local layout against the version the teacher compared; a newer change elsewhere conflicts again.
       approvedVersion.current = savable.serverObject.version;
       try { await savable.save(); } finally { approvedVersion.current = null; }
     }

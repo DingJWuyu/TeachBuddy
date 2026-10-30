@@ -47,6 +47,7 @@ export function createClassroomApi({ accountKey, transport, getSignal, onIdentit
     if (response.status === 401) onIdentityLost?.();
     if (!response.ok) {
       let problem = problemFromResponse(response.status, value);
+      // The shared mapper treats unknown Problem types as unconfirmed; a workbook rejection is definite, so the logical write is released and another file can be chosen.
       if (response.status === 422 && value?.type === '/problems/workbench/classroom-workbook-input') {
         problem = { ...problem, kind: 'invalid', message: value.detail || tx('操作没有完成，请再试一次。') };
       }
@@ -86,6 +87,7 @@ export function createClassroomApi({ accountKey, transport, getSignal, onIdentit
       const display = col => source?.cells.find(c => c.column === col)?.display || '';
       const sourceIdentity = { name: display(m?.nameColumn), studentNo: display(m?.studentNumberColumn) };
       const byNumber = sourceIdentity.studentNo.trim() ? roster.filter(student => student.studentNumber === sourceIdentity.studentNo.trim()) : [];
+      // Suggest only from a unique exact student number; the row stays unmatched until the teacher accepts it.
       const suggestion = !row.studentId && sourceIdentity.name.trim() && byNumber.length === 1 && byNumber[0].name.trim() !== sourceIdentity.name.trim() ? byNumber[0] : null;
       const rowIssues = issues.filter(i => i.sourceRow === row.sourceRow).map(issue => {
         const view = importIssueView(issue);

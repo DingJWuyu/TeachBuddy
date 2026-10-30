@@ -250,6 +250,7 @@ export default function WorkshopWorkspace({ draft, accountKey, takeAssistantRequ
     const next = { ...(localFormulaRef.current ?? selectedFormula), ...patch }; changeLocalFormula(next); clearTimeout(localTimer.current);
     const commit = async () => { if (!next.latex.trim()) { onError(new Error(t('公式不能为空。删除公式请使用移除。'))); return; }
       const result = await apply({ formulas: editor.current.read().source.formulas.map(formula => formula.id === next.id ? next : formula) });
+      // Retire the buffer only for this commit; input typed while it was in flight stays local.
       if (result && localFormulaRef.current === next) changeLocalFormula(null); };
     commitFormulaRef.current = commit;
     localTimer.current = setTimeout(() => { localTimer.current = null; void commit(); }, 650);

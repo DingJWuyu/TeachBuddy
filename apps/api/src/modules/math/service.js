@@ -83,6 +83,7 @@ export function createMathService({ db, mutations, files, mathRuntimeDirectory }
       },
     };
   }
+  // The file key derives from the request, so a retry after a failed commit reuses the prepared file.
   async function store(principal, request, bytes, name) {
     const hash = createHash("sha256")
       .update(requestFingerprint(request))
@@ -211,6 +212,7 @@ export function createMathService({ db, mutations, files, mathRuntimeDirectory }
         }
         return { status: 200, body };
       }
+      // peek is read-only: slow preparation outside the transaction never claims the success key.
       const replay = mutations.peek(request);
       if (replay) return replay;
       if (definition.name === "purgeWork") {
@@ -285,6 +287,7 @@ export function createMathService({ db, mutations, files, mathRuntimeDirectory }
       } else artifacts.assertAvailable(principal, prior);
       if (Date.now() - started > 30000) throw mathError("render-unavailable", undefined, undefined, 503);
       return mutations.execute(request, () => {
+        // Preparation ran outside the transaction, so ownership and version are rechecked before commit.
         if (prior)
           current(
             principal,

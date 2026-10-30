@@ -43,6 +43,7 @@ export async function startServer(options = {}) {
   let server;
   try {
     await context.workbench.initialize();
+    // After workbench init so cleanup reaches every store owner; before listening so no request races an accepted deletion.
     await context.authModule?.resumePendingDeletions();
     server = createHttpServer(context);
     if (options.dev) {

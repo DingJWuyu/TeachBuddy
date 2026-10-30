@@ -122,6 +122,7 @@ export function createPreviews({
         });
       let result;
       try {
+        // Conversions run one at a time; re-check the stop after queueing so a cancelled job never starts one.
         const next = conversionQueue.then(() => {
           signal?.throwIfAborted();
           return convertFile({
@@ -135,6 +136,7 @@ export function createPreviews({
         conversionQueue = next.catch(() => {});
         result = await next;
       } catch {
+        // A kill caused by a stop is a cancel, not a conversion failure; the previous preview stays published.
         if (signal?.aborted) throw signal.reason;
         return save(principal, {
           ...preview(principal, id),

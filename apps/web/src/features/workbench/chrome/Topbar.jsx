@@ -69,6 +69,7 @@ export default function Topbar({ route, collapsed, toggleSidebar, surface, setSu
   }, [surface, setSurface, scene.coachDismissed]);
 
   const toggle = (value) => setSurface(surface === value ? null : value);
+  // Narrow layouts hide entries by data-topbar-entry; aria-label changes with the interface language.
   const entry = (name, icon, label, content, badge) => (
     <span data-topbar-entry={name} className={`tb-entry-wrap${name === 'tutorial' && !scene.coachDismissed ? ' is-coached' : ''}`}>
       <button className="tb-entry" aria-label={label} aria-haspopup="dialog" aria-expanded={surface === name} onClick={() => toggle(name)}>

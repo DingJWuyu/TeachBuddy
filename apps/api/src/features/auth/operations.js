@@ -1,4 +1,5 @@
-// Operation layer for I01-I07 and the workbench principal seam.
+// Operation layer for the account-entry, session and logout routes and the
+// workbench principal seam.
 //
 // Every mutation that the contract marks atomic runs inside one SQLite
 // transaction (better-sqlite3 `db.transaction`). Reads and in-memory work
@@ -152,7 +153,7 @@ export function createAuthOperations({ db, store, now, sendCode, isRegistrationO
       updatedAt: timestamp
     });
     // The page that submitted the credential owns the pending session, so a
-    // later GET can report it (S45) and I07 can revoke the same target.
+    // later GET can report it (save-failure card) and logout can revoke the same target.
     store.upsertPageBinding(container.id, pageId, session.id, timestamp);
     return session;
   }
@@ -236,6 +237,7 @@ export function createAuthOperations({ db, store, now, sendCode, isRegistrationO
       if (requireOpen && !registrationOpen()) throw authProblem('registrationClosed');
 
       const code = generateVerificationCode();
+      // Delivery stays outside SQLite: a failure only promises the old challenge is untouched, not that no mail arrived.
       try {
         await sendCode({ purpose, email, verificationCode: code });
       } catch {

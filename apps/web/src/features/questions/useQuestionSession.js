@@ -638,6 +638,7 @@ export function useQuestionSession({ accountKey, transport, requestedId, onRetur
     const item = { id: crypto.randomUUID(), name: categoryName.trim() };
     const next = await mutate('/taxonomy', { baseVersion: taxonomy.version, types: taxonomy.types, tags: taxonomy.tags, [kind]: [...taxonomy[kind], item] }, 'PUT');
     setTaxonomy(next);
+    // Merge into the latest editor input, and only if the original target is still open; a switched target keeps the new term unselected.
     const current = editorRef.current;
     if (current.value && current.scene.kind === target.kind && current.scene.id === target.id
       && (target.kind !== 'import' || current.selected === target.draftId)) {

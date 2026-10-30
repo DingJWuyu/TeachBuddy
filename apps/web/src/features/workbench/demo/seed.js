@@ -8,6 +8,7 @@ import { seedClassroom } from './classroom.js';
  * Each step owns one persisted body/key and its confirmed object ID. */
 export async function seedSampleWeek({ accountKey, transport, signal }) {
   const storageKey = `teachbuddy:agent:${accountKey}:sample-week:v1`;
+  // The journal fixes the sample day at first start, so a resumed load keeps the same dates and object IDs.
   let journal = JSON.parse(localStorage.getItem(storageKey) || 'null') ?? { day: new Date().toISOString().slice(0, 10), ids: {}, steps: {} };
   function persist(next) {
     signal?.throwIfAborted();

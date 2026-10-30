@@ -5,6 +5,7 @@ const ResourceDialogVisible = createContext(true);
 
 export function ResourceDialogPresence({ present, children }) {
   const opening = useRef({ present: false, key: 0 });
+  // A new key per opening, so a quick reopen mounts a fresh operation instead of reviving the exiting one.
   if (present && !opening.current.present) opening.current.key += 1;
   opening.current.present = Boolean(present);
   return (

@@ -1,5 +1,19 @@
 // Explicit offline operation only. The caller owns physical isolation, stopped
 // writers, integrity checks and reopening the same target before serving it.
+//
+// prepareRestoredAuth({ db }) revokes every identity carried by a restored copy:
+// in one BEGIN IMMEDIATE transaction on main it deletes all page bindings,
+// sessions, containers, challenges and completed deletion receipts, then
+// asserts those tables are empty and that accounts (including password hashes),
+// legacy gaps and the migration ledger are unchanged. Success exists only after
+// COMMIT. Afterwards old cookies get 401 session-invalid, old challenges are
+// missing, and signing in with the backed-up credentials returns the original
+// accountKey. Re-running on the same unserved copy is idempotent (all counts 0);
+// never run it on ordinary startup, as it would sign out live sessions.
+// Errors carry code AUTH_RECOVERY_PRECONDITION (connection/configuration or a
+// pending deletion), _SCHEMA (unsupported ledger, tables or legacy gaps),
+// _STORAGE (I/O, lock or commit failure; never a rollback promise) or
+// _INVARIANT; every one means the target must stay closed.
 import Database from 'better-sqlite3';
 import { isDeepStrictEqual } from 'node:util';
 

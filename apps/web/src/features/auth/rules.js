@@ -1,5 +1,5 @@
 /*
- * Local input rules for the account entry (G06). The same rules gate the
+ * Local input rules for the account entry. The same rules gate the
  * submit buttons so an input the browser can judge never becomes a business
  * request; the server still validates independently.
  */

@@ -33,6 +33,7 @@ export function createScheduleModule({ db, mutations, beforeChange, clock } = {}
   return {
     router,
     port: {
+      // Archived entries are returned as they are; the consumer decides from their public state.
       readReference(principal, { id, originDate = null }) {
         validateIdPath(id);
         return {

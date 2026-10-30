@@ -102,6 +102,7 @@ function useOutside(open, ref, close) {
     const down = (e) => { if (!ref.current?.contains(e.target)) close(); };
     const key = (e) => {
       if (e.key !== 'Escape') return;
+      // Focus the trigger before closing: the focused option unmounts and focus would fall back to the body.
       ref.current?.querySelector('button')?.focus();
       close();
     };

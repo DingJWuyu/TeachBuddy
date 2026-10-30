@@ -11,6 +11,7 @@ import { cx } from './classNames.js';
 const MARGIN = 12;
 
 export function shellRoot() {
+  // During native fullscreen (classroom display) only the fullscreen element stays interactive, so menus and confirms mount there.
   if (document.fullscreenElement) return document.fullscreenElement;
   const shell = document.querySelector('.wb-shell');
   if (shell) return shell;

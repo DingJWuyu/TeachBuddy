@@ -148,6 +148,7 @@ export function createClassroomOperations({
       };
       let prepared;
       if (kind === 'imports' && action === 'create') {
+        // Workbook parsing is async and runs outside the mutation transaction; replay a stored receipt first so a retry never re-reads a source file that may no longer be readable.
         const replay = mutations.peek(mutation);
         if (replay) {
           return replay;

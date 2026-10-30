@@ -56,6 +56,7 @@ export default function OriginalPane({
   };
   const rememberScroll = () => {
     const image = pageNode.current?.querySelector('img');
+    // While the page image loads the pane reports zero offsets; saving them would erase the restored scene.
     if (!image?.complete || !image.naturalWidth) return;
     onScene({ scrollPositions: { ...scene.scrollPositions, [scrollKey]: {
       top: pageNode.current.scrollTop, left: pageNode.current.scrollLeft,

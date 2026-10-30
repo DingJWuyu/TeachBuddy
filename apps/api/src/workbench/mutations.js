@@ -99,6 +99,7 @@ export function createMutations({ db, clock = () => new Date(), assertAccountAct
     if (typeof write !== 'function') {
       throw new Error('mutations.execute requires a write callback.');
     }
+    // Lookup and write run in one synchronous call, so a concurrent request with the same key sees the committed receipt and replays it.
     const existing = confirmedResponse(checked);
     if (existing) return existing;
     const { principal } = request;

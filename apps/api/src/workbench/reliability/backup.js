@@ -1,3 +1,29 @@
+/**
+ * Deployment backup and point-in-time restore, run only by the maintenance CLI
+ * (scripts/reliability.js) with the API, its child processes and automatic
+ * restart stopped. backup takes the same database and files locks the API holds
+ * while running, so it fails against a live API; a lock is still no proof that
+ * every writer stopped.
+ *
+ * - backup copies a consistent SQLite snapshot and every managed file into a
+ *   staging directory, writes a secret-free manifest and atomically renames it
+ *   into place. Configuration is kept separately by the operator.
+ * - restore only writes a new target that is physically separate from the
+ *   backup; the original deployment and the backup are never modified. In
+ *   order: verify manifest and file digests, copy, check integrity, migration
+ *   set, structure, account ownership and content versions, apply supported
+ *   migrations, revoke restored auth twice across a reopen, rotate recoveryId,
+ *   interrupt personal export records (archives are not in a backup), then mark
+ *   the target prepared. Exit 0 means prepared, not serving.
+ * - activate re-checks the prepared target and its database digest; only then
+ *   may the API start on it, with SQLITE_PATH and WORKBENCH_FILES_DIR both
+ *   pointing at the target. A target still marked pending refuses to start.
+ * - Any failure stops before activation and leaves the target for diagnosis.
+ *   There is no automatic merge: writes after the backup are lost, and switching
+ *   back after the restored copy took writes is a new point-in-time restore.
+ * - Older backups from known migration sets upgrade in the target through the
+ *   named retirement migrations; unknown migrations or formats are refused.
+ */
 import { accountKeys, detachedAccountTables, optionalMigrationIds as authOptionalMigrations } from '../../features/auth/lifecycle.js';
 import { moduleImplementations } from '../moduleImplementations.js';
 import { validateStorage as validateAgentStorage, prepareRestoredAgent } from '../../agent/lifecycle.js';
@@ -90,6 +116,7 @@ function checkStructure(db, actual) {
   }
 }
 function storedOwners(db) {
+  // Tables without a ledger entry, or the reverse, mean damage; never treat them as an empty module.
   const present = new Set(ledger(db).map(row => row.moduleId));
   return owners.filter(owner => {
     const hasStorage = owner.maintenance.hasStorage(db);
@@ -283,6 +310,7 @@ export async function backup({ database, files, target, stopped }) {
     db = new Database(database, { fileMustExist: true, readonly: true });
     db.pragma("synchronous = FULL");
     checkDatabase(db, { allowOlder: true });
+    // A backup taken mid-deletion would bring back a half-deleted account; finish the deletion first.
     assertNoPendingAccountDeletion(db);
     fs.mkdirSync(staging, { mode: 0o700 });
     // SQLite backup includes committed WAL content; never copy the main file alone.
@@ -396,6 +424,8 @@ export function restore({ source, target, stopped }) {
       Object.values(first.remaining).some((n) => n !== 0)
     )
       throw new Error("Authentication preparation failed");
+    // Reopen and run again: anything removed now means the first commit did not persist or another
+    // writer exists, so stop instead of accepting the second pass as the cleanup.
     db.close();
     db = new Database(database, { fileMustExist: true });
     db.pragma("synchronous = FULL");
@@ -405,6 +435,7 @@ export function restore({ source, target, stopped }) {
       Object.values(second.remaining).some((n) => n !== 0)
     )
       throw new Error("Authentication cleanup did not persist");
+    // recoveryId only marks the restore point for clients; auth revocation above is what ends old sessions.
     db.prepare("UPDATE reliability_context SET recoveryId=? WHERE id=1").run(
       randomUUID(),
     );

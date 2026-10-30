@@ -1,4 +1,5 @@
 import { fail } from './schema.js';
+// Scores have at most two decimals; compare and sum integer cents so float error cannot break ties or range checks.
 export const cents = n => Math.round(n * 100);
 export const issue = (severity, code, message, fields = {}) => ({
   severity,

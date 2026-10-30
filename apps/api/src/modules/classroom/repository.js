@@ -18,6 +18,7 @@ export function createClassroomRepository(db) {
     }];
   }));
   return {
+    // Statistics read all facts inside one transaction so a concurrent re-import cannot mix old and new results in one response.
     snapshot(read) {
       return db.transaction(read)();
     },

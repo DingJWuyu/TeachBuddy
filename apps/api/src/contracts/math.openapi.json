@@ -3,10 +3,8 @@
   "info": {
     "title": "TeachBuddy math and consumer extensions",
     "version": "1.0.0-candidate.1",
-    "description": "M40/v1 设计候选，外层独立冻结后按固定 SHA 消费；旧材料和认证定义只外引。"
+    "description": "数学工坊作品、历史版本、导出与引用读取契约。字段以本文件的 schema 为准；身份、来源保护、幂等、版本冲突与未知结果的共同协议见 workbench.openapi.yaml，基础 Problem 见 materials.openapi.yaml。\n\n## 处理顺序\n\n- 写请求依次检查：来源保护、身份、schema、已成功同键重放、归属、版本、状态、业务约束，最后原子提交。已知拒绝不产生任何变更；结果未知时先用原键确认，再处理后续输入。\n- JSON 未知字段、重复 query 参数和类型转换一律拒绝。外账户和不存在的作品、版本或文件统一返回 404，不泄漏存在性。\n- 同键重放返回原结果，即使作品此后已更新、归档或彻底删除；重放先于版本查找和成果制作。\n\n## 作品与版本\n\n- Work 是工坊唯一可写聚合：标题、Source、原始导入文件和归档状态。它不是 Resource，不生成第二份资源条目。\n- 每次成功的创建、保存、归档或恢复都写入一份完整、不可变的 WorkRevision，version 加 1（新作品从 1 开始）。revision.createdAt 是该次提交时间，Work.createdAt 是首次建立时间。导出只产生导出记录，不改变 version。\n- Source.schemaVersion=1 是编辑格式版本，与 Work.version 无关；其他取值返回 422 unsupported-work-version，读端保留原字节只读。\n- kind 创建后不可变：更新时改变 kind 返回 422 invalid-math-source（reason=kind-changed），另一种源用新作品承载。\n- 旧的 formula、plane、space、dynamic、geogebra、html 源保持可读、可保存、可导出；新建作品统一使用 workshop。\n\n## 保存与成果\n\n- 保存先校验结构和引用关系；渲染、打包和存储不可变文件在数据库事务之外完成，完成后在同一事务中重新核对归属与版本，再写入作品、revision 和成功回执。准备期间被其他写入升版时返回 409，不留成功回执。\n- 准备阶段存储的文件按请求指纹、文件名和字节派生存储键，最终事务失败后用原键重试会复用同一文件。准备阶段本身不算已保存。\n- 结构或引用错误返回 422 invalid-math-source，field 是指向首个错误的 JSON Pointer，整次提交无变更。\n- 公式或表达式语法错误、几何无定义属于可保存的数学错误：源照常保存，render.state=invalid 并给出 reason，全部成果字段为 null；修正后重新保存。\n- 渲染运行时缺失、浏览器故障或超时返回 503 render-unavailable，不提交版本，不记成老师的源错误。整次写入准备超过 30 秒同样返回 503。\n- 有效的原生源由服务端生成初态 PNG 海报（render=ready），客户端不能提交海报、成果 ID 或成功标志。dynamic 另存初态自包含 HTML 为 presentationFileId；formula、plane、space 的 presentationFileId 为 null。\n- workshop 固定三个成果：posterFileId 是初始步骤下整份作品的 PNG；graphPosterFileId 是独立数学视图 PNG，纯公式为 null；presentationFileId 是课堂 ZIP。\n- geogebra 与 html 为 source-only：保存不执行其中内容，不生成海报。html 在可运行范围内另存隔离运行副本为 presentationFileId。\n- rendererVersion 是服务端实际渲染器的标识，覆盖表达式求值、样式、字体和离线包装，客户端不能指定。旧 revision 的成果字节固定保留，不用当前渲染器重画；旧源升级只能另存新 revision。\n\n## 统一制作源 workshop\n\n- 保存有序公式（数组顺序即排版顺序）、零或一个完整 GGB 构造、视图、教学步骤、初始步骤、播放设置和轨迹对象。graph=null 是纯公式作品，不启动 GGB；既无公式也无构造返回 422 invalid-math-source（reason=empty-workshop）。\n- 公式 ID 和步骤 ID 各自唯一；步骤的 visibleFormulas 必须引用现有公式。steps 为空时 initialStepId=null，否则必须指向其中一步。\n- GGB 构造必须是完整 ZIP：每个条目长度和 CRC 正确，含非空 geogebra.xml，最多 1024 个条目、展开后合计不超过 16 MiB；否则 invalid-geogebra-file。\n- 服务端在无账户、只允许本地运行时资源的浏览器中恢复构造，禁用构造文件内的脚本，读出真实对象与滑杆后复核：每一步的 values 恰好给每个滑杆一个值且在其范围内；visibleObjects 和 traceObjects 引用存在的对象，轨迹只能是点；播放参数必须是当前滑杆。违反时返回 422 invalid-math-source。\n- 每一步都从同一份完整构造开始，再应用该步取值和显隐。任一步或初始状态的可见对象未定义时，作品按可保存的 invalid-geometry 处理。\n- 纯公式使用本地 MathJax 的受限数学包和字体；图形渲染使用新建、无账户的浏览器任务，结束即关闭。\n\n## 既有结构化源\n\n- formula：LaTeX 只启用本地 MathJax 的受限数学包，不加载外部文件、宏扩展或 HTML。\n- 二维坐标为数学坐标，x 向右、y 向上；viewport 要求 min<max。输出按同一单位等比缩放并居中留白，不把圆拉成椭圆。viewport.tickLabels 省略时不显示刻度文字，关闭不影响数学坐标。\n- elements 数组顺序是绘制顺序，id 在整个 scene 中唯一。标签 dx/dy 以输出逻辑像素计（右、下为正）。label.text 是普通文字，`{参数名}` 做数值插值，其他花括号原样显示，绝不解释 HTML。曲线标签锚定可见域最右侧的有限曲线点，点标签锚定该点；超出边界时扩大留白或移动标签，不裁掉文字。\n- 曲线在 domain 与视窗的交集中取值。无定义或非有限的点断开曲线，极点附近不连跨区直线，渐近线和高斜率处自适应细分。函数局部无定义允许间断；整个窗口没有有效点时为 invalid-expression。点或半径求值非有限、rx/ry≤0 为 invalid-geometry。\n- 构造关系 construction={kind,refs,branch?}：midpoint、segment、circle 依赖两点；projection、parallel、perpendicular 依赖一点和一线；intersection 依赖直线或圆，branch 是按 x、再按 y 排序后的第 0 或第 1 个交点。类型、数量、唯一性和无环先校验（invalid-math-source）；构造覆盖对象的自由坐标，原坐标字段保留但不参与计算。退化关系或当前分支无交点为 invalid-geometry。\n- space 采用正交投影：方位角 A、仰角 E（度），`u = x·cos(A) - y·sin(A)`，`v = z·cos(E) - (x·sin(A) + y·cos(A))·sin(E)`，再按 viewport 映射。棱的 from/to 必须是已存在且不同的点；遮挡用老师指定的虚线表示，不自动消隐。\n- space 的 faces 引用至少三个不同、共面且沿简单边界排列的点；sections 是平面 ax+by+cz=d 与封闭凸多面体的交，需要每条面边恰属于两个面且整体不退化为平面。不处理非凸、多实体或曲面。引用错误返回 422，几何退化允许保存并标记 invalid。省略这两个字段的旧线框保持原行为。\n- dynamic：参数名唯一，不得占用 x、pi、e 或函数名；min<max，step>0，initial 和 max 都落在 min+n·step 网格上（相对容差 1e-9）。拖动绑定指向存在的非构造点，至少绑定一轴，同一点不重复绑定，绑定轴的坐标表达式必须恰为对应参数名；指针和键盘输入先取最近网格值再限制在范围内。\n- dynamic 的 animation 参数必须存在；省略时试演往返播放第一个参数、单程 8 秒。traceIds 最多 10 个不同的点，可以是构造点；构造点不能被拖动绑定。\n- dynamic 的每一步：id 唯一，visibleIds 唯一且存在（空集合用于纯文字讲解），values 恰好给每个参数一个网格上的值。进入一步完整应用它的取值与可见集合；没有步骤时显示全部对象和 initial 值。播放、拖动和采样只改变演示现场，不写回 Source；静态成果始终是保存初态。\n\n## 导出\n\n- exportWork 固定一个明确的 version，可以导出历史或已归档作品的版本；版本不存在返回 404。后台只读该 revision，文件持久化和导出回执提交后才返回 201；失败不修改作品。\n- 单次导出最多 30 秒（超时 503 render-unavailable）、输出最多 100 MiB、栅格总像素不超过 24,000,000；超限返回 422 unsupported-export。\n- render.state=invalid 的版本只允许 source。source、html、bundle、ggb 的 background 固定为 transparent、width 固定为 1600。SVG 的 width 只影响显示尺寸。\n- html 与 bundle 直接返回该 revision 已保存的 presentationFileId，不重新解释源；没有该文件时返回 422 unsupported-export。文件字节缺失按存储故障报告，不伪装成删除。\n\n| 源类型 | 支持的 format | 约束 |\n| --- | --- | --- |\n| workshop | png、svg、source、bundle、ggb | selection 默认 work，formula 时必须给 formulaId，其他时不得给；单条公式支持透明 PNG/SVG；graph 支持 PNG，只有平面视图支持矢量 SVG；含三维的图片只能白底；含图的 work 不支持 SVG；source 和 bundle 只用 work，ggb 只用 graph 且仅含图形构造 |\n| formula | png、svg、source | background 必须是 transparent |\n| plane、space | png、svg、source | 透明或白底；width 决定宽度，高度按视窗比例 |\n| dynamic | html、png、svg、source | 图片为保存初态；html 是内联全部源、可信渲染代码和依赖的隔离页面 |\n| html | html、source | source 原样返回当前文件字节；html 是隔离运行副本；原件通过 originalFileId 取回 |\n| geogebra | source | source 是含该源的 JSON；原生 .ggb 由编辑器下载 |\n\n- offline：bundle 和 dynamic 的 html 为 self-contained，表示依赖随包提供，不表示所有作品组合或浏览器都已验证；外部 html 永远是 unverified，不能凭扫描 URL 认定可离线；其他格式为 not-applicable。\n- 课堂 ZIP 包含 index.html、完整作品 JSON、固定本地运行代码和许可文件，解压整个文件夹后直接打开 index.html，无需账户、制作服务或本地 HTTP 服务。课堂中的修改只影响本次展示，重新打开回到保存初态。\n- 包装器不注入 Cookie、页面头、账户键、API 地址、服务器 fileId 或本地路径；外部原件自带的 URL 只作为老师原件保留，不据此抓取。\n\n## 外部 HTML\n\n- createWork 的 originalFileId 必须等于初始 source.fileId，非 HTML 作品为 null；updateWork 不能改 originalFileId。修改 HTML 时先上传新文件，再提交新 source.fileId；失败只留下可复用的文件，原件永不被覆盖。\n- 导入文件须被检测为 text/html，或是以 .html/.htm 命名的 text/plain、application/octet-stream；检测为 PDF、Office、图片等其他格式时返回 415。扩展名只表达导入意图，不授权执行。\n- UTF-8 且不超过 1 MiB 的 HTML 生成隔离运行副本；更大或无法按 UTF-8 解码的原件照常保存和取回，presentationFileId=null，导出 html 返回 422 unsupported-export，不做有损转码。\n- 运行副本在任何作品内容之前放入不可被覆盖的 CSP：`default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; font-src data:; connect-src 'none'; frame-src 'none'; object-src 'none'; worker-src 'none'; base-uri 'none'; form-action 'none'`。解析后去掉 base、http-equiv meta 和 href、action、target、download、ping 等导航属性，只改运行副本。包装数据序列化时防止 `</script>` 提前闭合。\n- 运行副本只在 `sandbox=\"allow-scripts\"` 的内嵌框中执行，不授予同源、表单、弹窗、下载或顶层导航，不接收作品发来的业务消息。sandbox 隔离读取、CSP 限制资源，但不是完整的恶意代码沙箱：脚本仍可能自导航或耗尽 CPU，发生意外导航即停止预览并保留源码。\n\n## 列表与引用\n\n- listWorks 按 updatedAt 降序、id 升序；q 去首尾空白后对标题做不区分大小写的子串匹配；state 默认 active；不搜索或执行 HTML、脚本。\n- readWorkForReference 只读取已保存的作品、版本和固定文件，不现场生成成果。\n- 当前组合目录是 ModuleCatalogV4（version=4）；历史目录版本只是兼容输入，不能作为当前响应。\n\n## 错误\n\n数学错误的 type 前缀为 `/problems/math/`，基础错误沿 `/problems/workbench/`，材料业务错误沿 `/problems/materials/`。HTTP 状态与 type 固定对应，不能从 title 解析行为；field 是 JSON Pointer，reason 只作定位说明。"
   },
-  "x-contract-status": "READY_FOR_REVIEW",
-  "x-source-revision": "0b7f8968d088b50e569af0e58dce36e36bb93b74",
   "servers": [
     {
       "url": "/"
@@ -21,6 +19,7 @@
     "/api/modules/math/v1/works": {
       "get": {
         "operationId": "listWorks",
+        "description": "按 updatedAt 降序、id 升序。q 去首尾空白后对标题做不区分大小写的子串匹配，state 默认 active，kind 可选。",
         "parameters": [
           {
             "$ref": "auth.openapi.yaml#/components/parameters/PageContext"
@@ -113,6 +112,7 @@
       },
       "post": {
         "operationId": "createWork",
+        "description": "新作品 version=1。originalFileId 必须等于初始 HTML 源的 fileId，非 HTML 为 null。成果在事务外准备，见 info 的“保存与成果”。",
         "parameters": [
           {
             "$ref": "auth.openapi.yaml#/components/parameters/PageContext"
@@ -132,7 +132,7 @@
         ],
         "responses": {
           "201": {
-            "description": "已确认的持久结果；读取无副作用。",
+            "description": "已确认的持久结果；同键同体重放返回同一结果。",
             "headers": {
               "Cache-Control": {
                 "required": true,
@@ -192,6 +192,7 @@
     "/api/modules/math/v1/works/{id}": {
       "get": {
         "operationId": "getWork",
+        "description": "已归档作品照常返回，带 deletedAt。登记的成果或原件文件缺失时报告存储故障，不伪装成 404。",
         "parameters": [
           {
             "$ref": "auth.openapi.yaml#/components/parameters/PageContext"
@@ -255,6 +256,7 @@
       },
       "put": {
         "operationId": "updateWork",
+        "description": "以 baseVersion 为前提写入新 revision；不能改变 kind 或 originalFileId。已归档作品返回 409 object-deleted。",
         "parameters": [
           {
             "$ref": "auth.openapi.yaml#/components/parameters/PageContext"
@@ -282,7 +284,7 @@
         ],
         "responses": {
           "200": {
-            "description": "已确认的持久结果；读取无副作用。",
+            "description": "已确认的持久结果；同键同体重放返回同一结果。",
             "headers": {
               "Cache-Control": {
                 "required": true,
@@ -342,6 +344,7 @@
     "/api/modules/math/v1/works/{id}/deletion": {
       "post": {
         "operationId": "setWorkDeletion",
+        "description": "deleted=true 归档，deleted=false 恢复；两者都保持 ID 并新增 revision，不重新渲染成果。",
         "parameters": [
           {
             "$ref": "auth.openapi.yaml#/components/parameters/PageContext"
@@ -369,7 +372,7 @@
         ],
         "responses": {
           "200": {
-            "description": "已确认的持久结果；读取无副作用。",
+            "description": "已确认的持久结果；同键同体重放返回同一结果。",
             "headers": {
               "Cache-Control": {
                 "required": true,
@@ -429,6 +432,7 @@
     "/api/modules/math/v1/works/{id}/copy": {
       "post": {
         "operationId": "copyWork",
+        "description": "复制 baseVersion 对应的活动作品的源与原件指针，得到新 ID、version=1，之后两者独立编辑；版本不符返回 409。",
         "parameters": [
           {
             "$ref": "auth.openapi.yaml#/components/parameters/PageContext"
@@ -456,7 +460,7 @@
         ],
         "responses": {
           "201": {
-            "description": "已确认的持久结果；读取无副作用。",
+            "description": "已确认的持久结果；同键同体重放返回同一结果。",
             "headers": {
               "Cache-Control": {
                 "required": true,
@@ -516,6 +520,7 @@
     "/api/modules/math/v1/works/{id}/versions": {
       "get": {
         "operationId": "listWorkVersions",
+        "description": "按 version 降序返回本账户该作品的全部 revision，已归档作品同样可读。",
         "parameters": [
           {
             "$ref": "auth.openapi.yaml#/components/parameters/PageContext"
@@ -581,6 +586,7 @@
     "/api/modules/math/v1/works/{id}/versions/{version}": {
       "get": {
         "operationId": "getWorkVersion",
+        "description": "读取一份不可变 revision；版本号不是正整数或不存在时返回 404。",
         "parameters": [
           {
             "$ref": "auth.openapi.yaml#/components/parameters/PageContext"
@@ -654,6 +660,7 @@
     "/api/modules/math/v1/works/{id}/exports": {
       "post": {
         "operationId": "exportWork",
+        "description": "导出指定 revision，规则与格式矩阵见 info 的“导出”。同键重放先于 revision 查找与成果制作；作品被彻底删除后原键仍返回原回执。",
         "parameters": [
           {
             "$ref": "auth.openapi.yaml#/components/parameters/PageContext"
@@ -681,7 +688,7 @@
         ],
         "responses": {
           "201": {
-            "description": "已确认的持久结果；读取无副作用。",
+            "description": "已确认的持久结果；同键同体重放返回同一结果。",
             "headers": {
               "Cache-Control": {
                 "required": true,
@@ -741,6 +748,7 @@
     "/api/modules/math/v1/works/{id}/reference": {
       "get": {
         "operationId": "readWorkForReference",
+        "description": "返回已保存的作品快照与固定成果文件 ID，不现场生成成果。",
         "parameters": [
           {
             "$ref": "auth.openapi.yaml#/components/parameters/PageContext"
@@ -806,6 +814,7 @@
     "/api/modules": {
       "get": {
         "operationId": "getMathModuleCatalog",
+        "description": "当前组合目录 version=4，只登记实际提供方；历史目录版本只作兼容输入。",
         "parameters": [
           {
             "$ref": "auth.openapi.yaml#/components/parameters/PageContext"
@@ -863,6 +872,7 @@
     "/api/modules/math/v1/works/{id}/purge": {
       "post": {
         "operationId": "purgeWork",
+        "description": "只允许本账户已归档的作品：活动作品返回 422 invalid-input，旧版本 409。在同一幂等事务中移除作品、全部 revision 和该作品的导出记录，返回 permanentlyDeleted=true。之后读取、恢复和新导出都返回 404，原成功请求仍可按原键确认。共享的不可变文件保留，已下载文件不受影响。",
         "parameters": [
           {
             "$ref": "auth.openapi.yaml#/components/parameters/PageContext"
@@ -890,7 +900,7 @@
         ],
         "responses": {
           "200": {
-            "description": "已确认的持久结果；读取无副作用。",
+            "description": "已确认的持久结果；同键同体重放返回同一结果。",
             "headers": {
               "Cache-Control": {
                 "required": true,
@@ -986,7 +996,7 @@
         "type": "string",
         "minLength": 1,
         "maxLength": 1000,
-        "description": "docs/contracts/math.md 的封闭数学表达式语法；禁止 JS/eval，常量亦用字符串。"
+        "description": "封闭的实数表达式文法，由 Math.js 解析、节点白名单解释，绝不使用 eval、Function 或 Math.js 的任意求值入口；常量也以字符串保存。\n\n- 操作数：十进制实数（可带指数）、`x`、已声明参数、常量 `pi` 与 `e`。\n- 运算：`+ - * / ^`、一元正负号和括号。`^` 右结合且优先于一元负号：`-2^2 = -4`，`2^3^2 = 512`。角度为弧度。\n- 函数：`sin cos tan asin acos atan sqrt abs exp ln log10` 各一个参数；`log(x)` 为常用对数，`log(x, b)` 为以 b 为底。\n- 条件：比较 `< <= > >= == !=`、链式比较（如 `0 < x < 1`）、`and`、`or`，以及分段式 `条件 ? 值 : 值`。最终结果必须是数值。\n- 输入便利：数字、括号与变量之间的隐式乘法沿 Math.js 优先级，含除法的歧义式应加括号；坐标变量后接括号视为乘法，如 `x(x+1)`。Unicode 上标（`x²`、`x⁻¹`）以及 `π × ÷ − ≤ ≥ ≠` 自动转换。\n- 变量名完整匹配，不把 `ax` 拆成 `a*x`。既有参数若与 Math.js 关键字同名（如 `and`、`in`），按声明转义，保留其参数含义。\n- 不支持赋值、属性访问、数组、矩阵、字符串、脚本、网络或自定义函数。非曲线坐标不能使用 `x`，静态 scene 没有参数。\n- 最多 1000 字符、200 个语法节点、嵌套深度 32；拒绝循环引用。语法或求值失败按可保存的 invalid-expression 处理。"
       },
       "Color": {
         "type": "string",
@@ -3144,7 +3154,7 @@
     },
     "responses": {
       "400": {
-        "description": "见docs/contracts/math.md错误表；已知拒绝无变更，未知结果先同键确认。",
+        "description": "请求无法解析，无变更。",
         "headers": {
           "Cache-Control": {
             "required": true,
@@ -3162,7 +3172,7 @@
         }
       },
       "401": {
-        "description": "见docs/contracts/math.md错误表；已知拒绝无变更，未知结果先同键确认。",
+        "description": "没有有效身份或页面绑定，无变更；锁住当前账户现场并重新验证。",
         "headers": {
           "Cache-Control": {
             "required": true,
@@ -3180,7 +3190,7 @@
         }
       },
       "403": {
-        "description": "见docs/contracts/math.md错误表；已知拒绝无变更，未知结果先同键确认。",
+        "description": "来源保护失败（保护头、Origin 或 Referer 不符），先于任何业务处理拒绝，无变更。",
         "headers": {
           "Cache-Control": {
             "required": true,
@@ -3198,7 +3208,7 @@
         }
       },
       "404": {
-        "description": "见docs/contracts/math.md错误表；已知拒绝无变更，未知结果先同键确认。",
+        "description": "作品、版本或文件不存在或属于其他账户，两者不区分，无变更。",
         "headers": {
           "Cache-Control": {
             "required": true,
@@ -3216,7 +3226,7 @@
         }
       },
       "409": {
-        "description": "见docs/contracts/math.md错误表；已知拒绝无变更，未知结果先同键确认。",
+        "description": "version-conflict：baseVersion 已过时，响应带当前版本，对照后用新键重试；idempotency-key-reused：同键异体；object-deleted：已归档作品的普通修改，可恢复后再改，历史仍可读取和导出。结果未知的请求保持原键确认。",
         "headers": {
           "Cache-Control": {
             "required": true,
@@ -3241,7 +3251,7 @@
         }
       },
       "413": {
-        "description": "见docs/contracts/math.md错误表；已知拒绝无变更，未知结果先同键确认。",
+        "description": "请求或源超过大小上限，原件和已保存作品不变。",
         "headers": {
           "Cache-Control": {
             "required": true,
@@ -3266,7 +3276,7 @@
         }
       },
       "415": {
-        "description": "见docs/contracts/math.md错误表；已知拒绝无变更，未知结果先同键确认。",
+        "description": "请求体不是 JSON，或导入文件被检测为 HTML 以外的格式，无变更。",
         "headers": {
           "Cache-Control": {
             "required": true,
@@ -3284,7 +3294,7 @@
         }
       },
       "422": {
-        "description": "见docs/contracts/math.md错误表；已知拒绝无变更，未知结果先同键确认。",
+        "description": "invalid-input、invalid-math-source（field 指向首个错误）、unsupported-work-version（保留原源，升级消费者）、unsupported-export（选择可用格式）等业务拒绝，整次提交无变更。",
         "headers": {
           "Cache-Control": {
             "required": true,
@@ -3309,7 +3319,7 @@
         }
       },
       "503": {
-        "description": "见docs/contracts/math.md错误表；已知拒绝无变更，未知结果先同键确认。",
+        "description": "存储或渲染的临时故障，结果待确认；用同键重试，不会新增重复成果，也不记成老师的源错误。",
         "headers": {
           "Cache-Control": {
             "required": true,

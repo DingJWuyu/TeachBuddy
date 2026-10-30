@@ -56,6 +56,7 @@ function NotFound() {
 
 export default function WorkbenchApp({ boot }) {
   useTranslation("workbench");
+  // Keyed by account so no assistant state from the previous account survives a switch.
   return <AgentProvider key={boot.accountKey} accountKey={boot.accountKey}><WorkbenchContent boot={boot} /></AgentProvider>;
 }
 
@@ -93,6 +94,7 @@ function WorkbenchContent({ boot }) {
   const locale = preferences.input?.locale || 'zh-CN';
   const setLocale = useCallback(locale => preferences.setInput(values => ({ ...values, locale })), [preferences.setInput]);
   useLayoutEffect(() => { void i18n.changeLanguage(locale); }, [locale]);
+  // Choices apply at once and save one request at a time: input made during a save stays dirty and becomes the next submission.
   useEffect(() => {
     if (preferences.status === 'dirty' && preferences.baseline) void preferences.save();
   }, [preferences.status, preferences.input, preferences.baseline, preferences.save]);

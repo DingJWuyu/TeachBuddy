@@ -2,9 +2,93 @@ openapi: 3.2.1
 info:
   title: TeachBuddy materials
   version: 1.0.0-candidate.1
-  description: 材料、题库与资源 HTTP/schema。语义、版本过渡、错误优先级见 docs/contracts/materials.md。
+  description: |
+    材料、题库与资源的 HTTP 契约。字段以本文件的 schema 为准；身份、Cookie、保护头、来源校验、no-store、UUID、服务端 UTC、乐观版本、账户作用域幂等、软删除与未知结果的共同协议见 workbench.openapi.yaml。
+
+    ## 共同规则
+
+    - 所有操作（包括文件字节、缩略图、裁图、预览、任务、补充原稿和引用读取）先解析可信身份：无身份 401，不存在或属于其他账户的对象统一 404。客户端不传账户标识，也不能让服务器去拉取任意 URL。
+    - JSON 写体上限 2 MiB；文件上传例外，一次一个 multipart file，最多 100 MiB。单份收录材料最多 100 张图片或一个 PDF/Word，总页数最多 500（不是一次模型请求）。超限返回 413 或 422，已保存的原件仍可下载。
+    - 未知字段和错误类型不做转换，按 workbench 的首错次序返回。schema 通过后依次校验归属、版本、对象状态、分类、位置、内容、引用；引用按数组顺序校验。解析合法但违反跨字段关系时返回规定的 problem，不返回 500。
+    - 已成功的原键重放先于对象最新版本和状态的校验；身份、来源和 schema 仍最先校验。
+    - 资源和收录材料的标题须含非空白字符，否则 422 invalid-input；标题按输入保存，不自动改写。
+    - 列表返回全部匹配结果，按 updatedAt 降序、ID 升序；File 没有列表接口。GET 不隐式修改对象，也不启动有副作用的处理。
+    - 响应可以带附加字段；必填值缺失或未知状态不能当成功。
+
+    ## 幂等与未知结果
+
+    - 所有写请求带 Idempotency-Key。成功记录跨重启保留，失败不消耗键。202 只表示任务与初始业务记录已在同一事务中保存，不表示任务完成。
+    - 客户端超时、5xx 或无效响应时，先用同键同请求确认；已知 4xx 修正后换新键。
+    - 识别模型请求的结果未知与浏览器写入的结果未知不同：已发出但没有可验证输出的模型请求标 provider-result-unknown，后台不自动再次请求，只有老师明确重试才重新受理。
+
+    ## 题库版本过渡
+
+    - `/api/modules/questions/v2` 与 workbench.openapi.yaml 中的旧题库路径读写相同的对象、ID、业务版本和幂等账本。路径属于幂等指纹，结果未知的旧请求必须在原路径确认，不能换到 v2 重试。
+    - v2 读取旧对象时 Document.version=1 原样返回，补空分类，并由旧 solution 是否为空推出 answerStatus。纯读取不写回、不增加版本。v2 写入只有用到新节点的文档才写成 v2，不全量重写旧文档；来源快照不随后续内容迁移被替换，旧副本来源中的 v1 快照保持 v1。
+    - 旧操作在可表示的对象上继续满足原 schema，旧请求没有提供的附加元数据（如分类）保持不变。旧客户端读取、列出或覆盖含 v2 文档或新来源的对象时返回 422 invalid-input / unsupported-content-version，不做有损投影，也不在列表里静默漏掉。旧写入先重放已成功的原请求，再检查版本，最后拒绝不可表示的覆盖。
+
+    ## 文件与预览
+
+    - 文件是服务端托管的不可变字节，fileId 保存后稳定；资源条目的 version 与 fileId 无关。同账户相同字节可共用物理存储，但每次新上传保留独立的元数据和原文件名，并返回 duplicateOfFileId 供界面提示，不自动合并资源或题目；跨账户不暴露重复命中。
+    - 上传在字节写盘、校验、持久元数据和成功记录都成立后才完成，浏览器发送完毕不算。字节先写入 staging、校验长度与摘要并 fsync，原子 rename 到最终路径并同步目录，最后提交 SQLite 元数据和幂等响应。DB 提交前崩溃最多留下无关联的字节，不会出现可读的悬空文件记录；DB 提交失败不返回 FileSaved。采用同账户去重时也校验已有字节实际存在且摘要一致。
+    - 已登记的文件缺失或损坏返回 503 storage-unavailable 并保留对象元数据。磁盘与 DB 不假装是同一个事务：派生任务先写完全部字节，再一次提交成果记录，失败的文件不进入 outputFileIds。
+    - 文件名只用于显示和安全下载名，格式按内容检测。宏、外部关系和内嵌脚本不执行。每次转换使用独立临时目录和 LibreOffice profile，参数经 argv 传递，转换器没有网络、宏、外部链接和宿主目录访问。默认上限：原件 100 MiB、500 页、解压展开 512 MiB、单页 4000 万像素、单次转换 120 秒；超限保留原件并返回明确错误。
+    - PNG/JPEG/WebP/PDF 直接产生预览；DOCX/DOC/PPTX/PPT 经固定转换得到 PDF 与页图；HTML 只作转义文本预览，其他文件只能下载。Preview.state：ready 表示完整生成并通过页数和输出检查；limited 表示已有真实内容但风险或缺页未解决；failed 表示不可预览。DOC 永远带 legacy-object-loss 风险，进程正常退出不能消除它。
+    - 下载每次重新授权，不暴露磁盘路径、存储地址或永久公开链接。
+    - 没有文件永久删除接口：原件、页图、裁图、输出，以及软删除对象和幂等响应引用的文件都保留。
+
+    ## 原稿定位
+
+    - page：fileId 是原件，renditionFileId 是生成时固定的 PDF 或图片（PDF 原件可与之相同）。page 从 1 起，图片 page=1。box 以页面最终显示方向的左上角为原点归一化，须 x+width≤1、y+height≤1；空 box 只表示整页定位，不能用于裁图。多张图片各带自己的 fileId，显示序号由输入顺序决定。
+    - text：start/end 按原文字的 Unicode code point 计数，左闭右开，0≤start<end≤长度；不能用 UTF-16 code unit，以免中文补充字符错位。
+    - docx：在原 DOCX 或任务已保存的 DOC 转换稿的 `word/document.xml` 中，按深度优先给段落从 1 编号（正文和表格内的段落都计入），runStart/runEnd 是该段文字、公式、图片 run 序列的左闭右开索引。fileId 仍是原件；DOC 的转换来源和原件/派生件摘要必须由服务端任务保存，不能由客户端自证。结构位置不等于 Office 页码，有可靠固定 rendition 时同时保存 page 定位。
+    - LocatedPart 区分题面、答案、配图和未分配片段；跨页的一题有多个位置，分散的答案另有位置。每个 file 和 rendition 必须来自该收录原件或已保存补充原件的派生链。
+
+    ## 内容
+
+    - Document 是 v1 与 v2 的封闭联合。v2 增加图片、标题、选项/小问列表、表格和教师注记，没有任意 HTML 或 attrs。列表项有显示 label 和有序块；表格各行列数相同，不支持合并单元格。
+    - 文字与 LaTeX 是规范源，OMML 只是导出制品。LaTeX 按数学语法白名单处理，不运行 TeX 的文件、网络或宏指令。存储允许无法排版的原始源，编辑器显示失败；导出时不能形成可编辑 OMML 则返回带 field 的 unsupported-formula，不用截图代替。
+    - 除 schema 的逐层上限外，总块数≤2000、总数学源≤200000 字符，不允许无限递归。正文至少有一项可见文字、公式或图片。正文图片只能引用已可读取的 PNG/JPEG/WebP。
+    - answerStatus=absent 时 solution 必须为空，present 时非空；unresolved 只存在于收录草稿，不能入库。题面和答案不夹带 teacher-note；手写长期笔记在 note，归入的资料摘录在 noteFragments。
+    - 未知 Document.version 在读取端保留原数据并只读，在写入端明确拒绝，绝不删掉不认识的节点。
+
+    ## 资料摘录（noteFragments）
+
+    - Draft、Question 和 UpdateQuestion 的 noteFragments 每条保存原 Fragment 的 id、当前 importId、可编辑 document 与固定 locations。同一片段在同一收录中最多归入一个草稿的笔记，原片段须标为 assigned；来源必须匹配已保存的片段，已归入题干或答案的片段不能再归入笔记。草稿移除摘录后片段恢复待处理。
+    - 入库时采用稿存入题目，与原材料独立；彻底删除原材料后题目和摘录仍可读。
+    - 更新题目或保存校对时省略 noteFragments 保留旧值，显式空数组才清空；更新题目只能编辑既有摘录或移除条目，不能新增或改变出处。CreateQuestion、CopyQuestion 不接受该字段。改编快照和题面素材都不含两类笔记。
+
+    ## 分类
+
+    - QuestionTaxonomy 与 ResourceTaxonomy 各是所属模块内的一个版本化集合，不共享。term 和 folder 的 ID 是稳定 UUID；名称由服务端去首尾空白后须非空，同类名称按 Unicode NFC + casefold 唯一（文件夹只在同一父级内唯一）。同名、循环或未知 ID 返回 422 materials/invalid-taxonomy，集合与关联不变。
+    - 全量 PUT 中省略的项表示删除。改名保留 ID；删除在同一事务中移除全部活动和已归档对象的关联，并增加受影响对象的版本，不改动引用快照。正在用旧 baseVersion 编辑的题目或资源会冲突，不能覆盖分类删除的效果。
+    - 自动整理只能建议集合中已有的 ID，不能增改集合。题型单选、标签多选；查询的 tagIds 为全部匹配，空查询等于不过滤。
+
+    ## 任务（Job）
+
+    - 只有页预览、提取、页识别和题面素材这几类长操作保存 Job。单进程顺序执行重操作；界面在运行时约每 2 秒轮询 GET，离开页面停止。progress.completed/total 按实际页或阶段统计，total 未知时为 null。Job.target 不携带账户，账户由服务端持有。
+    - 状态：queued → running → succeeded / partial / failed。停止请求立即持久为 cancelling，到安全检查点后为 cancelled。进程重启时遗留的 running 变为 interrupted，cancelling 变为 cancelled，queued 继续执行，不重发结果未知的模型请求。partial 表示已有成功内容并有明确的未完成单元；succeeded 只表示机器处理完成，收题仍需老师校对；输入损坏或全部失败为 failed。已落盘的结果逐单元检查后继续，不靠内存状态认定成功。
+    - 单元 ID：文件提取 `file:<UUID>:page:<N>`，文字提取 `text:<start>:<end>`，预览整体 `file:<UUID>`，页识别 `page:<N>`。
+    - 停止状态由 jobs 裁决，迟到的执行结果不能把 cancelled 改成 succeeded。同键重放受理请求始终返回最初的任务，之后用 GET 看当前状态。
+
+    ## 识别
+
+    - 题库和资源库消费同一份机器页结果，模块只负责采用、校对和自己的业务结构，不各自启动 OCR。
+    - 原件、rendition 和页图都是同账户受管文件，且必须出现在已生成的固定预览映射中。成功页按账户、页图字节摘要和引擎/转换修订复用；同像素的另一份上传可以复用结果，但返回的 location 始终绑定本次请求的原件、rendition 和绝对页号。
+    - 重试的 unitId 为 `page:N`，空集合代表原请求全部未完成页，已成功页不变。引擎修订变化后拒绝重试旧 Job，需要重新发起识别。
+    - ready 表示完整结果、文稿和引用的文件都可读取，不表示老师已校对，也不表示识别准确。结果包含 resultId、输入摘要、引擎修订和本次来源 location；rawFileId 指向原始识别 JSON（官方版面、结构结果、模型响应与图片来源映射），不被 Document 转换覆盖；document 是 Document v2，text 是可搜索的全文投影；blocks 保留官方块的数组顺序，空 order 不触发重新排序；assetFileIds 含全部派生与原始图片，originalAssetFileIds 单列原始图片，不能用图片总数计算文稿里的图数；derivations 保存每张图的原坐标、polygon、派生矩形和裁图疑点；issues 汇集格式恢复、未解析数学、结构缺口和裁图疑点。
+    - 机械转换只表达模型实际返回的内容：不添加答案、不重画原图、不纠正数学结论、不按题号规则修补。普通正文中的大写几何点名加整数下标可恢复为数学 run，上下文明确的字面换行可恢复为同一单元格内的段落，二者都保留 math-recovered / text-lines-recovered 提示，原始 JSON 不变；其他没有定界符的 LaTeX 保持原文并标疑点。
+    - 被引用的图片缺失或内容不可读取时整页失败，不能伪装成空页成功。旧结果中的 ocr-text-conflict、ocr-source-gap 和 content_check 仍可读取，新识别不再生成。
+    - 取消或超时期间已经完整返回的原始结果和图片作为该 Job 的证据保存，不发布为 ready，也不重开任务；后续重试不擦除这份绑定。无法确认本地识别进程已停止时，页和 Job 标记失败并提示清理未确认，不报告取消完成。
+
+    ## 收录与校对
+
+    - 收录只产生 Draft，老师用 commitImportDrafts 确认后才建立 Question。机器输出要校验 schema、输入覆盖、题边界、公式、实际配图绑定、原有答案角色和原稿定位，不照抄模型的 needs_review=false。截断响应只采纳前缀中完整、可独立验证的对象并记录 truncated-response，整批为部分失败。识别不生成解答，已有答案和未提供答案严格区分。
+    - 题号比较使用 NFKC、去空白、去末尾分隔符与 `Q` 前缀，原文和字符范围不变。独立的"答案："与"参考答案"标题都进入答案区；答案必须与题目唯一匹配，重复题号保留答案片段并标待核对，不按出现顺序猜。无题号的非空正文保留为待校对候选，只有答案或教师活动的内容不建空题。
+    - 未分配 Fragment 可带 document（机器稿为 v2），保留表格、数学与图片；text 是最多 20000 字符的阅读摘要，完整内容以 document 为准，旧的纯文字片段继续按 text 读取。老师明确归入题干或答案时追加原块和该片段的真实来源；未提供答案的草稿归入答案后为 present，原有的待核对状态仍须解决。
+    - 重试后的新机器结果只补充候选，已有人工校对或已入库的对象保持。重复的机器片段按输入单元与原稿定位关联，不靠题号覆盖。
+    - 校对定位可以修正，修正只改关联定位，不能改来源 importId、draftId 或原始字节；复制来源固定，原题软删除后其原稿仍可经原题链读取。
 x-contract-status: READY_FOR_REVIEW
-x-source-revision: e6d2c220796ea0746bec3413db7ba259df4c2d45
 servers:
 - url: /
 security:
@@ -19,7 +103,7 @@ paths:
         $ref: '#/components/schemas/Id'
     get:
       operationId: getFileRecognition
-      description: 只读固定预览的识别状态，不触发模型；语义见 recognition.md。
+      description: "只读固定预览的识别状态：配置是否可用、固定来源和每页状态。GET 不受理识别、不触发模型。省略 renditionFileId 时读当前预览，消费者应传画面中固定的 rendition。"
       parameters:
       - name: renditionFileId
         in: query
@@ -44,7 +128,7 @@ paths:
           $ref: '#/components/responses/503'
     post:
       operationId: requestFileRecognition
-      description: 冻结来源及页号，复用活跃请求和成功页；重试、取消沿用 Job。仅返回持久受理结果。
+      description: "冻结原件、rendition 和页号后持久受理 recognition Job，只返回受理结果。尚无预览返回 preview-required；引擎不可用且需要新识别时返回 recognition-unavailable。活跃请求已覆盖全部所选页时返回同一 Job；仍有其他页在处理时返回 job-running，不静默改变选择。取消与重试沿用 Job 接口。"
       parameters:
       - $ref: '#/components/parameters/BrowserRequestProtection'
       - $ref: '#/components/parameters/RequestOrigin'
@@ -84,7 +168,7 @@ paths:
   /api/workbench/files/{id}/recognition/pages/{page}:
     get:
       operationId: getRecognizedPage
-      description: 返回绑定本次原件与页码的机器结果；同像素复用不会串用另一份原件的 Location。
+      description: "返回这一份来源的机器页结果。复用的结果也绑定本次原件、rendition 和绝对页号，模型给出的空页号或相对序号不覆盖这个映射。省略 renditionFileId 只读当前预览。未配置引擎时既有成功结果仍可读取。"
       parameters:
       - name: id
         in: path
@@ -168,7 +252,6 @@ paths:
     get:
       operationId: getFile
       summary: getFile
-      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
       parameters:
       - name: id
         in: path
@@ -241,7 +324,7 @@ paths:
     get:
       operationId: getFilePreview
       summary: getFilePreview
-      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
+      description: "无副作用地读取当前预览，不启动转换。"
       parameters:
       - name: id
         in: path
@@ -271,7 +354,7 @@ paths:
     post:
       operationId: requestFilePreview
       summary: requestFilePreview
-      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
+      description: "对同一不可变文件重复请求时复用已受理的当前预览 Job，返回 202 及其当前状态，不追加相同的转换；失败后通过 retryJob 建立新尝试。重试期间已有页图仍可读，新的完整预览原子替换派生元数据，被引用的固定 rendition 字节保留；limited 的风险重跑后仍保留。"
       parameters:
       - name: id
         in: path
@@ -322,7 +405,7 @@ paths:
     post:
       operationId: cropFileRegion
       summary: cropFileRegion
-      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
+      description: "只接受本账户有效的 page 定位和非空 box，按原稿链校验后从固定 rendition 裁成 PNG 并保存为新 File。换框会生成新图，已被引用的旧图保留。框越界或原稿链不符返回 422 materials/invalid-location。"
       parameters:
       - $ref: '#/components/parameters/BrowserRequestProtection'
       - $ref: '#/components/parameters/RequestOrigin'
@@ -371,7 +454,6 @@ paths:
     get:
       operationId: listJobs
       summary: listJobs
-      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
       parameters:
       - name: kind
         in: query
@@ -406,7 +488,6 @@ paths:
     get:
       operationId: getJob
       summary: getJob
-      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
       parameters:
       - name: id
         in: path
@@ -437,7 +518,7 @@ paths:
     post:
       operationId: retryJob
       summary: retryJob
-      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
+      description: "只接受 partial、failed、interrupted、cancelled 状态，且只对 preview、extraction、recognition 开放，其他 kind 返回 409 materials/job-not-retryable。unitIds 为空时选择全部未完成单元，非空时必须是该任务 issues 中的 unitId；不重跑已成功的付费单元，需要重新识别成功页时由老师发起新的收录。重试生成新 Job 并以 attemptOf 指向旧任务，旧任务保持；题库收录同时更新 import.jobId 并增加版本。"
       parameters:
       - name: id
         in: path
@@ -491,7 +572,7 @@ paths:
     post:
       operationId: cancelJob
       summary: cancelJob
-      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
+      description: "持久记录停止意图。已终态时返回原终态；运行中先返回 cancelling，在安全检查点停止，保留已完成的单元。停止后才到的外部结果只作为该任务的证据保存，不重开任务。"
       parameters:
       - name: id
         in: path
@@ -542,7 +623,7 @@ paths:
     get:
       operationId: getQuestionTaxonomy
       summary: getQuestionTaxonomy
-      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
+      description: "一次读取整个题型与标签集合；新账户为空集合。"
       parameters: []
       responses:
         '200':
@@ -567,7 +648,7 @@ paths:
     put:
       operationId: updateQuestionTaxonomy
       summary: updateQuestionTaxonomy
-      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
+      description: "按 baseVersion 全量替换题型与标签集合，规则见 info 的“分类”。"
       parameters:
       - $ref: '#/components/parameters/BrowserRequestProtection'
       - $ref: '#/components/parameters/RequestOrigin'
@@ -616,7 +697,7 @@ paths:
     get:
       operationId: getResourceTaxonomy
       summary: getResourceTaxonomy
-      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
+      description: "一次读取整个文件夹与标签集合。"
       parameters: []
       responses:
         '200':
@@ -641,7 +722,7 @@ paths:
     put:
       operationId: updateResourceTaxonomy
       summary: updateResourceTaxonomy
-      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
+      description: "按 baseVersion 全量替换文件夹与标签集合，规则见 info 的“分类”。所属文件夹被删除的活动和归档资料都归未分组；显式保留的子文件夹移到删除前最近的保留祖先，避免循环。树深不超过 10。标签的 color 可选，取原型八色之一，旧的无颜色标签仍可读写；题库的 Term 不接受该字段。"
       parameters:
       - $ref: '#/components/parameters/BrowserRequestProtection'
       - $ref: '#/components/parameters/RequestOrigin'
@@ -690,7 +771,7 @@ paths:
     get:
       operationId: listQuestionsV2
       summary: listQuestionsV2
-      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
+      description: "q 默认搜索标题、题干（含公式源）和长期笔记；searchAnswers=true 时同时搜索答案与解析，省略或 false 都排除答案。searchAnswers 只接受单个布尔值，非法值或重复参数返回 422 invalid-input（field=/query/searchAnswers，reason=invalid-type）。原始材料不参与搜索。"
       parameters:
       - name: q
         in: query
@@ -759,7 +840,7 @@ paths:
     post:
       operationId: createQuestionV2
       summary: createQuestionV2
-      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
+      description: "新建题目。不接受 noteFragments。"
       parameters:
       - $ref: '#/components/parameters/BrowserRequestProtection'
       - $ref: '#/components/parameters/RequestOrigin'
@@ -810,7 +891,6 @@ paths:
     get:
       operationId: getQuestionV2
       summary: getQuestionV2
-      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
       parameters:
       - name: id
         in: path
@@ -840,7 +920,7 @@ paths:
     put:
       operationId: updateQuestionV2
       summary: updateQuestionV2
-      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
+      description: "按 baseVersion 修改原题，ID 不变。noteFragments 的规则见 info 的“资料摘录”。"
       parameters:
       - name: id
         in: path
@@ -891,7 +971,7 @@ paths:
     post:
       operationId: setQuestionDeletionV2
       summary: setQuestionDeletionV2
-      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
+      description: "归档（deletedAt）或恢复，增加版本并保留 ID。"
       parameters:
       - name: id
         in: path
@@ -942,7 +1022,7 @@ paths:
     post:
       operationId: purgeQuestionV2
       summary: purgeQuestionV2
-      description: 仅彻底删除当前账户已归档的内容；已保存的引用快照保留。
+      description: "仅彻底删除本账户已归档且没有运行中关联任务的题目，并在同一事务中移除其扩展元数据。活动题目返回 409 archive-required，有运行中任务返回 409 processing-in-progress，版本过期 409，外账户或不存在 404。成功后读取、恢复和新键再次删除都返回 404，原键原请求（包括重启后）仍返回原成功结果。改编题的来源快照和受管文件保留。"
       parameters:
       - name: id
         in: path
@@ -993,7 +1073,7 @@ paths:
     post:
       operationId: purgeQuestionImport
       summary: purgeQuestionImport
-      description: 仅彻底删除当前账户已归档的内容；已保存的引用快照保留。
+      description: "仅彻底删除本账户已归档且没有运行中关联任务的收录材料，同时移除相应的题库处理数据。错误与重放规则同 purgeQuestionV2。已入库的题目不随材料删除，受管文件保留；已删除材料的处理任务不能再重试。"
       parameters:
       - name: id
         in: path
@@ -1044,7 +1124,7 @@ paths:
     get:
       operationId: readQuestionForReferenceV2
       summary: readQuestionForReferenceV2
-      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
+      description: "供其他模块在自己的事务中捕获引用快照。已归档的题目带 deletedAt 返回，由消费方决定是否接受。"
       parameters:
       - name: id
         in: path
@@ -1075,7 +1155,7 @@ paths:
     post:
       operationId: retryResourceText
       summary: 重新读取失败的资源正文
-      description: 清除本账户失败的派生文字缓存；下一次正文搜索重新读取，原件、预览与资源版本不变。
+      description: "清除本账户失败的派生文字缓存，下一次正文搜索重新读取；原件、预览与资源版本不变。成功原键重放不再次清除。"
       parameters:
       - $ref: '#/components/parameters/BrowserRequestProtection'
       - $ref: '#/components/parameters/RequestOrigin'
@@ -1115,7 +1195,7 @@ paths:
     get:
       operationId: listResources
       summary: listResources
-      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
+      description: "非空 q 同时匹配名称、原文件名、备注和当前文件的可提取正文，并返回 search。先应用账户、活动/归档、文件夹（含后代）、标签和格式条件，再匹配关键词，排序不变。search.matches 只含本次返回且正文命中的资源，值含第一处命中的 page 和纯文本 excerpt（纯文本的 page 为 null）。原生正文另带 native:{fileId,textFileId,renditionFileId}，分别固定正文所属的原件或补充文件、实际提取文字的不可变文件和已有预览（尚无预览时为 null）；Office 的 textFileId 是派生 PDF，原 PDF 和纯文本是自身。OCR 命中使用识别结果的来源身份，原生同页命中优先。正文来源：原 PDF 和 UTF-8 纯文本直接提取，Office 用已有预览 PDF，有补充 PDF 时以它为准；每次按资源当前文件解析，替换与历史恢复不需要改旧缓存。派生文字按账户与不可变文件 ID 缓存，可以重建。每次查询最多提取一份未缓存文件：pending 是尚待读取或预览仍在运行的资料数，调用方继续同一查询直到为零；unavailable 表示没有可提取正文或没有可用的 PDF 预览；failed 表示读取失败。它们都不阻断其他匹配。PDF 文字提取的输出至多 8 MiB、500 页、进程至多 12 秒，超限记为读取失败。图像和无文字的扫描件不在这里 OCR。GET 计算缓存不改变资源版本、文件或预览任务。打开命中时客户端须重新读取条目、原件和预览并核对来源仍相同，失配时提示重新查询。sha256 按当前原件摘要查重，同样遵循活动/归档条件与账户隔离，不自动合并条目。"
       parameters:
       - name: q
         in: query
@@ -1184,7 +1264,7 @@ paths:
     post:
       operationId: createResource
       summary: createResource
-      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
+      description: "用已上传的 File 建立资料条目；文件上传与资料收录分别确认。"
       parameters:
       - $ref: '#/components/parameters/BrowserRequestProtection'
       - $ref: '#/components/parameters/RequestOrigin'
@@ -1233,7 +1313,7 @@ paths:
     get:
       operationId: getResource
       summary: getResource
-      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
+      description: "已归档资料带 deletedAt 返回。"
       parameters:
       - name: id
         in: path
@@ -1263,7 +1343,7 @@ paths:
     put:
       operationId: updateResource
       summary: updateResource
-      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
+      description: "按 baseVersion 修改名称、文件夹、标签和备注；不改变当前文件，也不新增文件历史。"
       parameters:
       - name: id
         in: path
@@ -1314,7 +1394,7 @@ paths:
     get:
       operationId: listResourceFileHistory
       summary: listResourceFileHistory
-      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
+      description: "按保存版本倒序返回文件历史及文件元数据；单个历史原件损坏时保留记录并标 unavailable。新建、替换原件、采用或移除补充预览、恢复历史文件时记录原件和补充预览的身份；备注、标签、分类与归档不新增历史。历史从迁移时的当前文件开始，不还原更早的版本。"
       parameters:
       - name: id
         in: path
@@ -1346,7 +1426,7 @@ paths:
     post:
       operationId: restoreResourceFile
       summary: restoreResourceFile
-      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
+      description: "只允许本账户活动资料采用自己的历史文件。校验原件和补充预览仍可读后，保持资料身份和元数据，以新的资料版本保存并追加一条文件历史；分类和备注不随文件回退。外账户或不存在 404，版本过期 409，未知历史版本 422。原键重放不重复追加历史。"
       parameters:
       - name: id
         in: path
@@ -1397,7 +1477,7 @@ paths:
     post:
       operationId: organizeResources
       summary: organizeResources
-      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
+      description: "每批 1 至 100 个不重复的 {id, baseVersion}，操作为移动、追加标签、归档或恢复。全部对象的归属、状态和版本在同一幂等事务中校验，任一失败则整批不写。成功时每个对象版本加 1；移动只改文件夹，追加标签取并集。外账户 404，版本过期 409，重复 ID 或无效分类 422。"
       parameters:
       - $ref: '#/components/parameters/BrowserRequestProtection'
       - $ref: '#/components/parameters/RequestOrigin'
@@ -1443,7 +1523,7 @@ paths:
     post:
       operationId: setResourceDeletion
       summary: setResourceDeletion
-      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
+      description: "归档（deletedAt）或恢复，增加版本；原件和文件历史保留。"
       parameters:
       - name: id
         in: path
@@ -1494,7 +1574,7 @@ paths:
     post:
       operationId: purgeResource
       summary: purgeResource
-      description: 永久移除已归档资料条目。活动资料拒绝；受管文件保留。
+      description: "永久移除本账户已归档的资料条目及其文件历史记录，受管文件保留。活动资料返回 422 invalid-input（field=/id，reason=invalid-reference），版本过期 409，外账户或不存在 404。删除后 GET、恢复和新键再次删除都返回 404；成功原键重放返回原结果，不会重建或恢复条目。"
       parameters:
       - name: id
         in: path
@@ -1546,7 +1626,7 @@ paths:
     post:
       operationId: copyQuestionV2
       summary: copyQuestionV2
-      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
+      description: "以 baseVersion 所指的原题版本为起点创建新题，保存采用时的来源快照；原题之后的修改、归档或彻底删除不改变快照。复制起点清空手写笔记与资料摘录，不接受 noteFragments。"
       parameters:
       - name: id
         in: path
@@ -1599,7 +1679,7 @@ paths:
     get:
       operationId: listQuestionCopiesV2
       summary: listQuestionCopiesV2
-      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
+      description: "列出以这道题为来源的改编题。"
       parameters:
       - name: id
         in: path
@@ -1630,7 +1710,7 @@ paths:
     put:
       operationId: relocateQuestion
       summary: relocateQuestion
-      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
+      description: "只修改从收录材料入库的题目的原稿定位，不能改变来源 importId、draftId 或原始字节。"
       parameters:
       - name: id
         in: path
@@ -1681,7 +1761,7 @@ paths:
     post:
       operationId: createQuestionAsset
       summary: createQuestionAsset
-      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
+      description: "受理 question-asset Job 并冻结题目版本。question-png 生成透明背景的题面分片，includeAnswers=true 时答案另成分片，从不含长期笔记；figure-png 必须给出属于该快照的 figureFileId，其他模式该字段为 null。PNG 宽 1600 px，文字与行内公式按段混排，保留选项、表格和配图顺序；分片优先按块边界，长块按真实行边界拆，单片高度不超过 2400 px，超高的单幅图等比缩小，公式保持完整。outputFileIds 按显示顺序排列，全部输出保存成功后才发布。失败分类：unsupported-formula 只表示实际公式校验或排版失败，field 指向已确定的题干或答案；配图问题为 missing-asset 或 asset-image-failed，浏览器运行为 asset-render-failed，文件存储为 asset-storage-failed，明确的 ENOSPC 才是 disk-full；未知异常不推测为公式问题。提示和诊断不含原始路径、异常正文或题目内容。该 Job 不能 retry，重新生成用新键再调用本操作。文字和公式复制直接从 Document 读取，不经服务端。"
       parameters:
       - name: id
         in: path
@@ -1735,7 +1815,7 @@ paths:
     post:
       operationId: createImport
       summary: createImport
-      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
+      description: "在同一事务中保存原稿绑定和 extraction Job，然后后台整理；结果只产生 Draft，不直接建立 Question。input.pages 为空代表完整输入，否则须给每个 fileId 明确的页集合，不接受未列入的原件。一次 PDF/Word 与一组图片不能混为一个输入；文字原文不可变。origin 是老师填写的出处文本或 URL，只保存不抓取。未配置视觉识别时，文字层 PDF 按本机阅读顺序自动读取，扫描页与图片明确报告识别未配置，不把手工补录算作自动完成。DOCX 保留原文段落；旧 DOC 在受限的 LibreOffice 进程内转换为 DOCX 再读取，任务固定转换稿、原件与派生件摘要和段落快照，重试复用该转换稿。"
       parameters:
       - $ref: '#/components/parameters/BrowserRequestProtection'
       - $ref: '#/components/parameters/RequestOrigin'
@@ -1787,7 +1867,7 @@ paths:
     get:
       operationId: listImports
       summary: listImports
-      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
+      description: "每份材料带只读 jobState。只有 succeeded 且没有 pending 草稿或 unassigned 片段的材料才能收进已完成列表，其他状态保守地留在继续收录。"
       parameters:
       - name: q
         in: query
@@ -1828,7 +1908,7 @@ paths:
     get:
       operationId: getImport
       summary: getImport
-      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
+      description: "可附带只读 originalDocuments，供校对页在分页预览与段落之间切换：DOC 显示转换稿段落，DOCX 显示原文段落，都不承诺 Word 的分页和排版。旧材料没有该字段时使用现有预览或下载。"
       parameters:
       - name: id
         in: path
@@ -1858,7 +1938,7 @@ paths:
     put:
       operationId: saveImportReview
       summary: saveImportReview
-      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
+      description: "按 baseVersion 全量原子保存当前草稿与片段数组。queued、running 或 cancelling 时返回 409 materials/import-not-editable，需先停止或等到终态。新草稿 ID 由客户端生成（拆分或手工补充），移除草稿即丢弃该候选，原件保留。已 confirmed 的草稿及其 questionId 只读且不能遗漏；客户端不能把 pending 改成 confirmed，也不能自填 questionId，否则 422 invalid-input。"
       parameters:
       - name: id
         in: path
@@ -1912,7 +1992,7 @@ paths:
     post:
       operationId: supplementImport
       summary: supplementImport
-      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
+      description: "在材料终态时追加补充原稿 fileIds，新照片不替换旧原稿；为新增文件自动建立新的 extraction Job，更新 import.jobId 并增加版本，已有候选保持。运行中返回 409 materials/import-not-editable。"
       parameters:
       - name: id
         in: path
@@ -1963,7 +2043,7 @@ paths:
     post:
       operationId: commitImportDrafts
       summary: commitImportDrafts
-      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
+      description: "唯一的入库动作。所选草稿必须没有 open 疑点、answerStatus 不为 unresolved、正文与图片和公式齐全，否则返回 409 draft-not-ready 且不做任何变更。acknowledged 只用于非阻断的文字或边界复核；missing-figure、uncertain-formula、incomplete-answer、unverified-location 必须为 corrected。忽略的草稿不能提交。通过后在同一事务中建立题目、写入映射和新的 import 版本，任一失败则整批不变。同一 draftId 永远最多对应一道题：用新键重复提交已确认的草稿返回既有映射，不增加题目或材料版本；混合提交时只为未确认的草稿创建题目。部分入库后其余草稿继续等待。"
       parameters:
       - name: id
         in: path
@@ -2017,7 +2097,7 @@ paths:
     post:
       operationId: setImportDeletion
       summary: setImportDeletion
-      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
+      description: "归档（deletedAt）或恢复收录材料，增加版本并保留 ID。"
       parameters:
       - name: id
         in: path
@@ -2068,7 +2148,7 @@ paths:
     put:
       operationId: replaceResourceFile
       summary: replaceResourceFile
-      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
+      description: "以已上传的新 File 替换当前文件，保持资料 ID、名称、分类、标签和备注，版本加 1 并追加文件历史；旧的补充预览不沿用。失败时保留原当前文件。"
       parameters:
       - name: id
         in: path
@@ -2122,7 +2202,7 @@ paths:
     put:
       operationId: setResourceSupplementPreview
       summary: setResourceSupplementPreview
-      description: 行为见 docs/contracts/materials.md 及关联 UX/BDD。
+      description: "补充预览必须是本账户的完整 PDF，与资源当前原件的 fileId 一起提交；原件已被替换时拒绝。成功后保存为 supplementPreviewFileId（null 表示移除），版本加 1 并记录文件历史。它不修改原文件，也不表示恢复了旧 DOC 的可编辑公式。"
       parameters:
       - name: id
         in: path
@@ -2176,7 +2256,7 @@ paths:
     get:
       operationId: getMaterialsModuleCatalog
       summary: getMaterialsModuleCatalog
-      description: R30 接入后的静态目录 version=2。取代此操作的旧版响应定义，其余 B11 路径保持；客户端不支持版本时保留草稿并要求重新加载。
+      description: "材料版目录形状 version=2，作为历史兼容输入保留；当前完整组合返回 version=4 的目录（ModuleCatalogV4）。客户端不支持返回的版本时保留草稿并提示重新加载，不用未知依赖继续装配。"
       parameters: []
       responses:
         '200':
@@ -2605,7 +2685,7 @@ components:
       oneOf:
       - $ref: workbench.openapi.yaml#/components/schemas/Document
       - $ref: '#/components/schemas/DocumentV2'
-      description: v1 原样保留；v2 增加受限结构，不接受 HTML、任意 attrs 或可执行内容。语义与限额见 docs/contracts/materials.md#内容。
+      description: v1 原样保留；v2 增加受限结构，不接受 HTML、任意 attrs 或可执行内容。语义与限额见 info 的“内容”。
     File:
       type: object
       properties:

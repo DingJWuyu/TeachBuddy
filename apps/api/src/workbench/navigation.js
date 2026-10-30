@@ -1,3 +1,20 @@
+/**
+ * Account navigation layout: GET/PUT /api/workbench/navigation.
+ *
+ * One versioned layout per account (groups, module order, hidden modules),
+ * saved under the shared workbench identity, Idempotency-Key and
+ * version-conflict protocol (workbench.openapi.yaml). An account that never
+ * saved reads the default layout with version 1 and updatedAt null; the client
+ * uses that null to import this device's older layout once, and the version
+ * check stops two devices from both claiming the first save.
+ *
+ * A PUT replaces the whole layout. Module IDs that are absent from the current
+ * catalog are kept as stored, so a module that comes back keeps its place and
+ * hidden choice; filtering them out belongs to the view. "ungrouped" is always
+ * the last group, and a module appears at most once across groups and hidden.
+ * nameKey marks the two default group names so they follow the interface
+ * language; renaming a group drops it.
+ */
 import express from 'express';
 import Ajv from 'ajv';
 import { defaultNavigation, validNavigation } from '@teachbuddy/shared';
@@ -28,6 +45,7 @@ function readNavigation(db, principal, catalog) {
   const row = db.prepare('SELECT * FROM workbench_navigation WHERE accountKey=?').get(principal.accountKey);
   if (!row) return { id: 'navigation', version: 1, layout: defaultNavigation(catalog), updatedAt: null };
   const layout = JSON.parse(row.layoutJson);
+  // Unreadable stored data is a 503, never silently replaced by the default layout.
   if (!validNavigation(layout)) throw new Error('Stored navigation is unreadable');
   return { id: 'navigation', version: row.version, layout, updatedAt: row.updatedAt };
 }

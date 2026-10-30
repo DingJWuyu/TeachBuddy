@@ -44,6 +44,7 @@ export function createToolExecutor({ records, operations }) {
       const response = tool.operationId === 'proposeTeachingCard'
         ? { status: 200, body: { proposalId: randomUUID(), card: structuredClone(call.arguments.card) } }
         : operations[tool.operationId]({ principal, arguments: call.arguments });
+      // A promise would put an async gap between the identity check and the business transaction.
       if (response?.then || ![200, 201].includes(response?.status) || !tool.response(response.body)) throw new Error('Unexpected business response');
       state = 'read'; result = response.body;
     } catch (error) {

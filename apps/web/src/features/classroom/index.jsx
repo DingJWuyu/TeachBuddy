@@ -6,6 +6,7 @@ import './classroom.css';
 
 export default function ClassroomPage({ transport }) {
   const shell = useWorkbenchShell();
+  // Remounting per account and identity generation aborts the previous identity's in-flight requests.
   return <ClassroomSession key={`${shell.accountKey}:${shell.generation}`} shell={shell} transport={transport || shell.transport} />;
 }
 

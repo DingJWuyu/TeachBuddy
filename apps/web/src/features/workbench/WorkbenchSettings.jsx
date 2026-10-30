@@ -160,6 +160,7 @@ export function WorkbenchSettings() {
       setAvatarError(t("请选择不超过 5 MB 的 JPG、PNG 或 WebP 图片。")); return;
     }
     const request = ++avatarRequest.current;
+    // The picker is disabled while the image loads; move focus first so it does not fall to the page body.
     if (document.activeElement === avatarTrigger.current) {
       avatarInput.current?.closest('.settings-profile')?.querySelector('.settings-nickname-trigger, #settings-nickname')?.focus();
     }

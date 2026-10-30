@@ -32,6 +32,7 @@ export function AgentPresentationProvider({ children }) {
   const meta = state.meta ?? {};
   const selected = !meta[state.active]?.hidden && docs[state.active];
   const isDemo = Boolean(selected);
+  // Device meta is a fallback: a server title wins only once explicitly renamed, and a device hide never deletes on the server.
   function project(conversation) {
     const old = meta[conversation.id] ?? {};
     if (docs[conversation.id]) return { ...conversation, ...old };

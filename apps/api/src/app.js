@@ -29,6 +29,7 @@ export function createApp(options = {}) {
       try {
         return await authModule.resolvePrincipal(request);
       } catch (error) {
+        // Auth storage failure is temporary unavailability, never an anonymous or previous identity.
         if (['/problems/auth/account-store-unavailable', '/problems/auth/session-store-unavailable'].includes(error.problem?.type)) {
           throw contractError(problems.temporarilyUnavailable());
         }

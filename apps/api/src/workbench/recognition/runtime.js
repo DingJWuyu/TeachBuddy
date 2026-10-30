@@ -321,6 +321,7 @@ export function createRecognizer({ home, workDirectory } = {}) {
     const owner = { version: 2, accountKey, workRoot: path.dirname(root), unit, generation: id };
     const gen = { id, unit, accountKey, work, owner, ownerFile: `${work}.owner.json`,
       input: path.join(work, "input"), output: path.join(work, "output"), ready: deferred(), exit: deferred() };
+    // Ownership is persisted before the work directory exists, so an interrupted create can still be cleaned for this account.
     atomicJSON(gen.ownerFile, owner);
     fs.mkdirSync(work, { mode: 0o700 });
     fs.mkdirSync(gen.input, { mode: 0o700 }); fs.mkdirSync(gen.output, { mode: 0o700 });
@@ -385,6 +386,7 @@ export function createRecognizer({ home, workDirectory } = {}) {
     try {
       await recover();
       if (!available) throw failure("recognition-unavailable", "本地识别环境暂不可用。");
+      // A model process never serves two accounts: switching account stops the whole scope first.
       if (generation && (generation.accountKey !== accountKey || generation.stopping || generation.stopped)) {
         await stop(generation);
         removeEmptyGeneration(generation);

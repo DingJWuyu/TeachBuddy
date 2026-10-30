@@ -142,6 +142,7 @@ export async function convertFile({
         if (stderr.length < 4000) stderr += chunk;
       });
       child.once("error", reject);
+      // Wait for close rather than exit so the detached process group has released stdio and output files.
       child.once("close", (code) => {
         clearTimeout(timer);
         signal?.removeEventListener("abort", abort);

@@ -10,6 +10,7 @@ export function usePreferences(accountKey, generation) {
     buildUpdate: (values, baseline) => ({ baseVersion: baseline.version, values })
   });
   return { ...preferences, retrySave: async () => {
+    // Finish the non-destructive reread first, then confirm the pending request with its original key and body.
     if (preferences.loadState === 'error' && !await preferences.refreshServer()) return null;
     return preferences.pending ? preferences.retryConfirm() : preferences.save();
   } };

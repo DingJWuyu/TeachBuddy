@@ -2,8 +2,10 @@ openapi: 3.2.1
 info:
   title: TeachBuddy schedule
   version: 1.0.0-candidate.1
-  description: 日程、日历和提醒操作契约。
-x-source-revision: 32af4eb53f78d83780c55fd83821733b000f393b
+  description: >-
+    日程的 v1 兼容契约，只为旧请求保留；当前字段与语义见 schedule-v2.openapi.json。
+    旧客户端带已退役 course 字段的请求，只能按原账户、原幂等键和原请求体重放已经成功的回执，回执不再含教学关联；
+    没有成功回执的新写入拒绝该字段，不创建关联或额外任务。
 servers:
   - url: /
 security:
