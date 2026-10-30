@@ -4,7 +4,7 @@
 
 ## 已有本机实例
 
-用户体验使用 `TeachBuddy-preview` 的当前源码，地址为 `https://localhost:50880`。维护使用用户级持久服务 `teachbuddy-preview.service`，实际工作目录与入口用 `systemctl --user cat teachbuddy-preview.service` 核对；服务执行仓库内的 `npm run dev`。
+用户体验使用主检出 `TeachBuddy` 的 `main` 源码，地址为 `https://localhost:50880`。维护使用用户级持久服务 `teachbuddy-preview.service`，实际工作目录与入口用 `systemctl --user cat teachbuddy-preview.service` 核对；服务执行仓库内的 `npm run dev`。
 
 配置由开发树根目录私有 `.env` 提供；当前数据库、附件、日志和临时转换目录位于 `~/.local/share/teachbuddy/preview/`，与源码分开。准确位置以 `.env` 的 `SQLITE_PATH`、`WORKBENCH_FILES_DIR`、`WORKBENCH_LOG_DIR` 和 `TMPDIR` 为准，诊断只读取所需键名和路径，不打印秘密。证书、工具和模型也使用配置指定的持久目录。
 
@@ -51,7 +51,7 @@ Linux 本机需登录后自动启动时，在 `~/.config/systemd/user/teachbuddy
 Description=TeachBuddy preview development server
 
 [Service]
-WorkingDirectory=/absolute/path/to/TeachBuddy-preview
+WorkingDirectory=/absolute/path/to/TeachBuddy
 Environment="PATH=/absolute/node-bin:/usr/local/bin:/usr/bin:/bin"
 ExecStart=/absolute/node-bin/npm run dev
 Restart=on-failure

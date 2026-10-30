@@ -40,7 +40,7 @@ cp .env.example .env
 npm run dev
 ```
 
-按[运行指南](docs/SETUP.md#新的隔离环境)完成配置后，`npm run dev` 在同一个 HTTPS 地址提供前端热更新和 API 自动重启。新检出无需旧开发现场或旧数据库；首次启动自动创建空库并执行迁移。已有本机体验入口为 `https://localhost:50880`，直接运行 `TeachBuddy-preview` 当前源码；模块 worktree 使用各自的隔离实例。用户服务和固定构建的启动方式也见运行指南。
+按[运行指南](docs/SETUP.md#新的隔离环境)完成配置后，`npm run dev` 在同一个 HTTPS 地址提供前端热更新和 API 自动重启。新检出无需旧开发现场或旧数据库；首次启动自动创建空库并执行迁移。已有本机体验入口为 `https://localhost:50880`，直接运行主检出 `TeachBuddy` 的 `main` 源码；模块 worktree 使用各自的隔离实例。用户服务和固定构建的启动方式也见运行指南。
 
 ## 开发资料
 
