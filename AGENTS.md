@@ -16,7 +16,7 @@
 
 ## 开发与验证规则
 
-修改代码前读 [LESSONS](LESSONS.md)；实现与审查依据[代码标准](docs/code-standards.md)。界面改动同时读[设计输入](docs/design-system/README.md)；选择本地、CI 和目标环境验证前读[验证入口](docs/acceptance/README.md)与[CI 分工](docs/agents/github-workflow.md#ci-与本地验证)。
+修改代码前读 [LESSONS](LESSONS.md)；实现与审查依据[代码标准](docs/CODING_STANDARDS.md)。界面改动同时读[设计输入](docs/design-system/README.md)；选择本地、CI 和目标环境验证前读[验证入口](docs/acceptance/README.md)与[CI 分工](docs/agents/github-workflow.md#ci-与本地验证)。
 
 ## Git 规则
 
@@ -24,15 +24,15 @@
 
 ## 文档维护边界
 
-编写或整理文档使用 `writing-for-agents`，按[文档维护](docs/code-standards.md#文档维护)更新唯一权威位置；新增行为、状态和运行事实以源码及实际证据为准。
+编写或整理文档使用 `writing-for-agents`，按[文档维护](docs/CODING_STANDARDS.md#文档维护)更新唯一权威位置；新增行为、状态和运行事实以源码及实际证据为准。
 
 ### 编写与同步
 
-代码与文档在同批交付；按[文档维护](docs/code-standards.md#文档维护)判断本次需要同步的权威事实。
+代码与文档在同批交付；按[文档维护](docs/CODING_STANDARDS.md#文档维护)判断本次需要同步的权威事实。
 
 ### 项目约定
 
-输入、源码、配置与证据的归属及可重建要求见[代码标准](docs/code-standards.md#输入与可重建性)；具体准备步骤查 SETUP，测试产物查验收入口。
+输入、源码、配置与证据的归属及可重建要求见[代码标准](docs/CODING_STANDARDS.md#输入与可重建性)；具体准备步骤查 SETUP，测试产物查验收入口。
 
 ### 保护与完成标准
 
@@ -42,22 +42,33 @@
 
 ## Agent skills
 
-### 编排与协作
-
-总控派发、接收任务或选择 skill 流程时读[编排](docs/agents/module-development.md#编排)；业务 session 沿任务边界执行。使用立即生成大量 subagent 的 harness 前，说明取舍并获得用户明确批准。等待回执使用等待机制，不反复轮询。
-
-### 开发模型路由
-
-派发或恢复任务按[模型映射](docs/agents/module-development.md#模型与固定派发)选择 model/effort，并记录到任务包与回执；产品模型配置另查功能规格。
-
 ### Issue tracker
 
-问题和规格使用 GitHub `DingJWuyu/TeachBuddy`，按 [Issue 规则](docs/agents/issue-tracker.md)执行。
+Issues and specs live in GitHub Issues for `DingJWuyu/TeachBuddy`. See `docs/agents/issue-tracker.md`.
 
 ### Triage labels
 
-分流问题按[标签规则](docs/agents/triage-labels.md)执行。
+The five default triage labels, each named after its role. See `docs/agents/triage-labels.md`.
 
 ### Domain docs
 
-术语和决议按[领域规则](docs/agents/domain.md)维护根 GLOSSARY 与 docs/adr。
+Single-context: root `GLOSSARY.md` and `docs/adr/`. See `docs/agents/domain.md`.
+
+## Coding standards
+
+Write and review code against [docs/CODING_STANDARDS.md](docs/CODING_STANDARDS.md). When changing these rules, follow [LESSONS.md](LESSONS.md) to update the matching lesson.
+
+## Agent roles
+
+When the user assigns you a role, read its instructions:
+
+- **Orchestrator**: [docs/agents/orchestrator.md](docs/agents/orchestrator.md).
+- **Executor**: [docs/agents/executor.md](docs/agents/executor.md).
+
+## Agent tools
+
+Read the instructions in `docs/agents/tools/` for the tool running this session.
+
+## Lessons
+
+Before reviewing work or running the `retro` skill, read [LESSONS.md](LESSONS.md). Follow it when recording or updating lessons.

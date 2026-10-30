@@ -1,8 +1,55 @@
-# Lessons
+# Lessons from project work
 
-修改代码前读本页，审查时核对相关条目。只记录本仓已证实失误产生的当前预防规则；稳定工程判据见[代码标准](docs/code-standards.md)。
+Read this before reviewing work or running the `retro` skill.
 
-## 当前条目
+Current, unpromoted lessons live under Lessons. LESSONS-ARCHIVE.md holds promoted and inactive entries. Create the archive when moving the first entry, with `## Promoted lessons` and `## Inactive lessons` sections.
+
+## Record a lesson
+
+Record lessons from reviews and retrospectives, once you can explain a confirmed mistake and how to avoid it in similar work.
+
+- **Review**: record the mistakes the user confirms by reading the review. Code, test, design and documentation reviews all count. An unattended review only lists candidates (`code-review`'s Record lessons).
+- **Retrospective**: record lessons from the `retro` skill when the user approves them.
+
+Search this file and `LESSONS-ARCHIVE.md` for the same mistake. Update a matching entry. For a new lesson, use these fields:
+
+- **Rule**: what to do and when it applies.
+- **Kind**: `mechanical` if a deterministic check could catch the mistake (a fixed syntactic pattern, a banned API, an import shape, a file-location rule), otherwise `judgement`.
+- **Why**: what went wrong and why.
+- **Evidence**: the issue, PR, commit or reproduction that shows what happened.
+- **Seen**: the number of separate occurrences, with a date for each. Start at 1.
+
+For a mechanical lesson, propose the check when you record it: a linter rule, a pre-commit hook or a CI job.
+
+A review and a retro that find the same incident count once; several rounds of fixing that incident also count once. A long gap between cases may simply mean that similar work was rare.
+
+Group related lessons as the file grows.
+
+## Update a lesson
+
+When the mistake recurs, add the new case and its date, then increase Seen. Keep counting after promotion.
+
+When new evidence changes the rule or its explanation, update Rule and Why. For a promoted lesson, change the rule where it now lives. Keep the original evidence and record any correction beside it.
+
+## Promote a lesson
+
+- **Judgement**: when `Seen` reaches 3, check whether the rule was followed in those cases. If it was followed and still failed, correct it first. Then add the rule to docs/CODING_STANDARDS.md, with its conditions and exceptions.
+- **Mechanical**: once its check is in place.
+
+Move the lesson to `## Promoted lessons` in the archive, without its Rule, and link to its rule in the standards or to its check. From then on, the rule lives there; Why, Evidence and Seen stay with the lesson. When a promoted rule changes in the standards or its check, put the reason in the lesson's Why.
+
+## Retire or restore a lesson
+
+Keep lessons after their bugs are fixed. When a lesson no longer applies, move the whole entry to `## Inactive lessons` in the archive, with the date and reason. For a promoted lesson, copy its rule back into the entry, then remove it from the standards or remove its check. When a rule is removed from the standards or a check is removed, retire any matching lesson.
+
+When a new case matches an inactive lesson, check that it is the same mistake and that the rule still applies. Revise the rule if needed, then restore the entry:
+
+- **Previously promoted**: restore its rule in `docs/CODING_STANDARDS.md` or its check, then move it to `## Promoted lessons` in the archive without its Rule.
+- **Not promoted**: return it to Lessons.
+
+Continue its Seen count and add the new case and date.
+
+## Lessons
 
 ### 当前装配使用当前目录，历史样本只验证兼容
 
@@ -57,10 +104,3 @@
 数学参数范围展开又因 Runner 忙帧误报：180ms 动效的前两次 RAF 相隔149.9ms，已有中间透明度，但四舍五入后只有3种高度，不满足原测试的4种门槛。此类检查从真实点击捕获浏览器已有 transition/keyframe，暂停并按进度读取插值；快速反向仍用真实点击，核对反转前后的连续性，并保留末项可达、卸载和归焦。移除对应动效的负对照须继续失败，不能只降低采样门槛。依据：[失败 CI](https://github.com/DingJWuyu/TeachBuddy/actions/runs/39588034823)；该次回归保护见[数学完整交互回归](https://github.com/DingJWuyu/TeachBuddy/blob/789a38d83babad04f2e2a51e9f17530abf638801/apps/web/e2e/math-unified.spec.js)。
 
 出现日期：2026-10-20、2026-10-21。已核实 2 个不同日期。
-
-## 维护规则
-
-1. 完整改动目的或阶段交付时，依据返工、回归、独立审查和用户纠正决定是否新增或更新；没有新的已证实教训时不修改。不建立夜间循环或社区监听。
-2. 每条写清触发条件、可执行规则、保护的使用结果、固定本仓 commit/Issue/入库样本证据和出现日期。单次有充分证据即可记录；假设、普通命令错误和外仓事故不计数，不编造历史。
-3. 同一规则在三个不同日期各有独立本仓证据时，合并到所属稳定权威页并移除本页重复条目；已被现行标准涵盖的内容直接改权威规则，不再制造第二副本。失效规则移除，历史由 Git 保留。
-4. 证据只保留足以核查当前规则的链接，完整执行过程留任务产物；长期条目不能只依赖被忽略目录或个人机器路径。当前任务的未完成问题沿[当前任务记录](docs/agents/module-development.md#当前任务记录)维护，范围外待判断发现进入 [buffer](buffer.md)，Lessons 不替代待办。

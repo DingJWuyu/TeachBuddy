@@ -68,7 +68,7 @@ trunk：preview/integration
 
 | 审查 | 谁执行、审查什么 |
 | --- | --- |
-| 固定候选的 Standards / Spec | 按 code-review skill 由两个 fresh-context 独立 subagent 分别对照[代码标准](../code-standards.md)与用户目标/现行规格，检查固定 diff、实际调用路径、状态和证据覆盖。作者定点自验后按完整改动目的或大阶段集中执行，不为每个小改追加一轮 |
+| 固定候选的 Standards / Spec | 按 code-review skill 由两个 fresh-context 独立 subagent 分别对照[代码标准](../CODING_STANDARDS.md)与用户目标/现行规格，检查固定 diff、实际调用路径、状态和证据覆盖。作者定点自验后按完整改动目的或大阶段集中执行，不为每个小改追加一轮 |
 | 开发 PR review | 直接复用同一固定候选已完成的 Standards/Spec 独立审查；总控核对基线、PR 候选、审查发现和 CI。没有覆盖当前候选的独立审查时才安排补审 |
 | Release PR review | 总控核对发布范围、授权、版本、两类说明和 CI 是否符合发布约定，不重做功能实现与验收标准审查 |
 
