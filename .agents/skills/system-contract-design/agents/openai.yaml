@@ -1,7 +1,0 @@
-interface:
-  display_name: "System Contract Design"
-  short_description: "Agree contracts from accepted product behavior"
-  default_prompt: "Use $system-contract-design to work with me on a frontend/backend contract for the accepted scope from product-behavior-design."
-
-policy:
-  allow_implicit_invocation: false
