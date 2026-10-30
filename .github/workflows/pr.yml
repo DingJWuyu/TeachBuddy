@@ -2,7 +2,7 @@ name: PR
 
 on:
   pull_request:
-    branches: [preview/integration, main]
+    branches: [main]
     types: [opened, edited, synchronize, reopened, ready_for_review]
 
 permissions:
@@ -23,14 +23,3 @@ jobs:
         uses: amannn/action-semantic-pull-request@48f256284bd46cdaab1048c3721360e808335d50 # v6.1.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Require the development trunk for stable releases
-        env:
-          BASE_BRANCH: ${{ github.base_ref }}
-          HEAD_BRANCH: ${{ github.head_ref }}
-          HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
-        run: |
-          if [[ "$BASE_BRANCH" == "main" ]] &&
-             [[ "$HEAD_BRANCH" != "preview/integration" || "$HEAD_REPOSITORY" != "$GITHUB_REPOSITORY" ]]; then
-            echo '::error::Release PRs must promote preview/integration from this repository.'
-            exit 1
-          fi

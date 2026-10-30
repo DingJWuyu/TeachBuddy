@@ -1,7 +1,7 @@
 {
   "$schema": "https://unpkg.com/release-it/schema/release-it.json",
   "git": {
-    "requireBranch": "preview/integration",
+    "requireBranch": "main",
     "requireUpstream": false,
     "getLatestTagFromAllRefs": true,
     "tagName": "v${version}",
